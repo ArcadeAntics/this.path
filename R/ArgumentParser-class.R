@@ -39,18 +39,20 @@ subparsers <- methods::setRefClass(
         description     = "list"        ,
         program         = "character"   ,
         required        = "logical"     ,
-        value           = "list"        ),
-    validity = function (object)
-{
-    c(
-        if (length(object$style) != 1L)
-            gettextf("invalid 'style', must be of length 1, got %d", length(object$style))
-        else if (!object$style %in% STYLES)
-            gettextf("invalid 'style', must be one of %s", paste(STYLES, collapse = ", ")),
-        if (!all(vapply(object$parent.commands, base::inherits, "Refcharacter", FUN.VALUE = NA)))
-            gettext("invalid 'parent.commands', must be a list of \"Refcharacter\" objects")
-    )
-})
+        value           = "list"        )
+#     ,
+#     validity = function (object)
+# {
+#     c(
+#         if (length(object$style) != 1L)
+#             gettextf("invalid 'style', must be of length 1, got %d", length(object$style))
+#         else if (!object$style %in% STYLES)
+#             gettextf("invalid 'style', must be one of %s", paste(STYLES, collapse = ", ")),
+#         if (!all(vapply(object$parent.commands, base::inherits, "Refcharacter", FUN.VALUE = NA)))
+#             gettext("invalid 'parent.commands', must be a list of \"Refcharacter\" objects")
+#     )
+# }
+)
 
 
 FormalCommandArgs <- methods::setRefClass(
