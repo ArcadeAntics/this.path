@@ -1,0 +1,11 @@
+library(this.path)
+library(this.path)
+quote(expr = x = 5)
+quote(expr = (x = 5))
+quote(expr = (x = 5))[[1]]
+quote(expr = (x = 5))[[2]]
+quote(expr = (x = 5))
+eval(quote(expr = (x = 5)))
+x
+rm(X)
+rm(x)

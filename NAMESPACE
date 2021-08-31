@@ -1,0 +1,119 @@
+# ArgumentParser-class.R ----
+
+
+importFrom(methods, classLabel, is, new)
+exportClasses("this.path_ArgumentParser")
+export(ArgumentParser)
+
+
+S3method(print, "this.path_ArgumentParser")
+
+
+S3method("$", ParsedArgs)
+S3method("$<-", ParsedArgs)
+S3method(as.list, ParsedArgs)
+S3method(print, ParsedArgs)
+export(Commands, Missing)
+
+
+# Check_This.R           ----
+
+
+importFrom(utils, packageVersion)
+
+
+# commandArgs.R          ----
+
+
+S3method(print, formalCommandArg)
+
+
+# commandPrompt.R        ----
+
+
+export(commandPrompt)
+
+
+# dedent.R               ----
+
+
+export(dedent)
+
+
+# delayedAssign2.R       ----
+
+
+export(delayedAssign2)
+
+
+# file.open.R            ----
+
+
+export(file.open)
+
+
+# here.R                 ----
+
+
+export(here, ici)
+
+
+# list.files2.R        ----
+
+
+export(list.files2)
+export(dir2)
+
+
+# normalizeAgainst.R     ----
+
+
+export(normalizeAgainst)
+
+
+# path.contract.R        ----
+
+
+export(path.contract)
+
+
+# pseduoglobalenv.R      ----
+
+
+export(pseudoglobalenv)
+
+
+# python.R               ----
+
+
+export(python)
+
+
+# R.R                    ----
+
+
+export(R, Rcmd, Rscript, Rterm)
+
+
+# this.path.R            ----
+
+
+export(commandQuote, shEncode, this.path, this.dir)
+
+
+# this.path2.R           ----
+
+
+export(this.path2, this.dir2, this.dir3)
+
+
+# withArgs.R             ----
+
+
+export(Args, withArgs)
+
+
+# writeArgs.R            ----
+
+
+export(writeArgs)

@@ -1,0 +1,60 @@
+library(this.path)
+example("this.path")
+?this.path
+system(sprintf("\"%s\"", results.file))
+r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)"
+system(sprintf("\"%s\"", r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)"))
+sprintf("\"%s\"", r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)")
+cat(sprintf("\"%s\"", r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)"))
+r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)")
+r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)"
+file.exists(r"(C:\Users\simmonsa\AppData\Local\Temp\RtmpUpLjbJ\this.path example results 2020-11-12 09-12-04 EST 1d4c7c283630.txt)")
+library(this.path)
+?this.path
+example("this.path")
+results.file
+sprintf("\"\%s\"", results.file)
+sprintf("\"%s\"", results.file)
+cat(sprintf("\"%s\"", results.file))
+system()
+system(cat(sprintf("\"%s\"", results.file)))
+system(sprintf("\"%s\"", results.file))
+system(sprintf("\"%s\"", results.file), show.output.on.console = TRUE)
+system(sprintf("\"%s\"", results.file), )
+?system.tes
+system.tes t
+system.test
+?system2
+system(sprintf("\"%s\"", results.file))
+system2(sprintf("\"%s\"", results.file))
+system2(sprintf("\"%s\"", results.file))
+print(system2(sprintf("\"%s\"", results.file)))
+print(system2("", sprintf("\"%s\"", results.file)))
+print(system2("", sprintf("notepad \"%s\"", results.file)))
+print(system("", sprintf("notepad \"%s\"", results.file)))
+print(system(sprintf("notepad \"%s\"", results.file)))
+sprintf("notepad \"%s\"", results.file)
+cat(sprintf("notepad \"%s\"", results.file))
+system(sprintf("notepad \"%s\"", results.file))
+sprintf("notepad \"%s\"", results.file)
+x <- sprintf("notepad \"%s\"", results.file)
+x
+Encoding(x)
+Encoding(x) <- "UTF-8"
+x
+system(x)
+system(x)
+system(x, wait = FALSE)
+rstudioapi::isAvailable
+rstudioapi:::isChildProcess
+Sys.getenv("RSTUDIOAPI_IPC_REQUESTS_FILE", unset = NA)
+!is.na(Sys.getenv("RSTUDIOAPI_IPC_REQUESTS_FILE", unset = NA))
+rstudioapi:::isChildProcess
+shell.exec(results.file)
+results.file
+?shell.exec(results.file)
+print(shell.exec(results.file))
+shell.exec(results.file)
+shell.exec("C:/Users/simmonsa/Desktop/testing this.R")
+shell.exec(results.file)
+shell.exec(results.file)

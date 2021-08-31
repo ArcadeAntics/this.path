@@ -1,0 +1,129 @@
+\documentclass[a4paper]{article}
+
+%\VignetteIndexEntry{Argument Parsing}
+\title{Argument Parsing}
+\author{akwsimmo}
+
+\begin{document}
+
+\maketitle
+
+\section{Argument Parsing}
+Arguments are added to scripts to make them more generalized. Suppose you have a
+script in which you read from a specific file, but now you want to read from a
+different file. You can add the filename as an argument to your script, and then
+you wouldn't have to go find and edit the filename in your script, you would
+just provide a different filename. Arguments can help to generalize any kind of
+variables within scripts, not just files. Let's start of with a simple example.
+Start by creating an argument parser (see \texttt{?this.path::ArgumentParser}
+for more on function \texttt{this.path::ArgumentParser}):
+
+<<>>==
+parser <- this.path::ArgumentParser(
+    description = "Produce a plot")
+@
+
+Then, we use \texttt{add.argument} to add an argument to the argument parser:
+
+<<>>==
+parser$add.argument("x", nargs = "+", type = "numeric",
+    help = "Numbers to plot, provided to argument 'x'",
+    metavariable = "N")
+@
+
+Then, parse the arguments the user provided with \texttt{parse.args} (normally,
+argument \texttt{args} is not provided, in which case the arguments are taken
+from the command line arguments, or possibly from \texttt{withArgs}):
+
+<<>>==
+pargs <- parser$parse.args(
+    args = c("1", "2", "4", "7", "10", "3.1415926535897931"))
+@
+
+We should now have a list with element \texttt{"x"} which is the numbers we wish
+to plot. Let's try it:
+
+<<pargsx,eval=FALSE>>==
+graphics::plot(x = pargs$x)
+@
+
+\begin{center}
+<<fig=TRUE,echo=FALSE>>==
+<<pargsx>>
+@
+\end{center}
+
+\section{Argument Types}
+
+There two types of arguments are positional arguments and named arguments, also
+called names and flags. A positional argument can be created by:
+
+<<>>==
+parser <- this.path::ArgumentParser()
+parser$add.argument("pos-name1", "pos.name2")
+# one or more variable names
+@
+
+while a flag can be created by:
+
+<<>>==
+parser$add.argument("-a", "--flag_name")
+# one of more variable names starting with one or two hyphens
+@
+
+Then, to provide values for these arguments, try:
+
+<<>>==
+# any of these are acceptable
+parser$parse.args(c("value1", "-a", "value2"))
+parser$parse.args(c("value1", "-a=value2"))
+parser$parse.args(c("value1", "--flag_name=value2"))
+parser$parse.args(c("value1", "--flag_name", "value2"))
+@
+
+\section{Actions}
+
+An action specifies what to do when an argument is encountered. \texttt{"store"}
+will store exactly one value, \texttt{"append"} stores as many values as are
+provided, \texttt{"store\_const"} will return either \texttt{default} or
+\texttt{constant} depending upon whether it was provided,
+\texttt{"store\_false"/"store\_true"} are common use cases of
+\texttt{"store\_const"} in which \texttt{default} is \texttt{TRUE/FALSE} and
+\texttt{constant} is \texttt{FALSE/TRUE}, and \texttt{"count"} will store how
+many times an argument has been provided.
+
+<<>>==
+parser <- this.path::ArgumentParser()
+parser$add.argument("-a", action = "store")
+parser$add.argument("-b", action = "append")
+parser$add.argument("-c", action = "store_const",
+    default = "not provided", constant = "provided")
+parser$add.argument("-d", action = "store_false")
+parser$add.argument("-e", action = "store_true")
+parser$add.argument("-f", action = "count")
+parser$parse.args(
+    c("-a", "1value", "-b", "1st value", "-b", "2nd value", "-ff"))
+parser$parse.args(
+    c("-c", "-d", "-e", "-fff"))
+@
+
+See \texttt{?this.path::add.argument} for more information on actions.
+
+\section{Choices}
+
+When providing arguments that are integers or strings, it is convenient to have
+a list of possible choices to be provided (choices are available for all types
+of data, just that other types are far less common use cases). For example:
+
+<<>>==
+parser <- this.path::ArgumentParser()
+parser$add.argument("--arg1", choices = c("choice1", "option2", "string3"))
+parser$add.argument("--arg2", choices = 1:10, type = "integer")
+parser$parse.args(c("--arg1=option2", "--arg2=7"))
+parser$parse.args("--arg1=s")  # strings may be abbreviated
+tryCatch({
+    parser$parse.args(c("--arg2", "-8"))
+}, condition = print)
+@
+
+\end{document}
