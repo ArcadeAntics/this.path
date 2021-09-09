@@ -101,35 +101,48 @@ as.comment <- function (x, comment.char = "",
 }
 
 
-splitter.inator <- function (x, sep = "",
+splitter.inator <- function (x, sep = " ",
     sepchar = nchar(sep, type = "bytes", keepNA = FALSE),
     w = nchar(x, type = "width"))
 {
-    if (!length(x))
-        return(character())
-    cumw <- cumsum(w) + seq.int(0L, by = sepchar, along.with = x)
-    i <- seq_len(min(10L, max(1L, sum(cumw <= 80L))))
-    c(paste(x[i], collapse = sep),
-        splitter.inator(x[-i], sep = sep, sepchar = sepchar, w = w[-i]))
+    if (identical(sep, "\n"))
+        return(x)
+    value <- character()
+    while (len <- length(x)) {
+        cumw <- if (len > 40L)
+            cumsum(w[seq_len(40L)]) + seq.int(0L, by = sepchar, length.out = 40L)
+        else cumsum(w)              + seq.int(0L, by = sepchar, length.out = len)
+        i <- seq_len(min(10L, max(1L, sum(cumw <= 80L))))
+        value <- c(value, paste(x[i], collapse = sep))
+        x <- x[-i]
+        w <- w[-i]
+    }
+    return(value)
 }
 
 
 
 
 
-format4scan <- function (x, sep = "", comment.char = "", nlines.between.comment.and.args = 0,
+format4scan <- function (x, sep = " ", comment.char = "", nlines.between.comment.and.args = 0,
     nlines.between.args = 2)
 {
     if (is.character(sep) || is.null(sep)) {
-        if (length(sep) == 0) sepchar <- FALSE
+        if (length(sep) == 0) {
+            sep <- " "
+            sepchar <- FALSE
+        }
         else {
             sep <- sep[[1L]]
             sepchar <- nchar(sep, type = "bytes", keepNA = FALSE)
-            if (sepchar > 1)
+            if (!sepchar)
+                sep <- " "
+            else if (sepchar > 1)
                 stop("invalid 'sep' value: must be one byte")
         }
     }
     else stop("invalid 'sep' argument")
+    qstring <- if (sepchar) "\"\"" else "\\\""
 
 
     if (!is.character(comment.char) || length(comment.char) != 1)
@@ -148,14 +161,10 @@ format4scan <- function (x, sep = "", comment.char = "", nlines.between.comment.
             stop("strings with \"bytes\" encoding is not allowed")
 
 
-        xx <- if (sepchar)
-            paste0(
-                "\"",
-                gsub("\"", "\"\"", encodeString(enc2utf8(xx)), fixed = TRUE, useBytes = TRUE),
-                "\"",
-                recycle0 = TRUE)
-        else encodeString(enc2utf8(xx), quote = "\"")
-        xx <- paste(splitter.inator(xx, sep = sep, sepchar = sepchar), collapse = "\n")
+        xx <- paste0("\"", gsub("\"",
+            qstring, enc2utf8(xx), fixed = TRUE), "\"",
+            recycle0 = TRUE)
+        xx <- paste(splitter.inator(xx, sep), collapse = "\n")
 
 
         paste(com, xx, sep = if (nzchar(com) && nzchar(xx))
@@ -173,57 +182,9 @@ format4scan <- function (x, sep = "", comment.char = "", nlines.between.comment.
 }
 
 
-writeArgs <- function (x, file = tempfile("args"), comments = TRUE,
-    nlines.between.comment.and.args = 0, nlines.between.args = 2,
-    at = TRUE)
-{
-    text <- format4scan(x, sep = ",", comment.char = if (comments) "#" else "",
-        nlines.between.comment.and.args = nlines.between.comment.and.args,
-        nlines.between.args = nlines.between.args)
-    if (is.null(file)) {
-        text
-    }
-    else if (is.character(file)) {
-        if (nzchar(file)) {
-            file <- normalizePath(file, mustWork = FALSE)
-            writeLines(text, file, useBytes = TRUE)
-            if (at)
-                paste0("@", file)
-            else file
-        }
-        else {
-            writeLines(text, useBytes = TRUE)
-            invisible(text)
-        }
-    }
-    else writeLines(text, file, useBytes = TRUE)
- }
-
-
-readArgs <- function (file)
-{
-    scan(file = file, what = "", sep = ",", quote = "\"",
-        na.strings = NULL, quiet = TRUE, comment.char = "#",
-        allowEscapes = TRUE, encoding = "UTF-8")
-}
-
-
-
-
-
-format4parse <- function (x, sep = " ; ", comment.char = "#", nlines.between.comment.and.args = 0,
+format4parse <- function (x, comment.char = "#", nlines.between.comment.and.args = 0,
     nlines.between.args = 2)
 {
-    if (is.character(sep) || is.null(sep)) {
-        if (length(sep) == 0) sepchar <- FALSE
-        else {
-            sep <- sep[[1L]]
-            sepchar <- nchar(sep, type = "bytes", keepNA = FALSE)
-        }
-    }
-    else stop("invalid 'sep' argument")
-
-
     if (!is.character(comment.char) || length(comment.char) != 1)
         stop("invalid 'comment.char' argument")
     comchar <- nchar(comment.char, type = "bytes", keepNA = FALSE)
@@ -238,8 +199,7 @@ format4parse <- function (x, sep = " ; ", comment.char = "#", nlines.between.com
             stop("strings with \"bytes\" encoding is not allowed")
 
 
-        xx <- encodeString(enc2utf8(x), quote = "\"")
-        xx <- paste(splitter.inator(xx, sep = sep, sepchar = sepchar), collapse = "\n")
+        xx <- paste(encodeString(enc2utf8(xx), quote = "\""), collapse = "\n")
 
 
         paste(com, xx, sep = if (nzchar(com) && nzchar(xx))
@@ -257,12 +217,136 @@ format4parse <- function (x, sep = " ; ", comment.char = "#", nlines.between.com
 }
 
 
-writeArgs2 <- function (x, file = tempfile("args"), sep = TRUE, comments = TRUE,
+
+
+
+setReadWriteArgsMethod <- function (condition, read, write)
+{
+    readWriteArgs[[length(readWriteArgs) + 1L]] <<- list(
+        condition = match.fun(condition),
+        read      = match.fun(read),
+        write     = match.fun(write)
+    )
+    invisible()
+}
+environment(setReadWriteArgsMethod) <- list2env(list(readWriteArgs = list()))
+
+
+# *.csv file, comma separated value file
+setReadWriteArgsMethod(
+    condition = function(file) {
+        grepl("\\.csv$", file, ignore.case = TRUE)
+    },
+    read      = function(file) {
+        scan(file = file, what = "", sep = ",", quote = "\"",
+            dec = ".", na.strings = NULL, quiet = TRUE,
+            comment.char = "", encoding = "UTF-8")
+    },
+    write     = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        format4scan(x, sep = ",", comment.char = "",
+            nlines.between.comment.and.args = nlines.between.comment.and.arg,
+            nlines.between.args = nlines.between.args)
+    }
+)
+
+
+# *.pyargs file, python arguments file
+setReadWriteArgsMethod(
+    condition = function(file) {
+        grepl("\\.pyargs$", file, ignore.case = TRUE)
+    },
+    read      = function(file) {
+        readLines(file, warn = FALSE, encoding = "UTF-8")
+    },
+    write     = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        x <- asArgs(x)
+        if (any(Encoding(x) == "bytes"))
+            stop("strings with \"bytes\" encoding is not allowed")
+        paste(enc2utf8(x), collapse = "\n")
+    }
+)
+
+
+# *.Rargs file, R arguments file
+setReadWriteArgsMethod(
+    condition = function(file) {
+        grepl("\\.Rargs$", file, ignore.case = TRUE)
+    },
+    read      = function(file) {
+        value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
+        if (any(vapply(value, typeof, "") != "character"))
+            stop("invalid 'file', does not contain exclusively strings")
+        as.character(value)
+    },
+    write     = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        format4parse(x, comment.char = if (comments) "#" else "",
+            nlines.between.comment.and.args = nlines.between.comment.and.args,
+            nlines.between.args = nlines.between.args)
+    }
+)
+
+
+# *.tsv file, tab separated value file
+setReadWriteArgsMethod(
+    condition = function(file) {
+        grepl("\\.tsv$", file, ignore.case = TRUE)
+    },
+    read      = function(file) {
+        scan(file = file, what = "", sep = "\t", quote = "\"",
+            dec = ".", na.strings = NULL, quiet = TRUE,
+            comment.char = "", encoding = "UTF-8")
+    },
+    write     = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        format4scan(x, sep = "\t", comment.char = "",
+            nlines.between.comment.and.args = nlines.between.comment.and.args,
+            nlines.between.args = nlines.between.args)
+    }
+)
+
+
+environment(setReadWriteArgsMethod)$readWriteArgsdefault <- list(
+    read  = function(file) {
+        scan(file = file, what = "", sep = "", quote = "\"'",
+            dec = ".", na.strings = NULL, quiet = TRUE,
+            comment.char = "#", encoding = "UTF-8")
+    },
+    write = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        format4scan(x, sep = "", comment.char = if (comments) "#" else "",
+            nlines.between.comment.and.args = nlines.between.comment.and.args,
+            nlines.between.args = nlines.between.args)
+    }
+)
+
+
+
+
+
+selectReadWriteArgsMethod <- function (file)
+{
+    if (!is.character(file))
+        return(readWriteArgsdefault)
+    for (method in readWriteArgs) {
+        if (method$condition(file))
+            return(method)
+    }
+    return(readWriteArgsdefault)
+}
+environment(selectReadWriteArgsMethod) <- environment(setReadWriteArgsMethod)
+
+
+
+
+writeArgs <- function (x, file = tempfile(pattern = pattern, fileext = fileext),
+    pattern = "args", fileext = ".Rargs", comments = TRUE,
     nlines.between.comment.and.args = 0, nlines.between.args = 2,
     at = TRUE)
 {
-    text <- format4parse(x, sep = if (sep) " ; " else "\n",
-        comment.char = if (comments) "#" else "",
+    text <- selectReadWriteArgsMethod(file)$write(x, comments = comments,
         nlines.between.comment.and.args = nlines.between.comment.and.args,
         nlines.between.args = nlines.between.args)
     if (is.null(file)) {
@@ -285,98 +369,5 @@ writeArgs2 <- function (x, file = tempfile("args"), sep = TRUE, comments = TRUE,
 }
 
 
-readArgs2 <- function (file)
-{
-    value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
-    if (any(vapply(value, typeof, "") != "character"))
-        stop("invalid 'file', does not contain exclusively strings")
-    as.character(value)
-}
-
-
-
-
-# x <- rep(list(letters), 3)
-# comment(x[[1]]) <- "test"
-# comment(x[[3]]) <- "more"
-# comment(x) <- "what"
-# cat(format4scan(x, sep = ",", comment.char = "#"))
-
-
-
-
-
-# fun <- function(n) 1:(n - 1)
-# x <- as.character(str2expression(sprintf(r"("\x%X")", fun(256))))
-# grep("[[:alpha:]]", x, value = TRUE)
-# a <- as.character(str2expression(sprintf(r"("\u{%X}")", fun(2^16))))
-# grep("[[:alpha:]]", a, value = TRUE)
-# FILE <- writeArgs(x, at = FALSE)
-# y <- scan(FILE, what = "", sep = ",", quote = "\"", na.strings = NULL,
-#     quiet = TRUE, comment.char = "#", allowEscapes = TRUE, encoding = "UTF-8")
-# which(x != y)
-# as.raw(which(x != y))
-#
-#
-# names(x) <- seq_along(x)
-# for (n in names(x)) {
-#     invisible(Rterm(
-#         c("--no-echo", "--no-restore"),
-#         exprs = substitute(commandArgs(TRUE)),
-#         args = x[n],
-#         quiet = TRUE
-#     ))
-# }
-
-
-
-
-
-# this.path::Rscript(exprs = strsplit(this.path::dedent(r"----{
-#     x <- "\u{03C3}"
-#     y <- "s"
-#     print(x)
-#     print(y)
-#     x == y
-# }----"), "\n")[[1L]], exprs.literal = TRUE)
-
-
-if (FALSE)
-{
-    oargs <- essentials::ASCII(plot = FALSE)
-
-    oargs <- c(
-        essentials::ASCII(plot = FALSE),
-        local({
-            temp <- sprintf("%04x", c(1:55295, 57344:65533))
-            `names<-`(as.character(str2expression(paste0("\"\\u", temp, "\""))), temp)
-        }),
-        local({
-            temp <- sprintf("%08x", 65536:1114111)
-            `names<-`(as.character(str2expression(paste0("\"\\U", temp, "\""))), temp)
-        })
-    )
-    oargs <- oargs[1:63740]
-    oargs <- oargs[1:1000]
-
-    # oargs <- "\xe7"
-    # Encoding(oargs) <- "latin1"
-
-
-    FILE2 <- tempfile("args")
-    this.path:::writeArgs2(oargs, FILE2)
-    args <- this.path:::readArgs2(FILE2)
-    if (length(oargs) != length(args))
-        stop("problem")
-    i <- which(args != oargs)
-    print(cbind(oargs[i], args[i]), quote = FALSE)
-
-
-    FILE <- tempfile("args")
-    this.path:::writeArgs(oargs, FILE)
-    args <- this.path:::readArgs(FILE)
-    if (length(oargs) != length(args))
-        stop("problem")
-    i <- which(args != oargs)
-    print(cbind(oargs[i], args[i]), quote = FALSE)
-}
+readArgs <- function (file)
+selectReadWriteArgsMethod(file)$read(file)
