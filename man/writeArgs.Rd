@@ -79,7 +79,7 @@ x <- letters; writeArgs(x, file = "")
 
 comment(x) <- dedent("
     adding a comment
-    to our argument
+    to our arguments
 "); writeArgs(x, file = "")
 
 
@@ -148,14 +148,7 @@ FILE <- writeArgs(x, at = FALSE)
 x <- unlist(x)
 
 
-# this is the method by which
-#
-# `ArgumentParser()$parse.args`
-#
-# reads arguments from a file
-y <- scan(file = FILE, what = "", sep = ",", quote = "\\"",
-    na.strings = NULL, quiet = TRUE, comment.char = "#",
-    allowEscapes = TRUE, encoding = "UTF-8")
+y <- readArgs(FILE)
 
 
 # let's check that the arguments in `x` match the
@@ -164,21 +157,23 @@ y <- scan(file = FILE, what = "", sep = ",", quote = "\\"",
 # we don't use 'identical(x, y)' because 'x' has
 # attributes (a comment) while 'y' does not
 if (length(x) != length(y)) {
-    writeLines(gettextf("Catastrophic failure, wrote \%d arguments, read \%d",
-        length(x), length(y)))
-    writeLines(c("\\nPlease contact the package maintainer",
-        sQuote(utils::packageDescription("this.path")$Maintainer)))
+    cat(gettextf("Catastrophic failure, wrote \%d arguments, read \%d\\n",
+        length(x), length(y)),
+        file = stderr())
+    stop("Please contact the package maintainer ",
+        sQuote(utils::packageDescription("this.path")$Maintainer))
 } else if (any(i <- x != y)) {
-    writeLines(ngettext(sum(i),
-        "The following argument was written or read incorrectly!",
-        "The following arguments were written or read incorrectly!"))
+    cat(ngettext(sum(i),
+        "The following argument was written or read incorrectly!\\n",
+        "The following arguments were written or read incorrectly!\\n"),
+        file = stderr())
     print(x[i])
-    writeLines("\\nIncorrectly written or read as:")
+    cat("\\nIncorrectly written or read as:\\n", file = stderr())
     print(y[i])
-    writeLines(c("\\nPlease contact the package maintainer",
-        sQuote(utils::packageDescription("this.path")$Maintainer)))
+    stop("Please contact the package maintainer ",
+        sQuote(utils::packageDescription("this.path")$Maintainer))
 } else {
-    writeLines("Yay! The arguments were written and read correctly!")
+    cat("Yay! The arguments were written and read correctly!\\n")
     print(x)
 }
 
