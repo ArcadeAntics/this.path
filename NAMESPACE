@@ -116,4 +116,4 @@ export(Args, withArgs)
 # writeArgs.R            ----
 
 
-export(writeArgs)
+export(writeArgs, readArgs)
