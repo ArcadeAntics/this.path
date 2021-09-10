@@ -396,7 +396,10 @@ selectReadWriteArgsMethod(file, name)$read(file)
 
 if (FALSE)
 {
-    X <- essentials::ASCII(plot = FALSE) |> this.path:::asArgs()
+    X <- c(
+        essentials::ASCII(plot = FALSE),
+        str2expression(sprintf("\"\\u%04x\"", c(256:55295, 57344:65533)))
+    ) |> this.path:::asArgs()
     Y <- X |> setdiff(c("\b", "\f", "\r", "\033"))
     Z <- X |> setdiff(c("\n", "\r"))
     this.path::writeArgs(X, file = "", name = "Rargs")
