@@ -230,7 +230,7 @@ c(vapply(x$parent.commands[-1L], function(xx) {
 else character())
 
 
-makeHelpMessage <- function (x, style = NULL)
+makeHelpMessage <- function (x, style = NULL, cmds = commands(x))
 {
     value <- character(0)
 
@@ -241,7 +241,7 @@ makeHelpMessage <- function (x, style = NULL)
     required <- x$subparsers$required
     usag2 <- x$usage
     if (is.na(usag2) || !nzchar(usag2))
-        usag2 <- paste(c("Usage:", x$program, commands(x), "[arguments]", if (length(sub.commands)) {
+        usag2 <- paste(c("Usage:", x$program, cmds, "[arguments]", if (length(sub.commands)) {
             c(if (required)
                 "command"
             else "[command]", "...")
@@ -793,7 +793,7 @@ ArgumentParser$methods(sharedMethods)
 ArgumentGroup$methods(sharedMethods)
 
 
-terminhate <- function (..., save = "default", status = 0, runLast = TRUE, do_warning = TRUE)
+terminhate <- function (..., save = "default", status = 0, runLast = TRUE, do_warning = status)
 {
     if (interactive())
         stop(errorCondition(...))
@@ -815,12 +815,13 @@ add.parser = function (...)
 .self$subparsers$add.parser(...),
 
 
-print.help = function (message = "help requested", ..., do_terminhate = FALSE, style = NULL)
+print.help = function (message = "help requested", ..., do_terminhate = FALSE,
+    style = NULL, cmds = commands(.self))
 {
     if (length(.self$help.message))
         value <- .self$help.message
     else {
-        value <- makeHelpMessage(.self, style = style)
+        value <- makeHelpMessage(.self, style = style, cmds = cmds)
         value <- value[nzchar(value)]
         value <- paste(value, collapse = "\n\n")
     }
@@ -890,7 +891,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
         }, count = {
             1L
         }, help = {
-            print.help2(do_warning = FALSE)
+            print.help2()
         }, exit = {
             print.exit(exit = x[[i]]$exit, wrap = x[[i]]$wrap.exit,
                 metavariable = x[[i]]$metavariable)
@@ -920,9 +921,18 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
         })
     }))
     init.context <- quote({
+
+
+        # parser <- this.path::ArgumentParser()
+        # `parser a` <- parser$add.parser(letters[1:5])
+        # `parser f` <- parser$add.parser(letters[6:9])
+        # context <- parser
+
+
         subs <- lapply(context$subparsers$value, function(xx) {
             xx[["commands"]][["value"]]
         })
+        subs1 <- rep(vapply(subs, "[", 1L, FUN.VALUE = ""), lengths(subs))
         sub.ids <- rep(seq_along(subs), lengths(subs))
         subs <- unlist(subs)
 
@@ -953,22 +963,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
         allArgs <- c(x, allArgs)
     })
     print.help2 <- function(..., save = "no", status = 10, runLast = FALSE) {
-        if (length(.self$commands$value)) {
-            temp1 <- context$parent.commands
-            temp2 <- context$commands$value
-            on.exit({
-                context$parent.commands <- temp1
-                context$commands$value  <- temp2
-            })
-            len <- length(.self$parent.commands) + 1L
-            cmnd <- c(context$parent.commands, list(context$commands))
-            cmnd <- cmnd[setdiff(
-                seq_along(cmnd), seq_len(len)
-            )]
-            context$parent.commands <- cmnd[-length(cmnd)]
-            context$commands$value  <- as.character(cmnd[length(cmnd)][1L][[1L]])
-        }
-        context$print.help(..., call = this.call, do_terminhate = TRUE)
+        context$print.help(..., call = this.call, do_terminhate = TRUE, cmds = cmds)
     }
     print.exit <- function(exit, wrap, metavariable) {
         if (wrap)
@@ -1114,7 +1109,22 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
     }
 
 
+    # 'cmds' is the literal sub-commands entered by the user
+    # 'cmds1' is the first sub-command in each group
+    #
+    # for example:
+    #
+    # parser <- this.path::ArgumentParser()
+    # `parser a` <- parser$add.parser(letters[1:5])
+    # `parser a f` <- `parser a`$add.parser(letters[6:9])
+    # parser$parse.args(c("d", "g"))
+    #
+    # 'cmds' would be c("d", "g"), that is the literal sub-commands entered
+    # 'cmds1' would be c("a", "f"), that is the first sub-command in each group
     cmds <- character()
+    cmds1 <- character()
+
+
     oargs <- args
     this.call <- sys.call(sys.nframe())
     allArgs <- list()
@@ -1170,16 +1180,17 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
             if (do_break)
                 break
         }
-        else if (k <- match(arg, subs, nomatch = 0L)) {
-            cmds <- c(cmds, context$subparsers$value[[sub.ids[[k]]]][["commands"]][["value"]][[1L]])
-            eval(finalize.context)
-            context <- context$subparsers$value[[sub.ids[[k]]]]
-            eval(init.context)
-        }
         else if (startsWith(arg, "@")) {
             args <- from.file.substitute(args, n)
             N <- length(args)
             n <- n - 1L
+        }
+        else if (k <- match(arg, subs, nomatch = 0L)) {
+            cmds <- c(cmds, subs[[k]])
+            cmds1 <- c(cmds1, subs1[[k]])
+            eval(finalize.context)
+            context <- context$subparsers$value[[sub.ids[[k]]]]
+            eval(init.context)
         }
         else if (cur.pos <= num.pos) {
             if (arg == "-") {
@@ -1212,7 +1223,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
             # }, count = {
             #     stop(gettextf("option '%s' does not accept an argument", oarg))
             # }, help = {
-            #     print.help2(status = 0)
+            #     print.help2()
             # }, exit = {
             #     print.exit(exit = x[[k]]$exit, wrap = x[[k]]$wrap.exit,
             #       metavariable = x[[k]]$metavariable)
@@ -1250,8 +1261,8 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
     }
     y <- as.environment(value)
     attr(y, "cmds") <- list(
-        original = cmds,
-        string   = paste(cmds, collapse = "/")
+        original = cmds1,
+        string   = paste(cmds1, collapse = "/")
     )
     attr(y, "args") <- list(
         original     = oargs,
