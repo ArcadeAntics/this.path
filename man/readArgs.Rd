@@ -1,23 +1,31 @@
-\name{writeArgs}
+\name{readArgs}
+\alias{readArgs}
 \alias{writeArgs}
 \title{
-Write Command-Line Arguments to a File
+Read/Write Command-Line Arguments from/to a File
 }
 \description{
 When providing arguments to an \R script, it is often necessary to quote the
 arguments such that they are interpreted correctly by the shell before being
 passed to the script. However, this comes with the issue of different quoting
 conventions for different shells, meaning that the strings will not be
-interpreted the same between different shells.
+interpreted the same between different shells. Additionally, some characters may
+not be allowed for certain shells.
 
 You can get around this with \code{writeArgs} which will right your arguments
 (and comments!) to a file, and returns a filename that can be used in the
 arguments place.
+
+\code{readArgs} is the corresponding function to read those arguments back into
+\R.
 }
 \usage{
-writeArgs(x, file = tempfile("args"), comments = TRUE,
+writeArgs(x, file = tempfile(pattern = pattern, fileext = fileext),
+    pattern = "args", fileext = ".Rargs", comments = TRUE,
     nlines.between.comment.and.args = 0, nlines.between.args = 2,
-    at = TRUE)
+    at = TRUE, name = NULL)
+
+readArgs(file, name = NULL)
 }
 \arguments{
   \item{x}{
@@ -31,6 +39,9 @@ character string or \code{NULL}. Name of the file to be read from, or \code{""}
 to write to \code{\link[base:showConnections]{stdout}()} (intended for verifying
 the output looks as expected), or \code{NULL} to return the formatted text
 without writing anywhere.
+  }
+  \item{pattern, fileext}{
+character string. Allows for easier means of editing the filename created.
   }
   \item{comments}{
 logical. Should the \code{\link[base:comment]{comments}} of \code{x} be written
@@ -47,14 +58,57 @@ arguments. Only used for a list \code{x}.
   \item{at}{
 logical. Should an \code{"@"} character be placed before the returned filename?
   }
+  \item{name}{
+The name of the format for reading/writing, see \strong{Details}. For writing,
+will be ignored if \code{file} is a non-empty character string.
+  }
 }
 \details{
-\code{writeArgs} tries to space the text such that the file will look nice to
-open with both any generic text editor and \sQuote{Excel}. Each line of
-\emph{arguments} (not comments) will have at most 80 characters (to look nice in
-a text editor) or at most 10 columns (to look nice in \sQuote{Excel}), whichever
-comes first (though this rule is broken by strings with more than 80
-characters).
+\code{readArgs} and \code{writeArgs} accept many formats for reading and writing
+arguments, based on the file extension.
+
+\itemize{
+  \item{R arguments, extension \code{".Rargs"}}{
+Arguments are read as though they were \R strings, separated by newline
+\code{"\\n"} or semicolon \code{" ; "}. This means arguments must be quoted and
+can use any of the escape sequences seen in \link[base]{Quotes}. The most
+reliable method, also the slowest (but not by much). Can contain \R comments,
+will be ignored when read.
+  }
+  \item{Python arguments, extension \code{".pyargs"}}{
+Arguments are read one per line. No quoting rules apply. Arguments cannot
+contain newline or carriage return, and will not be read/written properly if so.
+The fastest method. Cannot contain comments.
+  }
+  \item{Comma-separated arguments, extension \code{".csv"}}{
+Arguments are read using \code{\link[base]{scan}}, delimited/separated by comma
+\code{","}. Arguments may be quoted with double quotes \code{"\\""}, and must be
+quoted if they contain comma, newline, or double quotes. Arguments cannot
+contain carriage return. Cannot contain comments.
+  }
+  \item{Tab-separated arguments, extension \code{".tsv"}}{
+Arguments are read using \code{\link[base]{scan}}, delimited/separated by tab
+\code{"\\t"}. Arguments may be quoted with double quotes \code{"\\""}, and must
+be quoted if they contain tab, newline, or double quotes. Arguments cannot
+contain carriage return.  Cannot contain comments.
+  }
+  \item{Other arguments, other extension}{
+Arguments are read using \code{\link[base]{scan}}, delimited/separated by
+\sQuote{white-space}. Arguments may be quoted with single quotes \code{"'"} and
+double quotes \code{"\\""}, and must be quoted if they contain white-space,
+single quotes, or double quotes. Arguments cannot contain carriage return.
+Quoted arguments cannot contain an odd number of trailing backslashes, or an odd
+number of backslashes before an embedded quoting character. Can contain
+comments, marked by an non-quoted hash character \code{"#"}.
+  }
+}
+
+For \code{"csv"}, \code{"tsv"}, and \code{"other"} methods, \code{writeArgs}
+tries to space the text such that the file will look nice to open within a text
+editor and \sQuote{Excel}. Each line of \emph{arguments} (not comments) will
+have at most 80 characters (to look nice in a text editor) or at most 10 columns
+(to look nice in \sQuote{Excel}), whichever comes first (though this rule is
+broken by strings with more than 80 characters).
 }
 \value{
 for \code{file = NULL}, the formatted text.
@@ -62,16 +116,6 @@ for \code{file = NULL}, the formatted text.
 for \code{file = ""}, the formatted text invisibly.
 
 otherwise, a character string naming a file containing your arguments.
-}
-\note{
-The following characters will not be valid on Windows (under an ISO8859-1
-locale):
-
-\code{"\\x81"}, \code{"\\x8D"}, \code{"\\x8F"}, \code{"\\x90"}, and
-\code{"\\x9D"}
-
-It appears as though these characters are unused in extended-ASCII, so I have no
-intention of fixing this.
 }
 \examples{
 x <- letters; writeArgs(x, file = "")
@@ -113,7 +157,7 @@ x <- list(
 
 
     local({
-        x <- "\\u{7B90}\\u{5316}\\u{5B57}"
+        x <- c("\\u{7B90}", "\\u{5316}", "\\u{5B57}")
         comment(x) <- 'chinese characters (default encoding "UTF-8")'
         x
     }),
@@ -141,18 +185,23 @@ comment(x) <- dedent("
 ")
 
 
-FILE <- writeArgs(x, at = FALSE)
+# the same arguments in different formats
+writeArgs(x, "", name = "Rargs")
+writeArgs(x, "", name = "pyargs")
+writeArgs(x, "", name = "csv")
+writeArgs(x, "", name = "tsv")
+writeArgs(x, "", name = NULL)
+
+
+FILE <- writeArgs(x, at = FALSE); y <- readArgs(FILE)
 
 
 # for the purpose of comparison, we need 'x' to be a character vector
-x <- unlist(x)
+x <- this.path:::asArgs(x)
 
 
-y <- readArgs(FILE)
-
-
-# let's check that the arguments in `x` match the
-# arguments written to and read back from `FILE` (in `y`)
+# let's check that the arguments in 'x' match the
+# arguments written to and read back from 'FILE' (in 'y')
 #
 # we don't use 'identical(x, y)' because 'x' has
 # attributes (a comment) while 'y' does not
@@ -178,30 +227,25 @@ if (length(x) != length(y)) {
 }
 
 
+
+
+
+# Using writeArgs and withArgs, Rscript
 cat(
     dedent(r"{
-        parser <- ArgumentParser()
-        parser$add.argument("args", nargs = "*")
-        pargs <- parser$parse.args()
-        print(pargs$args)
+        withAutoprint({
+            parser <- ArgumentParser()
+            parser$add.argument("args", nargs = "*")
+            pargs <- parser$parse.args()
+            print(pargs$args)
+        })
     }"),
     file = script <- tempfile(), sep = "\\n"
 )
-
-
 withArgs(
-    source(script, local = TRUE, echo = TRUE),
+    source(script, local = TRUE, echo = FALSE),
     paste0("@", FILE)
 )
-
-
-unlink(script)
-
-
-if (interactive() &&
-    isTRUE(utils::askYesNo("Would you like to see the arguments file?"))) {
-    file.open(FILE)
-    invisible(readline("Hit <Return> to delete arguments file: "))
-}
-unlink(FILE)
+Rscript("--default-packages=this.path", script, args = paste0("@", FILE))
+unlink(FILE); unlink(script)
 }
