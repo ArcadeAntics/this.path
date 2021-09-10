@@ -220,59 +220,24 @@ format4parse <- function (x, comment.char = "#", nlines.between.comment.and.args
 
 
 
-setReadWriteArgsMethod <- function (condition, read, write)
+setReadWriteArgsMethod <- function (name, condition, read, write)
 {
-    readWriteArgs[[length(readWriteArgs) + 1L]] <<- list(
+    name <- as.character(as.symbol(name))
+    ReadWriteArgsMethods[[name]] <<- list(
         condition = match.fun(condition),
         read      = match.fun(read),
         write     = match.fun(write)
     )
     invisible()
 }
-environment(setReadWriteArgsMethod) <- list2env(list(readWriteArgs = list()))
-
-
-# *.csv file, comma separated value file
-setReadWriteArgsMethod(
-    condition = function(file) {
-        grepl("\\.csv$", file, ignore.case = TRUE)
-    },
-    read      = function(file) {
-        scan(file = file, what = "", sep = ",", quote = "\"",
-            dec = ".", na.strings = NULL, quiet = TRUE,
-            comment.char = "", encoding = "UTF-8")
-    },
-    write     = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        format4scan(x, sep = ",", comment.char = "",
-            nlines.between.comment.and.args = nlines.between.comment.and.arg,
-            nlines.between.args = nlines.between.args)
-    }
-)
-
-
-# *.pyargs file, python arguments file
-setReadWriteArgsMethod(
-    condition = function(file) {
-        grepl("\\.pyargs$", file, ignore.case = TRUE)
-    },
-    read      = function(file) {
-        readLines(file, warn = FALSE, encoding = "UTF-8")
-    },
-    write     = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        x <- asArgs(x)
-        if (any(Encoding(x) == "bytes"))
-            stop("strings with \"bytes\" encoding is not allowed")
-        paste(enc2utf8(x), collapse = "\n")
-    }
-)
+environment(setReadWriteArgsMethod) <- list2env(list(ReadWriteArgsMethods = list()))
 
 
 # *.Rargs file, R arguments file
 setReadWriteArgsMethod(
+    name      = "Rargs",
     condition = function(file) {
-        grepl("\\.Rargs$", file, ignore.case = TRUE)
+        grepl(".\\.Rargs(\\.(gz|bz2|xz))?$", file, ignore.case = TRUE)
     },
     read      = function(file) {
         value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
@@ -289,10 +254,50 @@ setReadWriteArgsMethod(
 )
 
 
+# *.pyargs file, python arguments file
+setReadWriteArgsMethod(
+    name      = "pyargs",
+    condition = function(file) {
+        grepl(".\\.pyargs(\\.(gz|bz2|xz))?$", file, ignore.case = TRUE)
+    },
+    read      = function(file) {
+        readLines(file, warn = FALSE, encoding = "UTF-8")
+    },
+    write     = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        x <- asArgs(x)
+        if (any(Encoding(x) == "bytes"))
+            stop("strings with \"bytes\" encoding is not allowed")
+        paste(enc2utf8(x), collapse = "\n")
+    }
+)
+
+
+# *.csv file, comma separated value file
+setReadWriteArgsMethod(
+    name      = "csv",
+    condition = function(file) {
+        grepl(".\\.csv(\\.(gz|bz2|xz))?$", basename(file), ignore.case = TRUE)
+    },
+    read      = function(file) {
+        scan(file = file, what = "", sep = ",", quote = "\"",
+            dec = ".", na.strings = NULL, quiet = TRUE,
+            comment.char = "", encoding = "UTF-8")
+    },
+    write     = function(x, comments = TRUE,
+        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
+        format4scan(x, sep = ",", comment.char = "",
+            nlines.between.comment.and.args = nlines.between.comment.and.arg,
+            nlines.between.args = nlines.between.args)
+    }
+)
+
+
 # *.tsv file, tab separated value file
 setReadWriteArgsMethod(
+    name      = "tsv",
     condition = function(file) {
-        grepl("\\.tsv$", file, ignore.case = TRUE)
+        grepl(".\\.(tsv|tab)(\\.(gz|bz2|xz))?$", basename(file), ignore.case = TRUE)
     },
     read      = function(file) {
         scan(file = file, what = "", sep = "\t", quote = "\"",
@@ -308,7 +313,7 @@ setReadWriteArgsMethod(
 )
 
 
-environment(setReadWriteArgsMethod)$readWriteArgsdefault <- list(
+environment(setReadWriteArgsMethod)$ReadWriteArgsdefault <- list(
     read  = function(file) {
         scan(file = file, what = "", sep = "", quote = "\"'",
             dec = ".", na.strings = NULL, quiet = TRUE,
@@ -326,17 +331,21 @@ environment(setReadWriteArgsMethod)$readWriteArgsdefault <- list(
 
 
 
-selectReadWriteArgsMethod <- function (file)
+selectReadWriteArgsMethod <- function (file, name = NULL)
 {
-    if (!is.character(file))
-        return(readWriteArgsdefault)
-    for (method in readWriteArgs) {
+    if (is.null(file) || !nzchar(file))
+        return(if (is.null(name))
+            ReadWriteArgsdefault
+        else ReadWriteArgsMethods[[match.arg(name, names(ReadWriteArgsMethods))]])
+    file <- basename(file)
+    for (method in ReadWriteArgsMethods) {
         if (method$condition(file))
             return(method)
     }
-    return(readWriteArgsdefault)
+    return(ReadWriteArgsdefault)
 }
 environment(selectReadWriteArgsMethod) <- environment(setReadWriteArgsMethod)
+
 
 
 
@@ -344,30 +353,61 @@ environment(selectReadWriteArgsMethod) <- environment(setReadWriteArgsMethod)
 writeArgs <- function (x, file = tempfile(pattern = pattern, fileext = fileext),
     pattern = "args", fileext = ".Rargs", comments = TRUE,
     nlines.between.comment.and.args = 0, nlines.between.args = 2,
-    at = TRUE)
+    at = TRUE, name = NULL)
 {
-    text <- selectReadWriteArgsMethod(file)$write(x, comments = comments,
+    text <- selectReadWriteArgsMethod(file, name)$write(x, comments = comments,
         nlines.between.comment.and.args = nlines.between.comment.and.args,
         nlines.between.args = nlines.between.args)
     if (is.null(file)) {
         text
     }
-    else if (is.character(file)) {
-        if (nzchar(file)) {
-            file <- normalizePath(file, mustWork = FALSE)
-            writeLines(text, file, useBytes = TRUE)
-            if (at)
-                paste0("@", file)
-            else file
-        }
+    else if (nzchar(file)) {
+        fun <- if (grepl("^(ftp|http|https|file)://", file)) base::file
         else {
-            writeLines(text, useBytes = TRUE)
-            invisible(text)
+            file <- normalizePath(file, mustWork = FALSE)
+            if (grepl(".\\.gz$", basename(file), ignore.case = TRUE))
+                gzfile
+            else if (grepl(".\\.bz2$", basename(file), ignore.case = TRUE))
+                bzfile
+            else if (grepl(".\\.xz$", basename(file), ignore.case = TRUE))
+                xzfile
+            else base::file
         }
+        con <- fun(file, "w")
+        on.exit(close(con))
+        writeLines(text, con, useBytes = TRUE)
+        if (at)
+            paste0("@", file)
+        else file
     }
-    else writeLines(text, file, useBytes = TRUE)
+    else {
+        writeLines(text, useBytes = TRUE)
+        invisible(text)
+    }
 }
 
 
-readArgs <- function (file)
-selectReadWriteArgsMethod(file)$read(file)
+readArgs <- function (file, name = NULL)
+selectReadWriteArgsMethod(file, name)$read(file)
+
+
+
+
+
+if (FALSE)
+{
+    X <- essentials::ASCII(plot = FALSE) |> this.path:::asArgs()
+    Y <- X |> setdiff(c("\b", "\f", "\r", "\033"))
+    Z <- X |> setdiff(c("\n", "\r"))
+    this.path::writeArgs(X, file = "", name = "Rargs")
+    this.path::writeArgs(Y, file = "", name = "pyargs")
+    this.path::writeArgs(Y, file = "", name = "csv")
+    this.path::writeArgs(Y, file = "", name = "tsv")
+
+
+    FILES <- tempfile(fileext = paste0(c(".Rargs", ".pyargs", ".csv", ".tsv", ""), ".gz"))
+    lapply(FILES, this.path::writeArgs, x = X)
+    lapply(FILES, function(...) this.path::readArgs(...) |> all.equal(X))
+    lapply(FILES, this.path::writeArgs, x = Z)
+    lapply(FILES, function(...) this.path::readArgs(...) |> all.equal(Z))
+}
