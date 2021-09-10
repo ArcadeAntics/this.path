@@ -67,7 +67,7 @@ will be ignored if \code{file} is a non-empty character string.
 \code{readArgs} and \code{writeArgs} accept many formats for reading and writing
 arguments, based on the file extension.
 
-\itemize{
+\describe{
   \item{R arguments, extension \code{".Rargs"}}{
 Arguments are read as though they were \R strings, separated by newline
 \code{"\\n"} or semicolon \code{" ; "}. This means arguments must be quoted and
@@ -99,16 +99,18 @@ double quotes \code{"\\""}, and must be quoted if they contain white-space,
 single quotes, or double quotes. Arguments cannot contain carriage return.
 Quoted arguments cannot contain an odd number of trailing backslashes, or an odd
 number of backslashes before an embedded quoting character. Can contain
-comments, marked by an non-quoted hash character \code{"#"}.
+comments, marked by a non-quoted hash character \code{"#"}.
   }
 }
 
-For \code{"csv"}, \code{"tsv"}, and \code{"other"} methods, \code{writeArgs}
-tries to space the text such that the file will look nice to open within a text
-editor and \sQuote{Excel}. Each line of \emph{arguments} (not comments) will
-have at most 80 characters (to look nice in a text editor) or at most 10 columns
-(to look nice in \sQuote{Excel}), whichever comes first (though this rule is
-broken by strings with more than 80 characters).
+The methods listed above can read/write from compressed files (see
+\link[base:connections]{gzfile}). For \code{"csv"}, \code{"tsv"}, and
+\code{"other"} methods, \code{writeArgs} tries to space the text such that the
+file will look nice to open within a text editor and \sQuote{Excel}. Each line
+of \emph{arguments} (not comments) will have at most 80 characters (to look nice
+in a text editor) or at most 10 columns (to look nice in \sQuote{Excel}),
+whichever comes first (though this rule is broken by strings with more than 80
+characters).
 }
 \value{
 for \code{file = NULL}, the formatted text.
@@ -197,7 +199,7 @@ FILE <- writeArgs(x, at = FALSE); y <- readArgs(FILE)
 
 
 # for the purpose of comparison, we need 'x' to be a character vector
-x <- this.path:::asArgs(x)
+z <- this.path:::asArgs(x)
 
 
 # let's check that the arguments in 'x' match the
@@ -205,26 +207,23 @@ x <- this.path:::asArgs(x)
 #
 # we don't use 'identical(x, y)' because 'x' has
 # attributes (a comment) while 'y' does not
-if (length(x) != length(y)) {
+if (length(z) != length(y)) {
     cat(gettextf("Catastrophic failure, wrote \%d arguments, read \%d\\n",
-        length(x), length(y)),
+        length(z), length(y)),
         file = stderr())
     stop("Please contact the package maintainer ",
         sQuote(utils::packageDescription("this.path")$Maintainer))
-} else if (any(i <- x != y)) {
+} else if (any(i <- z != y)) {
     cat(ngettext(sum(i),
         "The following argument was written or read incorrectly!\\n",
         "The following arguments were written or read incorrectly!\\n"),
         file = stderr())
-    print(x[i])
+    print(z[i])
     cat("\\nIncorrectly written or read as:\\n", file = stderr())
     print(y[i])
     stop("Please contact the package maintainer ",
         sQuote(utils::packageDescription("this.path")$Maintainer))
-} else {
-    cat("Yay! The arguments were written and read correctly!\\n")
-    print(x)
-}
+} else cat("Yay! The arguments were written and read correctly!\\n")
 
 
 
@@ -247,5 +246,17 @@ withArgs(
     paste0("@", FILE)
 )
 Rscript("--default-packages=this.path", script, args = paste0("@", FILE))
-unlink(FILE); unlink(script)
-}
+\dontshow{unlink(script)}
+
+
+
+
+# reading/writing from/to a compressed file
+FILE2 <- writeArgs(x, at = FALSE, fileext = ".Rargs.gz")
+stopifnot(identical(readArgs(FILE), readArgs(FILE2)))
+
+
+# miniscule difference, more desirable with more arguments
+c(file.size.original   = file.size(FILE),
+  file.size.compressed = file.size(FILE2))
+\dontshow{unlink(FILE); unlink(FILE2)}}
