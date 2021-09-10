@@ -132,9 +132,10 @@ add.parser = function (commands, program = NA, ..., help = NA,
     if (!length(command2))
         stop(gettext("invalid 'commands', must provide at least one"))
     if (any(i <- !isName(command2))) {
-        stop(sprintf(ngettext(sum(i), "invalid command %s, does not match 'name.pattern'",
+        stop(sprintf(ngettext(sum(i),
+            "invalid command %s, does not match 'name.pattern'",
             "invalid commands %s, do not match 'name.pattern'"),
-            paste(sQuote(command2[i]), collapse = ", ")))
+            paste(dQuote(command2[i]), collapse = ", ")))
     }
 
 
@@ -144,23 +145,26 @@ add.parser = function (commands, program = NA, ..., help = NA,
 
 
     otags <- lapply(.self$value, function(xx) xx[["commands"]][["value"]])
-    ids <- rep(seq_along(otags), lengths(otags))
+    f <- rep(seq_along(otags), lengths(otags))
     i <- unlist(lapply(lengths(otags), "seq_len"))
     otags <- unlist(otags)
     N <- match(command2, otags, nomatch = 0L)
     if (any(N)) {
         if (is.na(overwrite))
-            warning(sprintf(ngettext(sum(N > 0L), "overwriting definition of command %s",
-                "overwriting definitions of commands %s"), paste0("'", command2[N > 0L], "'", collapse = ", ")))
+            warning(sprintf(ngettext(sum(N > 0L),
+                "overwriting definition of command %s",
+                "overwriting definitions of commands %s"),
+                paste(dQuote(command2[N > 0L]), collapse = ", ")))
         else if (!overwrite)
-            stop(sprintf(ngettext(sum(N > 0L), "invalid command %s, already in use",
-                "invalid commands %s, already in use"), paste0("'", command2[N > 0L], "'", collapse = ", ")))
-        N <- split(i[N], ids[N])
+            stop(sprintf(ngettext(sum(N > 0L),
+                "invalid command %s, already in use",
+                "invalid commands %s, already in use"),
+                paste(dQuote(command2[N > 0L]), collapse = ", ")))
+        N <- split(i[N], f[N])
         i <- as.integer(names(N))
         for (j in seq_along(i)) {
             .self$value[[i[[j]]]][["commands"]][["value"]] <-
                 .self$value[[i[[j]]]][["commands"]][["value"]][-N[[j]]]
-
         }
         i <- lengths(lapply(.self$value, function(xx) xx[["commands"]][["value"]])) > 0L
         if (!all(i))
@@ -176,19 +180,18 @@ add.parser = function (commands, program = NA, ..., help = NA,
 
 reorder = function (first = character(), last = character())
 {
-    process <- function(x) {
+    fun <- function(x) {
         if (is.character(x)) {
             otags <- lapply(.self$value, function(xx) xx[["commands"]][["value"]])
-            ids <- rep(seq_len(otags), lengths(otags))
-            otags <- unlist(otags)
-            x <- ids[match(x, otags)]
+            ids <- rep(seq_along(otags), lengths(otags))
+            x <- ids[match(x, unlist(otags))]
         }
         else x <- as.integer(x)
         x <- unique(x)
         x[!is.na(x) & x >= 1L & x <= length(.self$value)]
     }
-    first <- process(first)
-    last <- process(last)
+    first <- fun(first)
+    last <- fun(last)
     last <- setdiff(last, first)
     middle <- setdiff(seq_along(.self$value), c(first, last))
     .self$value <- .self$value[c(first, middle, last)]
@@ -626,18 +629,22 @@ add.argument = function (..., action = NULL, nargs = NULL, constant, default,
 
     if (length(tags)) {
         otags <- lapply(.self$formal.command.args$value, "[[", "tags")
-        ids <- rep(seq_along(otags), lengths(otags))
-        i <- unlist(lapply(lengths(otags), "seq_len"))
+        f <- rep(seq_along(otags), lengths(otags))
+        i <- unlist(lapply(otags, "seq_along"))
         otags <- unlist(otags)
         N <- match(tags, otags, nomatch = 0L)
         if (any(N)) {
             if (is.na(overwrite))
-                warning(sprintf(ngettext(sum(N > 0L), "overwriting definition of positional argument %s",
-                    "overwriting definitions of positional arguments %s"), paste0("'", tags[N > 0L], "'", collapse = ", ")))
+                warning(sprintf(ngettext(sum(N > 0L),
+                    "overwriting definition of positional argument %s",
+                    "overwriting definitions of positional arguments %s"),
+                    paste(dQuote(tags[N > 0L]), collapse = ", ")))
             else if (!overwrite)
-                stop(sprintf(ngettext(sum(N > 0L), "invalid positional argument %s, already in use",
-                    "invalid positional arguments %s, already in use"), paste0("'", tags[N > 0L], "'", collapse = ", ")))
-            N <- split(i[N], ids[N])
+                stop(sprintf(ngettext(sum(N > 0L),
+                    "invalid positional argument %s, already in use",
+                    "invalid positional arguments %s, already in use"),
+                    paste(dQuote(tags[N > 0L]), collapse = ", ")))
+            N <- split(i[N], f[N])
             i <- as.integer(names(N))
             for (j in seq_along(i)) {
                 .self$formal.command.args$value[[i[[j]]]][["tags"]] <-
@@ -647,18 +654,22 @@ add.argument = function (..., action = NULL, nargs = NULL, constant, default,
     }
     if (length(shorts)) {
         otags <- lapply(.self$formal.command.args$value, "[[", "short.flags")
-        ids <- rep(seq_along(otags), lengths(otags))
-        i <- unlist(lapply(lengths(otags), "seq_len"))
+        f <- rep(seq_along(otags), lengths(otags))
+        i <- unlist(lapply(otags, "seq_along"))
         otags <- unlist(otags)
         N <- match(shorts, otags, nomatch = 0L)
         if (any(N)) {
             if (is.na(overwrite))
-                warning(sprintf(ngettext(sum(N > 0L), "overwriting definition of short flag %s",
-                    "overwriting definitions of short flags %s"), paste0("'-", shorts[N > 0L], "'", collapse = ", ")))
+                warning(sprintf(ngettext(sum(N > 0L),
+                    "overwriting definition of short flag %s",
+                    "overwriting definitions of short flags %s"),
+                    paste(dQuote(paste0("-", shorts[N > 0L])), collapse = ", ")))
             else if (!overwrite)
-                stop(sprintf(ngettext(sum(N > 0L), "invalid short flag %s, already in use",
-                    "invalid short flags %s, already in use"), paste0("'-", shorts[N > 0L], "'", collapse = ", ")))
-            N <- split(i[N], ids[N])
+                stop(sprintf(ngettext(sum(N > 0L),
+                    "invalid short flag %s, already in use",
+                    "invalid short flags %s, already in use"),
+                    paste(dQuote(paste0("-", shorts[N > 0L])), collapse = ", ")))
+            N <- split(i[N], f[N])
             i <- as.integer(names(N))
             for (j in seq_along(i)) {
                 .self$formal.command.args$value[[i[[j]]]][["short.flags"]] <-
@@ -668,18 +679,22 @@ add.argument = function (..., action = NULL, nargs = NULL, constant, default,
     }
     if (length(longs)) {
         otags <- lapply(.self$formal.command.args$value, "[[", "long.flags")
-        ids <- rep(seq_along(otags), lengths(otags))
-        i <- unlist(lapply(lengths(otags), "seq_len"))
+        f <- rep(seq_along(otags), lengths(otags))
+        i <- unlist(lapply(otags, "seq_along"))
         otags <- unlist(otags)
         N <- match(longs, otags, nomatch = 0L)
         if (any(N)) {
             if (is.na(overwrite))
-                warning(sprintf(ngettext(sum(N > 0L), "overwriting definition of long flag %s",
-                    "overwriting definitions of long flags %s"), paste0("'--", longs[N > 0L], "'", collapse = ", ")))
+                warning(sprintf(ngettext(sum(N > 0L),
+                    "overwriting definition of long flag %s",
+                    "overwriting definitions of long flags %s"),
+                    paste(dQuote(paste0("--", longs[N > 0L])), collapse = ", ")))
             else if (!overwrite)
-                stop(sprintf(ngettext(sum(N > 0L), "invalid long flag %s, already in use",
-                    "invalid long flags %s, already in use"), paste0("'--", longs[N > 0L], "'", collapse = ", ")))
-            N <- split(i[N], ids[N])
+                stop(sprintf(ngettext(sum(N > 0L),
+                    "invalid long flag %s, already in use",
+                    "invalid long flags %s, already in use"),
+                    paste(dQuote(paste0("--", longs[N > 0L])), collapse = ", ")))
+            N <- split(i[N], f[N])
             i <- as.integer(names(N))
             for (j in seq_along(i)) {
                 .self$formal.command.args$value[[i[[j]]]][["long.flags"]] <-
@@ -1084,10 +1099,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
         N <- length(args)
         FILE <- args[[n]]
         FILE <- substr(FILE, 2L, 1000000L)  # remove the leading "@"
-        if (grepl("^(ftp|http|https|file)://", FILE)) {
-            FILE <- file(FILE, "r")
-            on.exit(close(FILE))
-        }
+        if (grepl("^(ftp|http|https|file)://", FILE)) {}
         else if (try.both) {
             FILE <- tryCatch({
                 normalizePath(FILE, mustWork = TRUE)
@@ -1098,10 +1110,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
             })
         }
         else FILE <- normalizePath(FILE, mustWork = TRUE)
-        x <- scan(file = FILE, what = "", sep = ",", quote = "\"",
-            na.strings = NULL, quiet = TRUE, comment.char = "#",
-            allowEscapes = TRUE, encoding = "UTF-8")
-        c(args[seq_len(n - 1L)], x, args[seq.int(to = N, length.out = N - n)])
+        c(args[seq_len(n - 1L)], readArgs(FILE), args[seq.int(to = N, length.out = N - n)])
     }
 
 
