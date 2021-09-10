@@ -907,7 +907,8 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
                     stop(gettextf("option '%s' requires an argument",
                         arg))
                 else if (startsWith(args[[n]], "@")) {
-                    args <- from.file.substitute(args, n)
+                    args.table <- from.file.substitute(args.table, n)
+                    args <- args.table$arg
                     N <- length(args)
                 }
                 else break
@@ -1089,23 +1090,86 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
         }
         x
     }
-    try.both <- !is.null(owd <- getwd()) && !is.null(alternate <- this.dir2(verbose = FALSE))
-    from.file.substitute <- function(args, n) {
+    make.args.table <- function(args, codes = 1L, dirs = "") {
+        if (length(args)) {
+            data.frame(arg = args, code = codes, dir = dirs)
+        }
+    }
+    try.both <- (has.wd <- !is.null(owd <- getwd())) && !is.null(alternate <- this.dir2(verbose = FALSE))
+    from.file.substitute <- function(table, n) {
+
+
+        # we need a set of codes that correspond to different behaviours.
+        # 1: at the top-level, we can read from a URL, from the working
+        #    directory, or from the executing script's directory
+        # 2: within a file, we can read from a URL or from the files directory
+        # 3: within a URL, we can read from a URL
+
+
+        args <- table$arg
         N <- length(args)
         FILE <- args[[n]]
         FILE <- substr(FILE, 2L, 1000000L)  # remove the leading "@"
-        if (grepl("^(ftp|http|https|file)://", FILE)) {}
-        else if (try.both) {
-            FILE <- tryCatch({
-                normalizePath(FILE, mustWork = TRUE)
-            }, error = function(c) {
-                on.exit(setwd(owd))
-                setwd(alternate)
-                normalizePath(FILE, mustWork = TRUE)
-            })
-        }
-        else FILE <- normalizePath(FILE, mustWork = TRUE)
-        c(args[seq_len(n - 1L)], readArgs(FILE), args[seq.int(to = N, length.out = N - n)])
+        switch(table$code[[n]], {
+            if (grepl("^(ftp|ftps|http|https)://", FILE)) {
+                code <- 3L
+                dir <- ""
+            }
+            else {
+                if (grepl("^file://", FILE)) {
+                    con <- file(FILE)
+                    on.exit(close(con))
+                    FILE <- summary.connection(con)$description
+                    on.exit()
+                    close(con)
+                }
+                if (try.both) {
+                    FILE <- tryCatch({
+                        normalizePath(FILE, mustWork = TRUE)
+                    }, error = function(c) {
+                        on.exit(setwd(owd))
+                        setwd(alternate)
+                        normalizePath(FILE, mustWork = TRUE)
+                    })
+                }
+                else FILE <- normalizePath(FILE, mustWork = TRUE)
+                code <- 2L
+                dir <- dirname(FILE)
+            }
+        }, {
+            if (grepl("^(ftp|ftps|http|https)://", FILE)) {
+                code <- 3L
+                dir <- ""
+            }
+            else {
+                if (grepl("^file://", FILE)) {
+                    con <- file(FILE)
+                    on.exit(close(con))
+                    FILE <- summary.connection(con)$description
+                    on.exit()
+                    close(con)
+                }
+                if (has.wd) {
+                    on.exit(setwd(owd))
+                    setwd(table$dir[[n]])
+                    FILE <- normalizePath(FILE, mustWork = TRUE)
+                }
+                else FILE <- normalizePath(FILE, mustWork = TRUE)
+                code <- 2L
+                dir <- dirname(FILE)
+            }
+        }, {
+            if (grepl("^(ftp|ftps|http|https)://", FILE)) {
+                code <- 3L
+                dir <- ""
+            }
+            else stop("URL may not reference local file")
+        })
+        rbind(
+            table[seq_len(n - 1L), , drop = FALSE],
+            make.args.table(readArgs(FILE), code, dir),
+            table[seq.int(to = N, length.out = N - n), , drop = FALSE]
+        )
     }
 
 
@@ -1125,6 +1189,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
     cmds1 <- character()
 
 
+    args.table <- make.args.table(args)
     oargs <- args
     this.call <- sys.call(sys.nframe())
     allArgs <- list()
@@ -1181,7 +1246,8 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
                 break
         }
         else if (startsWith(arg, "@")) {
-            args <- from.file.substitute(args, n)
+            args.table <- from.file.substitute(args.table, n)
+            args <- args.table$arg
             N <- length(args)
             n <- n - 1L
         }
