@@ -633,7 +633,7 @@ this.path <- function (verbose = getOption("verbose"))
                     #
                     # previously, the error would've occured at 'normalizePath',
                     # so it makes more sense to have this error here
-                    else if (grepl("^(ftp|http|https)://", path))
+                    else if (grepl("^(ftp|ftps|http|https)://", path))
                         stop("'this.path' makes no sense for a URL")
 
 
