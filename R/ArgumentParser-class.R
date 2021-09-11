@@ -16,30 +16,30 @@ STYLES <- c(
 
 
 Refcharacter <- methods::setRefClass(
-    Class  = "Refcharacter",
+    Class  = "this.path_Refcharacter",
     fields = c(value = "character")
 )
 
 
 Refinteger <- methods::setRefClass(
-    Class  = "Refinteger",
+    Class  = "this.path_Refinteger",
     fields = c(value = "integer")
 )
 
 
 subparsers <- methods::setRefClass(
-    Class  = "subparsers",
+    Class  = "this.path_subparsers",
     fields = c(
-        style           = "integer"     ,  # fields copied from the argument parser
-        parent.commands = "list"        ,
-        commands        = "Refcharacter",
+        style           = "integer"               ,  # fields copied from the argument parser
+        parent.commands = "list"                  ,
+        commands        = "this.path_Refcharacter",
 
 
-        title           = "character"   ,
-        description     = "list"        ,
-        program         = "character"   ,
-        required        = "logical"     ,
-        value           = "list"        )
+        title           = "character"             ,
+        description     = "list"                  ,
+        program         = "character"             ,
+        required        = "logical"               ,
+        value           = "list"                  )
 #     ,
 #     validity = function (object)
 # {
@@ -48,63 +48,63 @@ subparsers <- methods::setRefClass(
 #             gettextf("invalid 'style', must be of length 1, got %d", length(object$style))
 #         else if (!object$style %in% STYLES)
 #             gettextf("invalid 'style', must be one of %s", paste(STYLES, collapse = ", ")),
-#         if (!all(vapply(object$parent.commands, base::inherits, "Refcharacter", FUN.VALUE = NA)))
-#             gettext("invalid 'parent.commands', must be a list of \"Refcharacter\" objects")
+#         if (!all(vapply(object$parent.commands, base::inherits, "this.path_Refcharacter", FUN.VALUE = NA)))
+#             gettext("invalid 'parent.commands', must be a list of \"this.path_Refcharacter\" objects")
 #     )
 # }
 )
 
 
 FormalCommandArgs <- methods::setRefClass(
-    Class  = "FormalCommandArgs",
+    Class  = "this.path_FormalCommandArgs",
     fields = c(value = "list")
 )
 
 
 ArgumentGroup <- methods::setRefClass(
-    Class  = "ArgumentGroup",
+    Class  = "this.path_ArgumentGroup",
     fields = c(
-        program                      = "character"        ,
-        title                        = "character"        ,
+        program                      = "character"                  ,
+        title                        = "character"                  ,
 
 
-        ID                           = "Refinteger"       ,
+        ID                           = "this.path_Refinteger"       ,
 
 
-        required                     = "logical"          ,
-        required.recursive           = "logical"          ,
-        mutually.exclusive           = "logical"          ,
-        mutually.exclusive.recursive = "logical"          ,
-        parent.titles                = "character"        ,
+        required                     = "logical"                    ,
+        required.recursive           = "logical"                    ,
+        mutually.exclusive           = "logical"                    ,
+        mutually.exclusive.recursive = "logical"                    ,
+        parent.titles                = "character"                 ,
 
 
-        parent.IDs                   = "list"             ,
+        parent.IDs                   = "list"                       ,
 
 
-        type                         = "character"        ,
-        description                  = "list"             ,
-        argument.groups              = "list"             ,
-        formal.command.args          = "FormalCommandArgs")
+        type                         = "character"                  ,
+        description                  = "list"                       ,
+        argument.groups              = "list"                       ,
+        formal.command.args          = "this.path_FormalCommandArgs")
 )
 
 
 ArgumentParser <- methods::setRefClass(
     Class  = "this.path_ArgumentParser",
     fields = c(
-        program             = "character"        ,
-        usage               = "character"        ,
-        description         = "list"             ,
-        epilogue            = "list"             ,
-        style               = "integer"          ,
-        argument.groups     = "list"             ,
-        formal.command.args = "FormalCommandArgs",
-        subparsers          = "subparsers"       ,
-        help.message        = "character"        ,
+        program             = "character"                  ,
+        usage               = "character"                  ,
+        description         = "list"                       ,
+        epilogue            = "list"                       ,
+        style               = "integer"                    ,
+        argument.groups     = "list"                       ,
+        formal.command.args = "this.path_FormalCommandArgs",
+        subparsers          = "this.path_subparsers"       ,
+        help.message        = "character"                  ,
 
 
-        parent.commands     = "list"             ,  # for subparsers only
-        commands            = "Refcharacter"     ,
-        help                = "list"             )
+        parent.commands     = "list"                       ,  # for subparsers only
+        commands            = "this.path_Refcharacter"     ,
+        help                = "list"                       )
 )
 
 
@@ -621,7 +621,7 @@ add.argument = function (..., action = NULL, nargs = NULL, constant, default,
     if (!is.null(hel2))
         value$help <- help.sub2(value$help)
     value$exit <- help.sub2(value$exit)
-    if (inherits(.self, "ArgumentGroup"))
+    if (inherits(.self, "this.path_ArgumentGroup"))
         value$group <- c(.self$parent.IDs, list(.self$ID))
     else value$group <- list()
     class(value) <- "formalCommandArg"
@@ -748,12 +748,12 @@ add.argument.group = function (title = NA, description = NA, wrap = TRUE, requir
     I2 <- Refinteger(value = max(0L, vapply(.self$argument.groups, function(xx) {
         xx[["ID"]][["value"]]
     }, FUN.VALUE = 0L)) + 1L)
-    value <- new("ArgumentGroup", program = .self$program, title = titl2,
+    value <- new("this.path_ArgumentGroup", program = .self$program, title = titl2,
         ID = I2, required = require2, required.recursive = required.recursiv2,
         mutually.exclusive = mutually.exclusiv2, mutually.exclusive.recursive = mutually.exclusive.recursiv2,
         type = typ2, description = as.description(description, wrap = wrap),
         formal.command.args = .self$formal.command.args)
-    if (inherits(.self, "ArgumentGroup")) {
+    if (inherits(.self, "this.path_ArgumentGroup")) {
         value$parent.titles <- c(.self$parent.titles, .self$title)
         value$parent.IDs <- c(.self$parent.IDs, list(.self$ID))
     }
@@ -853,7 +853,7 @@ add.subparsers = function (title = NA, description = NA, program = NA, required 
         require2 <- TRUE
 
 
-    .self$subparsers <- new("subparsers", title = titl2, description = descriptio2,
+    .self$subparsers <- new("this.path_subparsers", title = titl2, description = descriptio2,
         program = progra2, required = require2, style = .self$style,
         parent.commands = .self$parent.commands, commands = .self$commands)
     invisible(.self$subparsers)
