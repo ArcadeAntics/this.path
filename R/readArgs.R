@@ -131,7 +131,8 @@ splitter.inator <- function (x, sep = " ",
 
 
 
-format4scan <- function (x, sep = " ", comment.char = "", nlines.between.comment.and.args = 0,
+format4scan <- function (x, sep = " ", quote = "\"'", comment.char = "",
+    allowEscapes = FALSE, nlines.between.comment.and.args = 0,
     nlines.between.args = 2)
 {
     if (is.character(sep) || is.null(sep)) {
@@ -149,7 +150,19 @@ format4scan <- function (x, sep = " ", comment.char = "", nlines.between.comment
         }
     }
     else stop("invalid 'sep' argument")
-    qstring <- if (sepchar) "\"\"" else "\\\""
+
+
+    if (is.character(quote)) {
+        quote <- quote[[1L]]
+        if (nzchar(quote))
+            quote <- substr(as.character(as.symbol(quote)), 1L, 1L)
+    }
+    else if (is.null(quote))
+        quote <- ""
+    else stop(gettext("invalid quote symbol set"))
+
+
+    qstring <- if (sepchar) strrep(quote, 2L) else paste0("\\", quote)
 
 
     if (!is.character(comment.char) || length(comment.char) != 1)
@@ -157,6 +170,11 @@ format4scan <- function (x, sep = " ", comment.char = "", nlines.between.comment
     comchar <- nchar(comment.char, type = "bytes", keepNA = FALSE)
     if (comchar > 1)
         stop("invalid 'comment.char' argument")
+
+
+    allowEscapes <- as.logical(allowEscapes)[1L]
+    if (is.na(allowEscapes))
+        stop(gettextf("invalid '%s' argument", "allowEscapes"))
 
 
     fun <- function(xx) {
@@ -168,9 +186,49 @@ format4scan <- function (x, sep = " ", comment.char = "", nlines.between.comment
             stop("strings with \"bytes\" encoding is not allowed")
 
 
-        xx <- paste0("\"", gsub("\"",
-            qstring, enc2utf8(xx), fixed = TRUE), "\"",
-            recycle0 = TRUE)
+        xx <- enc2utf8(xx)
+        if (allowEscapes) {
+            xx <- gsub("\\"  , "\\\\" , xx, fixed = TRUE)
+            xx <- gsub("\001", "\\001", xx, fixed = TRUE)
+            xx <- gsub("\002", "\\002", xx, fixed = TRUE)
+            xx <- gsub("\003", "\\003", xx, fixed = TRUE)
+            xx <- gsub("\004", "\\004", xx, fixed = TRUE)
+            xx <- gsub("\005", "\\005", xx, fixed = TRUE)
+            xx <- gsub("\006", "\\006", xx, fixed = TRUE)
+            xx <- gsub("\a"  , "\\a"  , xx, fixed = TRUE)
+            xx <- gsub("\b"  , "\\b"  , xx, fixed = TRUE)
+            xx <- gsub("\t"  , "\\t"  , xx, fixed = TRUE)
+            xx <- gsub("\n"  , "\\n"  , xx, fixed = TRUE)
+            xx <- gsub("\v"  , "\\v"  , xx, fixed = TRUE)
+            xx <- gsub("\f"  , "\\f"  , xx, fixed = TRUE)
+            xx <- gsub("\r"  , "\\r"  , xx, fixed = TRUE)
+            xx <- gsub("\016", "\\016", xx, fixed = TRUE)
+            xx <- gsub("\017", "\\017", xx, fixed = TRUE)
+            xx <- gsub("\020", "\\020", xx, fixed = TRUE)
+            xx <- gsub("\021", "\\021", xx, fixed = TRUE)
+            xx <- gsub("\022", "\\022", xx, fixed = TRUE)
+            xx <- gsub("\023", "\\023", xx, fixed = TRUE)
+            xx <- gsub("\024", "\\024", xx, fixed = TRUE)
+            xx <- gsub("\025", "\\025", xx, fixed = TRUE)
+            xx <- gsub("\026", "\\026", xx, fixed = TRUE)
+            xx <- gsub("\027", "\\027", xx, fixed = TRUE)
+            xx <- gsub("\030", "\\030", xx, fixed = TRUE)
+            xx <- gsub("\031", "\\031", xx, fixed = TRUE)
+            xx <- gsub("\032", "\\032", xx, fixed = TRUE)
+            xx <- gsub("\033", "\\033", xx, fixed = TRUE)
+            xx <- gsub("\034", "\\034", xx, fixed = TRUE)
+            xx <- gsub("\035", "\\035", xx, fixed = TRUE)
+            xx <- gsub("\036", "\\036", xx, fixed = TRUE)
+            xx <- gsub("\037", "\\037", xx, fixed = TRUE)
+            xx <- gsub("\177", "\\177", xx, fixed = TRUE)
+        }
+        if (nzchar(quote))
+            xx <- paste0(
+                quote,
+                gsub(quote, qstring, xx, fixed = TRUE),
+                quote,
+                recycle0 = TRUE
+            )
         xx <- paste(splitter.inator(xx, sep), collapse = "\n")
 
 
