@@ -285,6 +285,15 @@ format4parse <- function (x, comment.char = "#", nlines.between.comment.and.args
 
 
 
+scan2 <- function (..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"",
+    comment.char = "", allowEscapes = FALSE)
+{
+    scan(..., what = "", sep = sep, quote = quote, dec = ".",
+        na.strings = NULL, quiet = TRUE, comment.char = comment.char,
+        allowEscapes = allowEscapes, encoding = "UTF-8")
+}
+
+
 has.ext <- function (file, fileext, compression = TRUE, ignore.case = TRUE)
 {
     grepl(
@@ -364,9 +373,7 @@ setReadWriteArgsMethod(
     name      = "csv",
     condition = function(file) has.ext(file, "\\.csv"),
     read      = function(file) {
-        scan(file = file, what = "", sep = ",", quote = "\"",
-            dec = ".", na.strings = NULL, quiet = TRUE,
-            comment.char = "", encoding = "UTF-8")
+        scan2(file = file, sep = ",", quote = "\"", comment.char = "")
     },
     write     = function(x, comments = TRUE,
         nlines.between.comment.and.args = 0, nlines.between.args = 2) {
@@ -382,9 +389,7 @@ setReadWriteArgsMethod(
     name      = "tsv",
     condition = function(file) has.ext(file, "\\.(tsv|tab)"),
     read      = function(file) {
-        scan(file = file, what = "", sep = "\t", quote = "\"",
-            dec = ".", na.strings = NULL, quiet = TRUE,
-            comment.char = "", encoding = "UTF-8")
+        scan2(file = file, sep = "\t", quote = "\"", comment.char = "")
     },
     write     = function(x, comments = TRUE,
         nlines.between.comment.and.args = 0, nlines.between.args = 2) {
@@ -397,9 +402,7 @@ setReadWriteArgsMethod(
 
 environment(setReadWriteArgsMethod)$ReadWriteArgsdefault <- list(
     read  = function(file) {
-        scan(file = file, what = "", sep = "", quote = "\"'",
-            dec = ".", na.strings = NULL, quiet = TRUE,
-            comment.char = "#", encoding = "UTF-8")
+        scan2(file = file, sep = "", quote = "\"'", comment.char = "#")
     },
     write = function(x, comments = TRUE,
         nlines.between.comment.and.args = 0, nlines.between.args = 2) {
