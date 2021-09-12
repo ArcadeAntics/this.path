@@ -95,6 +95,13 @@ export(python)
 export(R, Rcmd, Rscript, Rterm)
 
 
+# readArgs.R             ----
+
+
+export(format4scan, has.ext, setReadWriteArgsMethod)
+export(writeArgs, readArgs)
+
+
 # this.path.R            ----
 
 
@@ -111,9 +118,3 @@ export(this.path2, this.dir2, this.dir3)
 
 
 export(Args, withArgs)
-
-
-# writeArgs.R            ----
-
-
-export(writeArgs, readArgs)
