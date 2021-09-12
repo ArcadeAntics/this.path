@@ -1,6 +1,7 @@
 \name{setReadWriteArgsMethod}
-\alias{format4scan}
 \alias{has.ext}
+\alias{scan2}
+\alias{format4scan}
 \alias{setReadWriteArgsMethod}
 \title{
 Create and Save a Method for Reading/Writing Command-Line Arguments from/to a
