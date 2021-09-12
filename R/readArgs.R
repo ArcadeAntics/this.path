@@ -13,17 +13,22 @@ asArgs <- function (...)
     # * atomic object without class
     # * zero-length object without class
     else if (n == 1L) {
-        if (is.null(..1)) return(character())
-        else if (is.object(..1)) {}
-        else if (is.numeric(..1) || is.complex(..1)) return(format.default(..1, trim = TRUE, digits = 17L, drop0trailing = TRUE))
-        else if (is.raw(..1)) return(sprintf("0x%02x", as.integer(..1)))
+        if (is.null(..1))
+            return(character())
+        else if (is.object(..1)) {
+        }
+        else if (is.numeric(..1) || is.complex(..1))
+            return(format.default(..1, trim = TRUE, digits = 17L,
+                decimal.mark = ".", drop0trailing = TRUE))
+        else if (is.raw(..1))
+            return(sprintf("0x%02x", as.integer(..1)))
         else if (is.logical(..1) || is.character(..1)) {
             value <- as.character(..1)
-            if (anyNA(value))
-                value[is.na(value)] <- "NA"
+            if (anyNA(value)) value[is.na(value)] <- "NA"
             return(value)
         }
-        else if (!length(..1)) return(character())
+        else if (!length(..1))
+            return(character())
     }
 
 
@@ -36,7 +41,8 @@ asArgs <- function (...)
         # if the object has a class, use its `as.character` method
         # for classes "factor" and "POSIXt", do not method dispatch
         else if (is.object(xx)) {
-            if (inherits(xx, "factor")) as.character.factor(xx)
+            if (inherits(xx, "factor"))
+                as.character.factor(xx)
 
 
             # we will lose information smaller than 1 microsecond,
@@ -63,7 +69,8 @@ asArgs <- function (...)
         # as.complex(as.character(x)) == x
         # as.complex(this.path:::asArgs(x)) == x
         else if (is.numeric(xx) || is.complex(xx))
-            format.default(xx, trim = TRUE, digits = 17L, drop0trailing = TRUE)
+            format.default(xx, trim = TRUE, digits = 17L,
+                decimal.mark = ".", drop0trailing = TRUE)
 
 
         # for raw, format as usual, but put "0x" at the start
@@ -84,7 +91,7 @@ asArgs <- function (...)
         else as.character(xx)
     }, how = "replace")
     value <- unlist(value, recursive = TRUE, use.names = FALSE)
-    value[is.na(value)] <- "NA"
+    if (anyNA(value)) value[is.na(value)] <- "NA"
     return(value)
 }
 
@@ -220,10 +227,28 @@ format4parse <- function (x, comment.char = "#", nlines.between.comment.and.args
 
 
 
+has.ext <- function (x, fileext, compression = TRUE, ignore.case = TRUE)
+{
+    grepl(
+        paste0(
+            ".",
+            fileext,
+            ifelse(compression, "(\\.([gG][zZ]|[bB][zZ]2|[xX][zZ]))?", ""),
+            "$",
+            recycle0 = TRUE
+        ),
+        basename(x),
+        ignore.case = ignore.case
+    )
+}
+
+
+
+
+
 setReadWriteArgsMethod <- function (name, condition, read, write)
 {
-    name <- as.character(as.symbol(name))
-    ReadWriteArgsMethods[[name]] <<- list(
+    ReadWriteArgsMethods[[as.character(as.symbol(name))]] <<- list(
         condition = match.fun(condition),
         read      = match.fun(read),
         write     = match.fun(write)
@@ -236,9 +261,7 @@ environment(setReadWriteArgsMethod) <- list2env(list(ReadWriteArgsMethods = list
 # *.Rargs file, R arguments file
 setReadWriteArgsMethod(
     name      = "Rargs",
-    condition = function(file) {
-        grepl(".\\.Rargs(\\.(gz|bz2|xz))?$", file, ignore.case = TRUE)
-    },
+    condition = function(file) has.ext(file, "\\.Rargs"),
     read      = function(file) {
         value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
         if (any(vapply(value, typeof, "") != "character"))
@@ -257,9 +280,7 @@ setReadWriteArgsMethod(
 # *.pyargs file, python arguments file
 setReadWriteArgsMethod(
     name      = "pyargs",
-    condition = function(file) {
-        grepl(".\\.pyargs(\\.(gz|bz2|xz))?$", file, ignore.case = TRUE)
-    },
+    condition = function(file) has.ext(file, "\\.pyargs"),
     read      = function(file) {
         readLines(file, warn = FALSE, encoding = "UTF-8")
     },
@@ -276,9 +297,7 @@ setReadWriteArgsMethod(
 # *.csv file, comma separated value file
 setReadWriteArgsMethod(
     name      = "csv",
-    condition = function(file) {
-        grepl(".\\.csv(\\.(gz|bz2|xz))?$", basename(file), ignore.case = TRUE)
-    },
+    condition = function(file) has.ext(file, "\\.csv"),
     read      = function(file) {
         scan(file = file, what = "", sep = ",", quote = "\"",
             dec = ".", na.strings = NULL, quiet = TRUE,
@@ -296,9 +315,7 @@ setReadWriteArgsMethod(
 # *.tsv file, tab separated value file
 setReadWriteArgsMethod(
     name      = "tsv",
-    condition = function(file) {
-        grepl(".\\.(tsv|tab)(\\.(gz|bz2|xz))?$", basename(file), ignore.case = TRUE)
-    },
+    condition = function(file) has.ext(file, "\\.(tsv|tab)"),
     read      = function(file) {
         scan(file = file, what = "", sep = "\t", quote = "\"",
             dec = ".", na.strings = NULL, quiet = TRUE,
@@ -381,7 +398,7 @@ writeArgs <- function (x, file = tempfile(pattern = pattern, fileext = fileext),
         else file
     }
     else {
-        writeLines(text, useBytes = TRUE)
+        cat(text, file = stdout(), sep = "\n")
         invisible(text)
     }
 }
@@ -399,9 +416,10 @@ if (FALSE)
     X <- c(
         essentials::ASCII(plot = FALSE),
         str2expression(sprintf("\"\\u%04x\"", c(256:55295, 57344:65533)))
-    ) |> this.path:::asArgs()
-    Y <- X |> setdiff(c("\b", "\f", "\r", "\033"))
-    Z <- X |> setdiff(c("\n", "\r"))
+    )
+    X <- this.path:::asArgs(X)
+    Y <- setdiff(X, c("\b", "\f", "\r", "\033"))
+    Z <- setdiff(X, c("\n", "\r"))
     this.path::writeArgs(X, file = "", name = "Rargs")
     this.path::writeArgs(Y, file = "", name = "pyargs")
     this.path::writeArgs(Y, file = "", name = "csv")
@@ -410,7 +428,7 @@ if (FALSE)
 
     FILES <- tempfile(fileext = paste0(c(".Rargs", ".pyargs", ".csv", ".tsv", ""), ".gz"))
     lapply(FILES, this.path::writeArgs, x = X)
-    lapply(FILES, function(...) this.path::readArgs(...) |> all.equal(X))
+    lapply(FILES, function(...) all.equal(this.path::readArgs(...), X))
     lapply(FILES, this.path::writeArgs, x = Z)
-    lapply(FILES, function(...) this.path::readArgs(...) |> all.equal(Z))
+    lapply(FILES, function(...) all.equal(this.path::readArgs(...), Z))
 }
