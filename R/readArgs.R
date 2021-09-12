@@ -248,14 +248,21 @@ has.ext <- function (x, fileext, compression = TRUE, ignore.case = TRUE)
 
 setReadWriteArgsMethod <- function (name, condition, read, write)
 {
-    ReadWriteArgsMethods[[as.character(as.symbol(name))]] <<- list(
+    name <- as.character(as.symbol(name))
+    if (name %in% lockedReadWriteArgsMethods)
+        stop(gettextf("unable to overwrite read/writeArgs method '%s'",
+            name))
+    ReadWriteArgsMethods[[name]] <<- list(
         condition = match.fun(condition),
         read      = match.fun(read),
         write     = match.fun(write)
     )
     invisible()
 }
-environment(setReadWriteArgsMethod) <- list2env(list(ReadWriteArgsMethods = list()))
+environment(setReadWriteArgsMethod) <- list2env(list(
+    ReadWriteArgsMethods       = list(),
+    lockedReadWriteArgsMethods = character()
+))
 
 
 # *.Rargs file, R arguments file
@@ -343,6 +350,13 @@ environment(setReadWriteArgsMethod)$ReadWriteArgsdefault <- list(
             nlines.between.args = nlines.between.args)
     }
 )
+
+
+
+
+
+environment(setReadWriteArgsMethod)$lockedReadWriteArgsMethods <-
+    names(environment(setReadWriteArgsMethod)$ReadWriteArgsMethods)
 
 
 
