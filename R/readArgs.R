@@ -227,7 +227,7 @@ format4parse <- function (x, comment.char = "#", nlines.between.comment.and.args
 
 
 
-has.ext <- function (x, fileext, compression = TRUE, ignore.case = TRUE)
+has.ext <- function (file, fileext, compression = TRUE, ignore.case = TRUE)
 {
     grepl(
         paste0(
@@ -237,7 +237,7 @@ has.ext <- function (x, fileext, compression = TRUE, ignore.case = TRUE)
             "$",
             recycle0 = TRUE
         ),
-        basename(x),
+        basename(file),
         ignore.case = ignore.case
     )
 }
