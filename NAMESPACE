@@ -98,7 +98,7 @@ export(R, Rcmd, Rscript, Rterm)
 # readArgs.R             ----
 
 
-export(format4scan, has.ext, setReadWriteArgsMethod)
+export(has.ext, scan2, format4scan, setReadWriteArgsMethod)
 export(writeArgs, readArgs)
 
 
