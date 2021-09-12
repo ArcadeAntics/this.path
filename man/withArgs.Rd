@@ -35,15 +35,16 @@ using format \code{"\%Y-\%m-\%d \%H:\%M:\%OS6"} (retains as much precision as
 possible)
   }
   \item{Numbers (class \code{"numeric"} and \code{"complex"})}{
-with 17 significant digits (retains as much precision as possible)
+with 17 significant digits (retains as much precision as possible) and
+\code{"."} as the decimal point character.
   }
   \item{Raw Bytes (class \code{"raw"})}{
 using \code{\link[base]{sprintf}("0x\%02x", )} (can easily convert back to raw
-with \code{\link[base:raw]{as.raw}} or
+with \code{\link[base:raw]{as.raw}()} or
 \code{\link[base:vector]{as.vector}(, "raw")})
   }
 }
-All others will be convered to character using
+All others will be converted to character using
 \code{\link[base:character]{as.character}} and its methods.
 
 The arguments will then be unlisted, and all attributes will be removed.
