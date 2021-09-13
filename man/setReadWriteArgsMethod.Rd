@@ -12,7 +12,7 @@ Create a method for reading/writing command-line arguments from/to a file,
 typically by differing file extension.
 }
 \usage{
-has.ext(file, fileext, compression = TRUE, ignore.case = TRUE)
+has.ext(file, fileext, compression = FALSE, ignore.case = TRUE)
 
 scan2(..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"",
     comment.char = "", allowEscapes = FALSE)

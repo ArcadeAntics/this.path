@@ -294,7 +294,7 @@ scan2 <- function (..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"
 }
 
 
-has.ext <- function (file, fileext, compression = TRUE, ignore.case = TRUE)
+has.ext <- function (file, fileext, compression = FALSE, ignore.case = TRUE)
 {
     grepl(
         paste0(
@@ -335,7 +335,7 @@ environment(setReadWriteArgsMethod) <- list2env(list(
 # *.Rargs file, R arguments file
 setReadWriteArgsMethod(
     name      = "Rargs",
-    condition = function(file) has.ext(file, "\\.Rargs"),
+    condition = function(file) has.ext(file, "\\.Rargs", compression = TRUE),
     read      = function(file) {
         value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
         if (any(vapply(value, typeof, "") != "character"))
@@ -354,7 +354,7 @@ setReadWriteArgsMethod(
 # *.pyargs file, python arguments file
 setReadWriteArgsMethod(
     name      = "pyargs",
-    condition = function(file) has.ext(file, "\\.pyargs"),
+    condition = function(file) has.ext(file, "\\.pyargs", compression = TRUE),
     read      = function(file) {
         readLines(file, warn = FALSE, encoding = "UTF-8")
     },
@@ -371,7 +371,7 @@ setReadWriteArgsMethod(
 # *.csv file, comma separated value file
 setReadWriteArgsMethod(
     name      = "csv",
-    condition = function(file) has.ext(file, "\\.csv"),
+    condition = function(file) has.ext(file, "\\.csv", compression = TRUE),
     read      = function(file) {
         scan2(file = file, sep = ",", quote = "\"", comment.char = "")
     },
@@ -387,7 +387,7 @@ setReadWriteArgsMethod(
 # *.tsv file, tab separated value file
 setReadWriteArgsMethod(
     name      = "tsv",
-    condition = function(file) has.ext(file, "\\.(tsv|tab)"),
+    condition = function(file) has.ext(file, "\\.(tsv|tab)", compression = TRUE),
     read      = function(file) {
         scan2(file = file, sep = "\t", quote = "\"", comment.char = "")
     },
