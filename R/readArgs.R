@@ -326,10 +326,11 @@ setReadWriteArgsMethod <- function (name, condition, read, write)
     )
     invisible()
 }
-environment(setReadWriteArgsMethod) <- list2env(list(
-    methods       = list(),
-    lockedMethods = character(),
-    default       = list(
+environment(setReadWriteArgsMethod) <- new.env()
+evalq({
+    methods       <- list()
+    lockedMethods <- character()
+    default       <- list(
         read  = function(file) {
             scan2(file = file, sep = "", quote = "\"'", comment.char = "#")
         },
@@ -341,7 +342,7 @@ environment(setReadWriteArgsMethod) <- list2env(list(
                 nlines.between.args = nlines.between.args)
         }
     )
-))
+}, environment(setReadWriteArgsMethod))
 
 
 # *.Rargs file, R arguments file
@@ -415,8 +416,10 @@ setReadWriteArgsMethod(
 
 
 
-environment(setReadWriteArgsMethod)$lockedMethods <-
-    names(environment(setReadWriteArgsMethod)$methods)
+evalq(lockedMethods <- names(methods), environment(setReadWriteArgsMethod))
+lockEnvironment(environment(setReadWriteArgsMethod))
+lockBinding("lockedMethods", environment(setReadWriteArgsMethod))
+lockBinding("default"      , environment(setReadWriteArgsMethod))
 
 
 
