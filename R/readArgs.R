@@ -316,10 +316,10 @@ has.ext <- function (file, fileext, compression = FALSE, ignore.case = TRUE)
 setReadWriteArgsMethod <- function (name, condition, read, write)
 {
     name <- as.character(as.symbol(name))
-    if (name %in% lockedReadWriteArgsMethods)
+    if (name %in% lockedMethods)
         stop(gettextf("unable to overwrite read/writeArgs method '%s'",
             name))
-    ReadWriteArgsMethods[[name]] <<- list(
+    methods[[name]] <<- list(
         condition = match.fun(condition),
         read      = match.fun(read),
         write     = match.fun(write)
@@ -327,8 +327,20 @@ setReadWriteArgsMethod <- function (name, condition, read, write)
     invisible()
 }
 environment(setReadWriteArgsMethod) <- list2env(list(
-    ReadWriteArgsMethods       = list(),
-    lockedReadWriteArgsMethods = character()
+    methods       = list(),
+    lockedMethods = character(),
+    default       = list(
+        read  = function(file) {
+            scan2(file = file, sep = "", quote = "\"'", comment.char = "#")
+        },
+        write = function(x, comments = TRUE,
+            nlines.between.comment.and.args = 0,
+            nlines.between.args = 2) {
+            format4scan(x, sep = "", comment.char = if (comments) "#" else "",
+                nlines.between.comment.and.args = nlines.between.comment.and.args,
+                nlines.between.args = nlines.between.args)
+        }
+    )
 ))
 
 
@@ -400,24 +412,11 @@ setReadWriteArgsMethod(
 )
 
 
-environment(setReadWriteArgsMethod)$ReadWriteArgsdefault <- list(
-    read  = function(file) {
-        scan2(file = file, sep = "", quote = "\"'", comment.char = "#")
-    },
-    write = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        format4scan(x, sep = "", comment.char = if (comments) "#" else "",
-            nlines.between.comment.and.args = nlines.between.comment.and.args,
-            nlines.between.args = nlines.between.args)
-    }
-)
 
 
 
-
-
-environment(setReadWriteArgsMethod)$lockedReadWriteArgsMethods <-
-    names(environment(setReadWriteArgsMethod)$ReadWriteArgsMethods)
+environment(setReadWriteArgsMethod)$lockedMethods <-
+    names(environment(setReadWriteArgsMethod)$methods)
 
 
 
@@ -427,14 +426,13 @@ selectReadWriteArgsMethod <- function (file, name = NULL)
 {
     if (is.null(file) || !nzchar(file))
         return(if (is.null(name))
-            ReadWriteArgsdefault
-        else ReadWriteArgsMethods[[match.arg(name, names(ReadWriteArgsMethods))]])
-    file <- basename(file)
-    for (method in ReadWriteArgsMethods) {
+            default
+        else methods[[match.arg(name, names(methods))]])
+    for (method in methods) {
         if (method$condition(file))
             return(method)
     }
-    return(ReadWriteArgsdefault)
+    return(default)
 }
 environment(selectReadWriteArgsMethod) <- environment(setReadWriteArgsMethod)
 
