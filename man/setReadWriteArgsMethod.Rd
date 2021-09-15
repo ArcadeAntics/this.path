@@ -12,7 +12,8 @@ Create a method for reading/writing command-line arguments from/to a file,
 typically by differing file extension.
 }
 \usage{
-has.ext(file, fileext, compression = FALSE, ignore.case = TRUE)
+has.ext(file, fileext, compression = FALSE, fixed = FALSE,
+    ignore.case = TRUE)
 
 scan2(..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"",
     comment.char = "", allowEscapes = FALSE)
@@ -33,6 +34,11 @@ character string, the file extension to look for. Special
   }
   \item{compression}{
 logical. Should compressed files be included in the pattern matching?
+  }
+  \item{fixed}{
+logical. If \code{TRUE}, \code{pattern} is a string to be matched as is. Unlike
+\code{\link[base]{grep}()}, \code{fixed = TRUE} and \code{ignore.case = TRUE}
+may be used together.
   }
   \item{ignore.case}{
 logical. Should the case of \code{file} be ignored when matching against
@@ -93,7 +99,7 @@ does \emph{NOT} have to make use of the other arguments.
 # reading/writing command-line arguments to a file. we'll
 # say the file extension will be ".myargs". with this, we
 # start by making 'condition'
-condition <- function(file) has.ext(file, "\\\\.myargs")
+condition <- function(file) has.ext(file, ".myargs", fixed = TRUE)
 
 
 # next, we will make a reading function. this will typically
