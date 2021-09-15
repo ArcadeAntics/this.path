@@ -645,7 +645,7 @@ this.path <- function (verbose = getOption("verbose"))
                     # the description of this connection should remove the
                     # leading characters
                     else if (grepl("^file://", path)) {
-                        con <- file(path, "r")
+                        con <- file(path)
                         on.exit(close(con))
                         path <- summary.connection(con)$description
                         on.exit()
@@ -780,10 +780,10 @@ this.path <- function (verbose = getOption("verbose"))
                     assign.__file__(NULL)
                     next
                 }
-                else if (grepl("^(ftp|http|https)://", path))
+                else if (grepl("^(ftp|ftps|http|https)://", path))
                     stop("'this.path' makes no sense for a URL")
                 else if (grepl("^file://", path)) {
-                    con <- file(path, "r")
+                    con <- file(path)
                     on.exit(close(con))
                     path <- summary.connection(con)$description
                     on.exit()
