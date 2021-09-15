@@ -22,7 +22,7 @@ format4scan(x, sep = " ", quote = "\\"'", comment.char = "",
     allowEscapes = FALSE, nlines.between.comment.and.args = 0,
     nlines.between.args = 2)
 
-setReadWriteArgsMethod(name, condition, read, write)
+setReadWriteArgsMethod(name, condition, read, write, sealed = FALSE)
 }
 \arguments{
   \item{file}{
@@ -93,13 +93,19 @@ a function accepting arguments \code{x}, \code{comments},
 \code{x} into a character vector of arguments to write to a file. This function
 does \emph{NOT} have to make use of the other arguments.
   }
+  \item{sealed}{
+\code{sealed} prevents the method being redefined.
+  }
 }
 \examples{
 # suppose you wanted to define your own method for
 # reading/writing command-line arguments to a file. we'll
 # say the file extension will be ".myargs". with this, we
 # start by making 'condition'
-condition <- function(file) has.ext(file, ".myargs", fixed = TRUE)
+condition <- function(file) {
+    has.ext(file, ".myargs", compression = TRUE,
+        fixed = TRUE)
+}
 
 
 # next, we will make a reading function. this will typically
@@ -141,7 +147,8 @@ comment(x) <- "testing comments"
 writeArgs(x, "", name = "myargs")
 
 
-# confirm that writing and reading returns the same set of arguments
+# confirm that writing and reading returns the same set of
+# arguments
 FILE <- writeArgs(x, fileext = ".myargs", at = FALSE)
 y <- readArgs(FILE)
 stopifnot(length(x) == length(y), x == y)
