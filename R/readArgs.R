@@ -110,7 +110,7 @@ as.comment <- function (x, comment.char = "",
 
 splitter.inator <- function (x, sep = " ",
     sepchar = nchar(sep, type = "bytes", keepNA = FALSE),
-    w = nchar(x, type = "width"))
+    w = as.numeric(nchar(x, type = "width")))
 {
     if (identical(sep, "\n"))
         return(x)
