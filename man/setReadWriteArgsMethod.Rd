@@ -152,4 +152,4 @@ writeArgs(x, "", name = "myargs")
 FILE <- writeArgs(x, fileext = ".myargs", at = FALSE)
 y <- readArgs(FILE)
 stopifnot(length(x) == length(y), x == y)
-}
+\dontshow{unlink(FILE)}}
