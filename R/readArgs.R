@@ -294,15 +294,26 @@ scan2 <- function (..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"
 }
 
 
-has.ext <- function (file, fileext, compression = FALSE, ignore.case = TRUE)
+regexQuote <- function (x, edge = FALSE, beginning = edge, end = edge)
+{
+    paste0(
+        ifelse(beginning, "^", ""),
+        gsub("([.\\\\|()[{^$*+?])", "\\\\\\1", x),
+        ifelse(end, "$", ""),
+        recycle0 = TRUE
+    )
+}
+
+
+has.ext <- function (file, fileext, compression = FALSE, fixed = FALSE,
+    ignore.case = TRUE)
 {
     grepl(
         paste0(
             ".",
-            fileext,
-            ifelse(compression, "(\\.([gG][zZ]|[bB][zZ]2|[xX][zZ]))?", ""),
-            "$",
-            recycle0 = TRUE
+            if (fixed) regexQuote(fileext) else fileext,
+            if (compression) "(\\.([gG][zZ]|[bB][zZ]2|[xX][zZ]))?" else "",
+            "$"
         ),
         basename(file),
         ignore.case = ignore.case
