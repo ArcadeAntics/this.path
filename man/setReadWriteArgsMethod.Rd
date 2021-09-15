@@ -29,8 +29,9 @@ setReadWriteArgsMethod(name, condition, read, write, sealed = FALSE)
 character vector, the files to test for a file extension.
   }
   \item{fileext}{
-character string, the file extension to look for. Special
-\code{\link[base]{regex}} characters must be escaped.
+character string, the file extension to be matched. Should contain a
+\code{\link[base:regex]{regular expression}} or character string for
+\code{fixed = TRUE}.
   }
   \item{compression}{
 logical. Should compressed files be included in the pattern matching?
