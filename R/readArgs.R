@@ -324,24 +324,24 @@ has.ext <- function (file, fileext, compression = FALSE, fixed = FALSE,
 
 
 
-setReadWriteArgsMethod <- function (name, condition, read, write)
+setReadWriteArgsMethod <- function (name, condition, read, write, sealed = FALSE)
 {
     name <- as.character(as.symbol(name))
-    if (name %in% lockedMethods)
-        stop(gettextf("unable to overwrite read/writeArgs method '%s'",
-            name))
+    if (name %in% names(methods) && methods[[name]]$sealed)
+        stop(gettextf("the method for name %s is sealed and cannot be re-defined",
+            sQuote(name)), domain = NA)
     methods[[name]] <<- list(
         condition = match.fun(condition),
         read      = match.fun(read),
-        write     = match.fun(write)
+        write     = match.fun(write),
+        sealed    = if (sealed) TRUE else FALSE
     )
     invisible()
 }
 environment(setReadWriteArgsMethod) <- new.env()
 evalq({
-    methods       <- list()
-    lockedMethods <- character()
-    default       <- list(
+    methods <- list()
+    default <- list(
         read  = function(file) {
             scan2(file = file, sep = "", quote = "\"'", comment.char = "#")
         },
@@ -354,12 +354,16 @@ evalq({
         }
     )
 }, environment(setReadWriteArgsMethod))
+lockEnvironment(environment(setReadWriteArgsMethod))
+lockBinding("default", environment(setReadWriteArgsMethod))
 
 
 # *.Rargs file, R arguments file
 setReadWriteArgsMethod(
     name      = "Rargs",
-    condition = function(file) has.ext(file, "\\.Rargs", compression = TRUE),
+    condition = function(file) {
+        has.ext(file, ".Rargs", compression = TRUE, fixed = TRUE)
+    },
     read      = function(file) {
         value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
         if (any(vapply(value, typeof, "") != "character"))
@@ -371,14 +375,17 @@ setReadWriteArgsMethod(
         format4parse(x, comment.char = if (comments) "#" else "",
             nlines.between.comment.and.args = nlines.between.comment.and.args,
             nlines.between.args = nlines.between.args)
-    }
+    },
+    sealed = TRUE
 )
 
 
 # *.pyargs file, python arguments file
 setReadWriteArgsMethod(
     name      = "pyargs",
-    condition = function(file) has.ext(file, "\\.pyargs", compression = TRUE),
+    condition = function(file) {
+        has.ext(file, ".pyargs", compression = TRUE, fixed = TRUE)
+    },
     read      = function(file) {
         readLines(file, warn = FALSE, encoding = "UTF-8")
     },
@@ -388,14 +395,17 @@ setReadWriteArgsMethod(
         if (any(Encoding(x) == "bytes"))
             stop("strings with \"bytes\" encoding is not allowed")
         paste(enc2utf8(x), collapse = "\n")
-    }
+    },
+    sealed = TRUE
 )
 
 
 # *.csv file, comma separated value file
 setReadWriteArgsMethod(
     name      = "csv",
-    condition = function(file) has.ext(file, "\\.csv", compression = TRUE),
+    condition = function(file) {
+        has.ext(file, ".csv", compression = TRUE, fixed = TRUE)
+    },
     read      = function(file) {
         scan2(file = file, sep = ",", quote = "\"", comment.char = "")
     },
@@ -404,14 +414,17 @@ setReadWriteArgsMethod(
         format4scan(x, sep = ",", comment.char = "",
             nlines.between.comment.and.args = nlines.between.comment.and.arg,
             nlines.between.args = nlines.between.args)
-    }
+    },
+    sealed = TRUE
 )
 
 
 # *.tsv file, tab separated value file
 setReadWriteArgsMethod(
     name      = "tsv",
-    condition = function(file) has.ext(file, "\\.(tsv|tab)", compression = TRUE),
+    condition = function(file) {
+        has.ext(file, "\\.(tsv|tab)", compression = TRUE)
+    },
     read      = function(file) {
         scan2(file = file, sep = "\t", quote = "\"", comment.char = "")
     },
@@ -420,26 +433,18 @@ setReadWriteArgsMethod(
         format4scan(x, sep = "\t", comment.char = "",
             nlines.between.comment.and.args = nlines.between.comment.and.args,
             nlines.between.args = nlines.between.args)
-    }
+    },
+    sealed = TRUE
 )
 
 
 
 
 
-evalq(lockedMethods <- names(methods), environment(setReadWriteArgsMethod))
-lockEnvironment(environment(setReadWriteArgsMethod))
-lockBinding("lockedMethods", environment(setReadWriteArgsMethod))
-lockBinding("default"      , environment(setReadWriteArgsMethod))
-
-
-
-
-
-selectReadWriteArgsMethod <- function (file, name = NULL)
+selectReadWriteArgsMethod <- function (file = NULL, name = NULL)
 {
     if (is.null(file) || !nzchar(file))
-        return(if (is.null(name))
+        return(if (is.null(name) || !nzchar(name))
             default
         else methods[[match.arg(name, names(methods))]])
     for (method in methods) {
@@ -466,19 +471,27 @@ writeArgs <- function (x, file = tempfile(pattern = pattern, fileext = fileext),
         text
     }
     else if (nzchar(file)) {
-        fun <- if (grepl("^(ftp|http|https|file)://", file)) base::file
+        if (grepl("^(ftp|ftps|http|https)://", file)) {
+            con <- base::file(file, "w")
+            on.exit(close(con))
+        }
+        else if (grepl("^file://", file)) {
+            con <- base::file(file, "w")
+            on.exit(close(con))
+            file <- paste0("file://", normalizePath(summary.connection(con)$description, winslash = "/", mustWork = TRUE))
+        }
         else {
             file <- normalizePath(file, mustWork = FALSE)
-            if (grepl(".\\.gz$", basename(file), ignore.case = TRUE))
+            fun <- if (grepl(".\\.gz$", basename(file), ignore.case = TRUE))
                 gzfile
             else if (grepl(".\\.bz2$", basename(file), ignore.case = TRUE))
                 bzfile
             else if (grepl(".\\.xz$", basename(file), ignore.case = TRUE))
                 xzfile
             else base::file
+            con <- fun(file, "w")
+            on.exit(close(con))
         }
-        con <- fun(file, "w")
-        on.exit(close(con))
         writeLines(text, con, useBytes = TRUE)
         if (at)
             paste0("@", file)
