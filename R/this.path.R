@@ -425,9 +425,9 @@ tools.rstudio <- function (name)
 .this.path_regexps$windows.drive             <- local({
 
 
-    # a windows drive is any upper case ASCII letter,
-    # a colon, and a backslash or slash
-    "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]:[/\\\\]"
+    # a windows drive is any ASCII letter, a colon,
+    # and a backslash or slash. the letter and colon may be omitted
+    "([a-zA-Z]:)?[/\\\\]"
 })
 .this.path_regexps$windows.UNC.drive         <- local({
 
@@ -645,7 +645,7 @@ this.path <- function (verbose = getOption("verbose"))
                     # the description of this connection should remove the
                     # leading characters
                     else if (grepl("^file://", path)) {
-                        con <- file(path)
+                        con <- file(path, "r")
                         on.exit(close(con))
                         path <- summary.connection(con)$description
                         on.exit()
@@ -666,22 +666,32 @@ this.path <- function (verbose = getOption("verbose"))
                         setwd(getn("owd"))
                     }
                 }
+
+
+                # 'file' is not a character string
                 else {
+
+
+                    # # an example demonstrating the different 'description' and
+                    # # 'class' of a connection based on the argument provided
                     # local({
                     #     on.exit(closeAllConnections())
                     #     cbind(
-                    #         summary(a <- stdin()),
-                    #         summary(c <- file("clipboard")),
-                    #         summary(d <- file("clipboard-128")),
-                    #         summary(e <- file("stdin")),
-                    #         summary(f <- file("file://clipboard")),
+                    #         summary(a <- stdin(                     )),
+                    #         summary(c <- file("clipboard"           )),
+                    #         summary(d <- file("clipboard-128"       )),
+                    #         summary(e <- file("stdin"               )),
+                    #         summary(f <- file("file://clipboard"    )),
                     #         summary(g <- file("file://clipboard-128")),
-                    #         summary(h <- file("file://stdin"))
+                    #         summary(h <- file("file://stdin"        ))
                     #     )
                     # })
 
 
                     path <- summary.connection(path)
+
+
+                    #
                     if (path$class %in% c("terminal", "clipboard")) {
                         assign.__file__(NULL)
                         next
@@ -783,7 +793,7 @@ this.path <- function (verbose = getOption("verbose"))
                 else if (grepl("^(ftp|ftps|http|https)://", path))
                     stop("'this.path' makes no sense for a URL")
                 else if (grepl("^file://", path)) {
-                    con <- file(path)
+                    con <- file(path, "r")
                     on.exit(close(con))
                     path <- summary.connection(con)$description
                     on.exit()
