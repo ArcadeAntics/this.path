@@ -515,6 +515,7 @@ if (FALSE)
 {
     X <- c(
         essentials::ASCII(plot = FALSE),
+        str2expression(sprintf("\"\\u%04x\"", c(256:55295, 57344:65533))),
         str2expression(sprintf("\"\\u%04x\"", c(256:55295, 57344:65533)))
     )
     X <- this.path:::asArgs(X)
@@ -531,4 +532,35 @@ if (FALSE)
     lapply(FILES, function(...) all.equal(this.path::readArgs(...), X))
     lapply(FILES, this.path::writeArgs, x = Z)
     lapply(FILES, function(...) all.equal(this.path::readArgs(...), Z))
+}
+
+
+
+
+
+if (FALSE)
+{
+    all.char <- c(
+        essentials::ASCII(plot = FALSE),
+        local({
+            nms <- sprintf("%04x", c(256:55295, 57344:65533))
+            value <- as.character(str2expression(sprintf("\"\\u%s\"", nms)))
+            names(value) <- nms
+            value
+        }),
+        local({
+            nms <- sprintf("%08x", 65536:1114111)
+            value <- as.character(str2expression(sprintf("\"\\U%s\"", nms)))
+            names(value) <- nms
+            value
+        })
+    )
+    local({
+        x <- grep("[a-zA-Z]", all.char, value = TRUE)
+        y <- c(LETTERS, letters)
+        stopifnot(length(x) == length(y), x == y)
+    })
+    FILE <- this.path::writeArgs(all.char, at = FALSE)
+    X <- this.path::readArgs(FILE)
+    identical(X, unname(all.char))
 }
