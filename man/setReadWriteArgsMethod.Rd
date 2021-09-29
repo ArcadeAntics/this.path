@@ -15,8 +15,7 @@ typically by differing file extension.
 has.ext(file, fileext, compression = FALSE, fixed = FALSE,
     ignore.case = TRUE)
 
-scan2(..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"",
-    comment.char = "", allowEscapes = FALSE)
+scan2(...)
 
 format4scan(x, sep = " ", quote = "\\"'", comment.char = "",
     allowEscapes = FALSE, nlines.between.comment.and.args = 0,
