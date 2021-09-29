@@ -89,5 +89,15 @@ withArgs(
 )
 
 
+# with R >= 4.1.0, you can use `|>` to make calls for
+# intuitive:
+# source(FILE, local = TRUE, verbose = FALSE) |> withArgs(
+#     letters, pi, exp(1)
+# )
+# sys.source(FILE, environment()) |> withArgs(
+#     letters, pi + 1i * exp(1)
+# )
+
+
 unlink(FILE)
 }
