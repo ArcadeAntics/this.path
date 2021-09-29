@@ -89,15 +89,12 @@ withArgs(
 )
 
 
-# with R >= 4.1.0, you can use `|>` to make calls for
-# intuitive:
+# with R >= 4.1.0, use the forward pipe operator `|>` to
+# make calls to `withArgs` more intuitive:
 # source(FILE, local = TRUE, verbose = FALSE) |> withArgs(
 #     letters, pi, exp(1)
 # )
 # sys.source(FILE, environment()) |> withArgs(
 #     letters, pi + 1i * exp(1)
 # )
-
-
-unlink(FILE)
-}
+\dontshow{unlink(FILE)}}
