@@ -974,7 +974,8 @@ this.path <- function (verbose = getOption("verbose"))
         # the previous regular expression exceeded 256 bytes, more than the
         # POSIX standard. now, each part of the regular expression is its own
         # regular expression of less than 256 bytes
-        nm <- names(utils::getWindowsHandles())
+        # nm <- names(utils::getWindowsHandles())
+        nm <- names(getWindowsHandles())
         nm <- nm[nm == "R Console" |
             grepl(.this.path_regexps$Rgui.REditor2, nm) |
             grepl(.this.path_regexps$windows.absolute.path2, nm, ignore.case = TRUE) |
