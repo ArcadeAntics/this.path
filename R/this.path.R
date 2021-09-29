@@ -921,6 +921,7 @@ this.path <- function (verbose = getOption("verbose"))
                     call = sys.call(sys.nframe())))
         }
         path <- context$path
+        Encoding(path) <- "UTF-8"
         if (nzchar(path)) {
             where(if (active)
                 "active document in RStudio"
