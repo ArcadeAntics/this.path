@@ -1,3 +1,7 @@
+if (.Platform$OS.type == "windows")
+    importFrom(utils, getWindowsHandles)
+
+
 # ArgumentParser-class.R ----
 
 
