@@ -355,7 +355,10 @@ initialize.__file__ <- function ()
     invisible()
 }
 environment(initialize.__file__) <- new.env()
-environment(initialize.__file__)$.__file__ <- NULL
+evalq({
+    .__file__ <- NULL
+    .__firstPass__ <- TRUE
+}, environment(initialize.__file__))
 
 
 tools.rstudio <- function (name)
@@ -865,6 +868,8 @@ this.path <- function (verbose = getOption("verbose"))
         .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from Unix terminal with default GUI
 
 
+        if (.__firstPass__)
+            initialize.__file__()
         if (is.null(.__file__))
             stop(this.path_not_exists_error(paste0("'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
@@ -1041,7 +1046,6 @@ dirname(this.path(...))
 if (!`R CMD INSTALL-ing`("this.path")) {
     unloadNamespace("essentials")
     unloadNamespace("this.path")
-    initialize.__file__()
     utils::install.packages(
         pkgs  = dirname(this.dir(verbose = FALSE)),
         repos = NULL,
