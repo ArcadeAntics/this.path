@@ -25,7 +25,7 @@ Unix-alike, files and URLs will be open using \code{xdg-open}.
 \code{file} invisibly.
 }
 \seealso{
-\code{\link[base]{shell.exec}}
+For Windows only, see \verb{?base::shell.exec(file)}
 }
 \examples{
 \dontrun{
