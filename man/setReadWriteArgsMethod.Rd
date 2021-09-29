@@ -46,7 +46,7 @@ logical. Should the case of \code{file} be ignored when matching against
 \code{fileext}?
   }
   \item{\dots}{
-further arguments passed to \code{\link[base]{scan}}.
+arguments passed to \code{\link[base]{scan}}.
   }
   \item{sep}{
 Empty character string, \code{NULL}, or a character string containing just one
