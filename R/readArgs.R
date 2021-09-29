@@ -285,12 +285,16 @@ format4parse <- function (x, comment.char = "#", nlines.between.comment.and.args
 
 
 
-scan2 <- function (..., sep = "", quote = if (identical(sep, "\n")) "" else "'\"",
-    comment.char = "", allowEscapes = FALSE)
+scan2 <- function (...)
 {
-    scan(..., what = "", sep = sep, quote = quote, dec = ".",
-        na.strings = NULL, quiet = TRUE, comment.char = comment.char,
-        allowEscapes = allowEscapes, encoding = "UTF-8")
+    expr <- match.call(base::scan)
+    expr$what <- ""
+    expr$dec <- "."
+    expr$na.strings <- character()
+    expr$quiet <- TRUE
+    expr$encoding <- "UTF-8"
+    expr[[1L]] <- quote(base::scan)
+    eval(expr, parent.frame())
 }
 
 
@@ -342,16 +346,21 @@ environment(setReadWriteArgsMethod) <- new.env()
 evalq({
     methods <- list()
     default <- list(
-        read  = function(file) {
-            scan2(file = file, sep = "", quote = "\"'", comment.char = "#")
-        },
-        write = function(x, comments = TRUE,
-            nlines.between.comment.and.args = 0,
-            nlines.between.args = 2) {
-            format4scan(x, sep = "", comment.char = if (comments) "#" else "",
-                nlines.between.comment.and.args = nlines.between.comment.and.args,
-                nlines.between.args = nlines.between.args)
-        }
+
+
+read  = function (file)
+scan2(file = file, sep = "", quote = "\"'", comment.char = "#"),
+
+
+write = function (x, comments = TRUE, nlines.between.comment.and.args = 0,
+    nlines.between.args = 2)
+{
+    format4scan(x, sep = "", comment.char = if (comments) "#" else "",
+        nlines.between.comment.and.args = nlines.between.comment.and.args,
+        nlines.between.args = nlines.between.args)
+}
+
+
     )
 }, environment(setReadWriteArgsMethod))
 lockEnvironment(environment(setReadWriteArgsMethod))
@@ -361,21 +370,30 @@ lockBinding("default", environment(setReadWriteArgsMethod))
 # *.Rargs file, R arguments file
 setReadWriteArgsMethod(
     name      = "Rargs",
-    condition = function(file) {
-        has.ext(file, ".Rargs", compression = TRUE, fixed = TRUE)
-    },
-    read      = function(file) {
-        value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
-        if (any(vapply(value, typeof, "") != "character"))
-            stop("invalid 'file', does not contain exclusively strings")
-        as.character(value)
-    },
-    write     = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        format4parse(x, comment.char = if (comments) "#" else "",
-            nlines.between.comment.and.args = nlines.between.comment.and.args,
-            nlines.between.args = nlines.between.args)
-    },
+
+
+    condition = function (file)
+has.ext(file, ".Rargs", compression = TRUE, fixed = TRUE),
+
+
+    read      = function (file)
+{
+    value <- parse(file = file, keep.source = FALSE, encoding = "UTF-8")
+    if (any(vapply(value, typeof, "") != "character"))
+        stop("invalid 'file', does not contain exclusively strings")
+    as.character(value)
+},
+
+
+    write     = function (x, comments = TRUE, nlines.between.comment.and.args = 0,
+    nlines.between.args = 2)
+{
+    format4parse(x, comment.char = if (comments) "#" else "",
+        nlines.between.comment.and.args = nlines.between.comment.and.args,
+        nlines.between.args = nlines.between.args)
+},
+
+
     sealed = TRUE
 )
 
@@ -383,19 +401,29 @@ setReadWriteArgsMethod(
 # *.pyargs file, python arguments file
 setReadWriteArgsMethod(
     name      = "pyargs",
-    condition = function(file) {
-        has.ext(file, ".pyargs", compression = TRUE, fixed = TRUE)
-    },
-    read      = function(file) {
-        readLines(file, warn = FALSE, encoding = "UTF-8")
-    },
-    write     = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        x <- asArgs(x)
-        if (any(Encoding(x) == "bytes"))
-            stop("strings with \"bytes\" encoding is not allowed")
-        paste(enc2utf8(x), collapse = "\n")
-    },
+
+
+    condition = function (file)
+has.ext(file, ".pyargs", compression = TRUE, fixed = TRUE),
+
+
+    read      = function (file)
+readLines(file, warn = FALSE, encoding = "UTF-8"),
+
+
+    write     = function (x, comments = TRUE, nlines.between.comment.and.args = 0,
+    nlines.between.args = 2)
+{
+    x <- asArgs(x)
+    if (any(Encoding(x) == "bytes"))
+        stop("strings with \"bytes\" encoding is not allowed")
+    x <- enc2utf8(x)
+    if (any(grep("\n|\r", x)))
+        warning(gettext("arguments in 'pyargs' file contain newline / / carriage return,\n will not be written correctly"))
+    paste(x, collapse = "\n")
+},
+
+
     sealed = TRUE
 )
 
@@ -403,18 +431,28 @@ setReadWriteArgsMethod(
 # *.csv file, comma separated value file
 setReadWriteArgsMethod(
     name      = "csv",
-    condition = function(file) {
-        has.ext(file, ".csv", compression = TRUE, fixed = TRUE)
-    },
-    read      = function(file) {
-        scan2(file = file, sep = ",", quote = "\"", comment.char = "")
-    },
-    write     = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        format4scan(x, sep = ",", comment.char = "",
-            nlines.between.comment.and.args = nlines.between.comment.and.arg,
-            nlines.between.args = nlines.between.args)
-    },
+
+
+    condition = function (file)
+has.ext(file, ".csv", compression = TRUE, fixed = TRUE),
+
+
+    read      = function (file)
+scan2(file = file, sep = ",", quote = "\"", comment.char = ""),
+
+
+    write     = function (x, comments = TRUE, nlines.between.comment.and.args = 0,
+    nlines.between.args = 2)
+{
+    x <- format4scan(x, sep = ",", comment.char = "",
+        nlines.between.comment.and.args = nlines.between.comment.and.arg,
+        nlines.between.args = nlines.between.args)
+    if (any(grep("\r", x, fixed = TRUE)))
+        warning(gettext("arguments in 'csv' file contain carriage return,\n will not be written correctly"))
+    x
+},
+
+
     sealed = TRUE
 )
 
@@ -422,18 +460,28 @@ setReadWriteArgsMethod(
 # *.tsv file, tab separated value file
 setReadWriteArgsMethod(
     name      = "tsv",
-    condition = function(file) {
-        has.ext(file, "\\.(tsv|tab)", compression = TRUE)
-    },
-    read      = function(file) {
-        scan2(file = file, sep = "\t", quote = "\"", comment.char = "")
-    },
-    write     = function(x, comments = TRUE,
-        nlines.between.comment.and.args = 0, nlines.between.args = 2) {
-        format4scan(x, sep = "\t", comment.char = "",
-            nlines.between.comment.and.args = nlines.between.comment.and.args,
-            nlines.between.args = nlines.between.args)
-    },
+
+
+    condition = function (file)
+has.ext(file, "\\.(tsv|tab)", compression = TRUE),
+
+
+    read      = function (file)
+scan2(file = file, sep = "\t", quote = "\"", comment.char = ""),
+
+
+    write     = function (x, comments = TRUE, nlines.between.comment.and.args = 0,
+    nlines.between.args = 2)
+{
+    x <- format4scan(x, sep = "\t", comment.char = "",
+        nlines.between.comment.and.args = nlines.between.comment.and.args,
+        nlines.between.args = nlines.between.args)
+    if (any(grep("\r", x, fixed = TRUE)))
+        warning(gettext("arguments in 'tsv' file contain carriage return,\n will not be written correctly"))
+    x
+},
+
+
     sealed = TRUE
 )
 
