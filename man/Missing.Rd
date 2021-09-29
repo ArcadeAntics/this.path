@@ -32,15 +32,18 @@ parser <- this.path::ArgumentParser()
 parser$add.argument("--arg1")
 parser$add.argument("--arg2", default = "def")
 pargs <- parser$parse.args()
-if (getRversion() >= "4.1") {
-    list(
-        arg1 = pargs |> this.path::Missing(arg1),
-        arg2 = pargs |> this.path::Missing("arg2")
-    )
-} else {
-    list(
-        arg1 = this.path::Missing(pargs, arg1),
-        arg2 = this.path::Missing(pargs, "arg2")
-    )
-}
+
+
+list(
+    arg1 = this.path::Missing(pargs, arg1),
+    arg2 = this.path::Missing(pargs, "arg2")
+)
+
+
+# with R >= 4.1.0, use the forward pipe operator `|>` to
+# make calls to `Missing` more intuitive:
+# list(
+#     arg1 = pargs |> this.path::Missing(arg1),
+#     arg2 = pargs |> this.path::Missing("arg2")
+# )
 }
