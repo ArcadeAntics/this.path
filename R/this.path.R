@@ -447,7 +447,7 @@ tools.rstudio <- function (name)
 
     paste0("[/\\\\]{2}", "(", .this.path_regexps$windows.basename, "[/\\\\])+", .this.path_regexps$windows.basename)
 })
-.this.path_regexps$Rgui.REditor              <- readRDS("inst/extdata/R_Editor_regex.rds")
+.this.path_regexps$Rgui.REditor              <- readRDS("inst/extdata/R_Editor_regexp.rds")
 
 
 .this.path_regexps$windows.absolute.path2     <- paste0("^", .this.path_regexps$windows.absolute.path    , "$")
