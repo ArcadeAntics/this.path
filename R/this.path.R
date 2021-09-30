@@ -992,27 +992,3 @@ environment(this.path) <- environment(initialize.__file__)
 
 this.dir <- function (...)
 dirname(this.path(...))
-
-
-`R CMD INSTALL-ing` <- function (pkgname)
-{
-    if (missing(pkgname))
-        !is.na(Sys.getenv("R_INSTALL_PKG", NA))
-    else Sys.getenv("R_INSTALL_PKG", NA) %in% pkgname
-}
-
-
-# i wanted to use 'this.path' to install this package, but that's a cyclic
-# dependency. so i wrote this that will handle it correctly. we unload
-# "this.path", use 'this.dir' from above to figure out where we are, and then
-# 'INSTALL' the package accordingly
-if (!`R CMD INSTALL-ing`("this.path")) {
-    unloadNamespace("essentials")
-    unloadNamespace("this.path")
-    utils::install.packages(
-        pkgs  = dirname(this.dir(verbose = FALSE)),
-        repos = NULL,
-        type  = "source",
-        INSTALL_opts = "--with-keep.source"
-    )
-}
