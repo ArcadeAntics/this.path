@@ -52,7 +52,7 @@ tryCatch(finally = unlink(FILE), {
 })
 
 
-FILE <- this.path::here("R_Editor.rds")
+FILE <- this.path::here("R_Editor_translations.rds")
 if (file.exists(FILE)) {
     y <- readRDS(FILE)
     y <- y[!y[, "LANGUAGE"] %in% x[, "LANGUAGE"], , drop = FALSE]
@@ -60,3 +60,6 @@ if (file.exists(FILE)) {
     x <- x[order(x[, "LANGUAGE"]), , drop = FALSE]
 }
 saveRDS(x, FILE)
+
+
+sys.source(this.path::here("save_R_Editor_regex.R"), environment())
