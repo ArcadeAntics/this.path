@@ -11,6 +11,7 @@ Description: Determine the full path of the executing script. Works when running
     'testthat::source_file', and when running R from the Windows command-line /
     / Unix terminal.
 License: MIT + file LICENSE
+Depends: R (>= 3.5.0)
 Imports: methods, utils
 Enhances: testthat
 Encoding: UTF-8
