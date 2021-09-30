@@ -447,46 +447,7 @@ tools.rstudio <- function (name)
 
     paste0("[/\\\\]{2}", "(", .this.path_regexps$windows.basename, "[/\\\\])+", .this.path_regexps$windows.basename)
 })
-.this.path_regexps$Rgui.REditor              <- local({
-
-
-    # as of this.path_0.5.0, we look for a different regular expression,
-    # one that handles non-english languages. look for
-    #
-    # document-name (at least one character) followed by
-    # " - R word1 word2 ..." or " - word1 word2 ... R"
-    #
-    # the number of words is at least one, translating to "R Editor". we allow
-    # for multiple words for languages like "it" which ends with
-    # " - Editor di R". words (including "R") may be separated by space or
-    # hyphen. this means " - " will not count as a word, so the regular
-    # expression won't be too greedy.
-
-
-    # note that the definition of word here is different than the
-    # usual word regular expression "\w+" meaning "[[:alnum:]_]+"
-    #
-    # here, a word is a collection of at least one character, none of which
-    # are hyphen, space, full stop, slash, or backslash. we exclude
-    #
-    #     hyphen and space
-    #         the word separators
-    #
-    #     full stop
-    #         a path with a  file extension won't be flagged
-    #         "file0123456789 - R Script.R"
-    #
-    #     slash and blackslash
-    #         a path won't be flagged by accident
-    #         "project0123456789 - R Project/file0123456789"
-
-
-    word <- "[^- ./\\\\]+"
-    sep <- "[- ]"
-    words <- paste0("(", word, sep, ")*", word)
-    end <- paste0(" - ", "(R", sep, words, "|", words, sep, "R)")
-    paste0("(.+)", end)
-})
+.this.path_regexps$Rgui.REditor              <- readRDS("inst/extdata/R_Editor_regex.rds")
 
 
 .this.path_regexps$windows.absolute.path2     <- paste0("^", .this.path_regexps$windows.absolute.path    , "$")
