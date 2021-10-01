@@ -1,19 +1,20 @@
 Package: this.path
-Type: Package
+Version: 0.5.0
+License: MIT + file LICENSE
 Title: Get Executing Script's Path, from 'RStudio', 'Rgui', 'Rscript'
     (Command-Line / / Terminal), and 'source'
-Version: 0.5.0
-Author: Andrew Simmons
-Maintainer: Andrew Simmons <akwsimmo@gmail.com>
 Description: Determine the full path of the executing script. Works when running
     a line or selection from a script in 'RStudio' and 'Rgui', when using
     'source', 'sys.source', 'debugSource' ('RStudio' exclusive), and
     'testthat::source_file', and when running R from the Windows command-line /
     / Unix terminal.
-License: MIT + file LICENSE
+Author: Andrew Simmons
+Maintainer: Andrew Simmons <akwsimmo@gmail.com>
 Depends: R (>= 3.5.0)
 Imports: methods, utils
 Enhances: testthat
-Additional_repositories: https://github.com/ArcadeAntics/this.path
-Encoding: UTF-8
+URL: https://github.com/ArcadeAntics/this.path
+BugReports: https://github.com/ArcadeAntics/this.path/issues
+KeepSource: TRUE
 VignetteBuilder: utils
+Encoding: UTF-8
