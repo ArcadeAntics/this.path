@@ -14,5 +14,6 @@ License: MIT + file LICENSE
 Depends: R (>= 3.5.0)
 Imports: methods, utils
 Enhances: testthat
+Additional_repositories: https://github.com/ArcadeAntics/this.path
 Encoding: UTF-8
 VignetteBuilder: utils
