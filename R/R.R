@@ -133,7 +133,7 @@ python <- function (options, command = NULL, module = NULL, file, args,
                 warning("first element used of 'file' argument")
                 file <- file[[1L]]
             }
-            if (grepl("^(ftp|http|https|file)://", file)) {
+            if (grepl("^(ftp|ftps|http|https|file)://", file)) {
                 if (chdir) warning("'chdir = TRUE' makes no sense for a URL")
             }
             else if (chdir && (path <- dirname(file)) != ".") {
@@ -241,6 +241,16 @@ Rcmd <- function (options, command = "", args,
 }
 
 
+Rgui <- function (options, args, intern, wait, mustWork, ..., quiet)
+{
+    .R(options = options, file = NULL, exprs = NULL,
+        args = args,
+
+        intern = intern, wait = wait, mustWork = mustWork, ..., quiet = quiet,
+        name = "Rgui", extra = TRUE)
+}
+
+
 Rscript <- function (options, file, exprs,
     # exprs.literal,
     args,
@@ -309,6 +319,7 @@ formals(.system)[i              ] <- defaults[i]
 formals(python )[k              ] <- defaults[k]
 formals(R      )[names(defaults)] <- defaults
 formals(Rcmd   )[j              ] <- defaults[j]
+formals(Rgui   )[j              ] <- defaults[j]
 formals(Rscript)[names(defaults)] <- defaults
 formals(Rterm  )[names(defaults)] <- defaults
 
