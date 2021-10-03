@@ -387,7 +387,7 @@ get(name, "tools:rstudio", inherits = FALSE)
         paste0("(\177|[^[:cntrl:]\"*/:<>?\\\\|", excluding, "])")
     }
     windows.basename.good.char <- function(excluding = "") {
-        paste0("[\001-\037\"*/:<>?\\\\|", excluding, "]")
+        paste0("[^\001-\037\"*/:<>?\\\\|", excluding, "]")
     }
 
 
