@@ -1,3 +1,26 @@
+# when you open Rgui for windows and try to run code from a
+# script (involving this.path), the path will be pulled from
+# the name of the window handle (which should be of the form
+# %(path) - %(R Editor)
+#
+# in different languages and locales, the string R Editor
+# is translated to different sets of characters. what we do
+# here is go through all languages and corresponding locales
+# to figure out how that string translates.
+#
+# we loop through each language and:
+# * start and Rgui session
+# * open a new script
+# * grab the translation of "R Editor" from the name of the
+#       R Editor
+#
+# we use package 'rMouse' to automate this process.
+#
+# this script only makes the matrix, which has each language
+# and the translation of "R Editor". the script which makes
+# the actual regular expression is "save_R_Editor_regexp.R"
+
+
 if (.Platform$OS.type != "windows")
     stop("not windows")
 
@@ -31,7 +54,7 @@ tryCatch({
 
     options <- c("--no-save", paste0("--workspace=", tmpRData),
         "--no-site-file", "--no-init-file", "--no-environ")
-    rMouse::setAutoDelay(10)
+    rMouse::setAutoDelay(100)
     for (language in rownames(this.path:::languages)) {
         this.path:::Rgui(c(options, this.path:::languageEnvvars(language)), wait = FALSE)
         rMouse::move( 15,  32)
@@ -48,14 +71,14 @@ tryCatch({
 }, finally = unlink(c(tmpRData, FILE)))
 
 
-# FILE <- this.path::here("R_Editor_translations.rds")
-# if (file.exists(FILE)) {
-#     y <- readRDS(FILE)
-#     y <- y[!y[, "LANGUAGE"] %in% x[, "LANGUAGE"], , drop = FALSE]
-#     x <- rbind(x, y)
-#     x <- x[order(x[, "LANGUAGE"]), , drop = FALSE]
-# }
-# saveRDS(x, FILE)
-#
-#
-# sys.source(this.path::here("save_R_Editor_regexp.R"), environment())
+FILE <- this.path::here("R_Editor_translations.rds")
+if (file.exists(FILE)) {
+    y <- readRDS(FILE)
+    y <- y[!y[, "LANGUAGE"] %in% x[, "LANGUAGE"], , drop = FALSE]
+    x <- rbind(x, y)
+    x <- x[order(x[, "LANGUAGE"]), , drop = FALSE]
+}
+saveRDS(x, FILE)
+
+
+sys.source(this.path::here("save_R_Editor_regexp.R"), environment())
