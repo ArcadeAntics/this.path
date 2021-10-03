@@ -1,4 +1,4 @@
-Check_This <- function (with.keep.source = TRUE, multiarch = FALSE, no.multiarch = !multiarch,
+Check_This <- function (with.keep.source = NA, multiarch = FALSE, no.multiarch = !multiarch,
     build = TRUE, as.cran = TRUE, chdir = FALSE, file = here())
 {
     if (chdir && (path <- dirname(file)) != ".") {
@@ -19,13 +19,21 @@ Check_This <- function (with.keep.source = TRUE, multiarch = FALSE, no.multiarch
 
 
     version <- read.dcf(file.path(file, "DESCRIPTION"), fields = "Version")
+    if (is.na(version) ||
+        !grepl(paste0("^", .standard_regexps()$valid_package_version, "$"),
+            version))
+        stop("invalid package DESCRIPTION file")
     file2 <- paste0(file, "_", version, ".tar.gz")
 
 
     Rcmd(command = "INSTALL", args = c(
         if (build) "--build",
         if (no.multiarch) "--no-multiarch",
-        if (with.keep.source) "--with-keep.source",
+        tryCatch({
+            if (with.keep.source)
+                "--with-keep.source"
+            else "--without-keep.source"
+        }, error = function(c) character()),
         file2
     ), mustWork = TRUE)
     cat("\n")
@@ -33,7 +41,7 @@ Check_This <- function (with.keep.source = TRUE, multiarch = FALSE, no.multiarch
 
     Rcmd(command = "check", args = c(
         if (as.cran) "--as-cran",
-        paste0(file, "_", packageVersion(basename(file)), ".tar.gz")
+        file2
     ), mustWork = TRUE)
     cat("\n")
 }
