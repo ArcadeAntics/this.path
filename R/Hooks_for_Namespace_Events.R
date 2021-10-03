@@ -7,9 +7,8 @@
 }
 
 
-# .onUnload <- function (libpath)
-# {
-#     if (!is.na(Sys.getenv("R_THIS_PATH_TOPLEVEL", NA)))
-#         Sys.unsetenv("R_THIS_PATH_TOPLEVEL")
-#     invisible()
-# }
+.onUnload <- function (libpath)
+{
+    if (!is.na(Sys.getenv("R_THIS_PATH_TOPLEVEL", NA)))
+        Sys.unsetenv("R_THIS_PATH_TOPLEVEL")
+}
