@@ -1,5 +1,5 @@
-Check_This <- function (with.keep.source = NA, multiarch = FALSE, no.multiarch = !multiarch,
-    build = TRUE, as.cran = TRUE, chdir = FALSE, file = here())
+Check_This <- function (with.keep.source = NA, multiarch = TRUE, no.multiarch = !multiarch,
+    build = FALSE, as.cran = FALSE, chdir = FALSE, file = here())
 {
     if (chdir && (path <- dirname(file)) != ".") {
         # file <- normalizePath(file)
