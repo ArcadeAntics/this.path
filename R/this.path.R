@@ -362,15 +362,7 @@ evalq({
 
 
 tools.rstudio <- function (name)
-{
-    name <- substitute(name)
-    name <- if (typeof(name) == "symbol")
-        as.character(name)
-    else if (typeof(name) == "character" && length(name) >= 1)
-        .subset2(name, 1L)
-    else stop("bad variable name")
-    get(name, "tools:rstudio", inherits = FALSE)
-}
+get(name, "tools:rstudio", inherits = FALSE)
 
 
 
