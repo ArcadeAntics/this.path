@@ -1064,7 +1064,7 @@ parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPart
                     x[[n]]$value[grepl("^\\s*(NA|<NA>|NA_integer_|NA_real_|NA_complex_|NA_character_)\\s*$", x[[n]]$value)] <- NA
                     x[[n]]$value <- as.vector(x[[n]]$value, x[[n]]$type)
                 }, expression = {
-                    x[[n]]$value <- str2expression(x[[n]]$value)
+                    x[[n]]$value <- parse(text = x[[n]]$value, keep.source = FALSE, encoding = "UTF-8")
                 }, x[[n]]$value <- as.vector(x[[n]]$value, x[[n]]$type))
                 if (x[[n]]$action == "store_const") {
                     x[[n]]$value <- if (x[[n]]$value)
@@ -1456,9 +1456,13 @@ ArgumentParser <- function (program = NA, usage = NA, description = NA, epilogue
     help.message = NULL)
 {
     .program <- as.character(program)[1L]
-    if (is.na(.program))
-        .program <- tryCatch(basename(this.path(verbose = FALSE)),
-            error = function(c) "/path/to/script")
+    if (is.na(.program)) {
+        .program <- this.path2(verbose = FALSE)
+        if (is.null(.program))
+            .program <- "/path/to/script"
+        else if (!grepl("^(ftp|ftps|http|https)://", .program))
+            .program <- basename(.program)
+    }
     .usage <- format.help(usage)
     .description <- as.description(description, wrap = wrap.description,
         indent = indent.description, exdent = exdent.description)
