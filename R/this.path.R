@@ -386,6 +386,9 @@ get(name, "tools:rstudio", inherits = FALSE)
     windows.basename.good.char <- function(excluding = "") {
         paste0("(\177|[^[:cntrl:]\"*/:<>?\\\\|", excluding, "])")
     }
+    windows.basename.good.char <- function(excluding = "") {
+        paste0("[\001-\037\"*/:<>?\\\\|", excluding, "]")
+    }
 
 
     # a windows basename is a series of one or more good characters
@@ -439,7 +442,7 @@ get(name, "tools:rstudio", inherits = FALSE)
 
     paste0("[/\\\\]{2}", "(", .this.path_regexps$windows.basename, "[/\\\\])+", .this.path_regexps$windows.basename)
 })
-.this.path_regexps$Rgui.REditor              <- readRDS("inst/extdata/R_Editor_regexp.rds")
+.this.path_regexps$Rgui.REditor              <- parse("inst/extdata/R_Editor_regexp.R", keep.source = FALSE, encoding = "UTF-8")[[1L]]
 
 
 .this.path_regexps$windows.absolute.path2     <- paste0("^", .this.path_regexps$windows.absolute.path    , "$")
