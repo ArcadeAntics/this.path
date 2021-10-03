@@ -154,6 +154,33 @@ unix.command.line.argument.file.containing.space.fix <- function (path)
 
 initialize.__file__ <- function ()
 {
+    # initialize.__file__ {this.path}                            R Documentation
+    #
+    # Normalize the Path Provided at the Command-Line / / Terminal
+    #
+    #
+    #
+    # Description:
+    #
+    # Look through the command-line arguments, extracting the string 'FILE' from
+    # the following arguments:
+    # --file=FILE
+    # -f FILE
+    #
+    # normalize that path, and save it in the appropriate environment.
+    #
+    #
+    #
+    # Details:
+    #
+    # The details between how the command-line arguments are handled is
+    # different in Windows and under Unix-alikes, see the comments below.
+    # If there is no such arguments, nothing happens. If there are multiple
+    # such arguments, an error is raised.
+    #
+    # The path in Windows will use / as the file separator
+
+
     # running from Windows command-line
     if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm") {
 
@@ -383,9 +410,15 @@ get(name, "tools:rstudio", inherits = FALSE)
         paste0("[^\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\"*/:<>?\\\\|",
             excluding, "]")
     }
+
+
+    # abandoned, not because it is too long, but because the new is shorter
     windows.basename.good.char <- function(excluding = "") {
         paste0("(\177|[^[:cntrl:]\"*/:<>?\\\\|", excluding, "])")
     }
+
+
+    # the current method, stopped using [[:cntrl:]] and now uses a \001-\037
     windows.basename.good.char <- function(excluding = "") {
         paste0("[^\001-\037\"*/:<>?\\\\|", excluding, "]")
     }
