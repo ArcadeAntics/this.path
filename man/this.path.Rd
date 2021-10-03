@@ -482,11 +482,8 @@ tryCatch((function() {
 
     write.results({
         cat2(paste0("If ", sQuote("this.path"), " did not correctly determine ",
-            "the executing script's filename, please send a bug report to the ",
-            "package maintainer, ",
-            utils::packageDescription("this.path")$Maintainer, ". Please ",
-            "include your session information in your bug report, which can ",
-            "be found with the following command:"), "utils::sessionInfo()\\n")
+            "the executing script's filename, please send a bug report ",
+            "using:\\nutils::bug.report(package = \\"this.path\\")"))
     })
 
 
