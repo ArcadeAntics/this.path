@@ -211,8 +211,8 @@ if (length(z) != length(y)) {
     cat(gettextf("Catastrophic failure, wrote \%d arguments, read \%d\\n",
         length(z), length(y)),
         file = stderr())
-    stop("Please contact the package maintainer ",
-        sQuote(utils::packageDescription("this.path")$Maintainer))
+    stop("Please submit a bug report using ",
+        "utils::bug.report(package = \\"this.path\\")")
 } else if (any(i <- z != y)) {
     cat(ngettext(sum(i),
         "The following argument was written or read incorrectly!\\n",
@@ -221,8 +221,8 @@ if (length(z) != length(y)) {
     print(z[i])
     cat("\\nIncorrectly written or read as:\\n", file = stderr())
     print(y[i])
-    stop("Please contact the package maintainer ",
-        sQuote(utils::packageDescription("this.path")$Maintainer))
+    stop("Please submit a bug report using ",
+        "utils::bug.report(package = \\"this.path\\")")
 } else cat("Yay! The arguments were written and read correctly!\\n")
 
 
