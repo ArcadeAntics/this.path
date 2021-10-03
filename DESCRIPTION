@@ -10,7 +10,6 @@ Description: Determine the full path of the executing script. Works when running
     / Unix terminal.
 Author: Andrew Simmons
 Maintainer: Andrew Simmons <akwsimmo@gmail.com>
-Depends: R (>= 3.5.0)
 Imports: methods, utils
 Enhances: testthat
 URL: https://github.com/ArcadeAntics/this.path
