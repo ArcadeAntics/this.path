@@ -221,7 +221,7 @@ tryCatch((function() {
             y <- tryCatch({
                 this.path::this.path(verbose = TRUE)
             }, condition = base::force)
-            cat("this.path status : ")
+            cat("this.path status: ")
         })
         if (inherits(y, "condition")) {
             msg <- conditionMessage(y)
@@ -259,8 +259,8 @@ tryCatch((function() {
             else {
                 cat("\\n")
                 write.results({
-                  cat("Error: ", sQuote("this.path"), " could not correctly ",
-                    "determine the executing script's filename\\n", sep = "")
+                    cat("Error: ", sQuote("this.path"), " could not correctly ",
+                        "determine the executing script's filename\\n", sep = "")
                 }, split = TRUE)
             }
         }
