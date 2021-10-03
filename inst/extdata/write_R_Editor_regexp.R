@@ -16,9 +16,8 @@
 #
 # we use package 'rMouse' to automate this process.
 #
-# this script only makes the matrix, which has each language
-# and the translation of "R Editor". the script which makes
-# the actual regular expression is "save_R_Editor_regexp.R"
+# we turn this into a regular expression, then send it to
+# a file to be saved, then read back in later when needed
 
 
 if (.Platform$OS.type != "windows")
@@ -30,9 +29,7 @@ FILE <- tempfile(fileext = ".rds")
 tryCatch({
 
 
-    x <- matrix(dimnames = list(NULL, c(
-        "LANGUAGE", "R Editor")), data = c(character()
-    ), nrow = 0L, ncol = 2L, byrow = TRUE)
+    x <- character()
 
 
     saveRDS(x, FILE)
@@ -42,11 +39,7 @@ tryCatch({
         text <- names(utils::getWindowsHandles())[[2L]]
         if (Encoding(text) == "unknown")
             Encoding(text) <- "latin1"
-        text <- sub("^.* - (.*)$", "\\1", enc2utf8(text))
-        text <- c(essentials::getEnvvar("LANGUAGE"), text)
-        x <- readRDS(FILE)
-        x <- rbind(x, text, deparse.level = 0)
-        saveRDS(x, FILE)
+        saveRDS(c(readRDS(FILE), sub("^.* - (.*)$", "\\1", enc2utf8(text))), FILE)
         q()
     }, list(FILE = FILE)), evaluated = TRUE)
     save(list = "expr", file = tmpRData, eval.promises = FALSE)
@@ -71,14 +64,10 @@ tryCatch({
 }, finally = unlink(c(tmpRData, FILE)))
 
 
-FILE <- this.path::here("R_Editor_translations.rds")
-if (file.exists(FILE)) {
-    y <- readRDS(FILE)
-    y <- y[!y[, "LANGUAGE"] %in% x[, "LANGUAGE"], , drop = FALSE]
-    x <- rbind(x, y)
-    x <- x[order(x[, "LANGUAGE"]), , drop = FALSE]
-}
-saveRDS(x, FILE)
-
-
-sys.source(this.path::here("save_R_Editor_regexp.R"), environment())
+x <- unique(x)
+x <- this.path:::regexQuote(x)
+x <- paste(x, collapse = "|")
+x <- paste0("(", x, ")")
+x <- paste0("(.+) - ", x)
+x <- encodeString(enc2utf8(x), quote = "\"")
+writeLines(x, this.path::here("R_Editor_regexp.R"), useBytes = TRUE)

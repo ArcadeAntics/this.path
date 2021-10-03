@@ -1,7 +1,0 @@
-x <- readRDS(this.path::here("R_Editor_translations.rds"))
-x <- unique(x[, "R Editor"])
-x <- this.path:::regexQuote(x)
-x <- paste(x, collapse = "|")
-x <- paste0("(", x, ")")
-x <- paste0("(.+) - ", x)
-saveRDS(x, this.path::here("R_Editor_regexp.rds"))
