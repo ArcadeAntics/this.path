@@ -17,7 +17,7 @@ commandQuote <- function (string, type = NULL, unix.type = NULL, windows.type = 
         else unix.type
 
 
-    switch(match.arg(type, c("sh", "perl", "python", "R", "R CMD", "Rcmd", "Rscript", "Rterm")), sh = {
+    switch(match.arg(type, c("sh", "perl", "python", "R", "R CMD", "Rcmd", "Rgui", "Rscript", "Rterm")), sh = {
 
 
         # replace every single quote with (single quote, double quote, single
@@ -53,7 +53,7 @@ commandQuote <- function (string, type = NULL, unix.type = NULL, windows.type = 
         string <- paste0("\"", string, "\"", recycle0 = TRUE)
 
 
-    }, perl = , python = , Rscript = , Rterm = {
+    }, perl = , python = , Rgui = , Rscript = , Rterm = {
 
 
         # replace a double quote preceded by any number of backslashes
