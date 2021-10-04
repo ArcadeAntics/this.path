@@ -3,7 +3,7 @@
 # the name of the window handle (which should be of the form
 # %(path) - %(R Editor)
 #
-# in different languages and locales, the string R Editor
+# in different languages and locales, the string %(R Editor)
 # is translated to different sets of characters. what we do
 # here is go through all languages and corresponding locales
 # to figure out how that string translates.
@@ -23,6 +23,10 @@
 
 if (.Platform$OS.type != "windows")
     stop("not windows")
+
+
+num.RGui.sessions <- function ()
+length(utils::getWindowsHandles("all", "^RGui", minimized = TRUE))
 
 
 tmpRData <- tempfile(fileext = ".RData")
@@ -48,13 +52,20 @@ tryCatch({
 
     options <- c("--no-save", paste0("--workspace=", tmpRData),
         "--no-site-file", "--no-init-file", "--no-environ")
-    Rautogui::setAutoDelay(100)
+    Rautogui::setPAUSE(0.1)
     for (language in rownames(this.path:::languages)) {
-        this.path:::Rgui(c(options, this.path:::languageEnvvars(language)), wait = FALSE) ; Sys.sleep(0.1)
+        n <- num.RGui.sessions()
+        this.path:::Rgui(c(options, this.path:::languageEnvvars(language)), wait = FALSE, quiet = TRUE) ; Sys.sleep(0.2)
         Rautogui::left(  15,   32)
         Rautogui::left( 109,   77)
         Rautogui::left( 340,  313)
-        Rautogui::type("expr\n") ; Sys.sleep(0.1)
+        Rautogui::type("expr\n")
+
+
+        # wait until the RGui process is finished before moving to the next one.
+        # we assume the user is not opening more windows of RGui in the
+        # meantime, which is a fair assumption
+        while (num.RGui.sessions() > n) NULL
     }
     x <- readRDS(FILE)
 
