@@ -2,33 +2,34 @@
 
 
 {
-    rMouse::setAutoDelay(100)
+    Rautogui::setPAUSE(0.5)
     this.path:::Rgui("--vanilla", wait = FALSE, quiet = TRUE)
+    Sys.sleep(0.1)
 
 
     # 'File' button
-    # rMouse::move(  0,  23)
-    # rMouse::move( 31,  23)
-    # rMouse::move(  0,  41)
-    # rMouse::move( 31,  41)
-    rMouse::move( 15,  32)
-    rMouse::left()
+    # Rautogui::pos(   0,   23)
+    # Rautogui::pos(  31,   23)
+    # Rautogui::pos(   0,   41)
+    # Rautogui::pos(  31,   41)
+    Rautogui::pos(  15,   32, duration = 0.5)
+    Rautogui::left()
 
 
     # 'New script' button
-    # rMouse::move(  3,  67)
-    # rMouse::move(216,  67)
-    # rMouse::move(  3,  88)
-    # rMouse::move(216,  88)
-    rMouse::move(109,  77)
-    rMouse::left()
+    # Rautogui::pos(   3,   67)
+    # Rautogui::pos( 216,   67)
+    # Rautogui::pos(   3,   88)
+    # Rautogui::pos( 216,   88)
+    Rautogui::pos( 109,   77)
+    Rautogui::left()
 
 
     # Select R Console
-    # rMouse::move(  0,  78)
-    # rMouse::move(680,  78)
-    # rMouse::move(  0, 549)
-    # rMouse::move(680, 549)
-    rMouse::move(340, 313)
-    rMouse::left()
+    # Rautogui::pos(   0,   78)
+    # Rautogui::pos( 680,   78)
+    # Rautogui::pos(   0,  549)
+    # Rautogui::pos( 680,  549)
+    Rautogui::pos( 340,  313)
+    Rautogui::left()
 }

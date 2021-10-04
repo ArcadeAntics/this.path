@@ -14,7 +14,8 @@
 # * grab the translation of "R Editor" from the name of the
 #       R Editor
 #
-# we use package 'rMouse' to automate this process.
+# we use package 'Rautogui' to automate this process.
+# I hope to upload 'Rautogui' to CRAN at some point soon
 #
 # we turn this into a regular expression, then send it to
 # a file to be saved, then read back in later when needed
@@ -47,16 +48,13 @@ tryCatch({
 
     options <- c("--no-save", paste0("--workspace=", tmpRData),
         "--no-site-file", "--no-init-file", "--no-environ")
-    rMouse::setAutoDelay(100)
+    Rautogui::setAutoDelay(100)
     for (language in rownames(this.path:::languages)) {
-        this.path:::Rgui(c(options, this.path:::languageEnvvars(language)), wait = FALSE)
-        rMouse::move( 15,  32)
-        rMouse::left()
-        rMouse::move(109,  77)
-        rMouse::left()
-        rMouse::move(340, 313)
-        rMouse::left()
-        rMouse::type("expr\n")
+        this.path:::Rgui(c(options, this.path:::languageEnvvars(language)), wait = FALSE) ; Sys.sleep(0.1)
+        Rautogui::left(  15,   32)
+        Rautogui::left( 109,   77)
+        Rautogui::left( 340,  313)
+        Rautogui::type("expr\n") ; Sys.sleep(0.1)
     }
     x <- readRDS(FILE)
 
@@ -67,7 +65,6 @@ tryCatch({
 x <- unique(x)
 x <- this.path:::regexQuote(x)
 x <- paste(x, collapse = "|")
-x <- paste0("(", x, ")")
-x <- paste0("(.+) - ", x)
+x <- paste0("(.+) - ", "(", x, ")")
 x <- encodeString(enc2utf8(x), quote = "\"")
 writeLines(x, this.path::here("R_Editor_regexp.R"), useBytes = TRUE)
