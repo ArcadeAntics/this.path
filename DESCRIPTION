@@ -11,6 +11,7 @@ Description: Determine the full path of the executing script. Works when running
 Author: Andrew Simmons
 Maintainer: Andrew Simmons <akwsimmo@gmail.com>
 Imports: methods, utils
+Suggests: microbenchmark
 Enhances: testthat
 URL: https://github.com/ArcadeAntics/this.path
 BugReports: https://github.com/ArcadeAntics/this.path/issues
