@@ -704,7 +704,8 @@ this.path <- function (verbose = getOption("verbose"))
                         stop("'this.path' cannot be used within a zip file")
                     }, stop(this.path_unimplemented_error(gettextf(
                         "'this.path' unimplemented when source-ing a connection of class %s",
-                        sQuote(path$class))))
+                        sQuote(path$class)),
+                        call = sys.call(sys.nframe())))
                     )
                 }
 
@@ -829,6 +830,10 @@ this.path <- function (verbose = getOption("verbose"))
 
 
                 path <- getn("path")
+
+
+
+
 
 
                 # like 'base::sys.source', 'testthat::source_file' is intended
