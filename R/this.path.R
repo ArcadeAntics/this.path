@@ -130,6 +130,17 @@ unix.command.line.argument.file.containing.space.fix <- function (path)
 
 
     path <- path[file.exists(path)]  # select the filenames that exist
+
+
+    # switched from:
+    #
+    # commandQuote(opath)
+    #
+    # to:
+    #
+    # encodeString(opath, quote = "\"")
+    #
+    # in case of characters such as "\f", "\t", and "\177"
     if (length(path) == 0) {
         stop("unable to resolve Unix terminal argument 'FILE' conflict for file\n",
             "  ", encodeString(opath, quote = "\""), "\n",
@@ -179,6 +190,9 @@ initialize.__file__ <- function ()
     # such arguments, an error is raised.
     #
     # The path in Windows will use / as the file separator
+
+
+    .__firstPass__ <<- FALSE
 
 
     # running from Windows command-line
@@ -832,10 +846,6 @@ this.path <- function (verbose = getOption("verbose"))
                 path <- getn("path")
 
 
-
-
-
-
                 # like 'base::sys.source', 'testthat::source_file' is intended
                 # to source a file (not a connection), so we have to throw an
                 # error if the user attempts to source a file named
@@ -882,7 +892,8 @@ this.path <- function (verbose = getOption("verbose"))
         if (.__firstPass__)
             initialize.__file__()
         if (is.null(.__file__))
-            stop(this.path_not_exists_error(paste0("'this.path' used in an inappropriate fashion\n",
+            stop(this.path_not_exists_error(paste0(
+                "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from the command-line and argument 'FILE' is missing"),
                 call = sys.call(sys.nframe())))
@@ -932,6 +943,10 @@ this.path <- function (verbose = getOption("verbose"))
                     call = sys.call(sys.nframe())))
         }
         path <- context$path
+
+
+        # the encoding is not explicitly set (at least for Windows),
+        # so we have to do that ourselves
         Encoding(path) <- "UTF-8"
         if (nzchar(path)) {
             where(if (active)
@@ -939,7 +954,8 @@ this.path <- function (verbose = getOption("verbose"))
             else "source document in RStudio")
             return(normalizePath(path, winslash = "/", mustWork = FALSE))
         }
-        else stop("'this.path' used in an inappropriate fashion\n",
+        else stop(
+            "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             if (active)
                 "* active document in RStudio does not exist"
@@ -954,48 +970,45 @@ this.path <- function (verbose = getOption("verbose"))
         # function "getWindowsHandles" from package "utils" (Windows exclusive)
         # returns a list of external pointers containing the windows handles.
         # the thing of interest are the names of this list, these should be the
-        # names of the windows belonging to the current R process. Since 'Rgui'
-        # can have files besides R scripts open (such as images), a regular
-        # expression is used to subset only windows handles with names that
-        # exactly match the string "R Console" or end with
-        # " - R Editor". I highly suggest that you NEVER end a document's
-        # filename with " - R Editor". From there, similar checks are done as in
-        # the above section for 'RStudio'
+        # names of the windows belonging to the current R process.
         #
+        # we are only interested in window handles that:
+        # * are exactly "R Console"
+        # * look like an open R script, starting with at least one character,
+        #       then " - ", then "R Editor" or any valid translation
+        #       (see
         #
-        # as of this.path_0.5.0, we look for a different regular expression, one
-        # that handles non-english languages. look for
+        #           this.path:::.this.path_regexps$Rgui.REditor2
         #
-        # "R Console" (same as before)
+        #        and
         #
-        # or
+        #           this.path::file.open(system.file(package = "this.path", "extdata", "write_R_Editor_regexp.R"))
         #
-        # "document-name" followed by
-        # " - R word1 word2 ..." or " - word1 word2 ... R"
+        #       )
+        # * look like a windows path
         #
-        # the number of words is at least one, translating to "R Editor". we
-        # allow for multiple words for languages like "it" which ends with
-        # "Editor di R". the words (including "R") may be separated by a single
-        # space or hyphen for languages like "nn" which ends with "R-redigering"
+        # we keep track of "R Console" because we want to know if the R script
+        # is the active document or the source document. looking for the above
+        # patterns will remove unwanted handles like images
         #
-        #
-        # now, we do something even more different. retrieve all the script's
-        # name
+        # from there, similar checks are done
+        # as in the above section for 'RStudio'
 
 
         # the previous regular expression exceeded 256 bytes, more than the
         # POSIX standard. now, each part of the regular expression is its own
         # regular expression of less than 256 bytes
-        # nm <- names(utils::getWindowsHandles())
         nm <- names(getWindowsHandles())
         nm <- nm[nm == "R Console" |
-            grepl(.this.path_regexps$Rgui.REditor2, nm) |
-            grepl(.this.path_regexps$windows.absolute.path2, nm, ignore.case = TRUE) |
+            grepl(.this.path_regexps$Rgui.REditor2             , nm) |
+            grepl(.this.path_regexps$windows.absolute.path2    , nm) |
             grepl(.this.path_regexps$windows.UNC.absolute.path2, nm)]
         if (!length(nm))
             stop("no windows in Rgui; should never happen, please report!")
-        if (active <- nm[[1L]] != "R Console") nm <- nm[[1L]]
-        else if (length(nm) >= 2L) nm <- nm[[2L]]
+        else if (active <- nm[[1L]] != "R Console")
+            nm <- nm[[1L]]
+        else if (length(nm) >= 2L)
+            nm <- nm[[2L]]
         else stop(this.path_not_exists_error(paste0(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
@@ -1003,14 +1016,15 @@ this.path <- function (verbose = getOption("verbose"))
             call = sys.call(sys.nframe())))
         path <- sub(.this.path_regexps$Rgui.REditor2, "\\1", nm)
         active <- active && nm != path
-        if (grepl(.this.path_regexps$windows.absolute.path2, path, ignore.case = TRUE) ||
+        if (grepl(.this.path_regexps$windows.absolute.path2    , path) ||
             grepl(.this.path_regexps$windows.UNC.absolute.path2, path)) {
             where(if (active)
                 "active document in Rgui"
             else "source document in Rgui")
             return(normalizePath(path, winslash = "/", mustWork = FALSE))
         }
-        else stop("'this.path' used in an inappropriate fashion\n",
+        else stop(
+            "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             if (active)
                 "* active document in Rgui does not exist"
@@ -1025,7 +1039,7 @@ this.path <- function (verbose = getOption("verbose"))
         stop(this.path_unimplemented_error(paste0(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from AQUA which requires a source call on the calling stack"),
+            "* R is being run from AQUA which is currently unimplemented"),
             call = sys.call(sys.nframe())))
     }
 
