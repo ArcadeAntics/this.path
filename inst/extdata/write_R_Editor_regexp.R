@@ -55,7 +55,8 @@ tryCatch({
     Rautogui::setPAUSE(0.1)
     for (language in rownames(this.path:::languages)) {
         n <- num.RGui.sessions()
-        this.path:::Rgui(c(options, this.path:::languageEnvvars(language)), wait = FALSE, quiet = TRUE) ; Sys.sleep(0.2)
+        this.path:::Rgui(c(options, this.path:::languageEnvvars(language)),
+            wait = FALSE, quiet = TRUE) ; Sys.sleep(0.2)
         Rautogui::left(  15,   32)
         Rautogui::left( 109,   77)
         Rautogui::left( 340,  313)
@@ -76,6 +77,6 @@ tryCatch({
 x <- unique(x)
 x <- this.path:::regexQuote(x)
 x <- paste(x, collapse = "|")
-x <- paste0("(.+) - ", "(", x, ")")
+x <- paste0("(.+) - (", x, ")")
 x <- encodeString(enc2utf8(x), quote = "\"")
 writeLines(x, this.path::here("R_Editor_regexp.R"), useBytes = TRUE)
