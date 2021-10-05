@@ -519,9 +519,10 @@ this.path <- function (verbose = getOption("verbose"))
 
 
     # function to save a path in the n-th frame
-    assign.__file__ <- function(value = `attr<-`(normalizePath(path,
-        winslash = "/", mustWork = TRUE), "this.path.n", n)) {
-        assign(".__file__", value, envir = sys.frame(n), inherits = FALSE)
+    assign.__file__ <- function(value = normalizePath(path,
+        winslash = "/", mustWork = TRUE)) {
+        assign(".__file__", `attr<-`(value, "this.path.n", n),
+            envir = sys.frame(n), inherits = FALSE)
     }
 
 
@@ -669,26 +670,42 @@ this.path <- function (verbose = getOption("verbose"))
                     # local({
                     #     on.exit(closeAllConnections())
                     #     cbind(
-                    #         summary(a <- stdin(                     )),
-                    #         summary(c <- file("clipboard"           )),
-                    #         summary(d <- file("clipboard-128"       )),
-                    #         summary(e <- file("stdin"               )),
-                    #         summary(f <- file("file://clipboard"    )),
-                    #         summary(g <- file("file://clipboard-128")),
-                    #         summary(h <- file("file://stdin"        ))
+                    #         summary(a <- stdin (                      )),
+                    #         summary(b <- file  ("clipboard"           )),
+                    #         summary(c <- file  ("clipboard-128"       )),
+                    #         summary(d <- file  ("stdin"               )),
+                    #         summary(e <- file  ("file://clipboard"    )),
+                    #         summary(f <- file  ("file://clipboard-128")),
+                    #         summary(g <- file  ("file://stdin"        )),
+                    #         summary(h <- url   ("ftp://clipboard"     )),
+                    #         summary(i <- url   ("ftps://clipboard"    )),
+                    #         summary(j <- url   ("http://clipboard"    )),
+                    #         summary(k <- url   ("https://clipboard"   )),
+                    #         summary(l <- gzfile("clipboard"           )),
+                    #         summary(m <- bzfile("clipboard"           )),
+                    #         summary(n <- xzfile("clipboard"           )),
+                    #         summary(o <- unz   ("clipboard", "stdin"  )),
+                    #         summary(p <- pipe  ("clipboard"           )),
+                    #         summary(q <- fifo  ("clipboard"           ))
                     #     )
                     # })
 
 
                     path <- summary.connection(path)
-
-
-                    #
-                    if (path$class %in% c("terminal", "clipboard")) {
+                    switch(path$class, file = , gzfile = , bzfile = ,
+                        xzfile = , fifo = {
+                        path <- path$description
+                    }, `url-libcurl` = , `url-wininet` = {
+                        stop("'this.path' makes no sense for a URL")
+                    }, terminal = , clipboard = , pipe = {
                         assign.__file__(NULL)
                         next
-                    }
-                    path <- path$description
+                    }, unz = {
+                        stop("'this.path' cannot be used within a zip file")
+                    }, stop(this.path_unimplemented_error(gettextf(
+                        "'this.path' unimplemented when source-ing a connection of class %s",
+                        sQuote(path$class))))
+                    )
                 }
 
 
