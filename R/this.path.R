@@ -655,6 +655,9 @@ this.path <- function (verbose = getOption("verbose"))
                 path <- getn("ofile")
 
 
+                URL <- FALSE
+
+
                 # there are two options for 'file'
                 # * connection
                 # * character string
@@ -690,8 +693,10 @@ this.path <- function (verbose = getOption("verbose"))
                     #
                     # previously, the error would've occured at 'normalizePath',
                     # so it makes more sense to have this error here
-                    else if (grepl("^(ftp|ftps|http|https)://", path))
+                    else if (grepl("^(ftp|ftps|http|https)://", path)) {
                         stop("'this.path' makes no sense for a URL")
+                        URL <- TRUE
+                    }
 
 
                     # as of this.path_0.4.3, the path is determined slightly
@@ -758,14 +763,32 @@ this.path <- function (verbose = getOption("verbose"))
                     path <- summary.connection(path)
                     switch(path$class, file = , gzfile = , bzfile = ,
                         xzfile = , fifo = {
+
+
                         path <- path$description
+
+
                     }, `url-libcurl` = , `url-wininet` = {
+
+
                         stop("'this.path' makes no sense for a URL")
+                        URL <- TRUE
+                        path <- path$description
+
+
                     }, terminal = , clipboard = , pipe = {
+
+
                         assign.__file__(NULL)
                         next
+
+
                     }, unz = {
+
+
                         stop("'this.path' cannot be used within a zip file")
+
+
                     }, stop(this.path_unimplemented_error(gettextf(
                         "'this.path' unimplemented when source-ing a connection of class %s",
                         sQuote(path$class)),
@@ -774,7 +797,9 @@ this.path <- function (verbose = getOption("verbose"))
                 }
 
 
-                # assign .__file__ as the absolute path
+                # if (URL)
+                #     assign.__file__(path)
+                # else assign.__file__()
                 assign.__file__()
             }
             else if (is.null(getn(".__file__")))
@@ -852,6 +877,9 @@ this.path <- function (verbose = getOption("verbose"))
             if (!existsn(".__file__")) {
 
 
+                URL <- FALSE
+
+
                 # we have to use 'enc2utf8' because 'debugSource' does as well
                 path <- enc2utf8(path)
 
@@ -864,8 +892,10 @@ this.path <- function (verbose = getOption("verbose"))
                     assign.__file__(NULL)
                     next
                 }
-                else if (grepl("^(ftp|ftps|http|https)://", path))
+                else if (grepl("^(ftp|ftps|http|https)://", path)) {
                     stop("'this.path' makes no sense for a URL")
+                    URL <- TRUE
+                }
                 else if (grepl("^file://", path)) {
                     con <- file(path, "r")
                     on.exit(close(con))
@@ -873,6 +903,11 @@ this.path <- function (verbose = getOption("verbose"))
                     on.exit()
                     close(con)
                 }
+
+
+                # if (URL)
+                #     assign.__file__(path)
+                # else assign.__file__()
                 assign.__file__()
             }
             else if (is.null(getn(".__file__")))
