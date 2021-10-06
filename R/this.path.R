@@ -409,7 +409,8 @@ get(name, "tools:rstudio", inherits = FALSE)
 
 
 .this.path_regexps <- list()
-.this.path_regexps$windows.basename          <- local({
+.this.path_regexps$windows.file.sep            <- "[/\\\\]"
+.this.path_regexps$windows.basename            <- local({
 
 
     # a regular expression for one character, determines if character is good in
@@ -459,41 +460,91 @@ get(name, "tools:rstudio", inherits = FALSE)
         ")"
     )
 })
-.this.path_regexps$windows.relative.path     <- local({
+.this.path_regexps$windows.relative.path       <- local({
 
 
     # a windows relative path is at least one basename,
-    # separated from each other by backslash or slash
-    paste0("(", .this.path_regexps$windows.basename, "[/\\\\])*", .this.path_regexps$windows.basename)
+    # separated from each other by a file separator
+    paste0(
+        "(",
+            .this.path_regexps$windows.basename,
+            .this.path_regexps$windows.file.sep,
+        ")*",
+        .this.path_regexps$windows.basename
+    )
 })
-.this.path_regexps$windows.drive             <- local({
+.this.path_regexps$windows.local.drive.no.sep  <- local({
+
+    # a windows drive is any ASCII letter and a colon
+    "([a-zA-Z]:)?"
+})
+.this.path_regexps$windows.local.drive         <- local({
 
 
     # a windows drive is any ASCII letter, a colon,
     # and a backslash or slash. the letter and colon may be omitted
-    "([a-zA-Z]:)?[/\\\\]"
+    paste0(
+        .this.path_regexps$windows.local.drive.no.sep,
+        .this.path_regexps$windows.file.sep
+    )
 })
-.this.path_regexps$windows.UNC.drive         <- local({
+.this.path_regexps$windows.UNC.drive           <- local({
 
 
-    paste0("[/\\\\]{2}", .this.path_regexps$windows.basename, "[/\\\\]", .this.path_regexps$windows.basename)
+    paste0(
+        .this.path_regexps$windows.file.sep,
+        "(",
+            .this.path_regexps$windows.file.sep,
+            .this.path_regexps$windows.basename,
+        "){2}"
+    )
 })
-.this.path_regexps$windows.absolute.path     <- local({
+.this.path_regexps$windows.local.absolute.path <- local({
 
 
-    paste0(.this.path_regexps$windows.drive, "(", .this.path_regexps$windows.relative.path, ")?")
+    # paste0(.this.path_regexps$windows.local.drive, "(", .this.path_regexps$windows.relative.path, ")?")
+    paste0(
+        "(",
+                .this.path_regexps$windows.local.drive,
+            "|",
+                .this.path_regexps$windows.local.drive.no.sep,
+                "(",
+                    .this.path_regexps$windows.file.sep,
+                    .this.path_regexps$windows.basename,
+                ")+",
+        ")"
+    )
 })
-.this.path_regexps$windows.UNC.absolute.path <- local({
+.this.path_regexps$windows.UNC.absolute.path   <- local({
 
 
-    paste0("[/\\\\]{2}", "(", .this.path_regexps$windows.basename, "[/\\\\])+", .this.path_regexps$windows.basename)
+    # paste0("[/\\\\]{2}", "(", .this.path_regexps$windows.basename, "[/\\\\])+", .this.path_regexps$windows.basename)
+    paste0(
+        .this.path_regexps$windows.file.sep,
+        "(",
+            .this.path_regexps$windows.file.sep,
+            .this.path_regexps$windows.basename,
+        "){2,}"
+    )
 })
-.this.path_regexps$Rgui.REditor              <- parse("inst/extdata/R_Editor_regexp.R", keep.source = FALSE, encoding = "UTF-8")[[1L]]
+.this.path_regexps$windows.absolute.path       <- local({
 
 
-.this.path_regexps$windows.absolute.path2     <- paste0("^", .this.path_regexps$windows.absolute.path    , "$")
-.this.path_regexps$windows.UNC.absolute.path2 <- paste0("^", .this.path_regexps$windows.UNC.absolute.path, "$")
-.this.path_regexps$Rgui.REditor2              <- paste0("^", .this.path_regexps$Rgui.REditor             , "$")
+    paste0(
+        "(",
+                .this.path_regexps$windows.local.absolute.path,
+            "|",
+                .this.path_regexps$windows.UNC.absolute.path,
+        ")"
+    )
+})
+.this.path_regexps$Rgui.REditor                <- parse("inst/extdata/R_Editor_regexp.R", keep.source = FALSE, encoding = "UTF-8")[[1L]]
+
+
+.this.path_regexps$windows.local.absolute.path2 <- paste0("^", .this.path_regexps$windows.local.absolute.path, "$")
+.this.path_regexps$windows.UNC.absolute.path2   <- paste0("^", .this.path_regexps$windows.UNC.absolute.path  , "$")
+.this.path_regexps$windows.absolute.path2       <- paste0("^", .this.path_regexps$windows.absolute.path      , "$")
+.this.path_regexps$Rgui.REditor2                <- paste0("^", .this.path_regexps$Rgui.REditor               , "$")
 
 
 
@@ -1006,9 +1057,8 @@ this.path <- function (verbose = getOption("verbose"))
         # regular expression of less than 256 bytes
         nm <- names(getWindowsHandles())
         nm <- nm[nm == "R Console" |
-            grepl(.this.path_regexps$Rgui.REditor2             , nm) |
-            grepl(.this.path_regexps$windows.absolute.path2    , nm) |
-            grepl(.this.path_regexps$windows.UNC.absolute.path2, nm)]
+            grepl(.this.path_regexps$Rgui.REditor2         , nm) |
+            grepl(.this.path_regexps$windows.absolute.path2, nm) ]
         if (!length(nm))
             stop("no windows in Rgui; should never happen, please report!")
         else if (active <- nm[[1L]] != "R Console")
@@ -1022,8 +1072,7 @@ this.path <- function (verbose = getOption("verbose"))
             call = sys.call(sys.nframe())))
         path <- sub(.this.path_regexps$Rgui.REditor2, "\\1", nm)
         active <- active && nm != path
-        if (grepl(.this.path_regexps$windows.absolute.path2    , path) ||
-            grepl(.this.path_regexps$windows.UNC.absolute.path2, path)) {
+        if (grepl(.this.path_regexps$windows.absolute.path2, path)) {
             where(if (active)
                 "active document in Rgui"
             else "source document in Rgui")
