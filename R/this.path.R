@@ -192,7 +192,7 @@ initialize.__file__ <- function ()
     # The path in Windows will use / as the file separator
 
 
-    .__firstPass__ <<- FALSE
+    .__file__ <<- NA_character_
 
 
     # running from Windows command-line
@@ -398,7 +398,6 @@ initialize.__file__ <- function ()
 environment(initialize.__file__) <- new.env()
 evalq({
     .__file__ <- NULL
-    .__firstPass__ <- TRUE
 }, environment(initialize.__file__))
 
 
@@ -889,9 +888,16 @@ this.path <- function (verbose = getOption("verbose"))
         .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from Unix terminal with default GUI
 
 
-        if (.__firstPass__)
-            initialize.__file__()
+        # .__file__ will be:
+        #
+        # NULL when it hasn't been initialized
+        # NA_character_ when it has been initialized and no path was found
+        # anything else when it has been initialized and a path was found
+
+
         if (is.null(.__file__))
+            initialize.__file__()
+        if (is.na(.__file__))
             stop(this.path_not_exists_error(paste0(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
