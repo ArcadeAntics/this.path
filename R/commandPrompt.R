@@ -13,7 +13,11 @@ commandPrompt <- function (OS.type = NULL)
     if (is.null(OS.type)) OS.type <- match.OS.type(Sys.getenv("R_THIS_PATH_COMMAND_PROMPT_OS_TYPE"))
     if (!is.null(OS.type)) {}
     else if (.Platform$OS.type == "windows") {  # on Windows
-        OS.type <- "windows"
+        OS.type <- switch(basename(Sys.getenv("COMSPEC")),
+            cmd.exe = "cmd",
+            powershell.exe = "powershell",
+            "windows"
+        )
     }
     else if (capabilities("aqua")) {            # on macOS (see ?capabilities)
         OS.type <- "macOS"
