@@ -39,7 +39,7 @@ commandPrompt <- function (OS.type = NULL)
         if (!is.null(wd)) {
             if (.Platform$OS.type == "windows")
                 wd <- chartr("/", "\\", wd)
-            if (startsWith(wd, "\\\\"))  # network file
+            if (grepl("^[/\\\\]{2}", wd))  # network file
                 wd <- paste0("Microsoft.Powershell.Core\\FileSystem::", wd)
         }
         else wd <- "NULL"
@@ -65,9 +65,12 @@ commandPrompt <- function (OS.type = NULL)
 
         if (!is.null(wd)) {
             wd <- path.contract(wd)
-            if (.Platform$OS.type == "windows" &&
-                grepl(pattern <- "^[a-zA-Z]:", wd))
-                wd <- sub(pattern, "", wd)
+            if (.Platform$OS.type == "windows") {
+                wd <- chartr("\\", "/", wd)
+                if (grepl(pattern <- paste0("^", normalizePath("/", "/", FALSE)),
+                    wd, ignore.case = TRUE))
+                    wd <- sub(pattern, "/", wd, ignore.case = TRUE)
+            }
         }
         else wd <- "NULL"
         sys.info <- Sys.info()
