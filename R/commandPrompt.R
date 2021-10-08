@@ -63,8 +63,12 @@ commandPrompt <- function (OS.type = NULL)
     }, ubuntu = , unix = {                          # Ubuntu command prompt
 
 
-        if (!is.null(wd))
+        if (!is.null(wd)) {
             wd <- path.contract(wd)
+            if (.Platform$OS.type == "windows" &&
+                grepl(pattern <- "^[a-zA-Z]:", wd))
+                wd <- sub(pattern, "", wd)
+        }
         else wd <- "NULL"
         sys.info <- Sys.info()
         x <- c("\033[38;5;70m", "\033[1m",
