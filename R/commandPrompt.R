@@ -60,7 +60,9 @@ commandPrompt <- function (OS.type = NULL)
         }
         else wd <- "NULL"
         sys.info <- Sys.info()
-        nodename <- sub("\\.(lan|local)$", "", sys.info[["nodename"]])
+        nodename <- if (capabilities("aqua"))
+            sub("\\.(lan|local)$", "", sys.info[["nodename"]])
+        else sys.info[["nodename"]]
         paste0(nodename, ":", wd, " ", sys.info[["effective_user"]], "$ ")
 
 
@@ -78,10 +80,13 @@ commandPrompt <- function (OS.type = NULL)
         }
         else wd <- "NULL"
         sys.info <- Sys.info()
+        nodename <- if (capabilities("aqua"))
+            sub("\\.(lan|local)$", "", sys.info[["nodename"]])
+        else sys.info[["nodename"]]
         x <- c("\033[38;5;70m", "\033[1m",
         #       1~~~~~~~~~~~~    2~~~~~~
 
-            sys.info[["effective_user"]], "@", sys.info[["nodename"]],
+            sys.info[["effective_user"]], "@", nodename,
 
             "\033[22m", "\033[39m",
         #    3~~~~~~~    4~~~~~~~
