@@ -16,8 +16,7 @@
         Sys.setenv(R_THIS_PATH_QUIET = quiet)
     }
     if (!quiet) cat(commandPrompt(), command, "\n", sep = "")
-    value <- system(command, intern = intern, wait = wait | intern,
-        show.output.on.console = wait, ...)
+    value <- system(command, intern = intern, wait = wait, ...)
     if (intern) value
     else {
         if (!value || is.na(mustWork)) {
