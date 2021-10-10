@@ -487,7 +487,7 @@ tryCatch((function() {
     write.results({
         cat2(paste0("If ", sQuote("this.path"), " did not correctly determine ",
             "the executing script's filename, please send a bug report ",
-            "using:"), "\\nutils::bug.report(package = \\"this.path\\")")
+            "using:"), "\\nutils::bug.report(package = \\"this.path\\")\\n")
     })
 
 
