@@ -180,7 +180,7 @@ tryCatch((function() {
 
 
     FILE <- tryCatch({
-        normalizePath(tempfile("scrp", tmpdir = tempdir, fileext = ".R"),
+        normalizePath(tempfile("scrp", tmpdir = tmpdir, fileext = ".R"),
             winslash = "/", mustWork = FALSE)
     }, condition = function(c) {
         stop(errorCondition(paste0(conditionMessage(c),
