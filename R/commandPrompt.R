@@ -60,7 +60,7 @@ commandPrompt <- function (OS.type = NULL)
         }
         else wd <- "NULL"
         sys.info <- Sys.info()
-        nodename <- sub("\\.local$", "", sys.info[["nodename"]])
+        nodename <- sub("\\.(lan|local)$", "", sys.info[["nodename"]])
         paste0(nodename, ":", wd, " ", sys.info[["effective_user"]], "$ ")
 
 
