@@ -174,9 +174,13 @@ tryCatch((function() {
     on.exit(options(oopt))
 
 
+    # minor change for macOS, normalize the 'tempdir' first
+    tmpdir <- normalizePath(tempdir(check = TRUE),
+        winslash = "/", mustWork = TRUE)
+
+
     FILE <- tryCatch({
-        normalizePath(tempfile("scrp",
-            tmpdir = tempdir(check = TRUE), fileext = ".R"),
+        normalizePath(tempfile("scrp", tmpdir = tempdir, fileext = ".R"),
             winslash = "/", mustWork = FALSE)
     }, condition = function(c) {
         stop(errorCondition(paste0(conditionMessage(c),
@@ -189,7 +193,7 @@ tryCatch((function() {
     results.file <- tryCatch({
         .Sys.time <- format(Sys.time(), "\%Y-\%m-\%d_\%H.\%M.\%OS_")
         normalizePath(tempfile(paste0("rslt", .Sys.time),
-            tmpdir = dirname(FILE), fileext = ".txt"),
+            tmpdir = tmpdir, fileext = ".txt"),
             winslash = "/", mustWork = FALSE)
     }, condition = base::as.null)
     on.exit(unlink(results.file), add = TRUE)
