@@ -1,0 +1,60 @@
+This is the README file for R package 'this.path'. The goal
+of 'this.path' is to provide a mechanism for retrieving the
+absolute path of an R script from within said script, and
+without needing to explicitly write down the path within
+said script. As as added benefit, it provides a mechanism
+for specifying absolute file paths relative to a script's
+directory without changing the working directory.
+
+This is something that Python has natively. When a Python
+script is run, it makes a variable '__file__' that is the
+absolute path of the script in which it was created. This
+package seeks to provide the same idea.
+
+'this.path()' will return the absolute path of the R script
+in which it is written. 'this.dir()' will return the
+absolute path of the directory of the R script in which it
+is written. 'here()' is a method of specifying file paths
+in a similar manner to 'file.path()', prepended by the
+directory of the executing R script.
+
+
+
+
+
+# this.path vs here ----
+
+A similar R package to 'this.path' is 'here' by Kirill
+Müller. 'this.path' provides a mechanism for specifying a
+path relative to the executing R script's directory, while
+'here' provides a mechanism for specifying a path relative
+to the project's directory.
+
+As a long time 'here' user, I appreciate all the
+functionality and convenience this package offered, but it
+has some faults that 'this.path' overcomes. I mean no hate
+when I say the things I'm about to say, it's not that I
+dislike 'here', but that I could no longer use it because
+of my specific use-case.
+
+There are two reasons why 'here' was not working for me and
+why I had to make this package:
+
+'here' does not work when two projects rely on each other.
+In my scenario, I had project A and B, both of which rarely
+relied on the other (so I did not want to combine them),
+but had once instance in which they ran a script from the
+other project. However, the project root was already set to
+the root of project A, so when I tried to run the script in
+project B from a script in project A, the project root did
+not update and the script in project B would fail.
+
+'here' does not work when a project is stored on the
+internet. When I say on the internet, I am not referring to
+a project stored in a UNC drive, that still works
+correctly. I'm talking about projects uploaded to a
+website. The work I do requires that all source code and
+input be publicly available through our website, and that
+the code should run as expected (as slow as it may be).
+Since the project root of 'here' cannot be a URL, I cannot
+use it.
