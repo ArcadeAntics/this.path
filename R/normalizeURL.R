@@ -8,5 +8,14 @@ normalizeURL <- function (path, against)
     i <- !(is.na(path) | grepl("^(ftp|ftps|http|https)://", path))
     if (any(i))
         path[i] <- paste(against, path[i], sep = "/")
-    path
+    value <- path.split(path)
+    vapply(value, function(x) {
+        x <- x[x != "."]
+        while (i <- match("..", x, nomatch = 0L)) {
+            if (i >= 3L)
+                x <- x[-i + 0L:1L]
+            else stop("HTTP status 400 Bad Request")
+        }
+        paste(x, collapse = "/")
+    }, FUN.VALUE = "")
 }
