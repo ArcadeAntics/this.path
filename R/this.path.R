@@ -1145,7 +1145,7 @@ environment(this.path) <- environment(initialize.__file__)
 this.dir <- function (...)
 {
     value <- this.path(...)
-    if (grepl("^(ftp|ftps|http|https)://"))
+    if (grepl("^(ftp|ftps|http|https)://", value))
         .normalizeURL(paste0(value, "/.."))
     else dirname(value)
 }
