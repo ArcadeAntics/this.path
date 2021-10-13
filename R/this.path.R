@@ -561,14 +561,14 @@ this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
 this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
 
 
-this.path_not_exists_error <- function (message, ..., class = "this.path_this.path_not_exists_error",
-    call = NULL)
-errorCondition(message = message, ..., class = class, call = call)
-
-
-this.path_unimplemented_error <- function (message, ..., class = "this.path_this.path_unimplemented_error",
-    call = NULL)
-errorCondition(message = message, ..., class = class, call = call)
+# this.path_not_exists_error <- function (message, ..., class = "this.path_this.path_not_exists_error",
+#     call = NULL)
+# errorCondition(message = message, ..., class = class, call = call)
+#
+#
+# this.path_unimplemented_error <- function (message, ..., class = "this.path_this.path_unimplemented_error",
+#     call = NULL)
+# errorCondition(message = message, ..., class = class, call = call)
 
 
 this.path <- function (verbose = getOption("verbose"))
