@@ -9,7 +9,7 @@ cat(sQuote(this.path::this.dir(verbose = TRUE)), "\n\n", sep = "")
 cat("Testing 'here':\n")
 withAutoprint({
     this.path::here("test.R")
-    this.path::here(.. = 1L, "R", "this.path.R")
+    this.path::here(.. = 1, "R", "this.path.R")
 })
 
 
