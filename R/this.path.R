@@ -583,8 +583,9 @@ this.path <- function (verbose = getOption("verbose"))
 
 
     # function to save a path in the n-th frame
-    assign.__file__ <- function(value = normalizePath(path,
-        winslash = "/", mustWork = TRUE)) {
+    assign.__file__ <- function(value = if (grepl("^(ftp|ftps|http|https)://", path))
+            .normalizeURL(path)
+        else normalizePath(path, winslash = "/", mustWork = TRUE)) {
         assign(".__file__", `attr<-`(value, "this.path.n", n),
             envir = sys.frame(n), inherits = FALSE)
     }
@@ -655,7 +656,7 @@ this.path <- function (verbose = getOption("verbose"))
                 path <- getn("ofile")
 
 
-                URL <- FALSE
+                # URL <- FALSE
 
 
                 # there are two options for 'file'
@@ -694,8 +695,8 @@ this.path <- function (verbose = getOption("verbose"))
                     # previously, the error would've occured at 'normalizePath',
                     # so it makes more sense to have this error here
                     else if (grepl("^(ftp|ftps|http|https)://", path)) {
-                        stop("'this.path' makes no sense for a URL")
-                        URL <- TRUE
+                        # stop("'this.path' makes no sense for a URL")
+                        # URL <- TRUE
                     }
 
 
@@ -771,8 +772,8 @@ this.path <- function (verbose = getOption("verbose"))
                     }, `url-libcurl` = , `url-wininet` = {
 
 
-                        stop("'this.path' makes no sense for a URL")
-                        URL <- TRUE
+                        # stop("'this.path' makes no sense for a URL")
+                        # URL <- TRUE
                         path <- path$description
 
 
@@ -797,9 +798,6 @@ this.path <- function (verbose = getOption("verbose"))
                 }
 
 
-                # if (URL)
-                #     assign.__file__(path)
-                # else assign.__file__()
                 assign.__file__()
             }
             else if (is.null(getn(".__file__")))
@@ -1145,4 +1143,9 @@ environment(this.path) <- environment(initialize.__file__)
 
 
 this.dir <- function (...)
-dirname(this.path(...))
+{
+    value <- this.path(...)
+    if (grepl("^(ftp|ftps|http|https)://"))
+        .normalizeURL(paste0(value, "/.."))
+    else dirname(value)
+}
