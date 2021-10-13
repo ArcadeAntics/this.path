@@ -891,8 +891,8 @@ this.path <- function (verbose = getOption("verbose"))
                     next
                 }
                 else if (grepl("^(ftp|ftps|http|https)://", path)) {
-                    stop("'this.path' makes no sense for a URL")
-                    URL <- TRUE
+                    # stop("'this.path' makes no sense for a URL")
+                    # URL <- TRUE
                 }
                 else if (grepl("^file://", path)) {
                     con <- file(path, "r")
@@ -903,9 +903,6 @@ this.path <- function (verbose = getOption("verbose"))
                 }
 
 
-                # if (URL)
-                #     assign.__file__(path)
-                # else assign.__file__()
                 assign.__file__()
             }
             else if (is.null(getn(".__file__")))
