@@ -794,10 +794,13 @@ this.path <- function (verbose = getOption("verbose"))
                         stop("'this.path' cannot be used within a zip file")
 
 
-                    }, stop(this.path_unimplemented_error(gettextf(
-                        "'this.path' unimplemented when source-ing a connection of class %s",
-                        sQuote(path$class)),
-                        call = sys.call(sys.nframe())))
+                    },
+                    error("'this.path' unimplemented when source-ing a connection of class ",
+                        sQuote(path$class), class = this.path_unimplemented_error_class)
+                    # stop(this.path_unimplemented_error(gettextf(
+                    #     "'this.path' unimplemented when source-ing a connection of class %s",
+                    #     sQuote(path$class)),
+                    #     call = sys.call(sys.nframe())))
                     )
                 }
 
@@ -832,8 +835,10 @@ this.path <- function (verbose = getOption("verbose"))
                 # "clipboard", "clipboard-128", or "stdin" since none of these
                 # refer to files
                 if (path %in% c("clipboard", "clipboard-128", "stdin"))
-                    stop(errorCondition("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
-                        call = sys.call(n)))
+                    error("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                        call = sys.call(n))
+                    # stop(errorCondition("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                    #     call = sys.call(n)))
 
 
                 else if (existsn("owd")) {
@@ -936,8 +941,10 @@ this.path <- function (verbose = getOption("verbose"))
                 # "clipboard", "clipboard-128", or "stdin" since none of these
                 # refer to files
                 if (path %in% c("clipboard", "clipboard-128", "stdin"))
-                    stop(errorCondition("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
-                        call = sys.call(n)))
+                    error("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                        call = sys.call(n))
+                    # stop(errorCondition("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                    #     call = sys.call(n)))
 
 
                 else if (existsn("old_dir")) {
@@ -983,11 +990,16 @@ this.path <- function (verbose = getOption("verbose"))
         if (is.null(.__file__))
             initialize.__file__()
         if (is.na(.__file__))
-            stop(this.path_not_exists_error(paste0(
+            error(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
-                "* R is being run from the command-line and argument 'FILE' is missing"),
-                call = sys.call(sys.nframe())))
+                "* R is being run from the command-line and argument 'FILE' is missing",
+                class = this.path_not_exists_error_class)
+            # stop(this.path_not_exists_error(paste0(
+            #     "'this.path' used in an inappropriate fashion\n",
+            #     "* no appropriate source call was found up the calling stack\n",
+            #     "* R is being run from the command-line and argument 'FILE' is missing"),
+            #     call = sys.call(sys.nframe())))
         where("command-line argument 'FILE'")
         return(.__file__)
     }
@@ -997,11 +1009,16 @@ this.path <- function (verbose = getOption("verbose"))
     else if (.Platform$OS.type == "unix" && .Platform$GUI == "Tk") {
 
 
-        stop(this.path_not_exists_error(paste0(
+        error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Tk which requires a source call on the calling stack"),
-            call = sys.call(sys.nframe())))
+            "* R is being run from Tk which requires a source call on the calling stack",
+            class = this.path_not_exists_error_class)
+        # stop(this.path_not_exists_error(paste0(
+        #     "'this.path' used in an inappropriate fashion\n",
+        #     "* no appropriate source call was found up the calling stack\n",
+        #     "* R is being run from Tk which requires a source call on the calling stack"),
+        #     call = sys.call(sys.nframe())))
     }
 
 
@@ -1031,7 +1048,7 @@ this.path <- function (verbose = getOption("verbose"))
                     "* no appropriate source call was found up the calling stack\n",
                     "* R is being run from RStudio with no documents open\n",
                     "  (or source document has no path)",
-                    class = this.path_unimplemented_error_class
+                    class = this.path_not_exists_error_class
                 )
                 # stop(this.path_not_exists_error(paste0(
                 #     "'this.path' used in an inappropriate fashion\n",
@@ -1106,11 +1123,16 @@ this.path <- function (verbose = getOption("verbose"))
             nm <- nm[[1L]]
         else if (length(nm) >= 2L)
             nm <- nm[[2L]]
-        else stop(this.path_not_exists_error(paste0(
+        else error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Rgui with no documents open"),
-            call = sys.call(sys.nframe())))
+            "* R is being run from Rgui with no documents open",
+            class = this.path_not_exists_error_class)
+        # else stop(this.path_not_exists_error(paste0(
+        #     "'this.path' used in an inappropriate fashion\n",
+        #     "* no appropriate source call was found up the calling stack\n",
+        #     "* R is being run from Rgui with no documents open"),
+        #     call = sys.call(sys.nframe())))
         path <- sub(.this.path_regexps$Rgui.REditor2, "\\1", nm)
         active <- active && nm != path
         if (grepl(.this.path_regexps$windows.absolute.path2, path)) {
@@ -1132,20 +1154,30 @@ this.path <- function (verbose = getOption("verbose"))
     else if (.Platform$OS.type == "unix" && .Platform$GUI == "AQUA") {
 
 
-        stop(this.path_unimplemented_error(paste0(
+        error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from AQUA which is currently unimplemented"),
-            call = sys.call(sys.nframe())))
+            "* R is being run from AQUA which is currently unimplemented",
+            class = this.path_unimplemented_error_class)
+        # stop(this.path_unimplemented_error(paste0(
+        #     "'this.path' used in an inappropriate fashion\n",
+        #     "* no appropriate source call was found up the calling stack\n",
+        #     "* R is being run from AQUA which is currently unimplemented"),
+        #     call = sys.call(sys.nframe())))
     }
 
 
     # running R in another manner
-    else stop(this.path_unimplemented_error(paste0(
+    else error(
         "'this.path' used in an inappropriate fashion\n",
         "* no appropriate source call was found up the calling stack\n",
-        "* R is being run in an unrecognized manner"),
-        call = sys.call(sys.nframe())))
+        "* R is being run in an unrecognized manner",
+        class = this.path_unimplemented_error_class)
+    # else stop(this.path_unimplemented_error(paste0(
+    #     "'this.path' used in an inappropriate fashion\n",
+    #     "* no appropriate source call was found up the calling stack\n",
+    #     "* R is being run in an unrecognized manner"),
+    #     call = sys.call(sys.nframe())))
 }
 environment(this.path) <- environment(initialize.__file__)
 
