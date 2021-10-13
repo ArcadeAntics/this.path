@@ -557,6 +557,10 @@ if (!all(nchar(.this.path_regexps, type = "bytes") < 256L))
 
 
 
+this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
+this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
+
+
 this.path_not_exists_error <- function (message, ..., class = "this.path_this.path_not_exists_error",
     call = NULL)
 errorCondition(message = message, ..., class = class, call = call)
@@ -1022,12 +1026,19 @@ this.path <- function (verbose = getOption("verbose"))
         if (!active) {
             context <- tools.rstudio(".rs.api.getSourceEditorContext")()
             if (is.null(context))
-                stop(this.path_not_exists_error(paste0(
+                error(
                     "'this.path' used in an inappropriate fashion\n",
                     "* no appropriate source call was found up the calling stack\n",
                     "* R is being run from RStudio with no documents open\n",
-                    "  (or source document has no path)"),
-                    call = sys.call(sys.nframe())))
+                    "  (or source document has no path)",
+                    class = this.path_unimplemented_error_class
+                )
+                # stop(this.path_not_exists_error(paste0(
+                #     "'this.path' used in an inappropriate fashion\n",
+                #     "* no appropriate source call was found up the calling stack\n",
+                #     "* R is being run from RStudio with no documents open\n",
+                #     "  (or source document has no path)"),
+                #     call = sys.call(sys.nframe())))
         }
         path <- context$path
 
@@ -1146,3 +1157,33 @@ this.dir <- function (...)
         .normalizeURL(paste0(value, "/.."))
     else dirname(value)
 }
+
+
+
+
+
+this.path2 <- as.function(list(
+    ... = quote(expr = ),
+    as.call(structure(
+              list(quote(tryCatch), quote(this.path(...)), quote(function(c) NULL)               ),
+        .Names = c(""             , ""                  , this.path_not_exists_error_class[[1L]])
+    ))
+))
+
+
+this.dir2 <- as.function(list(
+    ... = quote(expr = ),
+    as.call(structure(
+              list(quote(tryCatch), quote(this.dir(...)), quote(function(c) NULL)               ),
+        .Names = c(""             , ""                  , this.path_not_exists_error_class[[1L]])
+    ))
+))
+
+
+this.dir3 <- as.function(list(
+    ... = quote(expr = ),
+    as.call(structure(
+              list(quote(tryCatch), quote(this.dir(...)), quote(function(c) getwd())            ),
+        .Names = c(""             , ""                  , this.path_not_exists_error_class[[1L]])
+    ))
+))

@@ -13,3 +13,7 @@ normalizeAgainst <- function (..., against = this.dir(verbose = FALSE))
     }
     else stop("invalid 'against' argument")
 }
+
+
+.normalizePath <- function (..., wd = NULL)
+normalizeAgainst(..., against = wd)
