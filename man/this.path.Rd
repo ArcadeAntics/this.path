@@ -505,12 +505,12 @@ path is normalized against the working directory.
 %
 %
 \examples{
-this.path:::write.code({
+this.path:::write.code(withAutoprint({
     cat(sQuote(this.path::this.path(verbose = TRUE)), "\\n\\n")
-}, FILE <- tempfile())
+}, verbose = FALSE), FILE <- tempfile())
 
 
-source(FILE, echo = TRUE, verbose = FALSE)
+source(FILE, verbose = FALSE)
 sys.source(FILE, envir = environment())
 if (.Platform$GUI == "RStudio")
     this.path:::tools.rstudio("debugSource")(FILE)
