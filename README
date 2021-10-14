@@ -2,10 +2,10 @@ This is the README file for R package 'this.path'. The goal
 of 'this.path' is to provide a mechanism for retrieving the
 absolute path of an R script from within said R script, and
 without needing to explicitly write down the path within
-said R script or outside of the context of the R script. As
-an added benefit, it provides a mechanism for specifying
-absolute file paths relative to a script's directory
-(without changing the working directory).
+said R script or anywhere outside the context of the R
+script. As an added benefit, it provides a mechanism for
+specifying absolute file paths relative to a script's
+directory (without changing the working directory).
 
 This is something that Python has natively. When a Python
 script is run, it makes a variable '__file__' that is the
@@ -67,7 +67,7 @@ file and skips that source call appropriately. For example,
 'source("")', 'source("clipboard")', and 'source("stdin")'
 would all be skipped because they do not open files,
 whereas 'whereami' would return the string above
-(normalized against the working directory).
+(incorrectly normalized against the working directory).
 
 Fourth, 'this.path' won't fail if given a URL or file URL
 for a string instead of a path, whereas 'whereami' would
@@ -161,8 +161,10 @@ referring to a project stored in a UNC drive, that still
 works correctly. I'm talking about projects uploaded to a
 website. The work I do requires that all source code and
 input be publicly available through our website, and that
-the code should run as expected (slow as it may be). Since
-the project root of 'here' cannot be a URL, I can't use it.
+the code should run as expected (slow as it may be, and
+only code that exclusively reads files and / / or produces
+graphics). Since the project root of 'here' cannot be a
+URL, I can't use it.
 
 With 'this.path', both of these issues are solved. I can
 run a script in project B from a script in project A
