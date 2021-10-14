@@ -22,26 +22,16 @@ the number of directories to go back.
 }
 \details{
 The path to a file begins with a base. The base is \code{..} number of
-directories up from the executing script's directory (\code{this.dir()}). For
-context, in Windows and under Unix-alikes, \code{".."} refers to the previous
-directory, which is why I chose to name the argument \code{..} to refer to the
-number of directories to traverse upwards.
-
-If you take a look at the function body, we use
-\code{\link[base:basename]{dirname}()} \code{..} number of times to go back
-\code{..} number of directories. While something like
-\code{file.path(this.dir(), paste(rep("..", ..), collapse = "/"), ...)} should
-construct an equivalent path, the \code{".."} are not immediately expanded, so
-it makes \code{\link[base]{basename}} and \code{\link[base:basename]{dirname}}
-behave unexpectedly.
+directories back from the executing script's directory (\code{this.dir()}). The
+argument is named \code{..} because \code{".."} refers to the parent directory
+in Windows, Unix, and URL paths alike.
 }
 \value{
 A character vector of the arguments concatenated term-by-term, beginning with
 the executing script's directory.
 }
 \examples{
-FILE <- tempfile()
-writeLines(deparse(quote(withAutoprint({
+this.path:::write.code(withAutoprint({
 
 
     here()
@@ -57,9 +47,7 @@ writeLines(deparse(quote(withAutoprint({
     here("script2.R")
 
 
-}, verbose = FALSE))), FILE)
+}, verbose = FALSE), FILE <- tempfile())
+source(FILE, verbose = FALSE)
 Rscript("--default-packages=this.path", FILE)
-
-
-unlink(FILE)
-}
+\dontshow{unlink(FILE)}}
