@@ -6,5 +6,10 @@ write.code <- function (x, file = stdout(), evaluated = FALSE, simplify = !evalu
         vapply(as.list(x[-1]), deparse1, width.cutoff = 60L,
             collapse = "\n", FUN.VALUE = "")
     else deparse1(x, width.cutoff = 60L, collapse = "\n")
-    writeLines(x, file, useBytes = TRUE)
+    if (is.null(file))
+        x
+    else {
+        writeLines(x, file, useBytes = TRUE)
+        invisible(x)
+    }
 }
