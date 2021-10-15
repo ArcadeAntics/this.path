@@ -1157,7 +1157,7 @@ this.path <- function (verbose = getOption("verbose"))
         error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from AQUA which is currently unimplemented\m",
+            "* R is being run from AQUA which is currently unimplemented\n",
             "      consider using RStudio until such a time when this is implemented",
             class = this.path_unimplemented_error_class)
         # stop(this.path_unimplemented_error(paste0(
