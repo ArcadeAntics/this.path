@@ -33,13 +33,11 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
-\code{\link{this.path}}
+\code{\link{this.path}}, \code{\link{here}}
 
-\code{\link[base]{source}}
-
-\code{\link[base]{sys.source}}
-
-\code{\link[testthat:source_file]{testthat::source_file}}
+\code{\link[base]{source}}, \code{\link[base]{sys.source}},
+\href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
+\code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
 
 \code{\link{Running.R.from.command-line}}
 }
