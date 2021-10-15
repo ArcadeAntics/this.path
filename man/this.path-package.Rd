@@ -8,8 +8,8 @@
 \packageDescription{this.path}
 }
 \details{
-There are only two functions from this package being \code{this.path} and
-\code{this.dir}.
+The three most important functions from this package are \code{this.path},
+\code{this.dir}, and \code{here}.
 
 \code{\link{this.path}()} returns the
 \code{\link[base:normalizePath]{normalized}} path of the executing script.
@@ -18,13 +18,21 @@ There are only two functions from this package being \code{this.path} and
 \code{\link[base:basename]{dirname}(this.path())}, returning the
 \code{\link[base:normalizePath]{normalized}} path of the directory in which the
 executing script is located.
+
+\code{\link{here}()} constructs file paths relative the executing script's
+directory.
 }
 \note{
-This package started because of a stack overflow posting, found at
+This package started from a stack overflow posting, found at:
 
 \href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script}{
 https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script
-}.
+}
+
+If you like this package, please consider upvoting my answer so that more
+people will see it! If you have an issue with this package, please use
+\code{\link[utils:bug.report]{utils::bug.report}(package = "this.path")} to
+report your issue.
 }
 \author{
 \packageAuthor{this.path}
