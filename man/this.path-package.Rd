@@ -19,7 +19,7 @@ The three most important functions from this package are \code{this.path},
 \code{\link[base:normalizePath]{normalized}} path of the directory in which the
 executing script is located.
 
-\code{\link{here}()} constructs file paths relative the executing script's
+\code{\link{here}()} constructs file paths relative to the executing script's
 directory.
 }
 \note{
