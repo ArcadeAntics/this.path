@@ -40,7 +40,9 @@ source call. The calls are searched in reverse order so as to grab the most
 recent source call in the case of nested source calls. If a source call was
 found, the argument \var{file} (\var{fileName} in the case of
 \code{debugSource}, \var{path} in the case of \code{testthat::source_file}) is
-returned from the function's evaluation environment.
+returned from the function's evaluation environment. If you have your own
+source-like function that you'd like to be recognized by \code{this.path},
+please contact \packageMaintainer{this.path} so it can be implemented.
 
 If no source call is found up the calling stack, then an attempt is made to
 figure out how \R is currently being used.
@@ -51,6 +53,11 @@ arguments are searched for \option{-f} \option{FILE} or \option{--file=FILE}
 type of argument is supplied, the text \option{FILE} is returned. It is an error
 to use \code{this.path} when none or multiple arguments of either type are
 supplied.
+
+If \R is being run from the Unix terminal with \option{-g} \option{Tk} or
+\option{--gui=Tk}, \code{this.path()} will signal an error. This is because
+\sQuote{Tk} does not make use of its \option{-f} \option{FILE},
+\option{--file=FILE} argument.
 
 If \R is being run from \sQuote{RStudio}, the active document's filename (the
 document in which the cursor is active) is returned (at the time of evaluation).
@@ -71,7 +78,16 @@ closing the document or interacting with another document) while any calls to
 \code{this.path} have yet to be evaluated in the run selection. It is an error
 for no documents to be open or for a document to not exist (not saved anywhere).
 
+If \R is being run from \sQuote{AQUA}, the executing script's path cannot be
+determined. Unlike \sQuote{RStudio} and \sQuote{Rgui}, there is currently no
+way to request the path of an open document. Until such a time that there is a
+method for requesting the path of an open document, consider using
+\sQuote{RStudio}.
+
 If \R is being run in another manner, it is an error to use \code{this.path}.
+
+If your GUI of choice is not implemented with \code{this.path}, please contact
+\packageMaintainer{this.path} so it can be implemented.
 }
 \value{
 character string; the executing script's filename.
@@ -82,15 +98,27 @@ The first time \code{this.path} is called within a script, it will
 script exists (throwing an error if it does not), and save it in the appropriate
 environment. When \code{this.path} is called subsequent times within the same
 script, it returns the saved path. This will be faster than the first time, will
-not check for file existence, and will not depend on the working directory. This
-means that a script can delete itself using
+not check for file existence, and will be independent of the working directory.
+
+As a side effect, this means that a script can delete itself using
 \code{\link[base:files]{file.remove}} or \code{\link[base]{unlink}} but still
 know its own path for the remainder of the script.
 
 Within a script that contains calls to both \code{this.path} and
 \code{\link[base:getwd]{setwd}}, \code{this.path} \emph{MUST} be used
-\emph{AT LEAST} once before the first call to \code{setwd} since the script's
-path is normalized against the working directory.
+\emph{AT LEAST} once before the first call to \code{setwd}. This isn't always
+necessary; for instance if you ran a script using its absolute path as opposed
+to its relative path, changing the working directory has no effect. However, it
+is still advised against.
+
+The following is \emph{NOT} an example of bad practice:
+
+\code{setwd(this.path::this.dir())}
+
+\code{setwd} is most certainly written before \code{this.path()}, but
+\code{this.path()} will be evaluated first. It is not the written order that is
+bad practice, but the order of evaluation. Do not change the working directory
+before calling \code{this.path} at least once.
 }
 \seealso{
 \code{\link{here}}
@@ -98,7 +126,8 @@ path is normalized against the working directory.
 \code{\link{this.path-package}}
 
 \code{\link[base]{source}}, \code{\link[base]{sys.source}},
-\code{\link[testthat:source_file]{testthat::source_file}}
+\href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
+\code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
 
 \code{\link{Running.R.from.command-line}}
 }
