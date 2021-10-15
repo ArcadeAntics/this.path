@@ -587,9 +587,9 @@ this.path <- function (verbose = getOption("verbose"))
 
 
     # function to save a path in the n-th frame
-    assign.__file__ <- function(value = if (grepl("^(ftp|ftps|http|https)://", path))
+    assign.__file__ <- function(value = if (URL)
             .normalizeURL(path)
-        else normalizePath(path, winslash = "/", mustWork = TRUE)) {
+        else normalizePath(path, winslash = "/", mustWork = TRUE), URL = FALSE) {
         assign(".__file__", `attr<-`(value, "this.path.n", n),
             envir = sys.frame(n), inherits = FALSE)
     }
@@ -660,7 +660,7 @@ this.path <- function (verbose = getOption("verbose"))
                 path <- getn("ofile")
 
 
-                # URL <- FALSE
+                URL <- FALSE
 
 
                 # there are two options for 'file'
@@ -700,7 +700,7 @@ this.path <- function (verbose = getOption("verbose"))
                     # so it makes more sense to have this error here
                     else if (grepl("^(ftp|ftps|http|https)://", path)) {
                         # stop("'this.path' makes no sense for a URL")
-                        # URL <- TRUE
+                        URL <- TRUE
                     }
 
 
@@ -777,7 +777,7 @@ this.path <- function (verbose = getOption("verbose"))
 
 
                         # stop("'this.path' makes no sense for a URL")
-                        # URL <- TRUE
+                        URL <- TRUE
                         path <- path$description
 
 
@@ -805,7 +805,7 @@ this.path <- function (verbose = getOption("verbose"))
                 }
 
 
-                assign.__file__()
+                assign.__file__(URL = URL)
             }
             else if (is.null(getn(".__file__")))
                 next
@@ -901,7 +901,7 @@ this.path <- function (verbose = getOption("verbose"))
                 }
                 else if (grepl("^(ftp|ftps|http|https)://", path)) {
                     # stop("'this.path' makes no sense for a URL")
-                    # URL <- TRUE
+                    URL <- TRUE
                 }
                 else if (grepl("^file://", path)) {
                     con <- file(path, "r")
@@ -912,7 +912,7 @@ this.path <- function (verbose = getOption("verbose"))
                 }
 
 
-                assign.__file__()
+                assign.__file__(URL = URL)
             }
             else if (is.null(getn(".__file__")))
                 next
@@ -1012,7 +1012,7 @@ this.path <- function (verbose = getOption("verbose"))
         error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Tk which requires a source call on the calling stack",
+            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE argument",
             class = this.path_not_exists_error_class)
         # stop(this.path_not_exists_error(paste0(
         #     "'this.path' used in an inappropriate fashion\n",
@@ -1157,7 +1157,8 @@ this.path <- function (verbose = getOption("verbose"))
         error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from AQUA which is currently unimplemented",
+            "* R is being run from AQUA which is currently unimplemented\m",
+            "      consider using RStudio until such a time when this is implemented",
             class = this.path_unimplemented_error_class)
         # stop(this.path_unimplemented_error(paste0(
         #     "'this.path' used in an inappropriate fashion\n",
