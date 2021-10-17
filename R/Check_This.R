@@ -30,7 +30,7 @@ Check_This <- function (
     #
     #     build.vignettes = TRUE, no.build.vignettes = !build.vignettes,
     #     manual = TRUE, no.manual = !manual,
-    #     resave.data = !no.resave.data, no.resave.data = FALSE,
+    #     resave.data = FALSE, no.resave.data = FALSE,
     #
     #     build = FALSE,
     #     multiarch = TRUE, no.multiarch = !multiarch,
