@@ -1,7 +1,7 @@
 Check_This <- function (
     build.vignettes = TRUE, no.build.vignettes = !build.vignettes,
     manual = TRUE, no.manual = !manual,
-    resave.data = !no.resave.data, no.resave.data = FALSE,
+    resave.data = FALSE, no.resave.data = FALSE,
 
     build = FALSE,
     multiarch = TRUE, no.multiarch = !multiarch,
@@ -92,11 +92,11 @@ Check_This <- function (
     Rcmd(command = "build", args = c(
         if (no.build.vignettes) "--no-build-vignettes",
         if (no.manual) "--no-manual",
-        if (is.null(resave.data)) {}
-        else tryCatch({
+        tryCatch({
             if (resave.data)
                 "--resave-data"
-            else "--no-resave-data"
+            else if (no.resave.data)
+                "--no-resave-data"
         }, error = function(c) {
             match.arg(as.character(resave.data), c("no", "best", "gzip"))
         }),
