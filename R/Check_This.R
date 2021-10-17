@@ -1,5 +1,15 @@
-Check_This <- function (build = FALSE, multiarch = TRUE, no.multiarch = !multiarch,
-    keep.source = NA, as.cran = FALSE, chdir = FALSE, file = here())
+Check_This <- function (
+    build.vignettes = TRUE, no.build.vignettes = !build.vignettes,
+    manual = TRUE, no.manual = !manual,
+    resave.data = !no.resave.data, no.resave.data = FALSE,
+
+    build = FALSE,
+    multiarch = TRUE, no.multiarch = !multiarch,
+    keep.source = NA,
+
+    as.cran = FALSE,
+
+    chdir = FALSE, file = here())
 {
     # Check_This {this.path}                                     R Documentation
     #
@@ -18,16 +28,29 @@ Check_This <- function (build = FALSE, multiarch = TRUE, no.multiarch = !multiar
     #
     # Check_This(
     #
-    #     build = FALSE, multiarch = TRUE, no.multiarch = !multiarch,
+    #     build.vignettes = TRUE, no.build.vignettes = !build.vignettes,
+    #     manual = TRUE, no.manual = !manual,
+    #     resave.data = !no.resave.data, no.resave.data = FALSE,
+    #
+    #     build = FALSE,
+    #     multiarch = TRUE, no.multiarch = !multiarch,
     #     keep.source = NA,
     #
     #     as.cran = FALSE,
     #
-    #     chdir = FALSE, file = here())
+    #     chdir = FALSE, file = here()
+    #
+    # )
     #
     #
     #
     # Arguments:
+    #
+    #
+    # build.vignettes, no.build.vignettes, manual, no.manual, resave.data,
+    # no.resave.data
+    #
+    #     further arguments passed to 'R CMD build'
     #
     # build, multiarch, no.multiarch, keep.source
     #
@@ -48,6 +71,7 @@ Check_This <- function (build = FALSE, multiarch = TRUE, no.multiarch = !multiar
     #     the executing script's directory
 
 
+
     if (!is.character(file) || length(file) != 1L)
         stop("invalid 'file'")
     else if (grepl("^(ftp|ftps|http|https)://", file))
@@ -65,7 +89,19 @@ Check_This <- function (build = FALSE, multiarch = TRUE, no.multiarch = !multiar
     }
 
 
-    Rcmd(command = "build", args = file, mustWork = TRUE)
+    Rcmd(command = "build", args = c(
+        if (no.build.vignettes) "--no-build-vignettes",
+        if (no.manual) "--no-manual",
+        if (is.null(resave.data)) {}
+        else tryCatch({
+            if (resave.data)
+                "--resave-data"
+            else "--no-resave-data"
+        }, error = function(c) {
+            match.arg(as.character(resave.data), c("no", "best", "gzip"))
+        }),
+        file
+    ), mustWork = TRUE)
     cat("\n")
 
 
@@ -90,9 +126,10 @@ Check_This <- function (build = FALSE, multiarch = TRUE, no.multiarch = !multiar
     cat("\n")
 
 
-    Rcmd(command = "check", args = c(
+    value <- Rcmd(command = "check", args = c(
         if (as.cran) "--as-cran",
         file2
     ), mustWork = TRUE)
     cat("\n")
+    invisible(value)
 }
