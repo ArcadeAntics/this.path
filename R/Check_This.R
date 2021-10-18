@@ -1,3 +1,35 @@
+switch2 <- function (EXPR, TRUE.expr = invisible(), FALSE.expr = invisible(),
+    alt.expr = invisible())
+{
+    if (is.character(EXPR)) {
+        switch(EXPR, T = , `TRUE` = , True = , true = {
+            TRUE.expr
+        }, F = , `FALSE` = , False = , false = {
+            FALSE.expr
+        }, if (!is.na(EXPR))
+            alt.expr
+        else if (EXPR) {
+        })
+    }
+    else if (EXPR)
+        TRUE.expr
+    else FALSE.expr
+}
+
+
+# fun <- function (resave.data = FALSE, no.resave.data = FALSE)
+# {
+#     switch2(resave.data, TRUE.expr = {
+#         "--resave-data"
+#     }, FALSE.expr = {
+#         if (no.resave.data)
+#             "--no-resave-data"
+#     }, alt.expr = {
+#         match.arg(resave.data, c("no", "best", "gzip"))
+#     })
+# }
+
+
 Check_This <- function (
     build.vignettes = TRUE, no.build.vignettes = !build.vignettes,
     manual = TRUE, no.manual = !manual,
@@ -92,13 +124,13 @@ Check_This <- function (
     Rcmd(command = "build", args = c(
         if (no.build.vignettes) "--no-build-vignettes",
         if (no.manual) "--no-manual",
-        tryCatch({
-            if (resave.data)
-                "--resave-data"
-            else if (no.resave.data)
+        switch2(resave.data, TRUE.expr = {
+            "--resave-data"
+        }, FALSE.expr = {
+            if (no.resave.data)
                 "--no-resave-data"
-        }, error = function(c) {
-            match.arg(as.character(resave.data), c("no", "best", "gzip"))
+        }, alt.expr = {
+            match.arg(resave.data, c("no", "best", "gzip"))
         }),
         file
     ), mustWork = TRUE)
