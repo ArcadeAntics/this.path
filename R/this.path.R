@@ -163,7 +163,7 @@ unix.command.line.argument.file.containing.space.fix <- function (path)
 }
 
 
-initialize.__file__ <- function ()
+initialize.__file__ <- evalq(envir = new.env(), function ()
 {
     # initialize.__file__ {this.path}                            R Documentation
     #
@@ -394,8 +394,8 @@ initialize.__file__ <- function ()
         .__file__ <<- path
     }
     invisible()
-}
-evalq(envir = environment(initialize.__file__) <- new.env(), {
+})
+evalq(envir = environment(initialize.__file__), {
     .__file__ <- NULL
 })
 
@@ -570,7 +570,7 @@ this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
 # errorCondition(message = message, ..., class = class, call = call)
 
 
-this.path <- function (verbose = getOption("verbose"))
+this.path <- evalq(envir = environment(initialize.__file__), function (verbose = getOption("verbose"))
 {
     # function to print the method in which the
     # path of the executing script was determined
@@ -1178,8 +1178,7 @@ this.path <- function (verbose = getOption("verbose"))
     #     "* no appropriate source call was found up the calling stack\n",
     #     "* R is being run in an unrecognized manner"),
     #     call = sys.call(sys.nframe())))
-}
-environment(this.path) <- environment(initialize.__file__)
+})
 
 
 this.dir <- function (...)
