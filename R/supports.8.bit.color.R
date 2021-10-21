@@ -1,4 +1,4 @@
-supports.8.bit.color <- function ()
+supports.8.bit.color <- evalq(envir = new.env(), function ()
 {
     # if output is being diverted, there is no support for 8 bit color
     if (sink.number() || sink.number("message") != 2L)
@@ -53,9 +53,10 @@ supports.8.bit.color <- function ()
             intern = TRUE))), na.rm = TRUE) >= 256L
     }
     .__supports.8.bit.color__
-}
-environment(supports.8.bit.color) <- new.env()
-environment(supports.8.bit.color)$.__supports.8.bit.color__ <- NULL
+})
+evalq(envir = environment(supports.8.bit.color), {
+    .__supports.8.bit.color__ <- NULL
+})
 
 
 # if (length(commandArgs(trailingOnly = TRUE)) >= 2) {
