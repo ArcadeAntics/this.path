@@ -395,10 +395,9 @@ initialize.__file__ <- function ()
     }
     invisible()
 }
-environment(initialize.__file__) <- new.env()
-evalq({
+evalq(envir = environment(initialize.__file__) <- new.env(), {
     .__file__ <- NULL
-}, environment(initialize.__file__))
+})
 
 
 tools.rstudio <- function (name)
