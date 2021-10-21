@@ -1,4 +1,4 @@
-commandPrompt <- function (OS.type = NULL)
+commandPrompt <- evalq(envir = new.env(), function (OS.type = NULL)
 {
     match.OS.type <- function(OS.type) {
         if (is.character(OS.type)) {
@@ -133,7 +133,8 @@ commandPrompt <- function (OS.type = NULL)
 
 
     }, stop("invalid 'type'; should never happen, please report!"))
-}
-environment(commandPrompt) <- new.env()
-environment(commandPrompt)$OS.types <- c("windows", "cmd", "powershell", "macOS", "ubuntu", "unix")
-environment(commandPrompt)$table <- tolower(environment(commandPrompt)$OS.types)
+})
+evalq(envir = environment(commandPrompt), {
+    OS.types <- c("windows", "cmd", "powershell", "macOS", "ubuntu", "unix")
+    table <- tolower(OS.types)
+})
