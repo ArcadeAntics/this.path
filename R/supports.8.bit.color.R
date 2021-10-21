@@ -40,7 +40,7 @@ supports.8.bit.color <- evalq(envir = new.env(), function ()
 
 
                 # this will turn 8 bit color on (somehow??)
-                system(paste(commandQuote(Sys.getenv("COMSPEC")), "/c echo 1 >nul:"), intern = TRUE)
+                system("\"cmd\" /c echo 1 >nul:")
                 TRUE
             }
             else FALSE
