@@ -328,7 +328,7 @@ has.ext <- function (file, fileext, compression = FALSE, fixed = FALSE,
 
 
 
-setReadWriteArgsMethod <- function (name, condition, read, write, sealed = FALSE)
+setReadWriteArgsMethod <- evalq(envir = new.env(), function (name, condition, read, write, sealed = FALSE)
 {
     name <- as.character(as.symbol(name))
     if (name %in% names(methods) && methods[[name]]$sealed)
@@ -341,9 +341,8 @@ setReadWriteArgsMethod <- function (name, condition, read, write, sealed = FALSE
         sealed    = if (sealed) TRUE else FALSE
     )
     invisible()
-}
-environment(setReadWriteArgsMethod) <- new.env()
-evalq({
+})
+evalq(envir = environment(setReadWriteArgsMethod), {
     methods <- list()
     default <- list(
 
@@ -362,7 +361,7 @@ write = function (x, comments = TRUE, nlines.between.comment.and.args = 0,
 
 
     )
-}, environment(setReadWriteArgsMethod))
+})
 lockEnvironment(environment(setReadWriteArgsMethod))
 lockBinding("default", environment(setReadWriteArgsMethod))
 
@@ -489,7 +488,7 @@ scan2(file = file, sep = "\t", quote = "\"", comment.char = ""),
 
 
 
-selectReadWriteArgsMethod <- function (file = NULL, name = NULL)
+selectReadWriteArgsMethod <- evalq(envir = environment(setReadWriteArgsMethod), function (file = NULL, name = NULL)
 {
     if (is.null(file) || !nzchar(file))
         return(if (is.null(name) || !nzchar(name))
@@ -500,8 +499,7 @@ selectReadWriteArgsMethod <- function (file = NULL, name = NULL)
             return(method)
     }
     return(default)
-}
-environment(selectReadWriteArgsMethod) <- environment(setReadWriteArgsMethod)
+})
 
 
 
