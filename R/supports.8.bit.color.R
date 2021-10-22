@@ -96,8 +96,15 @@ evalq(envir = environment(supports.8.bit.color), {
 #     blue <- attr(crayon::make_style(blue), "_styles")[[1]]
 #
 #
-#     cat(green$open, "\033[1m", Sys.info()[["effective_user"]], "@",
-#         Sys.info()[["nodename"]], "\033[22m", green$close, ":", blue$open,
-#         "\033[1m", if (!is.null(wd <- getwd())) path.contract(wd) else "unknown",
-#         "\033[22m", blue$close, "$ \n", sep = "")
+#     cat(
+#         green$open, "\033[1m",
+#             Sys.info()[["effective_user"]], "@", Sys.info()[["nodename"]],
+#         "\033[22m", green$close,
+#         ":",
+#         blue$open, "\033[1m",
+#         if (!is.null(wd <- getwd())) wd else "NULL",
+#         "\033[22m", blue$close,
+#         "$ ",
+#         "\n", sep = ""
+#     )
 # }
