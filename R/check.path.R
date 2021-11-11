@@ -61,7 +61,7 @@ strsplit(path, "/+")
                 paste(path, collapse = "/")
             ), quote = "\""), collapse = "\n"),
             call = sys.call(-1L))
-    invisible()
+    invisible(TRUE)
 }
 
 
