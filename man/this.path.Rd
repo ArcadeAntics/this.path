@@ -534,9 +534,13 @@ before calling \code{this.path} at least once.
 %
 %
 \examples{\dontshow{.unload <- !isNamespaceLoaded("testthat")}
-this.path:::write.code(withAutoprint({
-    cat(sQuote(this.path::this.path(verbose = TRUE)), "\\n\\n")
-}, verbose = FALSE), FILE <- tempfile())
+this.path:::write.code({
+
+    withAutoprint({
+        cat(sQuote(this.path::this.path(verbose = TRUE)), "\\n\\n")
+    }, verbose = FALSE)
+
+}, FILE <- tempfile())
 
 
 source(FILE, verbose = FALSE)
