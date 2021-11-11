@@ -51,24 +51,22 @@ strsplit(path, "/+")
     x <- path.split(x)[[1L]]
     path <- path.split(path)[[1L]]
     if (length(x) < length(path))
-        stop(errorCondition(.makeMessage(
-            sQuote(name), " and expected path do not match\n",
+        error(sQuote(name), " and expected path do not match\n",
             paste0("* ", format(c(name, "expected")), ": ",
-                encodeString(c(
-                    paste(x, collapse = "/"),
-                    paste(path, collapse = "/")
-                ), quote = "\""), collapse = "\n")
-        ), call = sys.call(-1L)))
+            encodeString(c(
+                paste(x, collapse = "/"),
+                paste(path, collapse = "/")
+            ), quote = "\""), collapse = "\n"),
+            call = sys.call(-1L))
     x <- x[seq.int(to = length(x), along.with = path)]
     if (any(x != path))
-        stop(errorCondition(paste0(
-            sQuote(name), " and expected path do not match\n",
+        error(sQuote(name), " and expected path do not match\n",
             paste0("* ", format(c(name, "expected")), ": ",
-                encodeString(c(
-                    paste(x, collapse = "/"),
-                    paste(path, collapse = "/")
-                ), quote = "\""), collapse = "\n")
-        ), call = sys.call(-1L)))
+            encodeString(c(
+                paste(x, collapse = "/"),
+                paste(path, collapse = "/")
+            ), quote = "\""), collapse = "\n"),
+            call = sys.call(-1L))
     invisible()
 }
 
