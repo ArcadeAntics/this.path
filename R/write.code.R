@@ -4,7 +4,7 @@ write.code <- function (x, file = stdout(), evaluated = FALSE, simplify = !evalu
 {
     if (!evaluated)
         x <- substitute(x)
-    x <- if (simplify && is.call(x) && x[[1]] == quote(`{`))
+    x <- if (simplify && is.call(x) && is.symbol(x[[1]]) && x[[1]] == quote(`{`))
         vapply(as.list(x[-1]), deparse1, collapse = "\n",
             width.cutoff = 60L, backtick = TRUE, control = deparseCtrl,
             FUN.VALUE = "")
