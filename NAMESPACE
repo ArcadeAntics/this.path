@@ -16,6 +16,12 @@ S3method(print, ParsedArgs)
 export(Commands, Missing)
 
 
+# check.path.R           ----
+
+
+export(check.path, check.dir)
+
+
 # Check_This.R           ----
 
 
