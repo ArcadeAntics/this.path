@@ -560,16 +560,6 @@ this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
 this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
 
 
-# this.path_not_exists_error <- function (message, ..., class = "this.path_this.path_not_exists_error",
-#     call = NULL)
-# errorCondition(message = message, ..., class = class, call = call)
-#
-#
-# this.path_unimplemented_error <- function (message, ..., class = "this.path_this.path_unimplemented_error",
-#     call = NULL)
-# errorCondition(message = message, ..., class = class, call = call)
-
-
 this.path <- evalq(envir = environment(initialize.__file__), function (verbose = getOption("verbose"))
 {
     # function to print the method in which the
@@ -793,14 +783,8 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
                         stop("'this.path' cannot be used within a zip file")
 
 
-                    },
-                    error("'this.path' unimplemented when source-ing a connection of class ",
-                        sQuote(path$class), class = this.path_unimplemented_error_class)
-                    # stop(this.path_unimplemented_error(gettextf(
-                    #     "'this.path' unimplemented when source-ing a connection of class %s",
-                    #     sQuote(path$class)),
-                    #     call = sys.call(sys.nframe())))
-                    )
+                    }, error("'this.path' unimplemented when source-ing a connection of class ",
+                        sQuote(path$class), class = this.path_unimplemented_error_class))
                 }
 
 
@@ -836,8 +820,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
                 if (path %in% c("clipboard", "clipboard-128", "stdin"))
                     error("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
                         call = sys.call(n))
-                    # stop(errorCondition("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
-                    #     call = sys.call(n)))
 
 
                 else if (existsn("owd")) {
@@ -899,7 +881,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
                     next
                 }
                 else if (grepl("^(ftp|ftps|http|https)://", path)) {
-                    # stop("'this.path' makes no sense for a URL")
                     URL <- TRUE
                 }
                 else if (grepl("^file://", path)) {
@@ -942,8 +923,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
                 if (path %in% c("clipboard", "clipboard-128", "stdin"))
                     error("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
                         call = sys.call(n))
-                    # stop(errorCondition("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
-                    #     call = sys.call(n)))
 
 
                 else if (existsn("old_dir")) {
@@ -994,11 +973,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from the command-line and argument 'FILE' is missing",
                 class = this.path_not_exists_error_class)
-            # stop(this.path_not_exists_error(paste0(
-            #     "'this.path' used in an inappropriate fashion\n",
-            #     "* no appropriate source call was found up the calling stack\n",
-            #     "* R is being run from the command-line and argument 'FILE' is missing"),
-            #     call = sys.call(sys.nframe())))
         where("command-line argument 'FILE'")
         return(.__file__)
     }
@@ -1013,11 +987,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Tk which does not make use of its -f FILE, --file=FILE argument",
             class = this.path_not_exists_error_class)
-        # stop(this.path_not_exists_error(paste0(
-        #     "'this.path' used in an inappropriate fashion\n",
-        #     "* no appropriate source call was found up the calling stack\n",
-        #     "* R is being run from Tk which requires a source call on the calling stack"),
-        #     call = sys.call(sys.nframe())))
     }
 
 
@@ -1049,12 +1018,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
                     "  (or source document has no path)",
                     class = this.path_not_exists_error_class
                 )
-                # stop(this.path_not_exists_error(paste0(
-                #     "'this.path' used in an inappropriate fashion\n",
-                #     "* no appropriate source call was found up the calling stack\n",
-                #     "* R is being run from RStudio with no documents open\n",
-                #     "  (or source document has no path)"),
-                #     call = sys.call(sys.nframe())))
         }
         path <- context$path
 
@@ -1127,11 +1090,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Rgui with no documents open",
             class = this.path_not_exists_error_class)
-        # else stop(this.path_not_exists_error(paste0(
-        #     "'this.path' used in an inappropriate fashion\n",
-        #     "* no appropriate source call was found up the calling stack\n",
-        #     "* R is being run from Rgui with no documents open"),
-        #     call = sys.call(sys.nframe())))
         path <- sub(.this.path_regexps$Rgui.REditor2, "\\1", nm)
         active <- active && nm != path
         if (grepl(.this.path_regexps$windows.absolute.path2, path)) {
@@ -1159,11 +1117,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
             "* R is being run from AQUA which is currently unimplemented\n",
             "      consider using RStudio until such a time when this is implemented",
             class = this.path_unimplemented_error_class)
-        # stop(this.path_unimplemented_error(paste0(
-        #     "'this.path' used in an inappropriate fashion\n",
-        #     "* no appropriate source call was found up the calling stack\n",
-        #     "* R is being run from AQUA which is currently unimplemented"),
-        #     call = sys.call(sys.nframe())))
     }
 
 
@@ -1173,11 +1126,6 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         "* no appropriate source call was found up the calling stack\n",
         "* R is being run in an unrecognized manner",
         class = this.path_unimplemented_error_class)
-    # else stop(this.path_unimplemented_error(paste0(
-    #     "'this.path' used in an inappropriate fashion\n",
-    #     "* no appropriate source call was found up the calling stack\n",
-    #     "* R is being run in an unrecognized manner"),
-    #     call = sys.call(sys.nframe())))
 })
 
 
