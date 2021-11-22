@@ -39,7 +39,7 @@ Check_This <- function (
     multiarch = TRUE, no.multiarch = !multiarch,
     keep.source = NA,
 
-    as.cran = FALSE,
+    check = TRUE, as.cran = FALSE,
 
     chdir = FALSE, file = here())
 {
@@ -68,7 +68,7 @@ Check_This <- function (
     #     multiarch = TRUE, no.multiarch = !multiarch,
     #     keep.source = NA,
     #
-    #     as.cran = FALSE,
+    #     check = TRUE, as.cran = FALSE,
     #
     #     chdir = FALSE, file = here()
     #
@@ -88,9 +88,12 @@ Check_This <- function (
     #
     #     further arguments passed to 'R CMD INSTALL'
     #
+    # check
+    #     should 'R CMD check' be run?
+    #
     # as.cran
     #
-    #     further arguments passed to 'R CMD check'
+    #     further arguments passed to 'R CMD check' (if check is TRUE)
     #
     # chdir
     #
@@ -158,10 +161,16 @@ Check_This <- function (
     cat("\n")
 
 
-    value <- Rcmd(command = "check", args = c(
-        if (as.cran) "--as-cran",
-        file2
-    ), mustWork = TRUE)
-    cat("\n")
+    if (check) {
+        value <- Rcmd(command = "check", args = c(
+            if (as.cran) "--as-cran",
+            file2
+        ), mustWork = TRUE)
+        cat("\n")
+    }
+    if (.Platform$GUI == "RStudio")
+        tools.rstudio(".rs.api.restartSession")(command = deparse1(
+            call("library", as.symbol(basename(file))),
+        collapse = "\n", width.cutoff = 80L))
     invisible(value)
 }
