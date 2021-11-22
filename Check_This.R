@@ -1,1 +1,69 @@
-this.path:::Check_This(build = TRUE, as.cran = TRUE, chdir = TRUE)
+this.path:::Check_This(build = TRUE, as.cran = TRUE, chdir = TRUE, check = FALSE)
+
+
+
+
+
+# add.attributes <- function (.Data, args = NULL)
+# {
+#     if (is.null(args))
+#         return(.Data)
+#     else if (!is.list(args))
+#         stop("second argument must be a list")
+#     if (length(args))
+#         do.call(structure, c(list(.Data = .Data), args), quote = TRUE)
+#     else .Data
+# }
+#
+#
+# scipy <- NULL
+# fun <- function ()
+# {
+#     scipy <<- reticulate::import("scipy", delay_load = TRUE)
+# }
+# fun()
+
+
+
+
+
+quoteExpression <- function (cl)
+{
+    switch(typeof(cl), symbol = {
+        enquote(cl)
+    }, language = {
+        if (is.symbol(cl[[1L]]) && cl[[1L]] == quote(`~`))
+            cl
+        else enquote(cl)
+    }, cl)
+}
+# x <- list(FALSE, 0L, 0, 0i, "", as.symbol("a"), quote(0L + 0L), ~FALSE)
+# do.call(rbind, c(x[-6], list(deparse.level = 2)), quote = TRUE)
+# (y <- do.call(rbind, c(lapply(x[-6], quoteExpression), list(deparse.level = 2))))
+# methods::setClass("S4name", contains = "name")
+# x <- methods::new("S4name", quote(a))
+
+
+
+
+
+.regexps <- list()
+.regexps$hexadecimal <- paste0(
+    "0[xX]([[:xdigit:]]+)",
+    "([Pp]([-+]?[[:digit:]]+))?"
+)
+.regexps$decimal <- paste0(
+    "(",
+            "[[:digit:]]+(\\.[[:digit:]]*)?",
+        "|",
+            "\\.[[:digit:]]+",
+    ")",
+    "([Ee]([-+]?[[:digit:]]+))?"
+)
+.regexps$numeric <- paste0(
+    "(",
+            .regexps$hexadecimal,
+        "|",
+            .regexps$decimal,
+    ")"
+)
