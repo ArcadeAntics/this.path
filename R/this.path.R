@@ -31,6 +31,7 @@ unix.command.line.argument.file.containing.space.fix <- function (path)
     # be able to solve this issue
 
 
+
     # if the file exists with replacing all instances of "~+~" with " ", it is
     # assumed to be correct, and will be returned
     x <- gsub("~+~", " ", path, fixed = TRUE)
@@ -400,10 +401,6 @@ evalq(envir = environment(initialize.__file__), {
 })
 
 
-tools.rstudio <- function (name)
-get(name, "tools:rstudio", inherits = FALSE)
-
-
 
 
 
@@ -621,7 +618,7 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
     # internally in C. This is why we use a 'tryCatch' statement instead of an
     # 'existsn'
     dbgS <- if (.Platform$GUI == "RStudio")
-        tools.rstudio("debugSource")
+        get("debugSource", "tools:rstudio", inherits = FALSE)
 
 
     # as of this.path_0.4.0, compatibility with 'source_file' from package
@@ -1006,10 +1003,10 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         # element 'path' is a character string, the path of the document
 
 
-        context <- tools.rstudio(".rs.api.getActiveDocumentContext")()
+        context <- get(".rs.api.getActiveDocumentContext", "tools:rstudio", inherits = FALSE)()
         active <- context$id != "#console"
         if (!active) {
-            context <- tools.rstudio(".rs.api.getSourceEditorContext")()
+            context <- get(".rs.api.getSourceEditorContext", "tools:rstudio", inherits = FALSE)()
             if (is.null(context))
                 error(
                     "'this.path' used in an inappropriate fashion\n",
@@ -1075,7 +1072,7 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         # the previous regular expression exceeded 256 bytes, more than the
         # POSIX standard. now, each part of the regular expression is its own
         # regular expression of less than 256 bytes
-        nm <- names(getWindowsHandles())
+        nm <- names(utils::getWindowsHandles())
         nm <- nm[nm == "R Console" |
             grepl(.this.path_regexps$Rgui.REditor2         , nm) |
             grepl(.this.path_regexps$windows.absolute.path2, nm) ]
@@ -1144,8 +1141,8 @@ this.dir <- function (...)
 this.path2 <- as.function(list(
     ... = quote(expr = ),
     as.call(structure(
-              list(quote(tryCatch), quote(this.path(...)), quote(function(c) NULL)               ),
-        .Names = c(""             , ""                  , this.path_not_exists_error_class[[1L]])
+             alist(tryCatch, this.path(...), function(c) NULL                      ),
+        .Names = c(""      , ""            , this.path_not_exists_error_class[[1L]])
     ))
 ))
 
@@ -1153,8 +1150,8 @@ this.path2 <- as.function(list(
 this.dir2 <- as.function(list(
     ... = quote(expr = ),
     as.call(structure(
-              list(quote(tryCatch), quote(this.dir(...)), quote(function(c) NULL)               ),
-        .Names = c(""             , ""                  , this.path_not_exists_error_class[[1L]])
+             alist(tryCatch, this.dir(...), function(c) NULL                      ),
+        .Names = c(""      , ""           , this.path_not_exists_error_class[[1L]])
     ))
 ))
 
@@ -1162,7 +1159,7 @@ this.dir2 <- as.function(list(
 this.dir3 <- as.function(list(
     ... = quote(expr = ),
     as.call(structure(
-              list(quote(tryCatch), quote(this.dir(...)), quote(function(c) getwd())            ),
-        .Names = c(""             , ""                  , this.path_not_exists_error_class[[1L]])
+             alist(tryCatch, this.dir(...), function(c) getwd()                   ),
+        .Names = c(""      , ""           , this.path_not_exists_error_class[[1L]])
     ))
 ))

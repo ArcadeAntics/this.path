@@ -1,18 +1,18 @@
 # ArgumentParser-class.R ----
 
 
-importFrom(methods, classLabel, is, new)
-exportClasses("this.path_ArgumentParser")
+# importFrom(methods, classLabel, is, new)
+# exportClasses("this.path_ArgumentParser")
 export(ArgumentParser)
 
 
-S3method(print, "this.path_ArgumentParser")
+# S3method(print, "this.path_ArgumentParser")
 
 
-S3method("$", ParsedArgs)
-S3method("$<-", ParsedArgs)
-S3method(as.list, ParsedArgs)
-S3method(print, ParsedArgs)
+# S3method("$", ParsedArgs)
+# S3method("$<-", ParsedArgs)
+# S3method(as.list, ParsedArgs)
+# S3method(print, ParsedArgs)
 export(Commands, Missing)
 
 
@@ -25,19 +25,25 @@ export(check.path, check.dir)
 # Check_This.R           ----
 
 
-importFrom(utils, packageVersion)
+# importFrom(utils, packageVersion)
 
 
 # commandArgs.R          ----
 
 
-S3method(print, formalCommandArg)
+# S3method(print, formalCommandArg)
 
 
 # commandPrompt.R        ----
 
 
 export(commandPrompt)
+
+
+# commandQuote.R         ----
+
+
+export(commandQuote, shEncode)
 
 
 # dedent.R               ----
@@ -64,11 +70,10 @@ export(file.open)
 export(here, ici)
 
 
-# list.files2.R        ----
+# list.files2.R          ----
 
 
-export(list.files2)
-export(dir2)
+export(list.files2, dir2)
 
 
 # normalizeAgainst.R     ----
@@ -89,15 +94,10 @@ export(path.contract)
 export(pseudoglobalenv)
 
 
-# python.R               ----
-
-
-export(python)
-
-
 # R.R                    ----
 
 
+export(python)
 export(R, Rcmd, Rscript, Rterm)
 
 
@@ -111,16 +111,7 @@ export(writeArgs, readArgs)
 # this.path.R            ----
 
 
-if (.Platform$OS.type == "windows")
-    importFrom(utils, getWindowsHandles)
-
-
-export(commandQuote, shEncode, this.path, this.dir)
-
-
-# this.path2.R           ----
-
-
+export(this.path, this.dir)
 export(this.path2, this.dir2, this.dir3)
 
 

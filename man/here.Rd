@@ -31,23 +31,27 @@ A character vector of the arguments concatenated term-by-term, beginning with
 the executing script's directory.
 }
 \examples{
-this.path:::write.code(withAutoprint({
+essentials:::write.code(file = FILE <- tempfile(), {
 
 
-    here()
-    here(.. = 1)
-    here(.. = 2)
+    withAutoprint({
 
 
-    # use 'here' to read input from a file located nearby
-    here(.. = 1, "input", "file1.csv")
+        this.path::here()
+        this.path::here(.. = 1)
+        this.path::here(.. = 2)
 
 
-    # or maybe to run another script
-    here("script2.R")
+        # use 'here' to read input from a file located nearby
+        this.path::here(.. = 1, "input", "file1.csv")
 
 
-}, verbose = FALSE), FILE <- tempfile())
+        # or maybe to run another script
+        this.path::here("script2.R")
+
+
+    }, verbose = FALSE)
+})
 source(FILE, verbose = FALSE)
-Rscript("--default-packages=this.path", FILE)
+essentials::Rscript("--default-packages=NULL", FILE)
 \dontshow{unlink(FILE)}}

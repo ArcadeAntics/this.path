@@ -534,22 +534,26 @@ before calling \code{this.path} at least once.
 %
 %
 \examples{\dontshow{.unload <- !isNamespaceLoaded("testthat")}
-this.path:::write.code({
+essentials:::write.code(file = FILE <- tempfile(), {
 
     withAutoprint({
+
+
         cat(sQuote(this.path::this.path(verbose = TRUE)), "\\n\\n")
+
+
     }, verbose = FALSE)
 
-}, FILE <- tempfile())
+})
 
 
 source(FILE, verbose = FALSE)
 sys.source(FILE, envir = environment())
 if (.Platform$GUI == "RStudio")
-    this.path:::tools.rstudio("debugSource")(FILE)
+    get("debugSource", "tools:rstudio", inherits = FALSE)(FILE)
 if (requireNamespace("testthat"))
     testthat::source_file(FILE, chdir = FALSE, wrap = FALSE)
 
 
-this.path::Rscript(file = FILE)
+essentials::Rscript("--default-packages=NULL", FILE)
 \dontshow{if (.unload) unloadNamespace("testthat") ; unlink(FILE)}}

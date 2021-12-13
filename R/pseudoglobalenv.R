@@ -1,2 +1,2 @@
 pseudoglobalenv <- function (...)
-new.env(..., parent = parent.env(globalenv()))
+.Defunct("essentials::pseudoglobalenv")

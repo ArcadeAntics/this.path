@@ -60,7 +60,7 @@ tryCatch({
 
     ## 'debugSource' cannot handle connections
     if (.Platform$GUI == "RStudio") {
-        debug.source <- this.path:::tools.rstudio("debugSource")
+        debug.source <- get("debugSource", "tools:rstudio", inherits = FALSE)
         setwd(base.path.dir)
         debug.source(base.path     )
         debug.source(base.path     )

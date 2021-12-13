@@ -16,8 +16,10 @@ if (requireNamespace("microbenchmark", quietly = TRUE)) {
                 )
             )
         ', FILE)
-        this.path::Rscript(c("--default-packages=NULL", "--vanilla"),
-            file = FILE)
+        essentials::Rscript(
+            c("--default-packages=NULL", "--vanilla"),
+            FILE
+        )
 
 
     }, finally = unlink(FILE))

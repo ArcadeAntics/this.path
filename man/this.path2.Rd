@@ -69,10 +69,10 @@ for \code{this.dir3}, the executing script's directory, or the working directory
 if unavailable.
 }
 \examples{
-Rscript(exprs = r"{this.path::this.path()}" , mustWork = NA)
-Rscript(exprs = r"{this.path::this.path2()}", mustWork = NA)
+essentials::Rscript(exprs = r"{this.path::this.path()}" , mustWork = FALSE)
+essentials::Rscript(exprs = r"{this.path::this.path2()}", mustWork = FALSE)
 
-Rscript(exprs = r"{this.path::this.dir()}"  , mustWork = NA)
-Rscript(exprs = r"{this.path::this.dir2()}" , mustWork = NA)
-Rscript(exprs = r"{this.path::this.dir3()}" , mustWork = NA)
+essentials::Rscript(exprs = r"{this.path::this.dir()}"  , mustWork = FALSE)
+essentials::Rscript(exprs = r"{this.path::this.dir2()}" , mustWork = FALSE)
+essentials::Rscript(exprs = r"{this.path::this.dir3()}" , mustWork = FALSE)
 }
