@@ -174,8 +174,8 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
     #
     # Description:
     #
-    # Look through the command-line arguments, extracting the string 'FILE' from
-    # the following arguments:
+    # Look through the command-line arguments, extracting the string 'FILE'
+    # from the following arguments:
     # --file=FILE
     # -f FILE
     #
@@ -261,11 +261,15 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         # you might think the value of -f would be --silent but it's
         # actually FILE because --silent and --max-ppsize=N are processed
         # before -f is processed
-        pre <- ca %in% c("--save", "--no-save", "--no-environ",
-            "--no-site-file", "--no-init-file", "--restore",
-            "--no-restore-data", "--no-restore-history", "--no-restore",
-            "--vanilla", "-q", "--quiet", "--silent", "--no-echo",
-            "--verbose") | grepl("^--(encoding|max-ppsize)=", ca)
+        pre <- ca %in% c(
+            "--save"              , "--no-save"           ,
+            "--no-environ"        , "--no-site-file"      , "--no-init-file"      ,
+            "--restore"           , "--no-restore-data"   ,
+            "--no-restore-history", "--no-restore"        ,
+            "--vanilla"           ,
+            "-q"                  , "--quiet"             , "--silent"            ,
+            "--no-echo"           , "--verbose") |
+            grepl("^--(encoding|max-ppsize)=", ca)
         if (any(pre)) {
             ca <- ca[-which(pre)]
             if (!length(ca))
@@ -573,11 +577,14 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
 
 
     # function to save a path in the n-th frame
-    assign.__file__ <- function(value = if (URL)
-            .normalizeURL(path)
-        else normalizePath(path, winslash = "/", mustWork = TRUE), URL = FALSE) {
-        assign(".__file__", `attr<-`(value, "this.path.n", n),
-            envir = sys.frame(n), inherits = FALSE)
+    assign.__file__ <- function(
+        value = `attr<-`(full.path, "this.path.n", n),
+        full.path = if (URL)
+            .normalizeURL(opath)
+        else normalizePath(opath, winslash = "/", mustWork = TRUE),
+        opath = path,
+        URL = FALSE) {
+        assign(".__file__", value, envir = sys.frame(n), inherits = FALSE)
     }
 
 

@@ -34,3 +34,16 @@ Rscript <- function (...)
 
 Rterm <- function (...)
 .Defunct("essentials::Rterm")
+
+
+
+
+
+.Rscript <- function (options = NULL, ...)
+{
+    command <- file.path(R.home("bin"), "Rscript")
+    args <- c(command, options)
+    command <- paste(shQuote(args), collapse = " ")
+    cat(command, "\n", sep = "")
+    invisible(system(command = command, ...))
+}

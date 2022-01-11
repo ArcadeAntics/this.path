@@ -41,11 +41,21 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
-\code{\link{this.path}}, \code{\link{here}}
+The main functions from \strong{this.path}: \verb{
+} \code{\link{this.path}},
+\code{\link{this.dir}}, \code{\link{here}}
+
+\code{this.path} and \code{this.dir} variants: \verb{
+} \code{\link{this.path2}},
+\code{\link{this.dir2}}, \code{\link{this.dir3}}
+
+Check \code{this.path()} is functioning correctly: \verb{
+} \code{\link{check.path}},
+\code{\link{check.dir}}
 
 \code{\link[base]{source}}, \code{\link[base]{sys.source}},
 \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
 \code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
 
-\code{\link{Running.R.from.command-line}}
+\code{\link{running.R.from.command-line}}
 }

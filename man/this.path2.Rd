@@ -45,15 +45,13 @@ unable to \code{\link[base:normalizePath]{normalize}} the executing script's
 filename
   }
   \item{
-using \code{this.path} within a URL
-  }
-  \item{
 using \code{\link[base]{sys.source}} or
 \code{\link[testthat:source_file]{testthat::source_file}} on a file named
 \dQuote{clipboard}, \dQuote{clipboard-128}, or \dQuote{stdin}
   }
   \item{
 active / / source document in \sQuote{RStudio} / / \sQuote{Rgui} does not exist
+(not saved anywhere)
   }
   \item{
 in \sQuote{AQUA}, running the current line or selection from an open \R script
@@ -69,10 +67,10 @@ for \code{this.dir3}, the executing script's directory, or the working directory
 if unavailable.
 }
 \examples{
-essentials::Rscript(exprs = r"{this.path::this.path()}" , mustWork = FALSE)
-essentials::Rscript(exprs = r"{this.path::this.path2()}", mustWork = FALSE)
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.path()" ))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), exprs = "this.path::this.path()" , mustWork = FALSE)
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.path2()"))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), exprs = "this.path::this.path()2", mustWork = FALSE)
 
-essentials::Rscript(exprs = r"{this.path::this.dir()}"  , mustWork = FALSE)
-essentials::Rscript(exprs = r"{this.path::this.dir2()}" , mustWork = FALSE)
-essentials::Rscript(exprs = r"{this.path::this.dir3()}" , mustWork = FALSE)
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.dir()"  ))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), exprs = "this.path::this.dir()"  , mustWork = FALSE)
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.dir2()" ))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), exprs = "this.path::this.dir2()" , mustWork = FALSE)
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.dir3()" ))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), exprs = "this.path::this.dir3()" , mustWork = FALSE)
 }

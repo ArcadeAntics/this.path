@@ -129,7 +129,7 @@ before calling \code{this.path} at least once.
 \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
 \code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
 
-\code{\link{Running.R.from.command-line}}
+\code{\link{running.R.from.command-line}}
 }
 %\examples{
 %\dontrun{
@@ -534,7 +534,7 @@ before calling \code{this.path} at least once.
 %
 %
 \examples{\dontshow{.unload <- !isNamespaceLoaded("testthat")}
-essentials:::write.code(file = FILE <- tempfile(), {
+this.path:::write.code(file = FILE <- tempfile(), {
 
     withAutoprint({
 
@@ -555,5 +555,5 @@ if (requireNamespace("testthat"))
     testthat::source_file(FILE, chdir = FALSE, wrap = FALSE)
 
 
-essentials::Rscript("--default-packages=NULL", FILE)
-\dontshow{if (.unload) unloadNamespace("testthat") ; unlink(FILE)}}
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), file = FILE)
+\dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}

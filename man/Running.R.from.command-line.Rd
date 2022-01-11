@@ -1,5 +1,5 @@
-\name{Running.R.from.command-line}
-\alias{Running.R.from.command-line}
+\name{running.R.from.command-line}
+\alias{running.R.from.command-line}
 \title{Running R from the Windows Command-Line / / Unix Terminal
 }
 \description{
@@ -7,17 +7,18 @@ How to run \R from the Windows command-line / / Unix terminal.
 }
 \details{
 For the purposes of running \R scripts, there are four ways to do it. Suppose
-our \R script is named \option{file3f4c31de2e51.R}, we could write any of:
+our \R script is named \option{script1.R}, we could write any of:
 
-\verb{R -f file3f4c31de2e51.R
-R --file=file3f4c31de2e51.R
-R CMD BATCH file3f4c31de2e51.R
-Rscript file3f4c31de2e51.R}
+\verb{R -f script1.R
+R --file=script1.R
+R CMD BATCH script1.R
+Rscript script1.R}
 
 The first two are different ways of writing equivalent statements. The third
 statement is the first statement plus options \option{--restore --save} (plus
-option \option{--no-readline} under Unix-alikes). The fourth statement is the
-second statement plus options \option{--no-echo --no-restore}. You can try
+option \option{--no-readline} under Unix-alikes), and it also saves the stdout
+and stderr in a file of your choosing. The fourth statement is the second
+statement plus options \option{--no-echo --no-restore}. You can try
 
 \verb{R --help
 R CMD BATCH --help
@@ -34,12 +35,6 @@ If, when you execute one of the previous commands, you see the following error
 message: \dQuote{\sQuote{R} is not recognized as an internal or external
 command, operable program or batch file.}, see section \strong{Ease of Use on
 Windows}.
-}
-\section{At the \R Level}{
-If you are already in an \R session, you can invoke one of the commands above
-with \code{\link{R}}, \code{\link{Rcmd}}, \code{\link{Rscript}}, and
-\code{\link{Rterm}}. Each of these will invoke a corresponding command, but hide
-the details of quoting arguments to be passed to a shell.
 }
 \section{Ease of Use on Windows}{
 Under Unix-alikes, it is easy to invoke an \R session from the terminal by
@@ -110,7 +105,7 @@ following command:
 
 On Windows, for me, this is:
 
-\file{\verb{C:\Program Files\R\R-4.1.1\bin\x64}}
+\file{\verb{C:\Program Files\R\R-4.1.2\bin\x64}}
 
 On Linux, for me, this is:
 
