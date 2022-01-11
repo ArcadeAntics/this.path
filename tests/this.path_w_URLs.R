@@ -10,7 +10,7 @@ cat("Testing 'here':\n")
 withAutoprint({
     this.path::here("test.R")
     this.path::here(.. = 1, "R", "this.path.R")
-})
+}, verbose = FALSE)
 
 
 cat("\n\n\n\n")

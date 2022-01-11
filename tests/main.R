@@ -1,5 +1,5 @@
 owd <- getwd()
-unload.testthat.namespace <- !isNamespaceLoaded("testthat")
+.unload <- !isNamespaceLoaded("testthat")
 
 
 tryCatch({
@@ -60,19 +60,19 @@ tryCatch({
 
     ## 'debugSource' cannot handle connections
     if (.Platform$GUI == "RStudio") {
-        debug.source <- get("debugSource", "tools:rstudio", inherits = FALSE)
+        fun <- get("debugSource", "tools:rstudio", inherits = FALSE)
         setwd(base.path.dir)
-        debug.source(base.path     )
-        debug.source(base.path     )
-        debug.source(url.base.path )
+        fun(base.path     )
+        fun(base.path     )
+        fun(url.base.path )
         setwd(short.path.dir)
-        debug.source(short.path    )
-        debug.source(short.path    )
-        debug.source(url.short.path)
+        fun(short.path    )
+        fun(short.path    )
+        fun(url.short.path)
         setwd(full.path.dir)
-        debug.source(full.path     )
-        debug.source(full.path     )
-        debug.source(url.full.path )
+        fun(full.path     )
+        fun(full.path     )
+        fun(url.full.path )
     }
 
 
@@ -96,8 +96,6 @@ tryCatch({
         testthat::source_file(full.path , env = environment(), chdir = TRUE , wrap = TRUE )
     }
 }, finally = {
-    if (!is.null(owd))
-        setwd(owd)
-    if (unload.testthat.namespace)
-        unloadNamespace("testthat")
+    if (!is.null(owd)) setwd(owd)
+    if (.unload)       unloadNamespace("testthat")
 })

@@ -3,7 +3,9 @@ if (requireNamespace("microbenchmark", quietly = TRUE)) {
     tryCatch({
 
 
-        writeLines('
+        this.path:::write.code(file = FILE, {
+
+
             invisible(loadNamespace("this.path"))
             rbind(
                 microbenchmark::microbenchmark(
@@ -15,11 +17,12 @@ if (requireNamespace("microbenchmark", quietly = TRUE)) {
                     times = 100
                 )
             )
-        ', FILE)
-        essentials::Rscript(
-            c("--default-packages=NULL", "--vanilla"),
-            FILE
-        )
+
+
+        })
+        this.path:::.Rscript(c(
+            "--default-packages=NULL", "--vanilla", FILE
+        ))
 
 
     }, finally = unlink(FILE))
