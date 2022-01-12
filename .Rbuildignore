@@ -1,4 +1,4 @@
-^.*\.Rproj$
+.\.Rproj$
+^\.git$
 ^\.Rproj\.user$
 ^Check_This\.R$
-^\.git$

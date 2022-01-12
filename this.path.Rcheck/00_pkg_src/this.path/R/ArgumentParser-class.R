@@ -1,0 +1,1231 @@
+install <- function (...)
+.Defunct("essentials:::install")
+
+
+# STYLES <- c(
+#     DFLTSTYLE    <- 1L,
+#     WODITTOSTYLE <- 2L,
+#     INLINESTYLE  <- 3L
+# )
+#
+#
+# Refcharacter <- methods::setRefClass(
+#     Class  = "this.path_Refcharacter",
+#     fields = c(value = "character")
+# )
+#
+#
+# Refinteger <- methods::setRefClass(
+#     Class  = "this.path_Refinteger",
+#     fields = c(value = "integer")
+# )
+#
+#
+# subparsers <- methods::setRefClass(
+#     Class  = "this.path_subparsers",
+#     fields = c(
+#         style           = "integer"               ,  # fields copied from the argument parser
+#         parent.commands = "list"                  ,
+#         commands        = "this.path_Refcharacter",
+#
+#
+#         title           = "character"             ,
+#         description     = "list"                  ,
+#         program         = "character"             ,
+#         required        = "logical"               ,
+#         value           = "list"                  )
+# #     ,
+# #     validity = function (object)
+# # {
+# #     c(
+# #         if (length(object$style) != 1L)
+# #             gettextf("invalid 'style', must be of length 1, got %d", length(object$style))
+# #         else if (!object$style %in% STYLES)
+# #             gettextf("invalid 'style', must be one of %s", paste(STYLES, collapse = ", ")),
+# #         if (!all(vapply(object$parent.commands, base::inherits, "this.path_Refcharacter", FUN.VALUE = NA)))
+# #             gettext("invalid 'parent.commands', must be a list of \"this.path_Refcharacter\" objects")
+# #     )
+# # }
+# )
+#
+#
+# FormalCommandArgs <- methods::setRefClass(
+#     Class  = "this.path_FormalCommandArgs",
+#     fields = c(value = "list")
+# )
+#
+#
+# ArgumentGroup <- methods::setRefClass(
+#     Class  = "this.path_ArgumentGroup",
+#     fields = c(
+#         program                      = "character"                  ,
+#         title                        = "character"                  ,
+#
+#
+#         ID                           = "this.path_Refinteger"       ,
+#
+#
+#         required                     = "logical"                    ,
+#         required.recursive           = "logical"                    ,
+#         mutually.exclusive           = "logical"                    ,
+#         mutually.exclusive.recursive = "logical"                    ,
+#         parent.titles                = "character"                 ,
+#
+#
+#         parent.IDs                   = "list"                       ,
+#
+#
+#         type                         = "character"                  ,
+#         description                  = "list"                       ,
+#         argument.groups              = "list"                       ,
+#         formal.command.args          = "this.path_FormalCommandArgs")
+# )
+#
+#
+# ArgumentParser <- methods::setRefClass(
+#     Class  = "this.path_ArgumentParser",
+#     fields = c(
+#         program             = "character"                  ,
+#         usage               = "character"                  ,
+#         description         = "list"                       ,
+#         epilogue            = "list"                       ,
+#         style               = "integer"                    ,
+#         argument.groups     = "list"                       ,
+#         formal.command.args = "this.path_FormalCommandArgs",
+#         subparsers          = "this.path_subparsers"       ,
+#         help.message        = "character"                  ,
+#
+#
+#         parent.commands     = "list"                       ,  # for subparsers only
+#         commands            = "this.path_Refcharacter"     ,
+#         help                = "list"                       )
+# )
+#
+#
+# subparsers$methods(
+#
+#
+# add.parser = function (commands, program = NA, ..., help = NA,
+#     wrap = TRUE, wrap.help = wrap, style = NA,
+#     overwrite = getOption("this.path.overwrite", NA))
+# {
+#     progra2 <- as.character(program)[1L]
+#     if (is.na(progra2))
+#         progra2 <- .self$program
+#
+#
+#     styl2 <- as.integer(style)[1L]
+#     if (!styl2 %in% STYLES)
+#         styl2 <- .self$style
+#
+#
+#     valu2 <- ArgumentParser(program = progra2, style = styl2, wrap = wrap, ...)
+#
+#
+#     command2 <- install(commands)
+#     if (!length(command2))
+#         stop(gettext("invalid 'commands', must provide at least one"))
+#     if (any(i <- !isName(command2))) {
+#         stop(sprintf(ngettext(sum(i),
+#             "invalid command %s, does not match 'name.pattern'",
+#             "invalid commands %s, do not match 'name.pattern'"),
+#             paste(dQuote(command2[i]), collapse = ", ")))
+#     }
+#
+#
+#     valu2$parent.commands <- c(.self$parent.commands, list(.self$commands))
+#     valu2$commands <- Refcharacter(value = command2)
+#     valu2$help <- as.description(help, wrap = wrap.help)
+#
+#
+#     otags <- lapply(.self$value, function(xx) xx[["commands"]][["value"]])
+#     f <- rep(seq_along(otags), lengths(otags))
+#     i <- unlist(lapply(lengths(otags), "seq_len"))
+#     otags <- unlist(otags)
+#     N <- match(command2, otags, nomatch = 0L)
+#     if (any(N)) {
+#         if (is.na(overwrite))
+#             warning(sprintf(ngettext(sum(N > 0L),
+#                 "overwriting definition of command %s",
+#                 "overwriting definitions of commands %s"),
+#                 paste(dQuote(command2[N > 0L]), collapse = ", ")))
+#         else if (!overwrite)
+#             stop(sprintf(ngettext(sum(N > 0L),
+#                 "invalid command %s, already in use",
+#                 "invalid commands %s, already in use"),
+#                 paste(dQuote(command2[N > 0L]), collapse = ", ")))
+#         N <- split(i[N], f[N])
+#         i <- as.integer(names(N))
+#         for (j in seq_along(i)) {
+#             .self$value[[i[[j]]]][["commands"]][["value"]] <-
+#                 .self$value[[i[[j]]]][["commands"]][["value"]][-N[[j]]]
+#         }
+#         i <- lengths(lapply(.self$value, function(xx) xx[["commands"]][["value"]])) > 0L
+#         if (!all(i))
+#             .self$value <- .self$value[i]
+#     }
+#
+#
+#     valu2$add.subparsers()
+#     .self$value <- c(.self$value, list(valu2))
+#     valu2
+# },
+#
+#
+# reorder = function (first = character(), last = character())
+# {
+#     fun <- function(x) {
+#         if (is.character(x)) {
+#             otags <- lapply(.self$value, function(xx) xx[["commands"]][["value"]])
+#             ids <- rep(seq_along(otags), lengths(otags))
+#             x <- ids[match(x, unlist(otags))]
+#         }
+#         else x <- as.integer(x)
+#         x <- unique(x)
+#         x[!is.na(x) & x >= 1L & x <= length(.self$value)]
+#     }
+#     first <- fun(first)
+#     last <- fun(last)
+#     last <- setdiff(last, first)
+#     middle <- setdiff(seq_along(.self$value), c(first, last))
+#     .self$value <- .self$value[c(first, middle, last)]
+#     invisible(.self)
+# }
+#
+#
+# )
+
+
+as.description <- function (...)
+.Defunct("essentials:::as.description")
+
+
+# command.args <- function (x, trailingOnly = FALSE)
+# if (trailingOnly) x$trailingArgs else x$args
+
+
+commands <- function (...)
+.Defunct("essentials:::commands")
+
+
+makeHelpMessage <- function (...)
+.Defunct("essentials:::makeHelpMessage")
+
+
+default.help <- function (...)
+.Defunct("essentials:::default.help")
+
+
+# sharedMethods <- list(
+#
+#
+# add.argument = function (..., action = NULL, nargs = NULL, constant, default,
+#     type = "any", choices = NULL, required = NA, help = NA,
+#     metavariable = NA, destination = NA, exit = NA, wrap = TRUE, wrap.help = wrap, wrap.exit = wrap,
+#     overwrite = getOption("this.path.overwrite", NA))
+# {
+#     x <- install(list(...))
+#     if (!length(x))
+#         stop("... must not be empty")
+#     tags <- shorts <- longs <- character()
+#     for (x in x) {
+#         if (isNameOrFlag(x)) {
+#             if (startsWith(x, "--"))
+#                 longs <- c(longs, getTag(x))
+#             else if (startsWith(x, "-"))
+#                 shorts <- c(shorts, getTag(x))
+#             else tags <- c(tags, getTag(x))
+#         }
+#         else stop(gettextf("unused argument '%s', is not a valid short flag, long flag, or name",
+#             x))
+#     }
+#     if (length(tags) && (length(shorts) || length(longs)))
+#         stop("... must be a set of names or flags, not both")
+#
+#
+#     destination <- as.character(destination)[1L]
+#     if (!nzchar(destination))
+#         stop("invalid 'destination' argument")
+#     if (is.na(destination))
+#         destination <- if (length(tags))
+#             tags[[1L]]
+#         else if (length(longs))
+#             longs[[1L]]
+#         else shorts[[1L]]
+#     destination <- as.character(as.symbol(destination))
+#
+#
+#     metavariable <- as.character(metavariable)[1L]
+#     if (is.na(metavariable))
+#         metavariable <- if (length(tags))
+#             tags[[1L]]
+#         else if (length(longs))
+#             longs[[1L]]
+#         else shorts[[1L]]
+#
+#
+#     hel2 <- if (!is.null(help))
+#         format.help(help)
+#
+#
+#     nargs <- parse.nargs(nargs)
+#     require2 <- as.logical(required)[1L]
+#     if (!is.null(nargs) && !is.na(require2)) {
+#         if (xor(require2, nargs[1L]))
+#             stop("specify one of 'nargs' and 'required'")                    # 'nargs' and 'required' are both specified and do not agree
+#         else warning("'nargs' and 'required' should not both be specified")  # 'nargs' and 'required' are both specified but agree
+#         require2 <- NA  # 'nargs' has precedence over 'required'
+#     }
+#     if      ( is.null(action) &&  is.null(nargs) &&  is.na(require2)) {
+#         action <- "store"
+#         require2 <- length(tags) > 0
+#         nargs <- parse.nargs(c(require2, 1))
+#     }
+#     else if ( is.null(action) &&  is.null(nargs) && !is.na(require2)) {
+#         action <- "store"
+#         nargs <- parse.nargs(c(require2, 1))
+#     }
+#     else if ( is.null(action) && !is.null(nargs) &&  is.na(require2)) {
+#         if (length(nargs) == 1)
+#             action <- if (nargs == 1) "store" else "append"
+#         else action <- if (all(nargs == c(0, 1))) "store" else "append"
+#     }
+#     else if (!is.null(action) &&  is.null(nargs) &&  is.na(require2)) {
+#         action <- match.action(action)
+#         nargs <- parse.nargs(c(
+#             switch(action, store_const = , store_true = , store_false = 0, length(tags) > 0),
+#             switch(action, append = , count = Inf, 1)
+#         ))
+#     }
+#     else if (!is.null(action) &&  is.null(nargs) && !is.na(require2)) {
+#         action <- match.action(action)
+#         if (require2 && action %in% c("store_const", "store_true", "store_false", "help", "exit"))
+#             warning(gettextf("'required = %s' does not make sense with 'action = \"%s\"'",
+#                 require2, action))
+#         nargs <- parse.nargs(c(require2, switch(action, append = , count = Inf, 1)))
+#     }
+#     else if (!is.null(action) && !is.null(nargs) &&  is.na(require2)) {
+#         action <- match.action(action)
+#         if (length(nargs) == 1) {
+#             if (action %in% c("store_const", "store_true", "store_false", "count", "help", "exit") ||
+#                 action == "store" && nargs > 1)
+#                 warning(gettextf("'nargs = %.0f' does not make sense with 'action = \"%s\"'",
+#                     nargs, action))
+#         }
+#         else if (length(nargs) == 2) {
+#             if (nargs[1L] > 0 && action %in% c("store_const", "store_true", "store_false", "help", "exit") ||
+#                 nargs[1L] > 1 && action == "store")
+#                 warning(gettextf("'nargs >= %.0f' does not make sense with 'action = \"%s\"'",
+#                     nargs[1L], action))
+#         }
+#     }
+#
+#
+#     if (action %in% c("help", "exit", "skip"))
+#         destination <- NA_character_
+#
+#
+#     types <- c("logical", "integer", "numeric", "real", "double", "complex",
+#         "character", "raw", "list", "expression")
+#     typ2 <- match.arg(type, c("any", types))
+#     if (typ2 %in% c("real", "double"))
+#         typ2 <- "numeric"
+#
+#
+#     has.default <- !missing(default)
+#
+#
+#     switch(action, store_true = , store_false = {
+#         if (missing(default))
+#             default <- action != "store_true"
+#         default <- as.vector(default, typ2)[1L]
+#         if (typ2 == "any")
+#             typ2 <- typeof(default)
+#         default <- as.logical(default)
+#         if (is.na(default))
+#             stop("missing value where TRUE/FALSE needed")
+#         default <- as.vector(default, typ2)
+#         if (!is.null(choices))
+#             warning(gettextf("argument 'choices' does not make sense with 'action = \"%s\"'",
+#                 action))
+#         choices <- NULL
+#     }, count = {
+#         if (missing(default))
+#             default <- 0L
+#         default <- as.vector(default, typ2)[1L]
+#         if (typ2 == "any")
+#             typ2 <- typeof(default)
+#         if (!is.null(choices))
+#             warning(gettextf("argument 'choices' does not make sense with 'action = \"%s\"'",
+#                 action))
+#         choices <- NULL
+#     }, append = {
+#         if (missing(default)) {
+#             if (typ2 == "any")
+#                 typ2 <- "character"
+#             default <- vector(typ2, length = 0L)
+#         }
+#         else {
+#             default <- as.vector(default, typ2)
+#             if (typ2 == "any")
+#                 typ2 <- typeof(default)
+#         }
+#         if (!is.null(choices))
+#             choices <- as.vector(choices, typ2)
+#     }, store_const = {
+#         force(constant)
+#         force(default)
+#         if (typ2 != "any") {
+#             constant <- as.vector(constant, typ2)
+#             default <- as.vector(default, typ2)
+#         }
+#         typ2 <- "logical"
+#         if (!is.null(choices))
+#             warning(gettextf("argument 'choices' does not make sense with 'action = \"%s\"'",
+#                 action))
+#         choices <- NULL
+#     }, {
+#         if (missing(default)) {
+#             if (is.null(choices)) {
+#                 if (typ2 == "any")
+#                     typ2 <- "character"
+#             }
+#             else {
+#                 choices <- as.vector(choices, typ2)
+#                 if (typ2 == "any")
+#                     typ2 <- typeof(choices)
+#             }
+#             default <- quote(expr = )
+#         }
+#         else {
+#             default <- as.vector(default, typ2)[1L]
+#             if (typ2 == "any")
+#                 typ2 <- typeof(default)
+#             if (!is.null(choices))
+#                 choices <- as.vector(choices, typ2)
+#         }
+#     })
+#
+#
+#     exi2 <- format.help(exit)
+#
+#
+#     help.sub2 <- function(x) {
+#         suppressWarnings(sprintf(help.sub(x, value),
+#             .self$program, tags[1L], shorts[1L], longs[1L], action,
+#             if (length(nargs) == 1) nargs else sprintf("c(%.0f, %.0f)", nargs[1], nargs[2]),
+#             deparse1(value$constant, collapse = ""), deparse1(value$default, collapse = ""),
+#             typ2, deparse1(value$choices, collapse = ""),
+#             if (nargs[1] == 0) FALSE else TRUE,
+#             metavariable, destination))
+#     }
+#
+#
+#     value <- list(tags = tags, short.flags = shorts, long.flags = longs,
+#         action = action, nargs = nargs)
+#     if (action == "store_const")
+#         value <- c(value, list(constant = constant))
+#
+#
+#     # use 'environment()$default' instead of 'default' in case 'default' is the missing argument
+#     value <- c(value, list(default = environment()$default, type = typ2))
+#     if (action %in% c("store", "append"))
+#         value <- c(value, list(choices = choices))
+#     if (!is.null(hel2))
+#         value <- c(value, list(help = hel2))
+#     value <- c(value, list(metavariable = metavariable, destination = destination,
+#         exit = exi2, wrap.help = wrap.help, wrap.exit = wrap.exit))
+#     if (!is.null(hel2))
+#         value$help <- help.sub2(value$help)
+#     value$exit <- help.sub2(value$exit)
+#     if (inherits(.self, "this.path_ArgumentGroup"))
+#         value$group <- c(.self$parent.IDs, list(.self$ID))
+#     else value$group <- list()
+#     class(value) <- "formalCommandArg"
+#
+#
+#     if (length(tags)) {
+#         otags <- lapply(.self$formal.command.args$value, "[[", "tags")
+#         f <- rep(seq_along(otags), lengths(otags))
+#         i <- unlist(lapply(otags, "seq_along"))
+#         otags <- unlist(otags)
+#         N <- match(tags, otags, nomatch = 0L)
+#         if (any(N)) {
+#             if (is.na(overwrite))
+#                 warning(sprintf(ngettext(sum(N > 0L),
+#                     "overwriting definition of positional argument %s",
+#                     "overwriting definitions of positional arguments %s"),
+#                     paste(dQuote(tags[N > 0L]), collapse = ", ")))
+#             else if (!overwrite)
+#                 stop(sprintf(ngettext(sum(N > 0L),
+#                     "invalid positional argument %s, already in use",
+#                     "invalid positional arguments %s, already in use"),
+#                     paste(dQuote(tags[N > 0L]), collapse = ", ")))
+#             N <- split(i[N], f[N])
+#             i <- as.integer(names(N))
+#             for (j in seq_along(i)) {
+#                 .self$formal.command.args$value[[i[[j]]]][["tags"]] <-
+#                     .self$formal.command.args$value[[i[[j]]]][["tags"]][-N[[j]]]
+#             }
+#         }
+#     }
+#     if (length(shorts)) {
+#         otags <- lapply(.self$formal.command.args$value, "[[", "short.flags")
+#         f <- rep(seq_along(otags), lengths(otags))
+#         i <- unlist(lapply(otags, "seq_along"))
+#         otags <- unlist(otags)
+#         N <- match(shorts, otags, nomatch = 0L)
+#         if (any(N)) {
+#             if (is.na(overwrite))
+#                 warning(sprintf(ngettext(sum(N > 0L),
+#                     "overwriting definition of short flag %s",
+#                     "overwriting definitions of short flags %s"),
+#                     paste(dQuote(paste0("-", shorts[N > 0L])), collapse = ", ")))
+#             else if (!overwrite)
+#                 stop(sprintf(ngettext(sum(N > 0L),
+#                     "invalid short flag %s, already in use",
+#                     "invalid short flags %s, already in use"),
+#                     paste(dQuote(paste0("-", shorts[N > 0L])), collapse = ", ")))
+#             N <- split(i[N], f[N])
+#             i <- as.integer(names(N))
+#             for (j in seq_along(i)) {
+#                 .self$formal.command.args$value[[i[[j]]]][["short.flags"]] <-
+#                     .self$formal.command.args$value[[i[[j]]]][["short.flags"]][-N[[j]]]
+#             }
+#         }
+#     }
+#     if (length(longs)) {
+#         otags <- lapply(.self$formal.command.args$value, "[[", "long.flags")
+#         f <- rep(seq_along(otags), lengths(otags))
+#         i <- unlist(lapply(otags, "seq_along"))
+#         otags <- unlist(otags)
+#         N <- match(longs, otags, nomatch = 0L)
+#         if (any(N)) {
+#             if (is.na(overwrite))
+#                 warning(sprintf(ngettext(sum(N > 0L),
+#                     "overwriting definition of long flag %s",
+#                     "overwriting definitions of long flags %s"),
+#                     paste(dQuote(paste0("--", longs[N > 0L])), collapse = ", ")))
+#             else if (!overwrite)
+#                 stop(sprintf(ngettext(sum(N > 0L),
+#                     "invalid long flag %s, already in use",
+#                     "invalid long flags %s, already in use"),
+#                     paste(dQuote(paste0("--", longs[N > 0L])), collapse = ", ")))
+#             N <- split(i[N], f[N])
+#             i <- as.integer(names(N))
+#             for (j in seq_along(i)) {
+#                 .self$formal.command.args$value[[i[[j]]]][["long.flags"]] <-
+#                     .self$formal.command.args$value[[i[[j]]]][["long.flags"]][-N[[j]]]
+#             }
+#         }
+#     }
+#     i <- lengths(lapply(.self$formal.command.args$value, "[[", "tags")) |
+#         lengths(lapply(.self$formal.command.args$value, "[[", "short.flags")) |
+#         lengths(lapply(.self$formal.command.args$value, "[[", "long.flags"))
+#     if (!all(i))
+#         .self$formal.command.args$value <- .self$formal.command.args$value[i]
+#
+#
+#     .self$formal.command.args$value <- c(.self$formal.command.args$value, list(value))
+#     invisible()
+# },
+#
+#
+# add.argument.group = function (title = NA, description = NA, wrap = TRUE, required = FALSE,
+#     mutually.exclusive = FALSE, recursive = FALSE, required.recursive = recursive,
+#     mutually.exclusive.recursive = recursive, type = NA)
+# {
+#     titl2 <- as.character(title)[1L]
+#
+#
+#     require2 <- as.logical(required)[1L]
+#     if (is.na(require2))
+#         require2 <- TRUE
+#     required.recursiv2 <- as.logical(required.recursive)[1L]
+#     if (is.na(required.recursiv2))
+#         required.recursiv2 <- TRUE
+#
+#
+#     mutually.exclusiv2 <- as.logical(mutually.exclusive)[1L]
+#     if (is.na(mutually.exclusiv2))
+#         mutually.exclusiv2 <- TRUE
+#     mutually.exclusive.recursiv2 <- as.logical(mutually.exclusive.recursive)[1L]
+#     if (is.na(mutually.exclusive.recursiv2))
+#         mutually.exclusive.recursiv2 <- TRUE
+#
+#
+#     types <- c("separate", "together", "none")
+#     if (is.character(type))
+#         typ2 <- types[pmatch(type, types)][1L]
+#     else typ2 <- types[type][1L]
+#     if (is.na(typ2))
+#         typ2 <- types[[1L]]
+#
+#
+#     I2 <- Refinteger(value = max(0L, vapply(.self$argument.groups, function(xx) {
+#         xx[["ID"]][["value"]]
+#     }, FUN.VALUE = 0L)) + 1L)
+#     value <- new("this.path_ArgumentGroup", program = .self$program, title = titl2,
+#         ID = I2, required = require2, required.recursive = required.recursiv2,
+#         mutually.exclusive = mutually.exclusiv2, mutually.exclusive.recursive = mutually.exclusive.recursiv2,
+#         type = typ2, description = as.description(description, wrap = wrap),
+#         formal.command.args = .self$formal.command.args)
+#     if (inherits(.self, "this.path_ArgumentGroup")) {
+#         value$parent.titles <- c(.self$parent.titles, .self$title)
+#         value$parent.IDs <- c(.self$parent.IDs, list(.self$ID))
+#     }
+#     x <- list(value)
+#     names(x) <- titl2
+#     .self$argument.groups <- c(.self$argument.groups, x)
+#     value
+# },
+#
+#
+# add.mutually.exclusive.group = function (...)
+# .self$add.argument.group(..., mutually.exclusive = TRUE),
+#
+#
+# add.help = function (names.or.flags = c("-h", "--help"), action = "help",
+#     help = default.help("help"), wrap = FALSE, ...)
+# .self$add.argument(names.or.flags, action = "help", help = help,
+#     wrap = wrap, ...),
+#
+#
+# add.skip = function (names.or.flags = "--args", action = "skip",
+#     help = default.help("skip"), wrap = FALSE, ...)
+# .self$add.argument(names.or.flags, action = "skip", help = help,
+#     wrap = wrap, ...),
+#
+#
+# add.version = function (names.or.flags = "--version", action = "exit",
+#     help = default.help("version"), wrap = FALSE, exit, ...)
+# .self$add.argument(names.or.flags, action = "exit", help = help,
+#     wrap = wrap, exit = exit, ...)
+#
+#
+# )
+#
+#
+# ArgumentParser$methods(sharedMethods)
+# ArgumentGroup$methods(sharedMethods)
+
+
+terminhate <- function (...)
+.Defunct("essentials:::terminhate")
+
+
+# ArgumentParser$methods(
+#
+#
+# add.parser = function (...)
+# .self$subparsers$add.parser(...),
+#
+#
+# print.help = function (message = "help requested", ..., do_terminhate = FALSE,
+#     style = NULL, cmds = commands(.self))
+# {
+#     if (length(.self$help.message))
+#         value <- .self$help.message
+#     else {
+#         value <- makeHelpMessage(.self, style = style, cmds = cmds)
+#         value <- value[nzchar(value)]
+#         value <- paste(value, collapse = "\n\n")
+#     }
+#     cat(value, "\n", sep = "")
+#     if (do_terminhate)
+#         terminhate(message = message, ...)
+#     else invisible(value)
+# },
+#
+#
+# add.subparsers = function (title = NA, description = NA, program = NA, required = FALSE, wrap = TRUE,
+#     indent = 0, exdent = 0)
+# {
+#     titl2 <- as.character(title)[1L]
+#     if (is.na(titl2))
+#         titl2 <- "Commands:"
+#
+#     descriptio2 <- as.description(description, wrap = wrap,
+#         indent = indent, exdent = exdent)
+#
+#
+#     progra2 <- as.character(program)[1L]
+#     if (is.na(progra2))
+#         progra2 <- .self$program
+#
+#
+#     require2 <- as.logical(required)[1L]
+#     if (is.na(require2))
+#         require2 <- TRUE
+#
+#
+#     .self$subparsers <- new("this.path_subparsers", title = titl2, description = descriptio2,
+#         program = progra2, required = require2, style = .self$style,
+#         parent.commands = .self$parent.commands, commands = .self$commands)
+#     invisible(.self$subparsers)
+# },
+#
+#
+# parse.args = function (args = Args(), warnPartialMatchArgs = getOption("warnPartialMatchArgs", FALSE))
+# {
+#     if (!missing(args)) args <- asArgs(args)
+#     add.arg <- quote(x[[i]]$value <- c(x[[i]]$value, if (!is.null(val) && j == len) {  # hasValue(arg) && last.flag
+#         switch(x[[i]]$action, store_const = {
+#             if (!is.na(val <- as.logical(val)))
+#                 val
+#             else FALSE
+#         }, store_true = {
+#             if (!is.na(val <- as.logical(val)))
+#                 val
+#             else x[[i]]$default
+#         }, store_false = {
+#             if (!is.na(val <- as.logical(val)))
+#                 !val
+#             else x[[i]]$default
+#         }, count = , help = , exit = , skip = {
+#             stop(gettextf("option '%s' does not accept an argument",
+#                 arg))
+#         }, val)
+#     }
+#     else {                                                                          # !hasValue(arg) || !last.flag
+#         switch(x[[i]]$action, store_const = {
+#             TRUE
+#         }, store_true = {
+#             TRUE
+#         }, store_false = {
+#             FALSE
+#         }, count = {
+#             1L
+#         }, help = {
+#             print.help2()
+#         }, exit = {
+#             print.exit(exit = x[[i]]$exit, wrap = x[[i]]$wrap.exit,
+#                 metavariable = x[[i]]$metavariable)
+#         }, skip = {
+#             do_break <- TRUE
+#         }, {
+#             if (j != len)  # all other actions require an argument
+#                 stop(gettextf("only the last flag of '%s' may accept an argument",
+#                     arg))
+#             n <- n + 1L
+#             repeat {
+#                 if (n > N)
+#                     stop(gettextf("option '%s' requires an argument",
+#                         arg))
+#                 else if (startsWith(args[[n]], "@")) {
+#                     args.table <- from.file.substitute(args.table, n)
+#                     args <- args.table$arg
+#                     N <- length(args)
+#                 }
+#                 else break
+#             }
+#             if (args[[n]] == "-") {
+#                 n <- n + 1L
+#                 if (n > N)
+#                     stop(gettextf("invalid arguments, trailing hyphen"))
+#             }
+#             args[[n]]
+#         })
+#     }))
+#     init.context <- quote({
+#
+#
+#         # parser <- this.path::ArgumentParser()
+#         # `parser a` <- parser$add.parser(letters[1:5])
+#         # `parser f` <- parser$add.parser(letters[6:9])
+#         # context <- parser
+#
+#
+#         subs <- lapply(context$subparsers$value, function(xx) {
+#             xx[["commands"]][["value"]]
+#         })
+#         subs1 <- rep(vapply(subs, "[", 1L, FUN.VALUE = ""), lengths(subs))
+#         sub.ids <- rep(seq_along(subs), lengths(subs))
+#         subs <- unlist(subs)
+#
+#
+#         x <- context$formal.command.args$value
+#
+#
+#         shorts <- lapply(x, "[[", "short.flags")
+#         short.ids <- rep(seq_along(shorts), lengths(shorts))
+#         shorts <- unlist(shorts)
+#         byte.ids <- nchar(shorts, type = "bytes") == 1L
+#         byte.flags <- shorts[byte.ids]
+#         byte.ids <- short.ids[byte.ids]
+#
+#
+#         longs <- lapply(x, "[[", "long.flags")
+#         long.ids <- rep(seq_along(longs), lengths(longs))
+#         longs <- unlist(longs)
+#
+#
+#         pos <- which(lengths(lapply(x, "[[", "tags")) > 0L)
+#         num.pos <- length(pos)
+#         cur.pos <- 1L
+#     })
+#     finalize.context <- quote({
+#         x <- check.args()
+#         check.groups()
+#         allArgs <- c(x, allArgs)
+#     })
+#     print.help2 <- function(..., save = "no", status = 10, runLast = FALSE) {
+#         context$print.help(..., call = this.call, do_terminhate = TRUE, cmds = cmds)
+#     }
+#     print.exit <- function(exit, wrap, metavariable) {
+#         if (wrap)
+#             exit <- paste(strwrap(exit, width = getOption("width") - 1),
+#                 collapse = "\n")
+#         cat(exit, "\n", sep = "")
+#         terminhate(message = paste(metavariable, "requested"),
+#             call = this.call, do_warning = FALSE)
+#     }
+#     check.groups <- function() {
+#         provided <- lengths(lapply(x, "[[", "value")) > 0L
+#         getIDs <- function(y) {
+#             paste(vapply(y, "[[", "value", FUN.VALUE = 0L), collapse = "/")
+#         }
+#         names(provided) <- vapply(x, function(xx) getIDs(xx[["group"]]), "")
+#         fun <- function(group) {
+#             ID <- getIDs(c(group$parent.IDs, list(group$ID)))
+#             sub.IDs <- paste(ID, vapply(group$argument.groups, function(xx) {
+#                 xx[["ID"]][["value"]]
+#             }, FUN.VALUE = 0L), sep = "/")
+#
+#
+#             provided2 <- c(list(provided[names(provided) == ID]), lapply(sub.IDs, function(sub.ID) provided[startsWith(names(provided), sub.ID)]))
+#             names(provided2) <- c(ID, sub.IDs)
+#
+#
+#             num.formals <- lengths(provided2)
+#             num.provided <- vapply(provided2, "sum", FUN.VALUE = 0)
+#
+#
+#             title2 <- if (!is.na(group$title))
+#                 encodeString(group$title, quote = "\"")
+#             else paste0("with ID ", ID)
+#
+#
+#             if (group$required) {
+#                 if (!group$required.recursive) {
+#                     if (!num.formals[[1L]])
+#                         stop(gettextf("required argument group %s with no formal arguments",
+#                             title2))
+#                     else if (!num.provided[[1L]])
+#                         stop(gettextf("argument group %s requires at least 1 argument",
+#                             title2))
+#                 }
+#                 else {
+#                     if (!sum(num.formals))
+#                         stop(gettextf("required argument group %s with no formal arguments or sub-arguments",
+#                             title2))
+#                     else if (!sum(num.provided))
+#                         stop(gettextf("argument group %s requires at least 1 argument or sub-argument",
+#                             title2))
+#                 }
+#             }
+#             if (group$mutually.exclusive) {
+#                 if (!group$mutually.exclusive.recursive) {
+#                     if (num.provided[[1L]] > 1L)
+#                         stop(gettextf("argument group %s requires at most 1 argument",
+#                             title2))
+#                 }
+#                 else {
+#                     if (sum(num.provided) > 1L)
+#                         stop(gettextf("argument group %s requires at most 1 argument or sub-argument",
+#                             title2))
+#                 }
+#             }
+#             lapply(group$argument.groups, "fun")
+#             invisible()
+#         }
+#         lapply(context$argument.groups, "fun")
+#         invisible()
+#     }
+#     check.args <- function() {
+#         for (n in seq_along(x)) {
+#
+#
+#             name <- if (length(x[[n]]$tags))
+#                 x[[n]]$tags[[1L]]
+#             else if (length(x[[n]]$long.flags))
+#                 paste0("--", x[[n]]$long.flags[[1L]])
+#             else paste0("-", x[[n]]$short.flags[[1L]])
+#             if (length(x[[n]]$nargs) == 1L && length(x[[n]]$value) != x[[n]]$nargs ||
+#                 length(x[[n]]$nargs) == 2L && (
+#                     length(x[[n]]$value) < x[[n]]$nargs[1L] ||
+#                     length(x[[n]]$value) > x[[n]]$nargs[2L]
+#                 ))
+#                 stop(gettextf("expected %s for '%s', found %.0f",
+#                     nargs.description(x[[n]]$nargs, singular = "argument"),
+#                     name, length(x[[n]]$value)))
+#
+#
+#             if (!is.null(x[[n]]$value)) {
+#                 switch(x[[n]]$action, count = {
+#                     x[[n]]$value <- sum(x[[n]]$value)
+#                 }, append = {
+#                 }, x[[n]]$value <- x[[n]]$value[length(x[[n]]$value)])
+#                 switch(x[[n]]$type, logical = , integer = , numeric = , complex = {
+#                     x[[n]]$value[grepl("^\\s*(NA|<NA>|NA_integer_|NA_real_|NA_complex_|NA_character_)\\s*$", x[[n]]$value)] <- NA
+#                     x[[n]]$value <- as.vector(x[[n]]$value, x[[n]]$type)
+#                 }, expression = {
+#                     x[[n]]$value <- parse(text = x[[n]]$value, keep.source = FALSE, encoding = "UTF-8")
+#                 }, x[[n]]$value <- as.vector(x[[n]]$value, x[[n]]$type))
+#                 if (x[[n]]$action == "store_const") {
+#                     x[[n]]$value <- if (x[[n]]$value)
+#                         x[[n]]$constant
+#                     else x[[n]]$default
+#                 }
+#                 else if (!is.null(x[[n]]$choices)) {
+#                     switch(x[[n]]$type, character = {
+#                         k <- as.character(x[[n]]$choices)
+#                         i <- pmatch(x[[n]]$value, k, nomatch = 0L, duplicates.ok = TRUE)
+#                         if (!all(i > 0L))
+#                             stop(gettextf("'%s' should be one of %s", name, paste(dQuote(k),
+#                                 collapse = ", ")))
+#                         x[[n]]$value <- k[i]
+#                     }, {
+#                         i <- x[[n]]$value %in% x[[n]]$choices
+#                         if (!all(i))
+#                             stop(gettextf("'%s' should be one of %s", name, paste(dQuote(x[[n]]$choices),
+#                                 collapse = ", ")))
+#                     })
+#                 }
+#             }
+#         }
+#         x
+#     }
+#     make.args.table <- function(args, codes = 1L, dirs = "") {
+#         if (length(args)) {
+#             data.frame(arg = args, code = codes, dir = dirs)
+#         }
+#     }
+#     try.both <- (has.wd <- !is.null(owd <- getwd())) && !is.null(alternate <- this.dir2(verbose = FALSE))
+#     from.file.substitute <- function(table, n) {
+#
+#
+#         # we need a set of codes that correspond to different behaviours.
+#         # 1: at the top-level, we can read from a URL, from the working
+#         #    directory, or from the executing script's directory
+#         # 2: within a file, we can read from a URL or from the files directory
+#         # 3: within a URL, we can read from a URL
+#
+#
+#         args <- table$arg
+#         N <- length(args)
+#         FILE <- args[[n]]
+#         FILE <- substr(FILE, 2L, 1000000L)  # remove the leading "@"
+#         switch(table$code[[n]], {
+#             if (grepl("^(ftp|ftps|http|https)://", FILE)) {
+#                 code <- 3L
+#                 dir <- ""
+#             }
+#             else {
+#                 if (grepl("^file://", FILE)) {
+#                     con <- file(FILE)
+#                     on.exit(close(con))
+#                     FILE <- summary.connection(con)$description
+#                     on.exit()
+#                     close(con)
+#                 }
+#                 if (try.both) {
+#                     FILE <- tryCatch({
+#                         normalizePath(FILE, mustWork = TRUE)
+#                     }, error = function(c) {
+#                         on.exit(setwd(owd))
+#                         setwd(alternate)
+#                         normalizePath(FILE, mustWork = TRUE)
+#                     })
+#                 }
+#                 else FILE <- normalizePath(FILE, mustWork = TRUE)
+#                 code <- 2L
+#                 dir <- dirname(FILE)
+#             }
+#         }, {
+#             if (grepl("^(ftp|ftps|http|https)://", FILE)) {
+#                 code <- 3L
+#                 dir <- ""
+#             }
+#             else {
+#                 if (grepl("^file://", FILE)) {
+#                     con <- file(FILE)
+#                     on.exit(close(con))
+#                     FILE <- summary.connection(con)$description
+#                     on.exit()
+#                     close(con)
+#                 }
+#                 if (has.wd) {
+#                     on.exit(setwd(owd))
+#                     setwd(table$dir[[n]])
+#                     FILE <- normalizePath(FILE, mustWork = TRUE)
+#                 }
+#                 else FILE <- normalizePath(FILE, mustWork = TRUE)
+#                 code <- 2L
+#                 dir <- dirname(FILE)
+#             }
+#         }, {
+#             if (grepl("^(ftp|ftps|http|https)://", FILE)) {
+#                 code <- 3L
+#                 dir <- ""
+#             }
+#             else stop("URL may not reference local file")
+#         })
+#         rbind(
+#             table[seq_len(n - 1L), , drop = FALSE],
+#             make.args.table(readArgs(FILE), code, dir),
+#             table[seq.int(to = N, length.out = N - n), , drop = FALSE]
+#         )
+#     }
+#
+#
+#     # 'cmds' is the literal sub-commands entered by the user
+#     # 'cmds1' is the first sub-command in each group
+#     #
+#     # for example:
+#     #
+#     # parser <- this.path::ArgumentParser()
+#     # `parser a` <- parser$add.parser(letters[1:5])
+#     # `parser a f` <- `parser a`$add.parser(letters[6:9])
+#     # parser$parse.args(c("d", "g"))
+#     #
+#     # 'cmds' would be c("d", "g"), that is the literal sub-commands entered
+#     # 'cmds1' would be c("a", "f"), that is the first sub-command in each group
+#     cmds <- character()
+#     cmds1 <- character()
+#
+#
+#     args.table <- make.args.table(args)
+#     oargs <- args
+#     this.call <- sys.call(sys.nframe())
+#     allArgs <- list()
+#     context <- .self
+#     eval(init.context)
+#     N <- length(args)
+#     n <- 0L
+#     while (n < N) {
+#         arg <- args[[n <- n + 1L]]
+#         if (isFlag(arg)) {
+#             tag <- getTag(arg)
+#             val <- if (hasValue(arg))
+#                 getValue(arg)
+#             j <- len <- 1L
+#             do_break <- FALSE
+#             if (isLongFlag(arg)) {
+#                 k <- charmatch(tag, longs)
+#                 if (is.na(k))
+#                     stop(gettextf("unused argument '%s'", arg))
+#                 if (k < 1L)
+#                     stop(gettextf("argument '--%s' matches multiple formal arguments",
+#                         tag))
+#                 if (warnPartialMatchArgs && tag != longs[[k]])
+#                     warning(gettextf("partial argument match of '--%s' to '--%s'",
+#                         tag, longs[[k]]))
+#                 i <- long.ids[[k]]
+#                 eval(add.arg)
+#             }
+#             else {
+#                 k <- match(tag, shorts)
+#                 if (is.na(k)) {  # multiple single-byte flags
+#
+#
+#                     # tags <- strsplit(tag, NULL, useBytes = TRUE)[[1L]]
+#                     # K <- match(tags, byte.flags)
+#                     # I <- byte.ids[K]
+#                     I <- byte.ids[match(strsplit(tag, NULL, useBytes = TRUE)[[1L]], byte.flags)]
+#
+#
+#                     len <- length(I)
+#                     for (j in seq_along(I)) {
+#                         i <- I[[j]]
+#                         if (is.na(i))
+#                             stop(gettextf("unused argument '%s'", arg))
+#                         eval(add.arg)
+#                     }
+#                 }
+#                 else {           # one short flag
+#                     i <- short.ids[[k]]
+#                     eval(add.arg)
+#                 }
+#             }
+#             if (do_break)
+#                 break
+#         }
+#         else if (startsWith(arg, "@")) {
+#             args.table <- from.file.substitute(args.table, n)
+#             args <- args.table$arg
+#             N <- length(args)
+#             n <- n - 1L
+#         }
+#         else if (k <- match(arg, subs, nomatch = 0L)) {
+#             cmds <- c(cmds, subs[[k]])
+#             cmds1 <- c(cmds1, subs1[[k]])
+#             eval(finalize.context)
+#             context <- context$subparsers$value[[sub.ids[[k]]]]
+#             eval(init.context)
+#         }
+#         else if (cur.pos <= num.pos) {
+#             if (arg == "-") {
+#                 n <- n + 1L
+#                 if (n > N)
+#                     stop(gettextf("invalid arguments, trailing hyphen"))
+#                 val <- args[[n]]
+#             }
+#             else if (arg == "--") {
+#                 cur.pos <- cur.pos + 1L
+#                 next
+#             }
+#             else val <- arg
+#             j <- len <- 1L
+#             do_break <- FALSE
+#             i <- pos[[cur.pos]]
+#             eval(add.arg)
+#             # x[[k]]$value <- c(x[[k]]$value, switch(x[[k]]$action, store_const = {
+#             #     if (!is.na(val <- as.logical(val)))
+#             #       val
+#             #     else FALSE
+#             # }, store_true = {
+#             #     if (!is.na(val <- as.logical(val)))
+#             #       val
+#             #     else x[[k]]$default
+#             # }, store_false = {
+#             #     if (!is.na(val <- as.logical(val)))
+#             #       !val
+#             #     else x[[k]]$default
+#             # }, count = {
+#             #     stop(gettextf("option '%s' does not accept an argument", oarg))
+#             # }, help = {
+#             #     print.help2()
+#             # }, exit = {
+#             #     print.exit(exit = x[[k]]$exit, wrap = x[[k]]$wrap.exit,
+#             #       metavariable = x[[k]]$metavariable)
+#             # }, skip = {
+#             #    break
+#             # }, val))
+#             if (length(x[[i]]$value) == max(x[[i]]$nargs))
+#                 cur.pos <- cur.pos + 1
+#         }
+#         else stop(gettextf("unused argument [%.0f]", n))
+#     }
+#     eval(finalize.context)
+#     if (context$subparsers$required)
+#         stop(gettextf("a sub-command is required"))
+#     trailing <- args[-seq_len(n)]
+#     x <- allArgs
+#     destinations <- vapply(x, "[[", "destination", FUN.VALUE = "")
+#     x <- x[!is.na(destinations)]
+#     destinations <- destinations[!is.na(destinations)]
+#     nm <- unique(destinations)
+#     value <- rep(list(quote(expr = )), length(nm))
+#     names(value) <- nm
+#     for (dest in rev(nm)) {
+#         vals <- x[destinations == dest]
+#         defs <- lapply(vals, "[[", "default")
+#         vals <- lapply(vals, "[[", "value")
+#         vals <- vals[!vapply(vals, "is.null", FUN.VALUE = NA)]
+#         vals <- c(vals, defs)
+#         for (n in seq_along(vals)) {
+#             if (!identical(vals[[n]], quote(expr = ))) {
+#                 value[dest] <- list(vals[[n]])
+#                 break
+#             }
+#         }
+#     }
+#     y <- as.environment(value)
+#     attr(y, "cmds") <- list(
+#         original = cmds1,
+#         string   = paste(cmds1, collapse = "/")
+#     )
+#     attr(y, "args") <- list(
+#         original     = oargs,
+#         all          = args,
+#         trailingOnly = trailing
+#     )
+#     class(y) <- c("ParsedArgs", "environment")
+#     y
+# },
+#
+#
+# show = function ()
+# {
+#     cat("An argument", if (length(command2 <- commands(.self)))
+#         sprintf("subparser (deriving from %s)\n",
+#             paste(command2, collapse = " "))
+#     else "parser\n")
+#     if (length(.self$description) && nzchar(.self$description$x)) {
+#         cat("with description:\n")
+#         print(.self$description$x)
+#     }
+#     else cat("with no description\n")
+#     if (length(.self$formal.command.args$value)) {
+#         cat("with formal arguments:\n")
+#         print(.self$formal.command.args$value)
+#     }
+#     else cat("with no formal arguments\n")
+#     if (length(.self$subparsers$value)) {
+#         tags <- vapply(.self$subparsers$value, function(xx) {
+#             paste(xx[["commands"]][["value"]], collapse = ", ")
+#         }, "")
+#         helps <- lapply(.self$subparsers$value, function(x) x$help)
+#         wraps <- vapply(helps, "[[", "wrap", FUN.VALUE = NA)
+#         helps <- vapply(helps, "[[", "x", FUN.VALUE = "")
+#
+#
+#         tags <- sprintf("  %s  ", format(tags, justify = "left"))
+#         indent <- max(nchar(tags, type = "width"))
+#         helps[wraps] <- vapply(strwrap(helps[wraps], width = getOption("width") - indent - 1, exdent = 2, simplify = FALSE), "paste", collapse = "\n", FUN.VALUE = "")
+#         helps <- gsub("\n", paste0("\n", strrep(" ", indent)), helps)
+#
+#
+#         cat("with sub-commands:\n")
+#         for (n in seq_along(tags)) cat(tags[[n]], helps[[n]], "\n", sep = "")
+#     }
+#     else cat("with no sub-commands\n")
+#     if (length(.self$epilogue) && nzchar(.self$epilogue$x)) {
+#         cat("with epilogue:\n")
+#         print(.self$epilogue$x)
+#     }
+#     else cat("with no epilogue\n")
+#     invisible()
+# }
+#
+#
+# )
+
+
+`$.ParsedArgs` <- function (...)
+.Defunct("essentials:::`$.ParsedArgs`")
+
+
+`$<-.ParsedArgs` <- function (..., value)
+.Defunct("essentials:::`$<-.ParsedArgs`")
+
+
+as.list.ParsedArgs <- function (...)
+.Defunct("essentials:::as.list.ParsedArgs")
+
+
+print.ParsedArgs <- function (...)
+.Defunct("essentials:::print.ParsedArgs")
+
+
+Commands <- function (...)
+.Defunct("essentials:::Commands")
+
+
+Missing <- function (...)
+.Defunct("essentials:::Missing")
+
+
+# print.subparsers <- function (x, ...)
+# {
+#
+# }
+
+
+print.this.path_ArgumentParser <- function (...)
+.Defunct("essentials:::print.essentials_ArgumentParser")
+
+
+ArgumentParser <- function (...)
+.Defunct("essentials::ArgumentParser")

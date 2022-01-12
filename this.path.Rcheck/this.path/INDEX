@@ -1,0 +1,12 @@
+check.path              Check 'this.path()' is Functioning Correctly
+here                    Construct Path to File, Beginning with
+                        'this.dir()'
+running.R.from.command-line
+                        Running R from the Windows Command-Line / /
+                        Unix Terminal
+this.path               Determine Executing Script's Filename
+this.path-defunct       Defunct Functions in Package *this.path*
+this.path-package       Get Executing Script's Path, from 'RStudio',
+                        'Rgui', 'Rscript' (Command-Line / / Terminal /
+                        / Shell), and 'source'
+this.path2              Determine Executing Script's Filename

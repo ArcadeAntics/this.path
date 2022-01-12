@@ -1,13 +1,13 @@
 Package: this.path
-Version: 0.5.0
+Version: 0.5.1
 License: MIT + file LICENSE
 Title: Get Executing Script's Path, from 'RStudio', 'Rgui', 'Rscript'
-    (Command-Line / / Terminal), and 'source'
+    (Command-Line / / Terminal / / Shell), and 'source'
 Description: Determine the full path of the executing script. Works when running
     a line or selection from a script in 'RStudio' and 'Rgui', when using
     'source', 'sys.source', 'debugSource' ('RStudio' exclusive), and
     'testthat::source_file', and when running R from the Windows command-line /
-    / Unix terminal.
+    / Unix terminal / / other shells.
 Author: Andrew Simmons
 Maintainer: Andrew Simmons <akwsimmo@gmail.com>
 Suggests: utils, essentials, microbenchmark

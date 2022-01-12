@@ -1,0 +1,55 @@
+
+R version 4.1.2 (2021-11-01) -- "Bird Hippie"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> if (requireNamespace("microbenchmark", quietly = TRUE)) {
++     FILE <- tempfile(fileext = ".R")
++     tryCatch({
++ 
++ 
++         this.path:::write.code(file = FILE, {
++ 
++ 
++             invisible(loadNamespace("this.path"))
++             rbind(
++                 microbenchmark::microbenchmark(
++                     `1st time` = this.path::this.path(),
++                     times = 1
++                 ),
++                 microbenchmark::microbenchmark(
++                     subsequent = this.path::this.path(),
++                     times = 100
++                 )
++             )
++ 
++ 
++         })
++         this.path:::.Rscript(c(
++             "--default-packages=NULL", "--vanilla", FILE
++         ))
++ 
++ 
++     }, finally = unlink(FILE))
++ }
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpieNU4Q/working_dir\RtmpUN3N3c\file6af421cc2e5f.R"
+Unit: microseconds
+       expr    min     lq     mean median     uq    max neval
+   1st time 1078.3 1078.3 1078.300 1078.3 1078.3 1078.3     1
+ subsequent    9.1    9.3   10.973    9.5   12.4   31.9   100
+> 
+> proc.time()
+   user  system elapsed 
+   0.09    0.04    0.28 
