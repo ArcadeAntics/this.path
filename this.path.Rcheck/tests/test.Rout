@@ -24,7 +24,7 @@ Working directory:
 > cat("Executing script's path:\n")
 Executing script's path:
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n", sep = "")
-Source: command-line argument 'FILE'
+Source: shell argument 'FILE'
 'C:/Users/andre/Documents/this.path/this.path.Rcheck/tests/test.R'
 
 > cat("\n\n\n\n")
@@ -35,4 +35,4 @@ Source: command-line argument 'FILE'
 > 
 > proc.time()
    user  system elapsed 
-   0.15    0.00    0.14 
+   0.14    0.04    0.17 

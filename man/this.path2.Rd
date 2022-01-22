@@ -24,12 +24,13 @@ arguments passed to \code{this.path}.
 There are a few reasons why there would be no executing script:
 \itemize{
   \item{
-\R is being run from the command-line / / terminal without supplying argument
-\option{-f} \option{FILE} or \option{--file=FILE}
+\R is being run from a shell without supplying argument \option{-f}
+\option{FILE} or \option{--file=FILE}
   }
   \item{
-\R is being run from the Unix terminal with option \option{-g} \option{Tk} or
-\option{--gui=Tk} (GUI 'Tk' does not make use of its \option{--file=} argument)
+\R is being run from a shell under Unix-alikes with option \option{-g}
+\option{Tk} or \option{--gui=Tk} (GUI \sQuote{Tk} does not make use of its
+\option{-f} \option{FILE} or \option{--file=FILE} arguments)
   }
   \item{
 \R is being run from \sQuote{RStudio} with no documents open

@@ -114,6 +114,13 @@ if (requireNamespace("testthat"))
 
 
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
+
+
+# this.path also works when source-ing a URL
+# (included tryCatch in case an internet connection is not available)
+tryCatch({
+    source("https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R")
+}, condition = base::message)
 ## Don't show: 
 unlink(FILE) ; if (.unload) unloadNamespace("testthat")
 ## End(Don't show)

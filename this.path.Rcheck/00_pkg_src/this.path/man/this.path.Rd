@@ -31,9 +31,9 @@ There are three ways in which \R code is typically run; in \sQuote{RStudio} or
 button (or appropriate keyboard shortcut), through a source call (a call to
 function \code{\link[base]{source}}, \code{\link[base]{sys.source}},
 \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
-\code{debugSource}} (\sQuote{RStudio} exclusive), or
-\code{\link[testthat:source_file]{testthat::source_file}}), and from the Windows
-command-line / / Unix terminal.
+\code{debugSource}} in \sQuote{RStudio}, or
+\code{\link[testthat:source_file]{testthat::source_file}}), and from a shell
+(including the Windows command-line / / Unix terminal).
 
 To retrieve the executing script's filename, first an attempt is made to find a
 source call. The calls are searched in reverse order so as to grab the most
@@ -47,15 +47,14 @@ please contact \packageMaintainer{this.path} so it can be implemented.
 If no source call is found up the calling stack, then an attempt is made to
 figure out how \R is currently being used.
 
-If \R is being run from the command-line / / terminal, the command-line
-arguments are searched for \option{-f} \option{FILE} or \option{--file=FILE}
-(the two methods of taking input from \option{FILE}). If exactly one of either
-type of argument is supplied, the text \option{FILE} is returned. It is an error
-to use \code{this.path} when none or multiple arguments of either type are
-supplied.
+If \R is being run from a shell, the shell arguments are searched for
+\option{-f} \option{FILE} or \option{--file=FILE} (the two methods of taking
+input from \option{FILE}). If exactly one of either type of argument is
+supplied, the text \option{FILE} is returned. It is an error to use
+\code{this.path} when none or multiple arguments of either type are supplied.
 
-If \R is being run from the Unix terminal with \option{-g} \option{Tk} or
-\option{--gui=Tk}, \code{this.path()} will signal an error. This is because
+If \R is being run from a shell under Unix-alikes with \option{-g} \option{Tk}
+or \option{--gui=Tk}, \code{this.path()} will signal an error. This is because
 \sQuote{Tk} does not make use of its \option{-f} \option{FILE},
 \option{--file=FILE} argument.
 
@@ -129,7 +128,7 @@ before calling \code{this.path} at least once.
 \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
 \code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
 
-\code{\link{running.R.from.command-line}}
+\code{\link{R.from.shell}}
 }
 %\examples{
 %\dontrun{
@@ -137,7 +136,7 @@ before calling \code{this.path} at least once.
 %calls to 'this.path'. You should see that 'this.path' works
 %through a call to 'source', a call to 'sys.source', a call
 %to 'debugSource' (if running from 'RStudio'), and when
-%running R from the command-line / / terminal.
+%running R from a shell.
 %
 %Unfortunately, it is impossible to use 'example(this.path)'
 %to demonstrate the functionality of 'this.path' in 'RStudio'
@@ -556,4 +555,11 @@ if (requireNamespace("testthat"))
 
 
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), file = FILE)
+
+
+# this.path also works when source-ing a URL
+# (included tryCatch in case an internet connection is not available)
+tryCatch({
+    source("https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R")
+}, condition = base::message)
 \dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}

@@ -18,7 +18,7 @@ Type 'q()' to quit R.
 > cat("Executing script's path:\n")
 Executing script's path:
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n", sep = "")
-Source: command-line argument 'FILE'
+Source: shell argument 'FILE'
 'C:/Users/andre/Documents/this.path/this.path.Rcheck/tests/this.path_w_URLs.R'
 
 > 
@@ -26,7 +26,7 @@ Source: command-line argument 'FILE'
 > cat("Executing script's directory:\n")
 Executing script's directory:
 > cat(sQuote(this.path::this.dir(verbose = TRUE)), "\n\n", sep = "")
-Source: command-line argument 'FILE'
+Source: shell argument 'FILE'
 'C:/Users/andre/Documents/this.path/this.path.Rcheck/tests'
 
 > 
@@ -51,4 +51,4 @@ Testing 'here':
 > 
 > proc.time()
    user  system elapsed 
-   0.10    0.03    0.12 
+   0.15    0.03    0.17 

@@ -1,7 +1,7 @@
-unix.command.line.argument.file.containing.space.fix <- function (path)
+unix.shell.argument.file.containing.space.fix <- function (path)
 {
-    # on a Unix-alike OS, you will experience the following bug when running R
-    # scripts from the terminal:
+    # under a Unix-alike, you will experience the following bug when running R
+    # scripts from a shell:
     # all " " in argument 'FILE' will be replaced with "~+~".
     # To elaborate, the 'R' executable does open the correct file:
     #
@@ -32,16 +32,19 @@ unix.command.line.argument.file.containing.space.fix <- function (path)
 
 
 
-    # if the file exists with replacing all instances of "~+~" with " ", it is
-    # assumed to be correct, and will be returned
+    # if there are no "~+~", then just return as is
+    if (!grepl("~+~", path, fixed = TRUE))
+        return(normalizePath(path, mustWork = TRUE))
+
+
+    # if the file exists with replacing all "~+~" with " ", return it
     x <- gsub("~+~", " ", path, fixed = TRUE)
     if (file.exists(x))
         return(normalizePath(x, mustWork = TRUE))
 
 
-    # if the file exists without replacing any instances of "~+~" with " ", it
-    # is assumed to be correct, and will be returned
-    if (file.exists(path) || !grepl("~+~", path, fixed = TRUE))
+    # if the file exists without replacing "~+~" with " ", return it
+    if (file.exists(path))
         return(normalizePath(path, mustWork = TRUE))
 
 
@@ -133,34 +136,21 @@ unix.command.line.argument.file.containing.space.fix <- function (path)
     path <- path[file.exists(path)]  # select the filenames that exist
 
 
-    # switched from:
-    #
-    # commandQuote(opath)
-    #
-    # to:
-    #
-    # encodeString(opath, quote = "\"")
-    #
-    # in case of characters such as "\f", "\t", and "\177"
-    if (length(path) == 0) {
-        stop("unable to resolve Unix terminal argument 'FILE' conflict for file\n",
-            "  ", encodeString(opath, quote = "\""), "\n",
-            "* when running an R script that contains \" \" from the Unix terminal,\n",
-            "  the R script's path is recorded incorrectly\n",
-            "* each \" \" in argument 'FILE' is replaced by \"~+~\"\n",
-            "* all possible combinations of replacing instances of \"~+~\" with \" \"\n",
-            "  were attempted, but no file was found.")
-    }
-    else if (length(path) > 1) {
-        stop("unable to resolve Unix terminal argument 'FILE' conflict for file\n",
-            "  ", encodeString(opath, quote = "\""), "\n",
-            "* when running an R script that contains \" \" from the Unix terminal,\n",
-            "  the R script's path is recorded incorrectly\n",
-            "* each \" \" in argument 'FILE' is replaced by \"~+~\"\n",
-            "* all possible combinations of replacing instances of \"~+~\" with \" \"\n",
-            "  were attempted, but multiple files were found.")
-    }
-    else normalizePath(path, mustWork = TRUE)
+    if (length(path) == 1L)
+        return(normalizePath(path, mustWork = TRUE))
+
+
+    stop(
+        "unable to resolve Unix-shell argument 'FILE' conflict for file:\n",
+        "  ", encodeString(opath, quote = "\""), "\n",
+        "* when running an R script from a shell under Unix-alikes in which\n",
+        "  'FILE' contains \" \", it is erroneously replaced with \"~+~\"\n",
+        "* all possible combinations of replacing \"~+~\" with \" \"\n",
+        "  were attempted, ",
+        if (length(path) == 0L)
+            "but no file was found"
+        else "but multiple files were found"
+    )
 }
 
 
@@ -168,13 +158,13 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
 {
     # initialize.__file__ {this.path}                            R Documentation
     #
-    # Normalize the Path Provided at the Command-Line / / Terminal
+    # Normalize Argument 'FILE' Provided to R by a Shell
     #
     #
     #
     # Description:
     #
-    # Look through the command-line arguments, extracting the string 'FILE'
+    # Look through the shell arguments, extracting argument 'FILE'
     # from the following arguments:
     # --file=FILE
     # -f FILE
@@ -185,7 +175,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
     #
     # Details:
     #
-    # The details between how the command-line arguments are handled is
+    # The details between how the shell arguments are handled is
     # different in Windows and under Unix-alikes, see the comments below.
     # If there is no such arguments, nothing happens. If there are multiple
     # such arguments, an error is raised.
@@ -196,39 +186,37 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
     .__file__ <<- NA_character_
 
 
-    # running from Windows command-line
+    # when running R from a shell, there are a few things to keep in mind when
+    # trying to select the correct 'FILE' to return. First, there are a few
+    # shell arguments where the name and value are separate. This means that
+    # the name of the argument is the n-th argument and the value of the
+    # argument is the (n+1)-th argument. Second, the --args shell argument
+    # means that all arguments after are for the R script to use while the
+    # arguments before are for the 'R' executable. Finally, to take input from
+    # a file, the two accepted methods are -f FILE and --file=FILE where the
+    # input is taken from 'FILE'. If multiple of these arguments are supplied,
+    # (it seems as though) 'R' takes input from the last 'FILE' argument.
+
+
+    # running R from a shell in Windows
     if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm") {
-
-
-        # when running R from the Windows command-line, there are a few
-        # things to keep in mind when trying to select the correct 'FILE' to
-        # return. First, there are a few command-line arguments where the
-        # name and value are separate. This means that the name of the
-        # argument is the n-th argument and the value of the argument is the
-        # n+1-th argument. Second, the --args command-line flag means that
-        # all arguments after are for the R script to use while the
-        # arguments before are for the 'R' executable. Finally, to take
-        # input from a file, the two accepted methods are -f FILE and
-        # --file=FILE where the input is taken from 'FILE'. If multiple of
-        # these arguments are supplied, (it seems as though) 'R' takes input
-        # from the last 'FILE' argument.
 
 
         ca <- commandArgs()
 
 
-        # select the command-line arguments intended for the R executable.
-        # Also remove the first argument, this is the name of the executable
-        # by which this R process was invoked (not useful here)
+        # select the shell arguments intended for the R executable. also remove
+        # the first argument, this is the name of the executable by which this
+        # R process was invoked (not useful here)
         ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
         ca <- ca[-1L]
-        if (!length(ca))
-            return(invisible())
+        if (length(ca) <= 0L)
+            return()
 
 
-        # remove the --encoding enc command-line flags. this flag has the
-        # highest priority, it is always handled first, regardless of the
-        # preceding argument.
+        # remove the --encoding enc shell arguments. these arguments have the
+        # highest priority (ALWAYS handled first), regardless of the preceding
+        # argument.
         #
         # Example:
         #
@@ -242,21 +230,21 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
                 if (enc[[n]])
                     enc[[n + 1L]] <- FALSE
             }
-            which.enc <- which(enc)
-            ca <- ca[-c(which.enc, which.enc + 1L)]
-            if (!length(ca))
-                return(invisible())
+            enc <- which(enc)
+            ca <- ca[-c(enc, enc + 1L)]
+            if (length(ca) <= 0L)
+                return()
         }
 
 
         # there are 17 more arguments that are evaluated before -f is
-        # grouped with its corresponding value. Some of them are static (the
+        # grouped with its corresponding value. Some of them are constant (the
         # first fifteen) while the others are variable (same beginning,
         # different values after)
         #
         # Example:
         #
-        # R -f --silent --max-ppsize=100 FILE
+        # R -f --silent --max-ppsize=10000 FILE
         #
         # you might think the value of -f would be --silent but it's
         # actually FILE because --silent and --max-ppsize=N are processed
@@ -268,18 +256,18 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
             "--no-restore-history", "--no-restore"        ,
             "--vanilla"           ,
             "-q"                  , "--quiet"             , "--silent"            ,
-            "--no-echo"           , "--verbose") |
-            grepl("^--(encoding|max-ppsize)=", ca)
+            "--no-echo"           , "--verbose"
+        ) | grepl("^--(encoding|max-ppsize)=", ca)
         if (any(pre)) {
-            ca <- ca[-which(pre)]
-            if (!length(ca))
-                return(invisible())
+            ca <- ca[!pre]
+            if (length(ca) <= 0L)
+                return()
         }
 
 
-        # next, we group the command-line arguments where the name and value
-        # are separate. there are two left being -f FILE and -e EXPR.
-        # find the locations of these special arguments
+        # next, we group the shell arguments where the name and value are
+        # separate. there are two left being -f FILE and -e EXPR. find the
+        # locations of these special arguments
         special <- ca %in% c("-f", "-e")
 
 
@@ -289,116 +277,105 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         # Example:
         #
         # R -f -f -f -e
+        # R -e -e -e -f
         #
-        # here, the first and third -f are special
-        # while the second -f and first -e are not
+        # the first and third arguments are special
+        # while the second and fourth are not
         if (any(special)) {
             for (n in seq_len(length(special) - 1L)) {
                 if (special[[n]])
                     special[[n + 1L]] <- FALSE
             }
         }
-        which.special <- which(special)
+        special <- which(special)
 
 
         # with the locations of the special arguments,
         #     figure out which of those are -f FILE arguments
-        which.f <- which.special[ca[which.special] == "-f"]
+        f <- special[ca[special] == "-f"]
 
 
         # use the locations of the special arguments to
         #     find the non-special argument locations
-        which.non.special <- setdiff(seq_along(ca), c(which.special,
-            which.special + 1L))
+        not.special <- setdiff(seq_along(ca), c(special, special + 1L))
 
 
-        # in these non-special command-line arguments,
+        # in these non-special shell arguments,
         #     figure out which arguments start with --file=
-        which.file <- which.non.special[grep("^--file=", ca[which.non.special])]
+        file <- not.special[grep("^--file=", ca[not.special])]
 
 
         # given the number of -f FILE and --file=FILE arguments,
         #     signal a possible error or warning
-        n.file <- length(which.f) + length(which.file)
-        if (!n.file)
-            return(invisible())
-        else if (n.file > 1L)
-            stop("R is being run from the command-line and formal argument 'FILE' matched by multiple actual arguments")
+        n <- length(f) + length(file)
+        if (n <= 0L)
+            return()
+        else if (n > 1L)
+            stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
 
 
         # since 'R' uses the last -f FILE or --file=FILE argument,
         #     use max to find the index of the last one of these arguments
-        n <- max(which.f, which.file)
-        if (n %in% which.file)
+        n <- max(f, file)
+        if (n %in% file)
             path <- sub("^--file=", "", ca[[n]])
         else path <- ca[[n + 1L]]
         path <- normalizePath(path, winslash = "/", mustWork = TRUE)
-        attr(path, "this.path.from.command-line") <- TRUE
+        attr(path, "this.path.from.shell") <- TRUE
         .__file__ <<- path
     }
 
 
-    # running R from the Unix terminal with the default GUI
+    # running R from a shell under Unix-alikes with the default GUI
     else if (.Platform$OS.type == "unix" && .Platform$GUI == "X11") {
 
 
-        # when running R from the Unix terminal, the command-line arguments
-        # are parsed in a different manner (of course they are). It is far
-        # less confusing to grab argument 'FILE' than above
+        # when running R from a shell under Unix-alikes, the shell arguments
+        # are parsed in a different manner (of course they are). luckily,
+        # it is far less confusing to grab argument 'FILE' than above
 
 
         ca <- commandArgs()
+
+
         ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
         ca <- ca[-1L]
-        if (!length(ca))
-            return(invisible())
+        if (length(ca) <= 0L)
+            return()
 
 
-        # remove the --encoding enc command-line flags. this flag has the
-        # highest priority, it is always handled first, regardless of the
-        # preceding argument.
-        #
-        # Example:
-        #
-        # R --encoding -f FILE
-        #
-        # R --encoding --file=FILE
-        #
-        # you might think that -f FILE and --file=FILE would get processed,
-        # but instead the encoding is taken as -f or --file=FILE
         enc <- ca == "--encoding"
         if (any(enc)) {
             for (n in seq_len(length(enc) - 1L)) {
                 if (enc[[n]])
                     enc[[n + 1L]] <- FALSE
             }
-            which.enc <- which(enc)
-            ca <- ca[-c(which.enc, which.enc + 1L)]
-            if (!length(ca))
-                return(invisible())
+            enc <- which(enc)
+            ca <- ca[-c(enc, enc + 1L)]
+            if (length(ca) <= 0L)
+                return()
         }
 
 
-        which.f <- which(ca == "-f")
-        which.file <- grep("^--file=", ca)
+        f <- which(ca == "-f")
+        file <- grep("^--file=", ca)
 
 
-        n.file <- length(which.f) + length(which.file)
-        if (!n.file)
-            return(invisible())
-        else if (n.file > 1L)
-            stop("R is being run from the command-line and formal argument 'FILE' matched by multiple actual arguments")
+        n <- length(f) + length(file)
+        if (n <= 0L)
+            return()
+        else if (n > 1L)
+            stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
 
 
-        n <- max(which.f, which.file)
-        if (n %in% which.file)
+        n <- max(f, file)
+        if (n %in% file)
             path <- sub("^--file=", "", ca[[n]])
         else path <- ca[[n + 1L]]
-        path <- unix.command.line.argument.file.containing.space.fix(path)
-        attr(path, "this.path.from.command-line") <- TRUE
+        path <- unix.shell.argument.file.containing.space.fix(path)
+        attr(path, "this.path.from.shell") <- TRUE
         .__file__ <<- path
     }
-    invisible()
 })
 evalq(envir = environment(initialize.__file__), {
     .__file__ <- NULL
@@ -632,7 +609,8 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
     # 'testthat' was added. 'testthat::source_file' is almost identical to
     # 'base::sys.source'
     srcf <- if (isNamespaceLoaded("testthat"))
-        getExportedValue("testthat", "source_file")
+        testthat::source_file
+        # getExportedValue("testthat", "source_file")
 
 
     for (n in seq.int(sys.nframe(), 1L)[-1L]) {
@@ -949,17 +927,17 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
     #
     # next, check how R is being run
     #
-    # * from Windows command-line or Unix terminal
-    # * from Unix terminal with GUI 'Tk' (was treated as an unrecognized manner
-    #       until this.path_0.5.0)
+    # * from a shell
+    # * from a shell under Unix-alikes with GUI 'Tk' (was treated as an
+    #       unrecognized manner until this.path_0.5.0)
     # * from 'RStudio'
     # * from 'Rgui' on Windows (added in this.path_0.2.0)
     # * from 'Rgui' on macOS (also called 'AQUA'), signal an error
     # * unrecognized manner, signal an error
 
 
-    if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm" ||  # running from Windows command-line
-        .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from Unix terminal with default GUI
+    if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm" ||  # running from a shell on Windows
+        .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from a shell under Unix-alikes
 
 
         # .__file__ will be:
@@ -975,21 +953,21 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
             error(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
-                "* R is being run from the command-line and argument 'FILE' is missing",
+                "* R is being run from a shell and argument 'FILE' is missing",
                 class = this.path_not_exists_error_class)
-        where("command-line argument 'FILE'")
+        where("shell argument 'FILE'")
         return(.__file__)
     }
 
 
-    # running from Unix terminal with GUI 'Tk'
+    # running from a shell under Unix-alikes with GUI 'Tk'
     else if (.Platform$OS.type == "unix" && .Platform$GUI == "Tk") {
 
 
         error(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE argument",
+            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments",
             class = this.path_not_exists_error_class)
     }
 
@@ -1026,9 +1004,11 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         path <- context$path
 
 
-        # the encoding is not explicitly set (at least for Windows),
+        # the encoding is not explicitly set (at least on Windows),
         # so we have to do that ourselves
         Encoding(path) <- "UTF-8"
+
+
         if (nzchar(path)) {
             where(if (active)
                 "active document in RStudio"
@@ -1063,7 +1043,7 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         #
         #        and
         #
-        #           this.path::file.open(system.file(package = "this.path", "extdata", "write_R_Editor_regexp.R"))
+        #           essentials::file.open(system.file(package = "this.path", "extdata", "write_R_Editor_regexp.R"))
         #
         #       )
         # * look like a windows path

@@ -37,11 +37,11 @@ path.contract	this.path-defunct
 pseudoglobalenv	this.path-defunct
 python	this.path-defunct
 R	this.path-defunct
+R.from.shell	R.from.shell
 Rcmd	this.path-defunct
 readArgs	this.path-defunct
 Rscript	this.path-defunct
 Rterm	this.path-defunct
-running.R.from.command-line	running.R.from.command-line
 scan2	this.path-defunct
 setReadWriteArgsMethod	this.path-defunct
 shEncode	this.path-defunct

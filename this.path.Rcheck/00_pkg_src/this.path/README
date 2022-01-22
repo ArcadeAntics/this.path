@@ -41,62 +41,81 @@ Second, 'this.path' will not fail if it is involved in the
 FILE <- tempfile(c("file1_", "file2_"))
 
 
-# try to source FILE[2] using FILE[1]'s path
-this.path:::write.code(substitute({
+this.path:::write.code(bquote({
+
+
+    this.path::this.path(verbose = FALSE)
+    source(file.path(dirname(this.path::this.path(verbose = FALSE)),
+        .(basename(FILE[2]))), echo = TRUE)
+
+
     whereami::thisfile()
-    source(file.path(dirname(whereami::thisfile()), .), echo = TRUE)
-}, list(. = basename(FILE[2]))), FILE[1], evaluated = TRUE, simplify = TRUE)
+    source(file.path(dirname(whereami::thisfile()),
+        .(basename(FILE[2]))), echo = TRUE)
+
+
+}), file = FILE[1], evaluated = TRUE, simplify = TRUE)
+
+
 this.path:::write.code({
+
+
+    this.path::this.path(verbose = FALSE)
     whereami::thisfile()
-}, FILE[2])
+
+
+}, file = FILE[2])
+
+
 source(FILE[1], echo = TRUE)
-source(FILE[2], echo = TRUE)
 
 
 unlink(FILE)
 ```
 
-If you replace 'whereami::thisfile()' with
-'this.path::this.path()', the above works perfectly. This
-is related to what I call an "appropriate source call" in
-the comments at the top of function 'this.path::this.path',
-of which 'whereami' has no such concept.
+As you can see, 'whereami::thisfile()' fails where
+'this.path::this.path()' works perfectly. This is related
+to what I call an "appropriate source call" in the comments
+at the top of function 'this.path::this.path', of which
+'whereami::thisfile' has no such concept.
 
 Third, 'this.path' knows if the source call didn't open a
 file and skips that source call appropriately. For example,
 'source("")', 'source("clipboard")', and 'source("stdin")'
 would all be skipped because they do not open files,
-whereas 'whereami' would return the string above
+whereas 'whereami::thisfile' would return the string above
 (incorrectly normalized against the working directory).
 
 Fourth, 'this.path' won't fail if given a URL or file URL
-for a string instead of a path, whereas 'whereami' would
-attempt to normalize such a path.
+for a string instead of a path, whereas 'whereami::thisfile'
+would attempt to normalize such a path.
 
 Fifth, 'this.path' takes argument 'chdir' into account when
-specifying relative paths in source, 'whereami' does not.
+specifying relative paths in source, 'whereami::thisfile'
+does not.
 
 Sixth, 'this.path' handles connections within source,
-'whereami' does not.
+'whereami::thisfile' does not.
 
-Seventh, if an R script is being run from the command-line,
+Seventh, if an R script is being run from a shell,
 'this.path' does a much better job at extracting the
-argument --file=file or -f file.
+argument -f FILE or --file=FILE.
 
 Eighth, 'this.path' works in interactive mode in RStudio,
-Rgui, and (hopefully soon) AQUA, 'whereami' does not.
+Rgui, and (hopefully soon) AQUA, 'whereami::thisfile' does
+not.
 
 Ninth, 'this.path' saves the path it finds within the
 appropriate environment, making it much faster subsequent
 times within the same script, and independent of working
-directory, 'whereami' does not.
+directory, 'whereami::thisfile' does not.
 
 Finally, if 'this.path' finds that there is no executing
-script, it throws an error. This is better than 'whereami'
-which returns NULL when it cannot find the executing
-script. If the executing script cannot be found, obviously
-there is an error that needs to be fixed, so the script
-shouldn't continue.
+script, it throws an error. This is better than
+'whereami::thisfile' which returns NULL when it cannot find
+the executing script. If the executing script cannot be
+found, obviously there is an error that needs to be fixed,
+so the script shouldn't continue.
 
 Ignoring the direct comparison of 'this.path::this.path'
 and 'whereami::thisfile', 'whereami' has some other issues.
@@ -108,8 +127,8 @@ is offered, they simply assert that an R script knowing its
 own path is bad. Windows batch scripts, bash scripts, C
 scripts, and Python scripts all have methods of requesting
 their own path without issue, so R should too. We shouldn't
-be scaring programmers into thinking that this is rule
-breaking or bad practice. Two last things, 'whereami'
+be scaring programmers into thinking that this is
+rule-breaking or bad practice. Two last things, 'whereami'
 changes your options without telling you! When 'whereami'
 is loaded, it changes option 'keep.source' to TRUE. While
 that might not be a bad thing for you, it might be
@@ -212,7 +231,7 @@ this won't work in interactive use since you have to source
 your scripts. Also, it means you must have option
 'keep.source' set to TRUE, once again probably not a big
 deal, but something that may cause issues. This means you
-couldn't run your R scripts from the command-line anymore,
+couldn't run your R scripts from a shell anymore,
 making it a very inconvenient substitute.
 
 I know of no other methods, though maybe you've found your

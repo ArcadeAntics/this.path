@@ -1,7 +1,7 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.18)  12 JAN 2022 03:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.18)  20 JAN 2022 16:24
 entering extended mode
-**C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/Rd2pdf6b2c7c5d71b7/Rd2.tex
-(C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/Rd2pdf6b2c7c5d71b7/Rd2.tex
+**C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/Rd2pdf30e4316329a9/Rd2.tex
+(C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/Rd2pdf30e4316329a9/Rd2.tex
 LaTeX2e <2020-10-01> patch level 4
 L3 programming layer <2021-02-18> xparse <2020-03-03>
 (C:\Users\andre\AppData\Local\Programs\MiKTeX\tex/latex/base\book.cls
@@ -334,7 +334,7 @@ LaTeX Info: Redefining \nameref on input line 8.
 \openout4 = `Rd2.out'.
 
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 2
-0.
+1.
 
 (C:\Users\andre\AppData\Local\Programs\MiKTeX\tex/latex/psnfss\ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
@@ -361,20 +361,15 @@ File: t1phv.fd 2020/03/25 scalable font definitions for T1/phv.
 \tf@toc=\write5
 \openout5 = `Rd2.toc'.
 
-
-Underfull \hbox (badness 2310) in paragraph at lines 37--37
-[]\T1/ptm/m/it/10 Get Ex-e-cut-ing Script's Path, from 'RStu-dio', 'Rgui', 'Rsc
-ript'
- []
-
-[1
+ [1
 
 
-{C:/Users/andre/AppData/Local/MiKTeX/pdftex/config/pdftex.map}] [2]
+{C:/Users/andre/AppData/Local/MiKTeX/pdftex/config/pdftex.map}]
+[2]
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 9.0pt on input line 141.
+(Font)              scaled to size 9.0pt on input line 140.
 
-Overfull \hbox (10.15752pt too wide) in paragraph at lines 150--152
+Overfull \hbox (10.15752pt too wide) in paragraph at lines 149--151
 []\T1/ptm/m/n/10 Construct the path to a file from com-po-nents in a platform-i
 ndependent way, start-ing with [][]\T1/zi4/m/n/10 this.dir[][][]()\T1/ptm/m/n/1
 0 . 
@@ -382,54 +377,49 @@ ndependent way, start-ing with [][]\T1/zi4/m/n/10 this.dir[][][]()\T1/ptm/m/n/1
 
 [3]
 LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 1
-94.
+93.
 
 (C:\Users\andre\AppData\Local\Programs\MiKTeX\tex/latex/inconsolata\ts1zi4.fd
 File: ts1zi4.fd 2018/01/14 TS1/zi4 (Inconsolata)
 )
 LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
-(Font)              scaled to size 9.0pt on input line 194.
+(Font)              scaled to size 9.0pt on input line 193.
 
-[4] [5]
-Overfull \hbox (6.43971pt too wide) in paragraph at lines 363--371
-\T1/ptm/m/n/10 to func-tion [][]\T1/zi4/m/n/10 source[][][]\T1/ptm/m/n/10 , [][
-]\T1/zi4/m/n/10 sys.source[][][]\T1/ptm/m/n/10 , [][]\T1/zi4/m/n/10 debugSource
-[][] \T1/ptm/m/n/10 (`RStu-dio' ex-clu-sive), or [][]\T1/zi4/m/n/10 testthat::s
-ource_file[][][]\T1/ptm/m/n/10 ),
+[4] [5] [6] [7]
+Overfull \hbox (48.76862pt too wide) in paragraph at lines 516--516
+ []    \T1/zi4/m/n/9 source("https://raw.githubusercontent.com/ArcadeAntics/thi
+s.path/main/tests/this.path_w_URLs.R")[] 
  []
 
-[6] [7]
+[8]
 LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
-(Font)              scaled to size 10.0pt on input line 555.
- [8]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [9]
-Overfull \hbox (30.76862pt too wide) in paragraph at lines 709--709
+(Font)              scaled to size 10.0pt on input line 576.
+ [9] [10]
+Overfull \hbox (30.76862pt too wide) in paragraph at lines 731--731
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.path()" )) 
  []
 
-[10]
-Overfull \hbox (32.27168pt too wide) in paragraph at lines 710--710
+
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 732--732
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.path2()"))[] 
  []
 
 
-Overfull \hbox (29.26555pt too wide) in paragraph at lines 712--712
+Overfull \hbox (29.26555pt too wide) in paragraph at lines 734--734
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.dir()"  ))[] 
  []
 
 
-Overfull \hbox (30.76862pt too wide) in paragraph at lines 713--713
+Overfull \hbox (30.76862pt too wide) in paragraph at lines 735--735
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.dir2()" ))[] 
  []
 
 
-Overfull \hbox (30.76862pt too wide) in paragraph at lines 714--714
+Overfull \hbox (30.76862pt too wide) in paragraph at lines 736--736
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.dir3()" ))[] 
  []
@@ -475,16 +465,16 @@ Overfull \hbox (25.8567pt too wide) in paragraph at lines 36--38
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
-(rerunfilecheck)             Checksum: CA1B6C8255EF7DF99C5181683B3CF469;928.
+(rerunfilecheck)             Checksum: F3B9172093649EFB0B5AD7D10BB1B078;832.
  ) 
 Here is how much of TeX's memory you used:
- 8769 strings out of 479334
- 130034 string characters out of 2857084
+ 8772 strings out of 479334
+ 130018 string characters out of 2857084
  427005 words of memory out of 3000000
  25930 multiletter control sequences out of 15000+200000
  441461 words of font info for 65 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 88i,6n,90p,340b,616s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 88i,6n,90p,333b,580s stack positions out of 5000i,500n,10000p,200000b,50000s
 pdfTeX warning (dest): name{Rfn.working\040directory} has been referenced but
  does not exist, replaced by a fixed one
 
@@ -503,8 +493,17 @@ xist, replaced by a fixed one
 pdfTeX warning (dest): name{Rfn.normalize} has been referenced but does not exi
 st, replaced by a fixed one
 
+pdfTeX warning (dest): name{Rfn.utils::install.packages} has been referenced bu
+t does not exist, replaced by a fixed one
+
 pdfTeX warning (dest): name{Rfn.environment\040variables} has been referenced b
 ut does not exist, replaced by a fixed one
+
+pdfTeX warning (dest): name{Rfn.stderr} has been referenced but does not exist,
+ replaced by a fixed one
+
+pdfTeX warning (dest): name{Rfn.stdout} has been referenced but does not exist,
+ replaced by a fixed one
 
 pdfTeX warning (dest): name{Rfn.file.path} has been referenced but does not exi
 st, replaced by a fixed one
@@ -538,9 +537,9 @@ iKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/andre/AppData/Local/Programs/M
 iKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/andre/AppData/Local/Programs/M
 iKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/andre/AppData/Local/Programs/M
 iKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (13 pages, 172525 bytes).
+Output written on Rd2.pdf (13 pages, 174786 bytes).
 PDF statistics:
- 435 PDF objects out of 1000 (max. 8388607)
- 146 named destinations out of 1000 (max. 500000)
+ 446 PDF objects out of 1000 (max. 8388607)
+ 149 named destinations out of 1000 (max. 500000)
  65 words of extra memory for PDF output out of 10000 (max. 10000000)
 

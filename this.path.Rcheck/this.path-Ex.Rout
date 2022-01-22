@@ -91,19 +91,19 @@ Type 'q()' to quit R.
 > source(FILE, echo = TRUE, verbose = FALSE)
 
 > this.path::here()
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir/RtmpMnilNI"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E"
 
 > this.path::here(.. = 1)
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir"
 
 > this.path::here(.. = 2)
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8"
 
 > this.path::here(.. = 1, "input", "file1.csv")
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir/input/file1.csv"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/input/file1.csv"
 
 > this.path::here("script2.R")
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir/RtmpMnilNI/script2.R"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/script2.R"
 > ## Don't show: 
 > unlink(FILE)
 > ## End(Don't show)
@@ -142,12 +142,12 @@ Type 'q()' to quit R.
 > source(FILE, verbose = FALSE)
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: call to function source
-'C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir/RtmpMnilNI/file6c445cc6ed8' 
+'C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/file4ad074d95148' 
 
 > sys.source(FILE, envir = environment())
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: call to function sys.source
-'C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir/RtmpMnilNI/file6c445cc6ed8' 
+'C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/file4ad074d95148' 
 
 > if (.Platform$GUI == "RStudio")
 +     get("debugSource", "tools:rstudio", inherits = FALSE)(FILE)
@@ -158,10 +158,34 @@ Failed with error:  'there is no package called 'testthat''
 > 
 > 
 > this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
-"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpieNU4Q/working_dir\RtmpMnilNI\file6c445cc6ed8"
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpmEPeH8/working_dir\Rtmpcb4a7E\file4ad074d95148"
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
-Source: command-line argument 'FILE'
-'C:/Users/andre/AppData/Local/Temp/RtmpieNU4Q/working_dir/RtmpMnilNI/file6c445cc6ed8' 
+Source: shell argument 'FILE'
+'C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/file4ad074d95148' 
+
+> 
+> 
+> # this.path also works when source-ing a URL
+> # (included tryCatch in case an internet connection is not available)
+> tryCatch({
++     source("https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R")
++ }, condition = base::message)
+Executing script's path:
+Source: call to function source
+'https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R'
+
+Executing script's directory:
+Source: call to function source
+'https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests'
+
+Testing 'here':
+> this.path::here("test.R")
+[1] "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/test.R"
+> this.path::here(.. = 1, "R", "this.path.R")
+[1] "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/R/this.path.R"
+
+
+
 
 > ## Don't show: 
 > unlink(FILE) ; if (.unload) unloadNamespace("testthat")
@@ -188,7 +212,7 @@ Source: command-line argument 'FILE'
 Error in this.path::this.path() : 
   'this.path' used in an inappropriate fashion
 * no appropriate source call was found up the calling stack
-* R is being run from the command-line and argument 'FILE' is missing
+* R is being run from a shell and argument 'FILE' is missing
 Calls: <Anonymous> -> error
 Execution halted
 > this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.path2()"))
@@ -199,7 +223,7 @@ NULL
 "C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "-e" "this.path::this.dir()"
 Error in this.path(...) : 'this.path' used in an inappropriate fashion
 * no appropriate source call was found up the calling stack
-* R is being run from the command-line and argument 'FILE' is missing
+* R is being run from a shell and argument 'FILE' is missing
 Calls: <Anonymous> -> this.path -> error
 Execution halted
 > this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", "this.path::this.dir2()" ))
@@ -218,7 +242,7 @@ NULL
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.18 0.03 0.49 NA NA 
+Time elapsed:  0.19 0.04 0.74 NA NA 
 > grDevices::dev.off()
 null device 
           1 

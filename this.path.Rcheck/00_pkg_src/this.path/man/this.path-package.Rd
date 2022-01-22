@@ -57,5 +57,5 @@ Check \code{this.path()} is functioning correctly: \verb{
 \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
 \code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
 
-\code{\link{running.R.from.command-line}}
+\code{\link{R.from.shell}}
 }
