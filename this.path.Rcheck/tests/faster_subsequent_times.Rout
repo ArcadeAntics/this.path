@@ -15,41 +15,36 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
-> if (requireNamespace("microbenchmark", quietly = TRUE)) {
+> main <- function ()
++ {
++     if (!requireNamespace("microbenchmark", quietly = TRUE))
++         return()
 +     FILE <- tempfile(fileext = ".R")
-+     tryCatch({
-+ 
-+ 
-+         this.path:::write.code(file = FILE, {
-+ 
-+ 
-+             invisible(loadNamespace("this.path"))
-+             rbind(
-+                 microbenchmark::microbenchmark(
-+                     `1st time` = this.path::this.path(),
-+                     times = 1
-+                 ),
-+                 microbenchmark::microbenchmark(
-+                     subsequent = this.path::this.path(),
-+                     times = 100
-+                 )
++     on.exit(unlink(FILE))
++     this.path:::write.code(file = FILE, {
++         invisible(loadNamespace("this.path"))
++         rbind(
++             microbenchmark::microbenchmark(
++                 `1st time` = this.path::this.path(),
++                 times = 1
++             ),
++             microbenchmark::microbenchmark(
++                 subsequent = this.path::this.path(),
++                 times = 100
 +             )
-+ 
-+ 
-+         })
-+         this.path:::.Rscript(c(
-+             "--default-packages=NULL", "--vanilla", FILE
-+         ))
-+ 
-+ 
-+     }, finally = unlink(FILE))
++         )
++     })
++     this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
 + }
-"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpmEPeH8/working_dir\RtmpUXrP9b\file72782d6fedd.R"
+> 
+> 
+> main()
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpAVNm2h/working_dir\RtmpmwlwzN\file650c47b619cf.R"
 Unit: microseconds
-       expr    min     lq     mean median     uq    max neval
-   1st time 1180.2 1180.2 1180.200 1180.2 1180.2 1180.2     1
- subsequent    9.3    9.6   10.778    9.8   10.1   96.4   100
+       expr      min       lq       mean   median       uq      max neval
+   1st time 1110.602 1110.602 1110.60200 1110.602 1110.602 1110.602     1
+ subsequent    9.501    9.701   10.12491    9.801   10.001   27.800   100
 > 
 > proc.time()
    user  system elapsed 
-   0.15    0.03    0.32 
+   0.12    0.03    0.28 

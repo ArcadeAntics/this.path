@@ -91,19 +91,19 @@ Type 'q()' to quit R.
 > source(FILE, echo = TRUE, verbose = FALSE)
 
 > this.path::here()
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir/RtmpcXrrVL"
 
 > this.path::here(.. = 1)
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir"
 
 > this.path::here(.. = 2)
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h"
 
 > this.path::here(.. = 1, "input", "file1.csv")
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/input/file1.csv"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir/input/file1.csv"
 
 > this.path::here("script2.R")
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/script2.R"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir/RtmpcXrrVL/script2.R"
 > ## Don't show: 
 > unlink(FILE)
 > ## End(Don't show)
@@ -142,12 +142,12 @@ Type 'q()' to quit R.
 > source(FILE, verbose = FALSE)
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: call to function source
-'C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/file4ad074d95148' 
+'C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir/RtmpcXrrVL/file752cdd6b38' 
 
 > sys.source(FILE, envir = environment())
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: call to function sys.source
-'C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/file4ad074d95148' 
+'C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir/RtmpcXrrVL/file752cdd6b38' 
 
 > if (.Platform$GUI == "RStudio")
 +     get("debugSource", "tools:rstudio", inherits = FALSE)(FILE)
@@ -158,10 +158,10 @@ Failed with error:  'there is no package called 'testthat''
 > 
 > 
 > this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
-"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpmEPeH8/working_dir\Rtmpcb4a7E\file4ad074d95148"
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpAVNm2h/working_dir\RtmpcXrrVL\file752cdd6b38"
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: shell argument 'FILE'
-'C:/Users/andre/AppData/Local/Temp/RtmpmEPeH8/working_dir/Rtmpcb4a7E/file4ad074d95148' 
+'C:/Users/andre/AppData/Local/Temp/RtmpAVNm2h/working_dir/RtmpcXrrVL/file752cdd6b38' 
 
 > 
 > 
@@ -242,7 +242,7 @@ NULL
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.19 0.04 0.74 NA NA 
+Time elapsed:  0.17 0.04 0.7 NA NA 
 > grDevices::dev.off()
 null device 
           1 

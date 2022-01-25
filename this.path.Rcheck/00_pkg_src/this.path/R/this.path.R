@@ -1,4 +1,4 @@
-unix.shell.argument.file.containing.space.fix <- function (path)
+unix.shell.arg.FILE.containing.space.fix <- function (path)
 {
     # under a Unix-alike, you will experience the following bug when running R
     # scripts from a shell:
@@ -154,11 +154,11 @@ unix.shell.argument.file.containing.space.fix <- function (path)
 }
 
 
-initialize.__file__ <- evalq(envir = new.env(), function ()
+get.FILE.from.shell.args <- evalq(envir = new.env(), function ()
 {
-    # initialize.__file__ {this.path}                            R Documentation
+    # get.FILE.from.shell.args {this.path}                       R Documentation
     #
-    # Normalize Argument 'FILE' Provided to R by a Shell
+    # Get Argument 'FILE' Provided to R by a Shell
     #
     #
     #
@@ -176,11 +176,16 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
     # Details:
     #
     # The details between how the shell arguments are handled is
-    # different in Windows and under Unix-alikes, see the comments below.
+    # different on Windows and under Unix-alikes, see the comments below.
     # If there is no such arguments, nothing happens. If there are multiple
     # such arguments, an error is raised.
     #
-    # The path in Windows will use / as the file separator
+    # The path on Windows will use / as the file separator
+
+
+    # return the already saved result, if available
+    if (!is.null(.__file__))
+        return(.__file__)
 
 
     .__file__ <<- NA_character_
@@ -198,7 +203,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
     # (it seems as though) 'R' takes input from the last 'FILE' argument.
 
 
-    # running R from a shell in Windows
+    # running R from a shell on Windows
     if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm") {
 
 
@@ -211,7 +216,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
         ca <- ca[-1L]
         if (length(ca) <= 0L)
-            return()
+            return(.__file__)
 
 
         # remove the --encoding enc shell arguments. these arguments have the
@@ -233,7 +238,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
             enc <- which(enc)
             ca <- ca[-c(enc, enc + 1L)]
             if (length(ca) <= 0L)
-                return()
+                return(.__file__)
         }
 
 
@@ -261,7 +266,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         if (any(pre)) {
             ca <- ca[!pre]
             if (length(ca) <= 0L)
-                return()
+                return(.__file__)
         }
 
 
@@ -309,7 +314,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         #     signal a possible error or warning
         n <- length(f) + length(file)
         if (n <= 0L)
-            return()
+            return(.__file__)
         else if (n > 1L)
             stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
 
@@ -341,7 +346,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
         ca <- ca[-1L]
         if (length(ca) <= 0L)
-            return()
+            return(.__file__)
 
 
         enc <- ca == "--encoding"
@@ -353,7 +358,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
             enc <- which(enc)
             ca <- ca[-c(enc, enc + 1L)]
             if (length(ca) <= 0L)
-                return()
+                return(.__file__)
         }
 
 
@@ -363,7 +368,7 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
 
         n <- length(f) + length(file)
         if (n <= 0L)
-            return()
+            return(.__file__)
         else if (n > 1L)
             stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
 
@@ -372,12 +377,13 @@ initialize.__file__ <- evalq(envir = new.env(), function ()
         if (n %in% file)
             path <- sub("^--file=", "", ca[[n]])
         else path <- ca[[n + 1L]]
-        path <- unix.shell.argument.file.containing.space.fix(path)
+        path <- unix.shell.arg.FILE.containing.space.fix(path)
         attr(path, "this.path.from.shell") <- TRUE
         .__file__ <<- path
     }
+    return(.__file__)
 })
-evalq(envir = environment(initialize.__file__), {
+evalq(envir = environment(get.FILE.from.shell.args), {
     .__file__ <- NULL
 })
 
@@ -538,7 +544,7 @@ this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
 this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
 
 
-this.path <- evalq(envir = environment(initialize.__file__), function (verbose = getOption("verbose"))
+this.path <- function (verbose = getOption("verbose"))
 {
     # function to print the method in which the
     # path of the executing script was determined
@@ -940,23 +946,21 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from a shell under Unix-alikes
 
 
-        # .__file__ will be:
+        # get.FILE.from.shell.args() will be:
         #
-        # NULL when it hasn't been initialized
-        # NA_character_ when it has been initialized and no path was found
-        # anything else when it has been initialized and a path was found
+        # NA_character_ when no path was found
+        # anything else when a path was found
 
 
-        if (is.null(.__file__))
-            initialize.__file__()
-        if (is.na(.__file__))
+        value <- get.FILE.from.shell.args()
+        if (is.na(value))
             error(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from a shell and argument 'FILE' is missing",
                 class = this.path_not_exists_error_class)
         where("shell argument 'FILE'")
-        return(.__file__)
+        return(value)
     }
 
 
@@ -1110,7 +1114,7 @@ this.path <- evalq(envir = environment(initialize.__file__), function (verbose =
         "* no appropriate source call was found up the calling stack\n",
         "* R is being run in an unrecognized manner",
         class = this.path_unimplemented_error_class)
-})
+}
 
 
 this.dir <- function (...)
