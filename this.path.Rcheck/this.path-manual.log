@@ -1,7 +1,7 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.18)  19 FEB 2022 20:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (MiKTeX 21.2) (preloaded format=pdflatex 2021.3.18)  19 FEB 2022 23:27
 entering extended mode
-**C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/Rd2pdf26fc74de20ef/Rd2.tex
-(C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/Rd2pdf26fc74de20ef/Rd2.tex
+**C:/Users/andre/AppData/Local/Temp/RtmpwDl003/Rd2pdf23c833c7e8/Rd2.tex
+(C:/Users/andre/AppData/Local/Temp/RtmpwDl003/Rd2pdf23c833c7e8/Rd2.tex
 LaTeX2e <2020-10-01> patch level 4
 L3 programming layer <2021-02-18> xparse <2020-03-03>
 (C:\Users\andre\AppData\Local\Programs\MiKTeX\tex/latex/base\book.cls
@@ -369,57 +369,56 @@ File: t1phv.fd 2020/03/25 scalable font definitions for T1/phv.
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
 (Font)              scaled to size 9.0pt on input line 140.
 
-Overfull \hbox (10.15752pt too wide) in paragraph at lines 149--151
+Overfull \hbox (10.15752pt too wide) in paragraph at lines 159--161
 []\T1/ptm/m/n/10 Construct the path to a file from com-po-nents in a platform-i
 ndependent way, start-ing with [][]\T1/zi4/m/n/10 this.dir[][][]()\T1/ptm/m/n/1
 0 . 
  []
 
 [3]
-LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 1
-93.
+LaTeX Font Info:    Trying to load font information for TS1+zi4 on input line 2
+03.
 
 (C:\Users\andre\AppData\Local\Programs\MiKTeX\tex/latex/inconsolata\ts1zi4.fd
 File: ts1zi4.fd 2018/01/14 TS1/zi4 (Inconsolata)
 )
 LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
-(Font)              scaled to size 9.0pt on input line 193.
+(Font)              scaled to size 9.0pt on input line 203.
 
-[4] [5] [6] [7]
-Overfull \hbox (48.76862pt too wide) in paragraph at lines 516--516
+[4] [5] [6] [7] [8]
+Overfull \hbox (48.76862pt too wide) in paragraph at lines 526--526
  []    \T1/zi4/m/n/9 source("https://raw.githubusercontent.com/ArcadeAntics/thi
 s.path/main/tests/this.path_w_URLs.R")[] 
  []
 
-[8]
 LaTeX Font Info:    Font shape `TS1/zi4/m/n' will be
-(Font)              scaled to size 10.0pt on input line 576.
- [9] [10]
-Overfull \hbox (30.76862pt too wide) in paragraph at lines 731--731
+(Font)              scaled to size 10.0pt on input line 586.
+[9] [10]
+Overfull \hbox (30.76862pt too wide) in paragraph at lines 741--741
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.path()" )) 
  []
 
 
-Overfull \hbox (32.27168pt too wide) in paragraph at lines 732--732
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 742--742
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.path2()"))[] 
  []
 
 
-Overfull \hbox (29.26555pt too wide) in paragraph at lines 734--734
+Overfull \hbox (29.26555pt too wide) in paragraph at lines 744--744
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.dir()"  ))[] 
  []
 
 
-Overfull \hbox (30.76862pt too wide) in paragraph at lines 735--735
+Overfull \hbox (30.76862pt too wide) in paragraph at lines 745--745
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.dir2()" ))[] 
  []
 
 
-Overfull \hbox (30.76862pt too wide) in paragraph at lines 736--736
+Overfull \hbox (30.76862pt too wide) in paragraph at lines 746--746
  []\T1/zi4/m/n/9 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
  "-e", "this.path::this.dir3()" ))[] 
  []
@@ -469,12 +468,12 @@ Package rerunfilecheck Info: File `Rd2.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  8772 strings out of 479334
- 130018 string characters out of 2857084
+ 129996 string characters out of 2857084
  427005 words of memory out of 3000000
  25930 multiletter control sequences out of 15000+200000
  441461 words of font info for 65 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 88i,6n,90p,333b,580s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 88i,6n,90p,331b,614s stack positions out of 5000i,500n,10000p,200000b,50000s
 pdfTeX warning (dest): name{Rfn.working\040directory} has been referenced but
  does not exist, replaced by a fixed one
 
@@ -537,9 +536,9 @@ iKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/andre/AppData/Local/Programs/M
 iKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/andre/AppData/Local/Programs/M
 iKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/andre/AppData/Local/Programs/M
 iKTeX/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (13 pages, 174682 bytes).
+Output written on Rd2.pdf (13 pages, 175260 bytes).
 PDF statistics:
- 446 PDF objects out of 1000 (max. 8388607)
+ 448 PDF objects out of 1000 (max. 8388607)
  149 named destinations out of 1000 (max. 500000)
  65 words of extra memory for PDF output out of 10000 (max. 10000000)
 

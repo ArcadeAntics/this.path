@@ -33,12 +33,12 @@ Type 'q()' to quit R.
 +     })
 +     this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
 + })()
-"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpaA02Pq/working_dir\RtmpGU0YQ0\file336477ab66c3"
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpwDl003/working_dir\RtmpMr3x3E\file409879e4363b"
 Unit: microseconds
        expr    min     lq     mean median     uq    max neval
- first.time 1261.3 1261.3 1261.300 1261.3 1261.3 1261.3     1
- subsequent    6.0    6.1    6.669    6.3    6.4   37.5   100
+ first.time 1100.3 1100.3 1100.300 1100.3 1100.3 1100.3     1
+ subsequent    5.9    6.1    6.402    6.2    6.2   23.2   100
 > 
 > proc.time()
    user  system elapsed 
-   0.06    0.09    0.31 
+   0.07    0.06    0.29 

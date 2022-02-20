@@ -65,12 +65,12 @@ strsplit(path, "/+")
 }
 
 
-check.path <- function (path)
-.check.path(path, this.path(verbose = FALSE), "this.path()")
+check.path <- function (...)
+.check.path(path = file.path(...), this.path(verbose = FALSE), "this.path()")
 
 
-check.dir <- function (path)
-.check.path(path, this.dir(verbose = FALSE), "this.dir()")
+check.dir <- function (...)
+.check.path(path = file.path(...), this.dir(verbose = FALSE), "this.dir()")
 
 
 # path.split(c(

@@ -230,7 +230,7 @@ Source: call to function source
 
 
 Working directory:
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpCaJjfa'
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpmCclHk'
 
 Executing script's path:
 Source: call to function source
@@ -252,7 +252,7 @@ Source: call to function source
 
 
 Working directory:
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpCaJjfa'
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpmCclHk'
 
 Executing script's path:
 Source: call to function source
@@ -263,7 +263,7 @@ Source: call to function source
 
 
 Working directory:
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpCaJjfa'
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpmCclHk'
 
 Executing script's path:
 Source: call to function source
@@ -274,7 +274,7 @@ Source: call to function source
 
 
 Working directory:
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpCaJjfa'
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpmCclHk'
 
 Executing script's path:
 Source: call to function source
@@ -329,7 +329,7 @@ Source: call to function sys.source
 
 
 Working directory:
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpCaJjfa'
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpmCclHk'
 
 Executing script's path:
 Source: call to function sys.source
@@ -353,4 +353,4 @@ Source: call to function sys.source
 > 
 > proc.time()
    user  system elapsed 
-   0.20    0.07    0.21 
+   0.15    0.06    0.21 

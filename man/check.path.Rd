@@ -10,18 +10,18 @@ initialize \code{this.path()}, and also to check that \code{this.path()} is
 returning the path you expect.
 }
 \usage{
-check.path(path)
-check.dir (path)
+check.path(...)
+check.dir (...)
 }
 \arguments{
-  \item{path}{
-character string; the path you expect \code{this.path()} or \code{this.dir()}
-to return. \code{path} can be as deep as necessary (just the basename, the last
-directory name and the basename, the last two directory names and the basename,
-...), but using an absolute path is not intended (recommended against).
-\code{this.path} makes \R scripts portable, but using an absolute path in
-\code{check.path} or \code{check.dir} makes an \R script non-portable, so it
-defeats the whole point.
+  \item{\dots}{
+further arguments passed to \code{\link[base]{file.path}} which must return a character string; the path you expect \code{this.path()} or \code{this.dir()}
+to return. The specified path can be as deep as necessary (just the basename,
+the last directory name and the basename, the last two directory names and the
+basename, ...), but using an absolute path is not intended (recommended
+against). \code{this.path} makes \R scripts portable, but using an absolute
+path in \code{check.path} or \code{check.dir} makes an \R script non-portable,
+defeating the whole purpose of this package.
   }
 }
 \value{
@@ -31,5 +31,15 @@ then \code{TRUE} returned invisibly.
 Otherwise, an error is raised.
 }
 \examples{
-# this.path::check.path("EOAdjusted/code/provrun.R")
+# I have a project called EOAdjusted
+#
+# Within this project, I have a folder called code
+# where I place all of my scripts.
+#
+# One of these scripts is called provrun.R
+#
+# So, at the top of my R script, I could write
+
+
+# this.path::check.path("EOAdjusted", "code", "provrun.R")
 }

@@ -50,7 +50,17 @@ Type 'q()' to quit R.
 > 
 > ### ** Examples
 > 
-> # this.path::check.path("EOAdjusted/code/provrun.R")
+> # I have a project called EOAdjusted
+> #
+> # Within this project, I have a folder called code
+> # where I place all of my scripts.
+> #
+> # One of these scripts is called provrun.R
+> #
+> # So, at the top of my R script, I could write
+> 
+> 
+> # this.path::check.path("EOAdjusted", "code", "provrun.R")
 > 
 > 
 > 
@@ -91,19 +101,19 @@ Type 'q()' to quit R.
 > source(FILE, echo = TRUE, verbose = FALSE)
 
 > this.path::here()
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpUFUppF"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpCupRmw"
 
 > this.path::here(.. = 1)
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir"
 
 > this.path::here(.. = 2)
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpwDl003"
 
 > this.path::here(.. = 1, "input", "file1.csv")
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/input/file1.csv"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/input/file1.csv"
 
 > this.path::here("script2.R")
-[1] "C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpUFUppF/script2.R"
+[1] "C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpCupRmw/script2.R"
 > ## Don't show: 
 > unlink(FILE)
 > ## End(Don't show)
@@ -142,12 +152,12 @@ Type 'q()' to quit R.
 > source(FILE, verbose = FALSE)
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: call to function source
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpUFUppF/file5c039671cb6' 
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpCupRmw/fileb182a815dc9' 
 
 > sys.source(FILE, envir = environment())
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: call to function sys.source
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpUFUppF/file5c039671cb6' 
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpCupRmw/fileb182a815dc9' 
 
 > if (.Platform$GUI == "RStudio")
 +     get("debugSource", "tools:rstudio", inherits = FALSE)(FILE)
@@ -158,10 +168,10 @@ Failed with error:  'there is no package called 'testthat''
 > 
 > 
 > this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
-"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpaA02Pq/working_dir\RtmpUFUppF\file5c039671cb6"
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpwDl003/working_dir\RtmpCupRmw\fileb182a815dc9"
 > cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n")
 Source: shell argument 'FILE'
-'C:/Users/andre/AppData/Local/Temp/RtmpaA02Pq/working_dir/RtmpUFUppF/file5c039671cb6' 
+'C:/Users/andre/AppData/Local/Temp/RtmpwDl003/working_dir/RtmpCupRmw/fileb182a815dc9' 
 
 > 
 > 
@@ -242,7 +252,7 @@ NULL
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.17 0.06 0.66 NA NA 
+Time elapsed:  0.17 0.1 0.7 NA NA 
 > grDevices::dev.off()
 null device 
           1 

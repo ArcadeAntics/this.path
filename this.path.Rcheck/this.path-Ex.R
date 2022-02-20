@@ -31,7 +31,17 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-# this.path::check.path("EOAdjusted/code/provrun.R")
+# I have a project called EOAdjusted
+#
+# Within this project, I have a folder called code
+# where I place all of my scripts.
+#
+# One of these scripts is called provrun.R
+#
+# So, at the top of my R script, I could write
+
+
+# this.path::check.path("EOAdjusted", "code", "provrun.R")
 
 
 
