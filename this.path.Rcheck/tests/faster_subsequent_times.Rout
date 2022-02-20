@@ -15,36 +15,30 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
-> main <- function ()
-+ {
-+     if (!requireNamespace("microbenchmark", quietly = TRUE))
-+         return()
-+     FILE <- tempfile(fileext = ".R")
-+     on.exit(unlink(FILE))
+> (function() {
++     FILE <- tempfile()
++     on.exit(unlink(FILE), add = TRUE)
 +     this.path:::write.code(file = FILE, {
++         invisible(loadNamespace("microbenchmark"))
 +         invisible(loadNamespace("this.path"))
-+         rbind(
-+             microbenchmark::microbenchmark(
-+                 `1st time` = this.path::this.path(),
-+                 times = 1
-+             ),
-+             microbenchmark::microbenchmark(
-+                 subsequent = this.path::this.path(),
-+                 times = 100
-+             )
++         first.time <- microbenchmark::microbenchmark(
++             first.time = this.path::this.path(),
++             times = 1
 +         )
++         subsequent <- microbenchmark::microbenchmark(
++             subsequent = this.path::this.path(),
++             times = 100
++         )
++         print(rbind(first.time, subsequent))
 +     })
 +     this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
-+ }
-> 
-> 
-> main()
-"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpAVNm2h/working_dir\RtmpmwlwzN\file650c47b619cf.R"
++ })()
+"C:/PROGRA~1/R/R-4.1.2/bin/x64/Rscript" "--default-packages=NULL" "--vanilla" "C:\Users\andre\AppData\Local\Temp\RtmpaA02Pq/working_dir\RtmpGU0YQ0\file336477ab66c3"
 Unit: microseconds
-       expr      min       lq       mean   median       uq      max neval
-   1st time 1110.602 1110.602 1110.60200 1110.602 1110.602 1110.602     1
- subsequent    9.501    9.701   10.12491    9.801   10.001   27.800   100
+       expr    min     lq     mean median     uq    max neval
+ first.time 1261.3 1261.3 1261.300 1261.3 1261.3 1261.3     1
+ subsequent    6.0    6.1    6.669    6.3    6.4   37.5   100
 > 
 > proc.time()
    user  system elapsed 
-   0.12    0.03    0.28 
+   0.06    0.09    0.31 

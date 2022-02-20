@@ -1,8 +1,15 @@
-owd <- getwd()
-.unload <- !isNamespaceLoaded("testthat")
+(function() {
+    owd <- getwd()
+    if (is.null(owd)) {
+        message("cannot 'chdir' as current directory is unknown")
+        return(invisible())
+    }
+    else on.exit(setwd(owd), add = TRUE)
+    .unload <- !isNamespaceLoaded("testthat")
+    if (.unload)
+        on.exit(unloadNamespace("testthat"), add = TRUE)
 
 
-tryCatch({
     ## test for 3 specific cases of sourcing
     ## * sourcing a file by specifying its basename
     ## * sourcing a file by specifying its absolute path
@@ -77,7 +84,6 @@ tryCatch({
 
 
     ## 'testthat::source_file' cannot handle file URLs or connections
-
     if (requireNamespace("testthat", quietly = TRUE)) {
         setwd(base.path.dir)
         testthat::source_file(base.path , env = environment(), chdir = FALSE, wrap = FALSE)
@@ -95,7 +101,4 @@ tryCatch({
         testthat::source_file(full.path , env = environment(), chdir = TRUE , wrap = FALSE)
         testthat::source_file(full.path , env = environment(), chdir = TRUE , wrap = TRUE )
     }
-}, finally = {
-    if (!is.null(owd)) setwd(owd)
-    if (.unload)       unloadNamespace("testthat")
-})
+})()

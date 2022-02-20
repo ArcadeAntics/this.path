@@ -11,6 +11,22 @@ essentials:::Check_This(  # this.path
 
 
 
+x <- list.files2("C:/Users/andre/Music/input")
+asUnixbasename(x)
+x |> stringi::stri_escape_unicode()
+y <- x |> chartr(
+    old = paste(conversion.table[, "old"], collapse = ""),
+    new = paste(conversion.table[, "new"], collapse = "")
+)
+
+
+x |> grep(pattern = "^[][ ()',!&$+0123456789abcdefghijklmnopqrstuvwxyz_.-]+$", ignore.case = TRUE, value = TRUE, invert = TRUE)
+y |> grep(pattern = "^[][ ()',!&$+0123456789abcdefghijklmnopqrstuvwxyz_.-]+$", ignore.case = TRUE, value = TRUE, invert = TRUE)
+
+
+z <- gsub(" \\(([^)]+)\\)", " - \\1", x)
+
+
 # add.attributes <- function (.Data, args = NULL)
 # {
 #     if (is.null(args))

@@ -17,7 +17,7 @@ Type 'q()' to quit R.
 
 > cat("Working directory:\n", if (!is.null(wd <- getwd()))
 +     sQuote(wd)
-+ else "unknown", "\n\n", sep = "")
++ else "NULL", "\n\n", sep = "")
 Working directory:
 'C:/Users/andre/Documents/this.path/this.path.Rcheck/tests'
 
@@ -35,4 +35,4 @@ Source: shell argument 'FILE'
 > 
 > proc.time()
    user  system elapsed 
-   0.07    0.06    0.14 
+   0.07    0.06    0.12 
