@@ -20,7 +20,7 @@ statement is the first statement plus options \option{--restore}
 also saves the \code{\link[base:showConnections]{stdout}} and
 \code{\link[base:showConnections]{stderr}} in a file of your choosing. The
 fourth statement is the second statement plus options \option{--no-echo}
-\option{--no-restore}. You can try
+\option{--no-restore}. You can try:
 
 \verb{R --help
 R CMD BATCH --help
@@ -40,9 +40,12 @@ R CMD INSTALL
 R CMD check}
 
 \command{R CMD build} will turn an \R package (specified by a directory) into
-tarball. This allows for easy sharing of \R packages with other people.
-\command{R CMD INSTALL} will install an \R package (specified by a directory or
-tarball), and is used by
+tarball. This allows for easy sharing of \R packages with other people,
+including
+\href{https://cran.r-project.org/submit.html}{
+submitting a package to CRAN
+}. \command{R CMD INSTALL} will install an \R package (specified by a directory
+or tarball), and is used by
 \code{\link[utils:install.packages]{utils::install.packages}}.
 \command{R CMD check} will check an \R package (specified by a tarball) for
 possible errors in code, documentation, tests, and much more.

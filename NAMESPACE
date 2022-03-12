@@ -16,6 +16,12 @@ export(ArgumentParser)
 export(Commands, Missing)
 
 
+# as.relative.path.R     ----
+
+
+export(as.relative.path, as.rel.path)
+
+
 # check.path.R           ----
 
 

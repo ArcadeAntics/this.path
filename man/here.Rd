@@ -2,15 +2,15 @@
 \alias{here}
 \alias{ici}
 \title{
-Construct Path to File, Beginning with 'this.dir()'
+Construct Path to File, Beginning with \code{this.dir()}
 }
 \description{
 Construct the path to a file from components in a platform-independent way,
 starting with \code{\link{this.dir}()}.
 }
 \usage{
-here(..., .. = 0L)
-ici(..., .. = 0L)
+here(..., .. = 0)
+ici(..., .. = 0)
 }
 \arguments{
   \item{\dots}{
