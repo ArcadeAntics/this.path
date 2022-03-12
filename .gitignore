@@ -1,3 +1,6 @@
 .Rproj.user
 /.Rproj.user/
 /.Rproj.user/**
+*.Rcheck
+/*.Rcheck/
+/*.Rcheck/**

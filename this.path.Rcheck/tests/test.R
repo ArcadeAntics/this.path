@@ -1,6 +1,0 @@
-cat("Working directory:\n", if (!is.null(wd <- getwd()))
-    sQuote(wd)
-else "NULL", "\n\n", sep = "")
-cat("Executing script's path:\n")
-cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n", sep = "")
-cat("\n\n\n\n")

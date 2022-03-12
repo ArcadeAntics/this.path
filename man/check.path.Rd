@@ -11,7 +11,7 @@ returning the path you expect.
 }
 \usage{
 check.path(...)
-check.dir (...)
+check.dir(...)
 }
 \arguments{
   \item{\dots}{
