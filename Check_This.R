@@ -1,11 +1,22 @@
 essentials:::Check_This(  # this.path
     build = TRUE,
-    keep.source = TRUE,
 
     check = TRUE, as.cran = TRUE,
 
     chdir = TRUE
 )
+
+
+
+
+# enumerate <- function (x, from = 1L)
+# list(seq.int(from = from, along.with = x), x)
+#
+#
+# mfor(i, xx, enumerate(letters), {
+#     print(i)
+#     print(xx)
+# })
 
 
 

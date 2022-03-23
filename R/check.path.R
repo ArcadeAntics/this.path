@@ -7,24 +7,15 @@ path.split <- function (path)
     if (!is.character(path))
         stop(gettextf("invalid '%s' argument", "path"))
     value <- vector("list", length(path))
-    isURL <- grepl(URL.pattern, path)
-    if (any(isURL))
-        value[isURL] <- .path.split.URL(path[isURL])
-    isUNC <- !isURL
-    path[isUNC] <- if (.Platform$OS.type == "windows")
-        chartr("\\", "/", path.expand(path[isUNC]))
-    else path.expand(path[isUNC])
-    isUNC <- isUNC & grepl(UNC.pattern, path)
-    if (any(isUNC))
-        value[isUNC] <- .path.split.UNC(path[isUNC])
-    leftover <- !isURL & !isUNC
-    if (any(leftover))
-        value[leftover] <- .path.split.default(path[leftover])
+    if (any(URL <- grepl(URL.pattern, path)))
+        value[URL] <- path.split.URL(path[URL])
+    if (any(leftover <- !URL))
+        value[leftover] <- path.split.UNC.and.default(path[leftover])
     value
 }
 
 
-.path.split.URL <- function (path)
+path.split.URL <- function (path)
 {
     root <- sub(URL.pattern, "\\1", path)
     path <- sub(URL.pattern, "\\4", path)
@@ -32,7 +23,21 @@ path.split <- function (path)
 }
 
 
-.path.split.UNC <- function (path)
+path.split.UNC.and.default <- function (path)
+{
+    value <- vector("list", length(path))
+    path <- if (.Platform$OS.type == "windows")
+        chartr("\\", "/", path.expand(path))
+    else path.expand(path)
+    if (any(UNC <- grepl(UNC.pattern, path)))
+        value[UNC] <- path.split.UNC(path[UNC])
+    if (any(leftover <- !UNC))
+        value[leftover] <- path.split.default(path[leftover])
+    value
+}
+
+
+path.split.UNC <- function (path)
 {
     root <- sub(UNC.pattern, "\\2/\\3", path)
     path <- sub(UNC.pattern, "\\5", path)
@@ -40,7 +45,7 @@ path.split <- function (path)
 }
 
 
-.path.split.default <- function (path)
+path.split.default <- function (path)
 strsplit(path, "/+")
 
 
@@ -86,7 +91,7 @@ check.dir <- function (...)
 # ))
 #
 #
-# check.path("this.path/R/path.split.R")
-# check.path("this.path/R/path.split.")
+# check.path("this.path/R/check.path.R")
+# check.path("this.path/R/check.path.")
 # check.dir("this.path/R")
 # check.dir("this.path/r")

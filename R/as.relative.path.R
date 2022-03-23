@@ -37,6 +37,12 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
     vapply(seq_along(x), function(i) {
         xx <- x[[i]]
         n <- min(len2 <- length(xx), len)
+
+
+        # this will give us the location of the first FALSE value, but what we
+        # really want is the last TRUE value, so that's why we subtract 1.
+        # our nomatch is n + 1 because when we subtract 1, we get n back,
+        # meaning the first n components are equal
         n <- match(FALSE, xx[seq_len(n)] == relative.to[seq_len(n)], n + 1L) - 1L
 
 
@@ -50,7 +56,7 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
 
 
         # this happens when the 'path', and 'relative.to' and equal
-        # simply return .
+        # simply return "."
         if (length(value) <= 0L)
             "."
         else paste(value, collapse = "/")

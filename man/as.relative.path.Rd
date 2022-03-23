@@ -38,7 +38,7 @@ character vector of the same length as \code{path}.
 
 # as.relative.path(
 #     c(
-#         # paths which are equivalent will return .
+#         # paths which are equivalent will return "."
 #         "C:/Users/effective_user/Documents/this.path/man",
 #
 #
@@ -61,8 +61,8 @@ character vector of the same length as \code{path}.
 
 # as.relative.path(
 #     c(
-#         # paths which are equivalent will return .
-#         "/users/effective_user/Documents/this.path/man",
+#         # paths which are equivalent will return "."
+#         "/home/effective_user/Documents/this.path/man",
 #
 #
 #         # paths which have no base in common return as themselves
@@ -70,10 +70,10 @@ character vector of the same length as \code{path}.
 #         "//host-name/share-name/path/to/file",
 #
 #
-#         "/users/effective_user/Documents/testing",
-#         "/users/effective_user",
-#         "/users/effective_user/Documents/R/this.path.R"
+#         "/home/effective_user/Documents/testing",
+#         "/home/effective_user",
+#         "/home/effective_user/Documents/R/this.path.R"
 #     ),
-#     "/users/effective_user/Documents/this.path/man"
+#     "/home/effective_user/Documents/this.path/man"
 # )
 }
