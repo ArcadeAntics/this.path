@@ -122,6 +122,8 @@ before calling \code{this.path} at least once.
 \seealso{
 \code{\link{here}}
 
+\code{\link{shFILE}}
+
 \code{\link{this.path-package}}
 
 \code{\link[base]{source}}, \code{\link[base]{sys.source}},

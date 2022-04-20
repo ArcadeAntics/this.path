@@ -53,6 +53,9 @@ Check \code{this.path()} is functioning correctly: \verb{
 } \code{\link{check.path}},
 \code{\link{check.dir}}
 
+Extract \option{FILE} from command line arguments: \verb{
+} \code{\link{shFILE}}
+
 \code{\link[base]{source}}, \code{\link[base]{sys.source}},
 \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
 \code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}

@@ -1,162 +1,6 @@
-unix.shell.arg.FILE.containing.space.fix <- function (path)
+.shFILE <- evalq(envir = new.env(), function ()
 {
-    # under a Unix-alike, you will experience the following bug when running R
-    # scripts from a shell:
-    # all " " in argument 'FILE' will be replaced with "~+~".
-    # To elaborate, the 'R' executable does open the correct file:
-    #
-    # R -f     '/tmp/RtmpqapV6Q/temp R script 15f42409a2.R'
-    # R --file='/tmp/RtmpqapV6Q/temp R script 15f42409a2.R'
-    #
-    # will, in fact, open the file "/tmp/RtmpqapV6Q/temp R script 15f42409a2.R"
-    # and start parsing and evaluating the code within that file as it should,
-    # but the argument 'FILE' will be recorded incorrectly. If, in the script
-    # "/tmp/RtmpqapV6Q/temp R script 15f42409a2.R", you had a piece of code that
-    # looked like:
-    #
-    # print(commandArgs())
-    #
-    # you would see something like:
-    #
-    # [1] "R"
-    # [2] "-f"
-    # [3] "/tmp/RtmpqapV6Q/temp~+~R~+~script~+~15f42409a2.R"
-    #
-    # or
-    #
-    # [1] "R"
-    # [2] "--file=/tmp/RtmpqapV6Q/temp~+~R~+~script~+~15f42409a2.R"
-    #
-    # as you can see, the filename is recorded incorrectly. this function should
-    # be able to solve this issue
-
-
-
-    # if there are no "~+~", then just return as is
-    if (!grepl("~+~", path, fixed = TRUE))
-        return(normalizePath(path, mustWork = TRUE))
-
-
-    # if the file exists with replacing all "~+~" with " ", return it
-    x <- gsub("~+~", " ", path, fixed = TRUE)
-    if (file.exists(x))
-        return(normalizePath(x, mustWork = TRUE))
-
-
-    # if the file exists without replacing "~+~" with " ", return it
-    if (file.exists(path))
-        return(normalizePath(path, mustWork = TRUE))
-
-
-    # if we passed to condition above, it means
-    # * original filename 'path' does not exist
-    # * 'path' with all "~+~" replaced with " " does not exist
-    # this must mean that some combination of "~+~" need to be replaced, but not
-    # all and not none.
-    #
-    # record the original 'path' argument so
-    # that it can be used in error messages
-    opath <- path
-
-
-    # find every instance of "~+~" in 'path' including nested cases ("~+~+~+~")
-    first <- seq.int(1, nchar(path) - 2)
-    m <- which(substring(path, first, first + 2L) == "~+~")
-    attr(m, "match.length") <- rep(3L, length(m))
-    attr(m, "index.type") <- "chars"
-    attr(m, "useBytes") <- TRUE
-
-
-    # the issue is that I don't know which instances of "~+~" need to be
-    # replaced with " " and which do not need to be replaced
-    #
-    # the idea is that we attempt all possible combinations of replacing
-    # "~+~" with " " and (hopefully) end up with one existing file
-    #
-    # Example: we have five instances of "~+~", then we have several
-    # combinations to try:
-    #
-    # 0 replacements,  1 combination
-    # 1 replacement ,  5 combinations
-    # 2 replacements, 10 combinations
-    # 3 replacements, 10 combinations
-    # 4 replacements,  5 combinations
-    # 5 replacements,  1 combination
-    #
-    # some of these combinations may be invalid
-    # due to overlap, those will be handled later
-
-
-    tmp <- c(TRUE, FALSE)
-    tmp <- .mapply(base::rep, list(each = length(tmp)^(seq_along(m) - 1)), list(tmp))
-    tmp <- asplit(do.call("cbind", tmp), 1)
-
-
-    # each element of 'tmp' should be a different
-    # combination of replacing "~+~" with " "
-    #
-    # each element of 'tmp' should be equal in length to the length of 'm'
-    # (number of "~+~" found)
-    #
-    # there should be '2^length(m)' elements in 'tmp'
-    #
-    # there should be NO DUPLICATE ELEMENTS !!
-
-
-    tmp <- lapply(tmp, function(i) {
-        if (sum(i) == 0L) {  # if we are replacing NONE of "~+~"
-            value <- -1L
-            attr(value, "match.length") <- -1L
-        }
-        else {
-            value <- m[i]
-            attr(value, "match.length") <- attr(m, "match.length")[i]
-        }
-
-
-        # if 'value' contains no overlap
-        if (all((value + attr(value, "match.length"))[-length(value)] <=
-            value[-1L])) {
-            attr(value, "index.type") <- "chars"
-            attr(value, "useBytes") <- TRUE
-            value
-        }
-    })
-
-
-    # remove NULL values
-    tmp <- tmp[!vapply(tmp, "is.null", NA)]
-
-
-    # replace instances of "~+~" with " "
-    path <- rep(path, length(tmp))
-    regmatches(path, tmp) <- " "
-
-
-    path <- path[file.exists(path)]  # select the filenames that exist
-
-
-    if (length(path) == 1L)
-        return(normalizePath(path, mustWork = TRUE))
-
-
-    stop(
-        "unable to resolve Unix-shell argument 'FILE' conflict for file:\n",
-        "  ", encodeString(opath, quote = "\""), "\n",
-        "* when running an R script from a shell under Unix-alikes in which\n",
-        "  'FILE' contains \" \", it is erroneously replaced with \"~+~\"\n",
-        "* all possible combinations of replacing \"~+~\" with \" \"\n",
-        "  were attempted, ",
-        if (length(path) == 0L)
-            "but no file was found"
-        else "but multiple files were found"
-    )
-}
-
-
-get.FILE.from.shell.args <- evalq(envir = new.env(), function ()
-{
-    # get.FILE.from.shell.args {this.path}                       R Documentation
+    # shFILE {this.path}                                         R Documentation
     #
     # Get Argument 'FILE' Provided to R by a Shell
     #
@@ -164,23 +8,48 @@ get.FILE.from.shell.args <- evalq(envir = new.env(), function ()
     #
     # Description:
     #
-    # Look through the shell arguments, extracting argument 'FILE'
-    # from the following arguments:
+    # Look through the shell arguments, extracting argument 'FILE' from the
+    # following:
     # --file=FILE
     # -f FILE
     #
-    # normalize that path, and save it in the appropriate environment.
+    #
+    #
+    # Usage:
+    #
+    # shFILE()
+    # normalized.shFILE()
     #
     #
     #
     # Details:
     #
+    # Both functions will save their return values; this makes them faster
+    # when called subsequent times.
+    #
+    # For 'shFILE', if there are no such arguments, 'NA' is returned.
+    # For 'normalized.shFILE', if there are no such arguments, an error is
+    # raised.
+    #
+    # For both functions, if there are multiple such arguments, an error is
+    # raised.
+    #
+    #
+    #
+    # Value:
+    #
+    # A string. For 'normalized.shFILE', an absolute path.
+    #
+    #
+    #
+    # Note:
+    #
+    # For 'normalized.shFILE', the path on Windows will use / as the file
+    # separator.
+
+
     # The details between how the shell arguments are handled is
     # different on Windows and under Unix-alikes, see the comments below.
-    # If there is no such arguments, nothing happens. If there are multiple
-    # such arguments, an error is raised.
-    #
-    # The path on Windows will use / as the file separator
 
 
     # return the already saved result, if available
@@ -322,12 +191,11 @@ get.FILE.from.shell.args <- evalq(envir = new.env(), function ()
         # since 'R' uses the last -f FILE or --file=FILE argument,
         #     use max to find the index of the last one of these arguments
         n <- max(f, file)
-        if (n %in% file)
-            path <- sub("^--file=", "", ca[[n]])
-        else path <- ca[[n + 1L]]
-        path <- normalizePath(path, winslash = "/", mustWork = TRUE)
-        attr(path, "this.path.from.shell") <- TRUE
-        .__file__ <<- path
+        .__file__ <<- {
+            if (n %in% file)
+                sub("^--file=", "", ca[[n]])
+            else ca[[n + 1L]]
+        }
     }
 
 
@@ -336,7 +204,7 @@ get.FILE.from.shell.args <- evalq(envir = new.env(), function ()
 
 
         # when running R from a shell under Unix-alikes, the shell arguments
-        # are parsed in a different manner (of course they are). luckily,
+        # are parsed in a different manner (of course they are, smh). luckily,
         # it is far less confusing to grab argument 'FILE' than above
 
 
@@ -374,18 +242,49 @@ get.FILE.from.shell.args <- evalq(envir = new.env(), function ()
 
 
         n <- max(f, file)
-        if (n %in% file)
-            path <- sub("^--file=", "", ca[[n]])
-        else path <- ca[[n + 1L]]
-        path <- unix.shell.arg.FILE.containing.space.fix(path)
-        attr(path, "this.path.from.shell") <- TRUE
-        .__file__ <<- path
+        .__file__ <<- gsub("~+~", " ", {
+            if (n %in% file)
+                sub("^--file=", "", ca[[n]])
+            else ca[[n + 1L]]
+        }, fixed = TRUE)
     }
     return(.__file__)
 })
-evalq(envir = environment(get.FILE.from.shell.args), {
+evalq(envir = environment(.shFILE), {
     .__file__ <- NULL
 })
+
+
+# we have .shFILE and shFILE as separate functions so that shFILE's environment
+# will be the "this.path" namespace
+#
+# I think it's nicer to have all exported functions with the namespace
+# corresponding to their namespace
+shFILE <- function ()
+.shFILE()
+
+
+.normalized.shFILE <- evalq(envir = new.env(), function ()
+{
+    # return the already saved result, if available
+    if (!is.null(.__file__))
+        return(.__file__)
+
+
+    file <- shFILE()
+    file <- normalizePath(file, winslash = "/", mustWork = TRUE)
+    attr(file, "this.path.from.shell") <- TRUE
+    .__file__ <<- file
+    return(.__file__)
+})
+evalq(envir = environment(.normalized.shFILE), {
+    .__file__ <- NULL
+})
+
+
+# same idea as .shFILE and shFILE
+normalized.shFILE <- function ()
+.normalized.shFILE()
 
 
 
@@ -946,19 +845,20 @@ this.path <- function (verbose = getOption("verbose"))
         .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from a shell under Unix-alikes
 
 
-        # get.FILE.from.shell.args() will be:
+        # shFILE() will be:
         #
         # NA_character_ when no path was found
         # anything else when a path was found
 
 
-        value <- get.FILE.from.shell.args()
+        value <- shFILE()
         if (is.na(value))
             error(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from a shell and argument 'FILE' is missing",
                 class = this.path_not_exists_error_class)
+        value <- normalized.shFILE()
         where("shell argument 'FILE'")
         return(value)
     }

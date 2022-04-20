@@ -1,5 +1,4 @@
-\.Rproj$
-^\.git$
-^\.gitignore$
 ^\.Rproj\.user$
-^Check_This\.R$
+^\.gitignore$
+\.Rproj$
+^check-this\.R$
