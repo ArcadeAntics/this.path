@@ -420,13 +420,17 @@ normalized.shFILE <- function ()
         ")"
     )
 })
-.this.path_regexps$Rgui.REditor                <- parse("inst/extdata/R_Editor_regexp.R", keep.source = FALSE, encoding = "UTF-8")[[1L]]
+.this.path_regexps$R.Editor.lt.4.2.0           <- readLines("inst/extdata/r_editor_regexp_lt_4.2.0.txt", encoding = "UTF-8")
+.this.path_regexps$R.Editor.ge.4.2.0           <- readLines("inst/extdata/r_editor_regexp_ge_4.2.0.txt", encoding = "UTF-8")
+# .this.path_regexps$Rgui.REditor                <- parse("inst/extdata/R_Editor_regexp.R", keep.source = FALSE, encoding = "UTF-8")[[1L]]
 
 
 .this.path_regexps$windows.local.absolute.path2 <- paste0("^", .this.path_regexps$windows.local.absolute.path, "$")
 .this.path_regexps$windows.UNC.absolute.path2   <- paste0("^", .this.path_regexps$windows.UNC.absolute.path  , "$")
 .this.path_regexps$windows.absolute.path2       <- paste0("^", .this.path_regexps$windows.absolute.path      , "$")
-.this.path_regexps$Rgui.REditor2                <- paste0("^", .this.path_regexps$Rgui.REditor               , "$")
+.this.path_regexps$R.Editor.lt.4.2.02           <- paste0("^", .this.path_regexps$R.Editor.lt.4.2.0          , "$")
+.this.path_regexps$R.Editor.ge.4.2.02           <- paste0("^", .this.path_regexps$R.Editor.ge.4.2.0          , "$")
+# .this.path_regexps$Rgui.REditor2                <- paste0("^", .this.path_regexps$Rgui.REditor               , "$")
 
 
 
@@ -434,6 +438,29 @@ normalized.shFILE <- function ()
 
 if (!all(nchar(.this.path_regexps, type = "bytes") < 256L))
     stop(gettext("each regular expression in '.this.path_regexps' must be less than 256 bytes"))
+
+
+
+
+
+untitled.lt.4.2.0 <- readLines("inst/extdata/untitled_lt_4.2.0.txt", encoding = "UTF-8")
+untitled.ge.4.2.0 <- readLines("inst/extdata/untitled_ge_4.2.0.txt", encoding = "UTF-8")
+
+
+
+
+
+delayedAssign("R.Editor.regexp", {
+    if (getRversion() < "4.2.0")
+        .this.path_regexps$R.Editor.lt.4.2.02
+    else .this.path_regexps$R.Editor.ge.4.2.02
+})
+delayedAssign("untitled", {
+    if (getRversion() < "4.2.0")
+        untitled.lt.4.2.0
+    else untitled.ge.4.2.0
+})
+windows.abs.path <- .this.path_regexps$windows.absolute.path2
 
 
 
@@ -938,19 +965,22 @@ this.path <- function (verbose = getOption("verbose"))
         # names of the windows belonging to the current R process.
         #
         # we are only interested in window handles that:
-        # * are exactly "R Console"
+        # * starts with "R Console" (for example "R Console", "R Console (64-bit)", etc.)
         # * look like an open R script, starting with at least one character,
         #       then " - ", then "R Editor" or any valid translation
         #       (see
         #
-        #           this.path:::.this.path_regexps$Rgui.REditor2
+        #           this.path:::R.Editor.regexp
         #
         #        and
         #
-        #           essentials::file.open(system.file(package = "this.path", "extdata", "write_R_Editor_regexp.R"))
+        #           essentials::file.open(system.file(package = "this.path", "extdata", "write_r_editor_regexp.R"))
         #
         #       )
-        # * look like a windows path
+        # * looks like a windows path
+        # * matches one of the untitled document patterns, see
+        #
+        #       print(this.path:::untitled, width = 10)
         #
         # we keep track of "R Console" because we want to know if the R script
         # is the active document or the source document. looking for the above
@@ -963,13 +993,16 @@ this.path <- function (verbose = getOption("verbose"))
         # the previous regular expression exceeded 256 bytes, more than the
         # POSIX standard. now, each part of the regular expression is its own
         # regular expression of less than 256 bytes
-        nm <- names(utils::getWindowsHandles())
-        nm <- nm[nm == "R Console" |
-            grepl(.this.path_regexps$Rgui.REditor2         , nm) |
-            grepl(.this.path_regexps$windows.absolute.path2, nm) ]
+        nm <- names(utils::getWindowsHandles(minimized = TRUE))
+        nm <- nm[
+            startsWith(nm, "R Console") |
+            grepl(R.Editor.regexp , nm) |
+            grepl(windows.abs.path, nm) |
+            nm %in% untitled
+        ]
         if (!length(nm))
             stop("no windows in Rgui; should never happen, please report!")
-        else if (active <- nm[[1L]] != "R Console")
+        else if (active <- !startsWith(nm[[1L]], "R Console"))
             nm <- nm[[1L]]
         else if (length(nm) >= 2L)
             nm <- nm[[2L]]
@@ -978,20 +1011,22 @@ this.path <- function (verbose = getOption("verbose"))
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Rgui with no documents open",
             class = this.path_not_exists_error_class)
-        path <- sub(.this.path_regexps$Rgui.REditor2, "\\1", nm)
+        if (nm %in% untitled)
+            stop(
+                "'this.path' used in an inappropriate fashion\n",
+                "* no appropriate source call was found up the calling stack\n",
+                if (active)
+                    "* active document in Rgui does not exist"
+                else "* source document in Rgui does not exist")
+        path <- sub(R.Editor.regexp, "\\1", nm)
         active <- active && nm != path
-        if (grepl(.this.path_regexps$windows.absolute.path2, path)) {
+        if (grepl(windows.abs.path, path)) {
             where(if (active)
                 "active document in Rgui"
             else "source document in Rgui")
             return(normalizePath(path, winslash = "/", mustWork = FALSE))
         }
-        else stop(
-            "'this.path' used in an inappropriate fashion\n",
-            "* no appropriate source call was found up the calling stack\n",
-            if (active)
-                "* active document in Rgui does not exist"
-            else "* source document in Rgui does not exist")
+        else stop("invalid windows handles; should not happen, please report!")
     }
 
 

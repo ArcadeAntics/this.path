@@ -1,4 +1,4 @@
-essentials:::Check_This(  # this.path
+essentials:::check_this(  # this.path
     build = TRUE,
 
     check = TRUE, as.cran = TRUE,

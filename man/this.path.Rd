@@ -42,7 +42,7 @@ found, the argument \var{file} (\var{fileName} in the case of
 \code{debugSource}, \var{path} in the case of \code{testthat::source_file}) is
 returned from the function's evaluation environment. If you have your own
 source-like function that you'd like to be recognized by \code{this.path},
-please contact \packageMaintainer{this.path} so it can be implemented.
+please contact the package maintainer so that it can be implemented.
 
 If no source call is found up the calling stack, then an attempt is made to
 figure out how \R is currently being used.
@@ -72,10 +72,11 @@ anywhere).
 If \R is being run from \sQuote{Rgui}, the source document's filename (the
 document most recently interacted with besides the \R Console) is returned (at
 the time of evaluation). Please note that minimized documents will be
-\emph{IGNORED}. It is important to not leave the current document (either by
-closing the document or interacting with another document) while any calls to
-\code{this.path} have yet to be evaluated in the run selection. It is an error
-for no documents to be open or for a document to not exist (not saved anywhere).
+\emph{INCLUDED} when looking for the most recently used document. It is
+important to not leave the current document (either by closing the document or
+interacting with another document) while any calls to \code{this.path} have yet
+to be evaluated in the run selection. It is an error for no documents to be
+open or for a document to not exist (not saved anywhere).
 
 If \R is being run from \sQuote{AQUA}, the executing script's path cannot be
 determined. Unlike \sQuote{RStudio} and \sQuote{Rgui}, there is currently no
@@ -86,7 +87,7 @@ method for requesting the path of an open document, consider using
 If \R is being run in another manner, it is an error to use \code{this.path}.
 
 If your GUI of choice is not implemented with \code{this.path}, please contact
-\packageMaintainer{this.path} so it can be implemented.
+the package maintainer so that it can be implemented.
 }
 \value{
 character string; the executing script's filename.
