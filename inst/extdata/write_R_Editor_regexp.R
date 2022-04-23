@@ -19,13 +19,27 @@
 # a file to be saved, then read back in later when needed
 
 
-num.RGui.sessions <- function ()
-length(utils::getWindowsHandles("all", "^RGui", minimized = TRUE))
-
-
 main <- function ()
 {
     stopifnot(.Platform$OS.type == "windows")
+
+
+    loadNamespace("this.path")
+    loadNamespace("essentials", versionCheck = list(op = ">=", version = "0.2.0"))
+
+
+    # these processes need to run in order to continue
+    tryCatch({
+        essentials::python(command = "import pyautogui", mustWork = TRUE, quiet = TRUE)
+    }, error = function(c) {
+        warning("python or python module 'pyautogui' is not available:\n try 'pip install pyautogui'")
+        stop(c)
+    })
+
+
+    num.RGui.sessions <- function() {
+        length(utils::getWindowsHandles("all", "^RGui", minimized = TRUE))
+    }
 
 
     FILES <- tempfile(fileext = c(".RData", ".rds", ".py", ".R"))
@@ -37,29 +51,30 @@ main <- function ()
     file.create(tmpR)
 
 
-    oenv <- essentials::envvars("R_EDITOR_REGEXP_TMP_R_SCRIPT" = tmpR)
-    on.exit(essentials::envvars(oenv), add = TRUE)
+    writeLines(essentials::dedent(paste0(
+        r"{
+            import os, pyautogui
+            pyautogui.PAUSE = 0.2
 
 
-    writeLines(essentials::dedent(r"{
-        import os, pyautogui
-        pyautogui.PAUSE = 0.2
+            pyautogui.leftClick(  17,   59)  # 'Open script' button
+            pyautogui.write(r"}",
+        tmpR,
+        r"{" + "\n")
+
+            pyautogui.leftClick( 323,  308)  # Select R Console
+            pyautogui.write("fun()\n")
 
 
-        pyautogui.leftClick(  17,   59)  # 'Open script' button
-        pyautogui.write(os.environ["R_EDITOR_REGEXP_TMP_R_SCRIPT"] + "\n")
-        pyautogui.leftClick( 323,  308)  # Select R Console
-        pyautogui.write("fun()\n")
+            pyautogui.leftClick(  15,   32)  # 'File' button
+            pyautogui.leftClick( 109,   77)  # 'New script' button
+            pyautogui.leftClick( 323,  308)  # Select R Console
+            pyautogui.write("fun()\n")
 
 
-        pyautogui.leftClick(  15,   32)  # 'File' button
-        pyautogui.leftClick( 109,   77)  # 'New script' button
-        pyautogui.leftClick( 323,  308)  # Select R Console
-        pyautogui.write("fun()\n")
-
-
-        pyautogui.write("quit()\n")
-    }"), tmppy)
+            pyautogui.write("quit()\n")
+        }"
+    )), tmppy)
 
 
     x <- character()
@@ -82,7 +97,7 @@ main <- function ()
 
 
     options <- c("--vanilla", paste0("--workspace=", tmpRData), "R_DEFAULT_PACKAGES=NULL")
-    which <- {
+    suffix <- {
         if (getRversion() < "4.2.0")
             "lt_4.2.0"
         else "ge_4.2.0"
@@ -93,7 +108,7 @@ main <- function ()
         essentials:::Rgui(
             options = c(
                 options,
-                switch(which, lt_4.2.0 = {
+                switch(suffix, lt_4.2.0 = {
                     this.path:::languageEnvvars(language)
                 }, ge_4.2.0 = {
                     paste0(c("LANG=", "LANGUAGE="), language)
@@ -114,8 +129,8 @@ main <- function ()
     x <- readRDS(tmpRobject)
 
 
-    open.script <- x[seq.int(1, length(x), 2)]
-    untitled.script <- x[seq.int(2, length(x), 2)]
+    open.script <- x[seq.int(1L, length(x), 2L)]
+    untitled.script <- x[seq.int(2L, length(x), 2L)]
 
 
     if (any(i <- !startsWith(open.script, paste0(tmpR, " - "))))
@@ -123,16 +138,16 @@ main <- function ()
             "incorrect prefix: ",
             "incorrect prefixes:\n  "),
             paste(open.script[i], collapse = "\n  "))
-    open.script <- substring(open.script, nchar(tmpR) + 3 + 1)
+    open.script <- substring(open.script, nchar(tmpR) + 3L + 1L)
     open.script <- unique(open.script)
     open.script <- essentials:::regexQuote(open.script)
     open.script <- paste(open.script, collapse = "|")
     open.script <- paste0("(.+) - (", open.script, ")")
-    writeLines(open.script, this.path::here(paste0("r_editor_regexp_", which, ".txt")), useBytes = TRUE)
+    writeLines(open.script, this.path::here(paste0("r_editor_regexp_", suffix, ".txt")), useBytes = TRUE)
 
 
     untitled.script <- unique(untitled.script)
-    writeLines(untitled.script, this.path::here(paste0("untitled_", which, ".txt")), useBytes = TRUE)
+    writeLines(untitled.script, this.path::here(paste0("untitled_", suffix, ".txt")), useBytes = TRUE)
 
 
     invisible()
