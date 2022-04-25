@@ -28,18 +28,13 @@ main <- function ()
     loadNamespace("essentials", versionCheck = list(op = ">=", version = "0.2.0"))
 
 
-    # these processes need to run in order to continue
+    # this process needs to run in order to continue
     tryCatch({
-        essentials::python(command = "import pyautogui", mustWork = TRUE, quiet = TRUE)
+        essentials::python(command = "import pyautogui, sys", mustWork = TRUE, quiet = TRUE)
     }, error = function(c) {
         warning("python or python module 'pyautogui' is not available:\n try 'pip install pyautogui'")
         stop(c)
     })
-
-
-    num.RGui.sessions <- function() {
-        length(utils::getWindowsHandles("all", "^RGui", minimized = TRUE))
-    }
 
 
     FILES <- tempfile(fileext = c(".RData", ".rds", ".py", ".R"))
@@ -51,30 +46,25 @@ main <- function ()
     file.create(tmpR)
 
 
-    writeLines(essentials::dedent(paste0(
-        r"{
-            import os, pyautogui
-            pyautogui.PAUSE = 0.2
+    writeLines(essentials::dedent("
+        import pyautogui, sys
+        pyautogui.PAUSE = 0.2
 
 
-            pyautogui.leftClick(  17,   59)  # 'Open script' button
-            pyautogui.write(r"}",
-        tmpR,
-        r"{" + "\n")
-
-            pyautogui.leftClick( 323,  308)  # Select R Console
-            pyautogui.write("fun()\n")
+        pyautogui.leftClick(  17,   59)  # 'Open script' button
+        pyautogui.write(sys.argv[1] + '\\n')
+        pyautogui.leftClick( 323,  308)  # Select R Console
+        pyautogui.write('fun()\\n')
 
 
-            pyautogui.leftClick(  15,   32)  # 'File' button
-            pyautogui.leftClick( 109,   77)  # 'New script' button
-            pyautogui.leftClick( 323,  308)  # Select R Console
-            pyautogui.write("fun()\n")
+        pyautogui.leftClick(  15,   32)  # 'File' button
+        pyautogui.leftClick( 109,   77)  # 'New script' button
+        pyautogui.leftClick( 323,  308)  # Select R Console
+        pyautogui.write('fun()\\n')
 
 
-            pyautogui.write("quit()\n")
-        }"
-    )), tmppy)
+        pyautogui.write('quit()\\n')
+    "), tmppy)
 
 
     x <- character()
@@ -93,7 +83,7 @@ main <- function ()
         }
         saveRDS(c(readRDS(.(tmpRobject)), enc2utf8(text)), .(tmpRobject))
     })
-    save(list = "fun", file = tmpRData)
+    save(fun, file = tmpRData)
 
 
     options <- c("--vanilla", paste0("--workspace=", tmpRData), "R_DEFAULT_PACKAGES=NULL")
@@ -103,8 +93,9 @@ main <- function ()
         else "ge_4.2.0"
     }
     apk <- file.path(R.home("bin"), "Rgui.exe")
+    quiet <- !getOption("verbose")
     for (language in rownames(this.path:::languages)) {
-        n <- num.RGui.sessions()
+        n <- length(readRDS(tmpRobject))
         essentials:::Rgui(
             options = c(
                 options,
@@ -114,17 +105,12 @@ main <- function ()
                     paste0(c("LANG=", "LANGUAGE="), language)
                 })
             ),
-            wait = FALSE, mustWork = TRUE, quiet = TRUE,
+            wait = FALSE, mustWork = TRUE, quiet = quiet,
             name = apk
         )
         Sys.sleep(0.2)
-        essentials::python(file = tmppy, mustWork = TRUE, quiet = TRUE)
-
-
-        # wait until the RGui process is finished before moving to the next one.
-        # we assume the user is not opening more windows of RGui in the
-        # meantime, which is a fair assumption
-        while (num.RGui.sessions() > n) NULL
+        essentials::python(file = tmppy, args = tmpR, mustWork = TRUE, quiet = quiet)
+        stopifnot(length(readRDS(tmpRobject)) == n + 2L)
     }
     x <- readRDS(tmpRobject)
 
