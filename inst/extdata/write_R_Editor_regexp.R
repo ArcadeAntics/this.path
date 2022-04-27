@@ -37,6 +37,11 @@ main <- function ()
     })
 
 
+    envir <- new.env(parent = baseenv())
+    source(this.path::here("select_screen_res.R"), envir)
+    py <- envir$select.screen.res()$file
+
+
     FILES <- tempfile(fileext = c(".RData", ".rds", ".py", ".R"))
     on.exit(unlink(FILES))
     tmpRData   <- FILES[[1L]]
@@ -46,25 +51,7 @@ main <- function ()
     file.create(tmpR)
 
 
-    writeLines(essentials::dedent("
-        import pyautogui, sys
-        pyautogui.PAUSE = 0.2
-
-
-        pyautogui.leftClick(  17,   59)  # 'Open script' button
-        pyautogui.write(sys.argv[1] + '\\n')
-        pyautogui.leftClick( 323,  308)  # Select R Console
-        pyautogui.write('fun()\\n')
-
-
-        pyautogui.leftClick(  15,   32)  # 'File' button
-        pyautogui.leftClick( 109,   77)  # 'New script' button
-        pyautogui.leftClick( 323,  308)  # Select R Console
-        pyautogui.write('fun()\\n')
-
-
-        pyautogui.write('quit()\\n')
-    "), tmppy)
+    file.copy(py, tmppy)
 
 
     x <- character()
@@ -83,14 +70,15 @@ main <- function ()
         }
         saveRDS(c(readRDS(.(tmpRobject)), enc2utf8(text)), .(tmpRobject))
     })
-    save(fun, file = tmpRData)
+    FUN <- fun
+    save(fun, FUN, file = tmpRData)
 
 
     options <- c("--vanilla", paste0("--workspace=", tmpRData), "R_DEFAULT_PACKAGES=NULL")
     suffix <- {
-        if (getRversion() < "4.2.0")
-            "lt_4.2.0"
-        else "ge_4.2.0"
+        if (identical(R.version[["crt"]], "ucrt"))
+            "ucrt"
+        else "not_ucrt"
     }
     apk <- file.path(R.home("bin"), "Rgui.exe")
     quiet <- !getOption("verbose")
@@ -99,11 +87,11 @@ main <- function ()
         essentials:::Rgui(
             options = c(
                 options,
-                switch(suffix, lt_4.2.0 = {
-                    this.path:::languageEnvvars(language)
-                }, ge_4.2.0 = {
+                switch(suffix, ucrt = {
                     paste0(c("LANG=", "LANGUAGE="), language)
-                })
+                }, not_ucrt = {
+                    this.path:::languageEnvvars(language)
+                }, stop("invalid 'suffix'; should never happen, please report!"))
             ),
             wait = FALSE, mustWork = TRUE, quiet = quiet,
             name = apk

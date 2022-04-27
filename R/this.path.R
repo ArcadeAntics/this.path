@@ -420,17 +420,15 @@ normalized.shFILE <- function ()
         ")"
     )
 })
-.this.path_regexps$R.Editor.lt.4.2.0           <- readLines("inst/extdata/r_editor_regexp_lt_4.2.0.txt", encoding = "UTF-8")
-.this.path_regexps$R.Editor.ge.4.2.0           <- readLines("inst/extdata/r_editor_regexp_ge_4.2.0.txt", encoding = "UTF-8")
-# .this.path_regexps$Rgui.REditor                <- parse("inst/extdata/R_Editor_regexp.R", keep.source = FALSE, encoding = "UTF-8")[[1L]]
+.this.path_regexps$R.Editor.not_ucrt            <- readLines("inst/extdata/r_editor_regexp_not_ucrt.txt", encoding = "UTF-8")
+.this.path_regexps$R.Editor.ucrt                <- readLines("inst/extdata/r_editor_regexp_ucrt.txt", encoding = "UTF-8")
 
 
 .this.path_regexps$windows.local.absolute.path2 <- paste0("^", .this.path_regexps$windows.local.absolute.path, "$")
 .this.path_regexps$windows.UNC.absolute.path2   <- paste0("^", .this.path_regexps$windows.UNC.absolute.path  , "$")
 .this.path_regexps$windows.absolute.path2       <- paste0("^", .this.path_regexps$windows.absolute.path      , "$")
-.this.path_regexps$R.Editor.lt.4.2.02           <- paste0("^", .this.path_regexps$R.Editor.lt.4.2.0          , "$")
-.this.path_regexps$R.Editor.ge.4.2.02           <- paste0("^", .this.path_regexps$R.Editor.ge.4.2.0          , "$")
-# .this.path_regexps$Rgui.REditor2                <- paste0("^", .this.path_regexps$Rgui.REditor               , "$")
+.this.path_regexps$R.Editor.not_ucrt2           <- paste0("^", .this.path_regexps$R.Editor.not_ucrt          , "$")
+.this.path_regexps$R.Editor.ucrt2               <- paste0("^", .this.path_regexps$R.Editor.ucrt              , "$")
 
 
 
@@ -443,22 +441,26 @@ if (!all(nchar(.this.path_regexps, type = "bytes") < 256L))
 
 
 
-untitled.lt.4.2.0 <- readLines("inst/extdata/untitled_lt_4.2.0.txt", encoding = "UTF-8")
-untitled.ge.4.2.0 <- readLines("inst/extdata/untitled_ge_4.2.0.txt", encoding = "UTF-8")
+untitled.not_ucrt <- readLines("inst/extdata/untitled_not_ucrt.txt", encoding = "UTF-8")
+untitled.ucrt     <- readLines("inst/extdata/untitled_ucrt.txt", encoding = "UTF-8")
 
 
 
 
 
 delayedAssign("R.Editor.regexp", {
-    if (getRversion() < "4.2.0")
-        .this.path_regexps$R.Editor.lt.4.2.02
-    else .this.path_regexps$R.Editor.ge.4.2.02
+    if (.Platform$OS.type == "windows" && .Platform$GUI == "Rgui") {
+        if (identical(R.version[["crt"]], "ucrt"))
+            .this.path_regexps$R.Editor.ucrt2
+        else .this.path_regexps$R.Editor.not_ucrt2
+    }
 })
 delayedAssign("untitled", {
-    if (getRversion() < "4.2.0")
-        untitled.lt.4.2.0
-    else untitled.ge.4.2.0
+    if (.Platform$OS.type == "windows" && .Platform$GUI == "Rgui") {
+        if (identical(R.version[["crt"]], "ucrt"))
+            untitled.ucrt
+        else untitled.not_ucrt
+    }
 })
 windows.abs.path <- .this.path_regexps$windows.absolute.path2
 

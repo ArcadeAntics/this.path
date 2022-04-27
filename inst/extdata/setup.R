@@ -5,6 +5,11 @@ main <- function ()
     stopifnot(.Platform$OS.type == "windows")
 
 
+    envir <- new.env(parent = baseenv())
+    source(this.path::here("select_screen_res.R"), envir)
+    screen.res <- envir$select.screen.res()$name
+
+
     path <- R.home("..")
     pattern <- sprintf("^R-(%s)$", .standard_regexps()$valid_R_system_version)
     paths <- list.files(path, pattern)
@@ -14,9 +19,24 @@ main <- function ()
     R.versions <- R.versions[i]
 
 
+    FILE <- tempfile(fileext = ".R")
+    on.exit(unlink(FILE))
+    writeLines('cat(identical(R.version[["crt"]], "ucrt"))', FILE)
+    is.universal.c.runtime <- vapply(paths, function(name) {
+        essentials::Rscript(
+            options = c("--default-packages=NULL", "--vanilla"),
+            file = FILE,
+            name = name,
+            intern = TRUE, mustWork = TRUE, quiet = TRUE
+        )
+    }, FUN.VALUE = "")
+    is.universal.c.runtime <- as.logical(is.universal.c.runtime)
+
+
     fun <- function(...) {
         nms <- as.list(substitute(list(...)))[-1L]
         x <- list(...)
+        x <- lapply(x, as.logical)
         if (is.null(names(x))) {
             names(x) <- nms
         } else if (any(no.names <- !nzchar(names(x)))) {
@@ -40,13 +60,14 @@ main <- function ()
 
 
     i <- fun(
-        `R < 4.2.0`  = R.versions <  "4.2.0",
-        `R >= 4.2.0` = R.versions >= "4.2.0"
+        `not Universal C Runtime` = !is.universal.c.runtime,
+        `not Universal C Runtime` = is.universal.c.runtime
     )
     for (name in paths[i]) {
         essentials::Rscript(
             options = c("--default-packages=NULL", "--vanilla"),
             file = this.path::here("write_r_editor_regexp.R"), chdir = TRUE,
+            args = screen.res,
             name = name, mustWork = TRUE
         )
     }
