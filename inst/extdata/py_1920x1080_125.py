@@ -24,3 +24,4 @@ pyautogui.write('fun()\n')
 
 
 w.close()
+

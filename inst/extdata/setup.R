@@ -61,7 +61,7 @@ main <- function ()
 
     i <- fun(
         `not Universal C Runtime` = !is.universal.c.runtime,
-        `not Universal C Runtime` = is.universal.c.runtime
+        `Universal C Runtime`     =  is.universal.c.runtime
     )
     for (name in paths[i]) {
         essentials::Rscript(

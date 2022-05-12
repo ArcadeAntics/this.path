@@ -1,6 +1,7 @@
 select.screen.res <- function ()
 {
-    info <- utils::read.csv(this.path::here("info.csv"))
+    info <- utils::read.csv(this.path::here("info.csv"),
+        colClasses = c(scaling = "character"))
     rownames(info) <- info$name
     info$file <- this.path::here(info$file)
     if (length(args <- essentials::Args()))
