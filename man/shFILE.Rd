@@ -5,24 +5,21 @@
 Get Argument \option{FILE} Provided to R by a Shell
 }
 \description{
-Look through the command line arguments, extracting argument \option{FILE} from
-either of the following: \option{--file=FILE} or \option{-f} \option{FILE}
+Look through the command line arguments, extracting \option{FILE} from either
+of the following: \option{--file=FILE} or \option{-f} \option{FILE}
 }
 \usage{
-shFILE()
-normalized.shFILE()
+shFILE(default)
+normalized.shFILE(default)
 }
-\details{
-For \code{shFILE}, if there are no such arguments, \code{NA} is returned.
-
-For \code{normalized.shFILE}, if there are no such arguments, an error is
-raised.
-
-For both functions, if there are multiple such arguments, an error is
-raised.
+\arguments{
+  \item{default}{
+if \option{FILE} was not found, this value is returned.
+  }
 }
 \value{
-character string. For \code{normalized.shFILE}, an absolute path.
+character string, or \code{default} if the command line argument \option{FILE}
+was not found.
 }
 \note{
 Both functions will save their return values; this makes them faster when

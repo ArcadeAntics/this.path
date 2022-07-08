@@ -10,7 +10,7 @@ essentials:::check_this(  # this.path
 
 
 # enumerate <- function (x, from = 1L)
-# list(seq.int(from = from, along.with = x), x)
+# list(seq.int(from, along.with = x), x)
 #
 #
 # mfor(i, xx, enumerate(letters), {
@@ -45,16 +45,6 @@ essentials:::check_this(  # this.path
 
 
 
-quoteExpression <- function (cl)
-{
-    switch(typeof(cl), symbol = {
-        enquote(cl)
-    }, language = {
-        if (is.symbol(cl[[1L]]) && cl[[1L]] == quote(`~`))
-            cl
-        else enquote(cl)
-    }, cl)
-}
 # x <- list(FALSE, 0L, 0, 0i, "", as.symbol("a"), quote(0L + 0L), ~FALSE)
 # do.call(rbind, c(x[-6], list(deparse.level = 2)), quote = TRUE)
 # (y <- do.call(rbind, c(lapply(x[-6], quoteExpression), list(deparse.level = 2))))

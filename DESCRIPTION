@@ -1,5 +1,5 @@
 Package: this.path
-Version: 0.7.1
+Version: 0.8.0
 License: MIT + file LICENSE
 Title: Get Executing Script's Path, from 'RStudio', 'Rgui', 'Rscript' (Shells 
     Including Windows Command-Line / / Unix Terminal), and 'source'

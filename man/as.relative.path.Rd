@@ -52,7 +52,7 @@ character vector of the same length as \code{path}.
 #         "C:\\\\Users\\\\effective_user",
 #         "C:/Users/effective_user/Documents/R/this.path.R"
 #     ),
-#     "C:/Users/effective_user/Documents/this.path/man"
+#     relative.to = "C:/Users/effective_user/Documents/this.path/man"
 # )
 
 
@@ -74,6 +74,6 @@ character vector of the same length as \code{path}.
 #         "/home/effective_user",
 #         "/home/effective_user/Documents/R/this.path.R"
 #     ),
-#     "/home/effective_user/Documents/this.path/man"
+#     relative.to = "/home/effective_user/Documents/this.path/man"
 # )
 }

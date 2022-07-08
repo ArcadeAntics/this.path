@@ -39,7 +39,7 @@ Otherwise, an error is raised.
 #
 # One of these scripts is called 'provrun.R'
 #
-# So, at the top of my R script, I could write
+# So, at the top of that R script, I could write:
 
 
 # this.path::check.path("EOAdjusted", "code", "provrun.R")

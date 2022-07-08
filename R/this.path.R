@@ -253,15 +253,20 @@
 evalq(envir = environment(.shFILE), {
     .__file__ <- NULL
 })
+lockEnvironment(environment(.shFILE))
 
 
-# we have .shFILE and shFILE as separate functions so that shFILE's environment
-# will be the "this.path" namespace
-#
-# I think it's nicer to have all exported functions with the namespace
-# corresponding to their namespace
-shFILE <- function ()
-.shFILE()
+shFILE <- function (default)
+{
+    if (missing(default))
+        .shFILE()
+    else {
+        ans <- .shFILE()
+        if (is.na(ans))
+            default
+        else ans
+    }
+}
 
 
 .normalized.shFILE <- evalq(envir = new.env(), function ()
@@ -280,11 +285,19 @@ shFILE <- function ()
 evalq(envir = environment(.normalized.shFILE), {
     .__file__ <- NULL
 })
+lockEnvironment(environment(.normalized.shFILE))
 
 
-# same idea as .shFILE and shFILE
-normalized.shFILE <- function ()
-.normalized.shFILE()
+normalized.shFILE <- function (default)
+{
+    if (missing(default))
+        .normalized.shFILE()
+    else {
+        if (is.na(.shFILE()))
+            default
+        else .normalized.shFILE()
+    }
+}
 
 
 
@@ -424,11 +437,11 @@ normalized.shFILE <- function ()
 .this.path_regexps$R.Editor.ucrt                <- readLines("inst/extdata/r_editor_regexp_ucrt.txt", encoding = "UTF-8")
 
 
-.this.path_regexps$windows.local.absolute.path2 <- paste0("^", .this.path_regexps$windows.local.absolute.path, "$")
-.this.path_regexps$windows.UNC.absolute.path2   <- paste0("^", .this.path_regexps$windows.UNC.absolute.path  , "$")
-.this.path_regexps$windows.absolute.path2       <- paste0("^", .this.path_regexps$windows.absolute.path      , "$")
-.this.path_regexps$R.Editor.not_ucrt2           <- paste0("^", .this.path_regexps$R.Editor.not_ucrt          , "$")
-.this.path_regexps$R.Editor.ucrt2               <- paste0("^", .this.path_regexps$R.Editor.ucrt              , "$")
+.this.path_regexps$windows.local.absolute.path.anchored <- paste0("^", .this.path_regexps$windows.local.absolute.path, "$")
+.this.path_regexps$windows.UNC.absolute.path.anchored   <- paste0("^", .this.path_regexps$windows.UNC.absolute.path  , "$")
+.this.path_regexps$windows.absolute.path.anchored       <- paste0("^", .this.path_regexps$windows.absolute.path      , "$")
+.this.path_regexps$R.Editor.not_ucrt.anchored           <- paste0("^", .this.path_regexps$R.Editor.not_ucrt          , "$")
+.this.path_regexps$R.Editor.ucrt.anchored               <- paste0("^", .this.path_regexps$R.Editor.ucrt              , "$")
 
 
 
@@ -451,8 +464,8 @@ untitled.ucrt     <- readLines("inst/extdata/untitled_ucrt.txt", encoding = "UTF
 delayedAssign("R.Editor.regexp", {
     if (.Platform$OS.type == "windows" && .Platform$GUI == "Rgui") {
         if (identical(R.version[["crt"]], "ucrt"))
-            .this.path_regexps$R.Editor.ucrt2
-        else .this.path_regexps$R.Editor.not_ucrt2
+            .this.path_regexps$R.Editor.ucrt.anchored
+        else .this.path_regexps$R.Editor.not_ucrt.anchored
     }
 })
 delayedAssign("untitled", {
@@ -462,7 +475,7 @@ delayedAssign("untitled", {
         else untitled.not_ucrt
     }
 })
-windows.abs.path <- .this.path_regexps$windows.absolute.path2
+windows.abs.path <- .this.path_regexps$windows.absolute.path.anchored
 
 
 
@@ -472,7 +485,12 @@ this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
 this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
 
 
-this.path <- function (verbose = getOption("verbose"))
+error <- function (..., call. = TRUE, domain = NULL, class = NULL, call = sys.call(-1L))
+stop(errorCondition(message = .makeMessage(..., domain = domain),
+    class = class, call = if (call.) call))
+
+
+.this.path <- function (verbose = getOption("verbose"))
 {
     # function to print the method in which the
     # path of the executing script was determined
@@ -499,9 +517,9 @@ this.path <- function (verbose = getOption("verbose"))
     }
 
 
-    # loop through functions that lead here from most recent to earliest looking
-    # for an appropriate source call (a call to function base::source,
-    # base::sys.source, debugSource, or testthat::source_file)
+    # loop through functions that lead here from most recent to earliest
+    # looking for an appropriate source call (a call to function source,
+    # sys.source, debugSource in RStudio, or testthat::source_file)
     #
     # An appropriate source call is a source call in which argument 'file'
     # ('fileName' in the case of debugSource, 'path' in the case of
@@ -515,12 +533,12 @@ this.path <- function (verbose = getOption("verbose"))
     # returned by evaluating this.path() to variable 'file'
     #
     # There are two functions on the calling stack at this point being source
-    # and this.path. Clearly, you don't want to request the 'file' argument from
-    # that source call because the value of 'file' is under evaluation right
-    # now! The trick is to ask if a variable exists in that function's
+    # and this.path. Clearly, you don't want to request the 'file' argument
+    # from that source call because the value of 'file' is under evaluation
+    # right now! The trick is to ask if a variable exists in that function's
     # evaluation environment that is only created AFTER 'file' has been forced.
-    # For base::source, we ask if variable 'ofile' exists. For base::sys.source
-    # and testthat::source_file, we ask if variable 'exprs' exists. For
+    # For source, we ask if variable 'ofile' exists. For sys.source and
+    # testthat::source_file, we ask if variable 'exprs' exists. For
     # debugSource, we cannot use this trick. Refer to the documentation below.
     #
     # If that variable exists, then argument 'file' has been forced and the
@@ -541,17 +559,17 @@ this.path <- function (verbose = getOption("verbose"))
 
     # as of this.path_0.4.0, compatibility with 'source_file' from package
     # 'testthat' was added. 'testthat::source_file' is almost identical to
-    # 'base::sys.source'
+    # 'sys.source'
     srcf <- if (isNamespaceLoaded("testthat"))
         testthat::source_file
         # getExportedValue("testthat", "source_file")
 
 
-    for (n in seq.int(sys.nframe(), 1L)[-1L]) {
-        if (identical(sys.function(n), base::source)) {
+    for (n in seq.int(to = 1L, by = -1L, length.out = sys.nframe() - 1L)) {
+        if (identical(sys.function(n), source)) {
 
 
-            # if the argument 'file' to 'base::source' has not been forced,
+            # if the argument 'file' to 'source' has not been forced,
             # continue to the next iteration
             if (!existsn("ofile"))
                 next
@@ -576,10 +594,10 @@ this.path <- function (verbose = getOption("verbose"))
 
 
                     # use of "" refers to the R-level 'standard input' stdin.
-                    # this means 'base::source' did not open a file, so we
-                    # assign .__file__ the value of NULL and continue to the
-                    # next iteration. We use .__file__ as NULL to skip this
-                    # source call the next time this.path leads here
+                    # this means 'source' did not open a file, so we assign
+                    # .__file__ the value of NULL and continue to the next
+                    # iteration. We use .__file__ as NULL to skip this source
+                    # call the next time this.path leads here
                     if (path == "") {
                         assign.__file__(NULL)
                         next
@@ -588,8 +606,8 @@ this.path <- function (verbose = getOption("verbose"))
 
                     # use of "clipboard", "clipboard-128", and "stdin" refer to
                     # the clipboard or to the C-level 'standard input' of the
-                    # process. this means 'base::source' did not open a file, so
-                    # we assign .__file__ the value of NULL and continue to the
+                    # process. this means 'source' did not open a file, so we
+                    # assign .__file__ the value of NULL and continue to the
                     # next iteration. We use .__file__ as NULL to skip this
                     # source call the next time this.path leads here
                     else if (path %in% c("clipboard", "clipboard-128", "stdin")) {
@@ -626,12 +644,12 @@ this.path <- function (verbose = getOption("verbose"))
 
 
                     # as of this.path_0.3.0, compatibility was added when
-                    # using 'base::source' with 'chdir = TRUE'. this changes
-                    # the working directory to the directory of the 'file'
-                    # argument. since the 'file' argument was relative to
-                    # the working directory prior to being changed, we need
-                    # to change it to the previous working directory before
-                    # we can normalize the path
+                    # using 'source(chdir = TRUE)'. this changes the working
+                    # directory to the directory of the 'file' argument. since
+                    # the 'file' argument was relative to the working directory
+                    # prior to being changed, we need to change it to the
+                    # previous working directory before we can normalize the
+                    # path
                     else if (existsn("owd")) {
                         cwd <- getwd()
                         on.exit(setwd(cwd))
@@ -711,16 +729,16 @@ this.path <- function (verbose = getOption("verbose"))
             where("call to function source")
             return(getn(".__file__"))
         }
-        else if (identical(sys.function(n), base::sys.source)) {
+        else if (identical(sys.function(n), sys.source)) {
 
 
-            # as with 'base::source', we check that argument 'file' has been
+            # as with 'source', we check that argument 'file' has been
             # forced, and continue to the next iteration if not
             if (!existsn("exprs"))
                 next
 
 
-            # much the same as 'base::source' except simpler, we don't have to
+            # much the same as 'source' except simpler, we don't have to
             # account for argument 'file' being a connection or ""
             if (!existsn(".__file__")) {
 
@@ -728,7 +746,7 @@ this.path <- function (verbose = getOption("verbose"))
                 path <- getn("file")
 
 
-                # unlike 'base::source', 'base::sys.source' is intended to
+                # unlike 'source', 'sys.source' is intended to
                 # source a file (not a connection), so we have to throw an
                 # error if the user attempts to source a file named
                 # "clipboard", "clipboard-128", or "stdin" since none of these
@@ -753,7 +771,7 @@ this.path <- function (verbose = getOption("verbose"))
         else if (!is.null(dbgS) && identical(sys.function(n), dbgS)) {
 
 
-            # unlike 'base::source' and 'base::sys.source', there is no way to
+            # unlike 'source' and 'sys.source', there is no way to
             # check that argument 'fileName' has been forced, since all of the
             # work is done internally in C. Instead, we have to use a
             # 'tryCatch' statement. If argument 'fileName' has been forced, the
@@ -818,7 +836,7 @@ this.path <- function (verbose = getOption("verbose"))
         else if (!is.null(srcf) && identical(sys.function(n), srcf)) {
 
 
-            # as with 'base::source' and 'base::sys.source', we check that
+            # as with 'source' and 'sys.source', we check that
             # argument 'path' has been forced, and continue to the next
             # iteration if not
             if (!existsn("exprs"))
@@ -831,7 +849,7 @@ this.path <- function (verbose = getOption("verbose"))
                 path <- getn("path")
 
 
-                # like 'base::sys.source', 'testthat::source_file' is intended
+                # like 'sys.source', 'testthat::source_file' is intended
                 # to source a file (not a connection), so we have to throw an
                 # error if the user attempts to source a file named
                 # "clipboard", "clipboard-128", or "stdin" since none of these
@@ -874,20 +892,12 @@ this.path <- function (verbose = getOption("verbose"))
         .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from a shell under Unix-alikes
 
 
-        # shFILE() will be:
-        #
-        # NA_character_ when no path was found
-        # anything else when a path was found
-
-
-        value <- shFILE()
-        if (is.na(value))
-            error(
-                "'this.path' used in an inappropriate fashion\n",
+        value <- normalized.shFILE(default = {
+            error("'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from a shell and argument 'FILE' is missing",
-                class = this.path_not_exists_error_class)
-        value <- normalized.shFILE()
+                class = this.path_not_exists_error_class, call = sys.call(sys.nframe()))
+        })
         where("shell argument 'FILE'")
         return(value)
     }
@@ -1054,9 +1064,9 @@ this.path <- function (verbose = getOption("verbose"))
 }
 
 
-this.dir <- function (...)
+.this.dir <- function (...)
 {
-    value <- this.path(...)
+    value <- .this.path(...)
     if (grepl("^(ftp|ftps|http|https)://", value))
         .normalizeURL(paste0(value, "/.."))
     else dirname(value)
@@ -1066,28 +1076,82 @@ this.dir <- function (...)
 
 
 
-this.path2 <- as.function(list(
-    ... = quote(expr = ),
-    as.call(structure(
-             alist(tryCatch, this.path(...), function(c) NULL                      ),
-        .Names = c(""      , ""            , this.path_not_exists_error_class[[1L]])
-    ))
-))
+this.path <- function (verbose = getOption("verbose"), default)
+tryCatch({
+    .this.path(verbose)
+}, function(c) default)
 
 
-this.dir2 <- as.function(list(
-    ... = quote(expr = ),
-    as.call(structure(
-             alist(tryCatch, this.dir(...), function(c) NULL                      ),
-        .Names = c(""      , ""           , this.path_not_exists_error_class[[1L]])
-    ))
-))
+this.dir <- function (..., default)
+tryCatch({
+    .this.dir(...)
+}, function(c) default)
 
 
-this.dir3 <- as.function(list(
-    ... = quote(expr = ),
-    as.call(structure(
-             alist(tryCatch, this.dir(...), function(c) getwd()                   ),
-        .Names = c(""      , ""           , this.path_not_exists_error_class[[1L]])
-    ))
-))
+this.path_not_exists_error_class[[1L]] ->
+    names(body(this.path))[3L] ->
+    names(body(this.dir ))[3L]
+
+
+body(this.path) <- substitute({
+    if (missing(default))
+        .this.path(verbose)
+    else {
+        body
+    }
+}, list(body = body(this.path)))
+
+
+body(this.dir) <- substitute({
+    if (missing(default))
+        .this.dir(...)
+    else {
+        body
+    }
+}, list(body = body(this.dir)))
+
+
+
+
+
+this.path2 <- function (...)
+{
+    .Deprecated("this.path(..., default = NULL)",
+        old = "this.path2(...)")
+    this.path(..., default = NULL)
+}
+
+
+
+this.dir2 <- function (...)
+{
+    .Deprecated("this.dir(..., default = NULL)",
+        old = "this.dir2(...)")
+    this.dir(..., default = NULL)
+}
+
+
+
+this.dir3 <- function (...)
+{
+    .Deprecated("this.dir(..., default = getwd())",
+        old = "this.dir3(...)")
+    this.dir(..., default = getwd())
+}
+
+
+
+
+
+here <- ici <- function (..., .. = 0L)
+{
+    base <- .this.path(verbose = FALSE)
+    if (grepl("^(ftp|ftps|http|https)://", base))
+        base <- .normalizeURL(paste(c(base, "..",
+            rep("..", length.out = ..)), collapse = "/"))
+    else {
+        base <- dirname(base)
+        for (.. in seq_len(..)) base <- dirname(base)
+    }
+    file.path(base, ...)
+}

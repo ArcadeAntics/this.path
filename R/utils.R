@@ -1,5 +1,79 @@
+.Rscript <- function (options = NULL, ...)
+{
+    command <- file.path(R.home("bin"), if (.Platform$OS.type == "windows")
+        "Rscript.exe"
+    else "Rscript")
+    args <- c(command, options)
+    command <- paste(shQuote(args), collapse = " ")
+    cat(command, "\n", sep = "")
+    invisible(system(command = command, ...))
+}
+
+
 build_this <- function (chdir = FALSE, file = here(), which = "tar")
 {
+    # build_this                                                 R Documentation
+    #
+    # Building Packages
+    #
+    #
+    #
+    # Description:
+    #
+    # This provides a more general method of making packages, not specifically
+    # R packages, for distribution and version control.
+    #
+    #
+    #
+    # Usage:
+    #
+    # build_this(chdir = FALSE, file = here(), which = "tar")
+    #
+    #
+    #
+    # Arguments:
+    #
+    # chdir
+    #
+    #     TRUE or FALSE; change directory to directory of package source before
+    #     building tar/zip archives? This will not affect the build process,
+    #     only the location in which the archive is made.
+    #
+    # file
+    #
+    #     name of a directory which is to be packaged
+    #
+    # which
+    #
+    #     which type of archive do you want to make, "tar" or "zip"?
+    #     Can be both i.e. 'which = c("tar", "zip")'
+    #
+    #
+    #
+    # Details:
+    #
+    # build_this builds package archives similar to 'R CMD build', and takes
+    # the name of the package and its version from the 'DESCRIPTION' file.
+    # If you are unfamiliar with the 'DESCRIPTION' file, here is a outline:
+    #
+    # Package: example
+    # Version: 0.1.0
+    # License: What license is it under?
+    # Title: What the Package Does (Title Case)
+    # Description: More about what it does (maybe more than one line)
+    #     Use four spaces when indenting paragraphs within the Description.
+    # Author: Who wrote it
+    # Maintainer: The package maintainer <yourself@somewhere.net>
+    #
+    # The package name should start with a letter, end with a letter or number,
+    # and contain any combination of letters, numbers, underscores, periods,
+    # and hyphens in the middle.
+    #
+    # The package version should be two or more numbers separated by hyphens
+    # and/or periods like '12.34.56-78'.
+
+
+
     # determine which types of archive we want to make
     choices <- c("tar", "zip")
     nms <- c("tarball", "zip archive")
@@ -7,7 +81,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
     nms <- nms[match(which, choices)]
 
 
-    # check that 'file' is valid, and chdir if required
+    # check that 'file' is valid, and 'chdir' if required
     if (!is.character(file) || length(file) != 1L) {
         stop("invalid 'file'")
     } else if (grepl("^(ftp|ftps|http|https)://", file)) {
@@ -284,162 +358,22 @@ do_with_wd <- function (expr, wd)
 }
 
 
-
-
-
-# tar <- Sys.which("tar")
-# if (is.na(tar) || tar == "") {
-#     cat("tar unavailable; cannot create tarball\n")
-#     quit(save = "no", status = 1, runLast = FALSE)
-# }
-#
-#
-# owd <- getwd()
-# tryCatch(finally = setwd(owd), {
-#
-#
-#     setwd(this.path::here())
-#
-#
-#     DESCRIPTION.file <- "DESCRIPTION"
-#     cat("* checking for file '",
-#         this.path::as.rel.path(this.path::here(DESCRIPTION.file), owd),
-#         "' ... ", sep = "")
-#     if (!file.exists(DESCRIPTION.file)) {
-#         cat("NO\n\n")
-#         quit(save = "no", status = 1, runLast = FALSE)
-#     }
-#     cat("OK\n")
-#
-#
-#     DESCRIPTION <- read.dcf(DESCRIPTION.file, fields = c(
-#         "Package",
-#         "Version"
-#     ))
-#     package <- DESCRIPTION[[1L, "Package"]]
-#     version <- DESCRIPTION[[1L, "Version"]]
-#     valid_package_name <- "([[:alpha:]][[:alnum:]_]*[[:alnum:]])"
-#     valid_package_version <- "(([[:digit:]]+[.-]){1,}[[:digit:]]+)"
-#
-#
-#     if (!is.null(problems <- c(
-#         if (is.na(package))
-#             "invalid 'Package' field\n\n",
-#         if (is.na(version))
-#             "invalid 'Version' field\n\n"
-#     ))) {
-#         cat(" ERROR\n", problems, sep = "")
-#         quit(save = "no", status = 1, runLast = FALSE)
-#     }
-#
-#
-#     cat("* checking ", DESCRIPTION.file, " meta-information ... ", sep = "")
-#     if (!is.null(problems <- c(
-#         if (!grepl(paste0("^", valid_package_name   , "$"), package))
-#             "Malformed package name\n\n",
-#         if (!grepl(paste0("^", valid_package_version, "$"), version))
-#             "Malformed package version.\n\n"
-#     ))) {
-#         cat("ERROR\n", problems, sep = "")
-#         quit(save = "no", status = 1, runLast = FALSE)
-#     }
-#     cat("OK\n")
-#
-#
-#     build.name <- paste0(
-#         package,
-#         "_",
-#         version,
-#         ".tar.gz"
-#     )
-#
-#
-#     # we will exclude the build itself
-#     exclude <- build.name
-#
-#
-#     files <- list.files(all.files = TRUE, recursive = TRUE, include.dirs = TRUE)
-#
-#
-#     # the directories to always exclude
-#     if (any(i <-
-#             (
-#                 (basename(files) %in% c(
-#
-#                     # directories from source control systems
-#                     "CSV", ".svn", ".arch-ids", ".bzr", ".git", ".hg",
-#
-#                     # directories from eclipse
-#                     ".metadata",
-#
-#                     "check", "chm"
-#
-#                 )) |
-#
-#                 # directories ending with Old or old
-#                 grepl("(Old|old)$", files)
-#             ) & dir.exists(files))) {
-#         exclude <- c(exclude, files[i])
-#         files <- files[!i]
-#     }
-#
-#
-#     # the files to always exclude
-#     if (any(i <-
-#             grepl(paste0("(", c(
-#                 "^GNUmakefile$",
-#                 "^Read-and-delete-me$",
-#                 "^\\.#",
-#                 "^#", "#$",
-#                 "~$", "\\.bak$", "\\.swp$"
-#             ), ")", collapse = "|"), basename(files)))) {
-#         exclude <- c(exclude, files[i])
-#         files <- files[!i]
-#     }
-#
-#
-#     for (exclude.pattern in paste0("^", package, "_", valid_package_version, c("\\.tar\\.gz", "\\.zip"), "$")) {
-#         if (any(i <- grepl(exclude.pattern, files))) {
-#             exclude <- c(exclude, files[i])
-#             files <- files[!i]
-#         }
-#     }
-#
-#
-#     ignore.file <- ".tarignore"
-#     if (file.exists(ignore.file)) {
-#         for (exclude.pattern in readLines(ignore.file, warn = FALSE, encoding = "UTF-8")) {
-#             if (any(i <- grepl(exclude.pattern, files, ignore.case = TRUE, perl = TRUE))) {
-#                 exclude <- c(exclude, files[i])
-#                 files <- files[!i]
-#             }
-#         }
-#     }
-#
-#
-#     exclude <- paste("--exclude", shQuote(unique(exclude)), recycle0 = TRUE)
-#
-#
-#     # transform <- paste0("--transform s,^,", package, "/")
-#     # args <- c("tar", exclude, transform, "-czvf", build.name, "*")
-#
-#
-#     # args <- c("tar", exclude, "-czf", build.name, "-C", "..", paste0(shQuote(basename(getwd())), "/*"))
-#
-#
-#     args <- c("tar", "-czf", build.name, exclude, "-C", "..", shQuote(basename(getwd())))
-#     # args <- c("tar", "-czf", FILE <- tempfile(fileext = ".tar.gz"), exclude, "-C", "..", shQuote(basename(getwd())))
-#
-#
-#     command <- paste(args, collapse = " ")
-#
-#
-#     cat("* building '", build.name, "'\n", sep = "")
-#     res <- system(command)
-#     if (res == -1L)
-#         stop("'", command, "' could not be run")
-#     else if (res)
-#         stop("'", command, "' execution failed with error code ", res)
-#
-#
-# })
+write.code <- function (x, file = stdout(), evaluated = FALSE, simplify = !evaluated,
+    deparseCtrl = c("keepInteger", "showAttributes",
+        "useSource", "keepNA", "digits17"))
+{
+    if (!evaluated)
+        x <- substitute(x)
+    x <- if (simplify && is.call(x) && is.symbol(x[[1]]) && x[[1]] == quote(`{`))
+        vapply(as.list(x[-1]), deparse1, collapse = "\n",
+            width.cutoff = 60L, backtick = TRUE, control = deparseCtrl,
+            FUN.VALUE = "")
+    else deparse1(x, collapse = "\n", width.cutoff = 60L,
+        backtick = TRUE, control = deparseCtrl)
+    if (is.null(file))
+        x
+    else {
+        writeLines(x, file, useBytes = TRUE)
+        invisible(x)
+    }
+}

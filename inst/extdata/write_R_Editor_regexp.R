@@ -30,7 +30,7 @@ main <- function ()
 
     # this process needs to run in order to continue
     tryCatch({
-        essentials::python(command = "import pyautogui, sys", mustWork = TRUE, quiet = TRUE)
+        essentials::python(command = "import pyautogui", mustWork = TRUE, quiet = TRUE)
     }, error = function(c) {
         warning("python or python module 'pyautogui' is not available:\n try 'pip install pyautogui'")
         stop(c)

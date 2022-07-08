@@ -1,18 +1,26 @@
 file.URL.path <- function (path)
 {
-    vapply(path, function(xx) {
-        con <- file(xx, "r")
-        on.exit(close(con))
-        summary.connection(con)$description
-    }, FUN.VALUE = "")
+    # remove the leading "file://" from a file URL
+    #
+    # but specifically on Windows, where file URLs may look like
+    # "file:///c:" ...
+    # remove the leading "file:///" from those file URLs
+    if (.Platform$OS.type == "windows" &&
+        any(i <- grepl("^file:///[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:", path))) {
+        path[ i] <- substr(path[ i], 9L, 1000000L)
+        path[!i] <- substr(path[!i], 8L, 1000000L)
+        path
+    }
+    else substr(path, 8L, 1000000L)
 }
 
 
 normalizePath2 <- function (path, ...)
 {
+    # a version of normalizePath that will also normalize URLs
     if (any(i <- grepl("^file://", path)))
         path[i] <- file.URL.path(path[i])
-    if (any(i <- grepl("^(ftp|ftps|http|https)://", path))) {
+    if (any(i <- !i & grepl("^(ftp|ftps|http|https)://", path))) {
         path[i] <- .normalizeURL(path[i])
         path[!i] <- normalizePath(path = path[!i], ...)
         path
