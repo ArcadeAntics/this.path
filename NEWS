@@ -1,0 +1,25 @@
+this.path News
+
+CHANGES IN this.path 0.8.0:
+
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * All previously defunct functions were removed entirely.
+
+  NEW FEATURES:
+
+    * this.path, this.dir, shFILE, and normalized.shFILE now have
+      argument default that will be evaluated and returned if there is
+      no executing script or command line argument FILE was not found.
+
+  DEPRECATED AND DEFUNCT:
+
+    * this.path2(), this.dir2(), and this.dir3() are deprecated and
+      should be replaced by this.path(default = NULL),
+      this.dir(default = NULL), and this.dir(default = getwd()),
+      respectively.
+
+  BUG FIXES:
+
+    * normalized.shFILE() no longer sets attribute
+      "this.path.from.shell", that is now handled by this.path.

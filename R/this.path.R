@@ -278,7 +278,6 @@ shFILE <- function (default)
 
     file <- shFILE()
     file <- normalizePath(file, winslash = "/", mustWork = TRUE)
-    attr(file, "this.path.from.shell") <- TRUE
     .__file__ <<- file
     return(.__file__)
 })
@@ -898,6 +897,7 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
                 "* R is being run from a shell and argument 'FILE' is missing",
                 class = this.path_not_exists_error_class, call = sys.call(sys.nframe()))
         })
+        attr(file, "this.path.from.shell") <- TRUE
         where("shell argument 'FILE'")
         return(value)
     }

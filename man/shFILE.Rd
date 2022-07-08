@@ -31,3 +31,33 @@ separator.
 \seealso{
 \code{\link{this.path}}, \code{\link{here}}
 }
+\examples{
+this.path:::write.code(file = FILE <- tempfile(), {
+
+
+    withAutoprint({
+
+
+        shFILE()
+        normalized.shFILE()
+        normalized.shFILE(default = {
+            stop("interestingly enough, because 'FILE' will be found,\\n",
+                "  argument 'default' won't be evaluated, and so this\\n",
+                "  error won't actually print, isn't that neat? you can\\n",
+                "  use this to your advantage in a similar manner, doing\\n",
+                "  arbitrary things only if 'FILE' isn't found")
+        })
+
+
+    }, width.cutoff = 60L)
+
+})
+this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE))
+
+
+for (expr in c("shFILE()",
+               "shFILE(default = NULL)",
+               "normalized.shFILE()",
+               "normalized.shFILE(default = NULL)"))
+    this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+\dontshow{unlink(FILE)}}

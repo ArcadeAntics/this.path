@@ -595,7 +595,14 @@ this.path:::write.code(file = FILE <- tempfile(), {
     withAutoprint({
 
 
-        cat(sQuote(this.path::this.path(verbose = TRUE)), "\\n\\n")
+        cat(sQuote(this.path::this.path(verbose = TRUE, default = {
+            stop("interestingly enough, because the executing script's\n",
+                "  path will be found, argument 'default' won't be evaluated,\n",
+                "  and so this error won't actually print, isn't that\n",
+                "  neat? you can use this to your advantage in a similar\n",
+                "  manner, doing arbitrary things only if the executing\n",
+                "  script does not exist")
+        })), "\\n\\n")
 
 
     }, verbose = FALSE)
@@ -611,7 +618,7 @@ if (requireNamespace("testthat"))
     testthat::source_file(FILE, chdir = FALSE, wrap = FALSE)
 
 
-this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), file = FILE)
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
 
 
 # this.path also works when source-ing a URL
@@ -621,10 +628,10 @@ tryCatch({
 }, condition = base::message)
 
 
-for (expr in c("this.path::this.path()",
-               "this.path::this.path(default = NULL)",
-               "this.path::this.dir()",
-               "this.path::this.dir(default = NULL)",
-               "this.path::this.dir(default = getwd())"))
-    this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", "-e", expr))
+for (expr in c("this.path()",
+               "this.path(default = NULL)",
+               "this.dir()",
+               "this.dir(default = NULL)",
+               "this.dir(default = getwd())"))
+    this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
 \dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}
