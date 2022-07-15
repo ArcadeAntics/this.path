@@ -13,4 +13,5 @@ Suggests: utils, microbenchmark
 Enhances: rstudioapi, testthat
 URL: https://github.com/ArcadeAntics/this.path
 BugReports: https://github.com/ArcadeAntics/this.path/issues
+Additional_repositories: https://raw.githubusercontent.com/ArcadeAntics/PACKAGES
 Encoding: UTF-8
