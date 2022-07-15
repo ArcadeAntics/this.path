@@ -1,5 +1,16 @@
 this.path News
 
+CHANGES IN this.path 0.9.0:
+
+  NEW FEATURES:
+
+    * this.path() and all its associated functions now work in VSCode.
+
+  BUG FIXES:
+
+    * when source-ing a file URL, source("file:///path/to/file"),
+      this.path() no longer attempts to re-open a connection.
+
 CHANGES IN this.path 0.8.0:
 
   SIGNIFICANT USER-VISIBLE CHANGES:

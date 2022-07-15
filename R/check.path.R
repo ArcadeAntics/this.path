@@ -59,13 +59,14 @@ strsplit(path, "/+")
         x <- x[seq.int(to = length(x), along.with = path)]
         any(x != path)
     })
-        error(sQuote(name), " and expected path do not match\n",
+        stop(Error(
+            sQuote(name), " and expected path do not match\n",
             paste0("* ", format(c(name, "expected")), ": ",
             encodeString(c(
                 paste(x, collapse = "/"),
                 paste(path, collapse = "/")
             ), quote = "\""), collapse = "\n"),
-            call = sys.call(-1L))
+            call = sys.call(sys.parent())))
     invisible(TRUE)
 }
 

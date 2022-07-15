@@ -1,6 +1,21 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 0.9.0}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{this.path()} and all its associated functions now
+            work in VSCode.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item when \code{source}-ing a file URL,
+            \code{source("file:///path/to/file")}, \code{this.path()}
+            no longer attempts to re-open a connection.
+    }
+  }
+}
 \section{CHANGES IN VERSION 0.8.0}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
