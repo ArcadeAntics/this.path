@@ -907,6 +907,15 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                 "* R is being run from VSCode with no documents open\n",
                 "  (or document has no path)"
             ))
+
+
+        if (startsWith(context[["id"]], "untitled:"))
+            stop(
+                "'this.path' used in an inappropriate fashion\n",
+                "* no appropriate source call was found up the calling stack\n",
+                "* document in VSCode does not exist")
+
+
         path <- context[["path"]]
         Encoding(path) <- "UTF-8"
 
