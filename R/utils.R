@@ -1,6 +1,6 @@
 .Rscript <- function (options = NULL, ...)
 {
-    command <- file.path(R.home("bin"), if (.Platform$OS.type == "windows")
+    command <- file.path(R.home("bin"), if (os.windows)
         "Rscript.exe"
     else "Rscript")
     args <- c(command, options)

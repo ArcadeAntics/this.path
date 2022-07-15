@@ -73,7 +73,7 @@
 
 
     # running R from a shell on Windows
-    if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm") {
+    if (os.windows.gui.rterm) {
 
 
         ca <- commandArgs()
@@ -200,7 +200,7 @@
 
 
     # running R from a shell under Unix-alikes with the default GUI
-    else if (.Platform$OS.type == "unix" && .Platform$GUI == "X11") {
+    else if (os.unix.gui.x11) {
 
 
         # when running R from a shell under Unix-alikes, the shell arguments
@@ -461,14 +461,14 @@ untitled.ucrt     <- readLines("inst/extdata/untitled_ucrt.txt", encoding = "UTF
 
 
 delayedAssign("R.Editor.regexp", {
-    if (.Platform$OS.type == "windows" && .Platform$GUI == "Rgui") {
+    if (os.windows.gui.rgui) {
         if (identical(R.version[["crt"]], "ucrt"))
             .this.path_regexps$R.Editor.ucrt.anchored
         else .this.path_regexps$R.Editor.not_ucrt.anchored
     }
 })
 delayedAssign("untitled", {
-    if (.Platform$OS.type == "windows" && .Platform$GUI == "Rgui") {
+    if (os.windows.gui.rgui) {
         if (identical(R.version[["crt"]], "ucrt"))
             untitled.ucrt
         else untitled.not_ucrt
@@ -484,9 +484,18 @@ this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
 this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
 
 
-error <- function (..., call. = TRUE, domain = NULL, class = NULL, call = sys.call(-1L))
-stop(errorCondition(message = .makeMessage(..., domain = domain),
-    class = class, call = if (call.) call))
+Error <- function (..., call. = TRUE, domain = NULL, class = NULL,
+    call = if ((n <- sys.parents()[[sys.nframe()]] - 3L) > 0L) sys.call(n))
+errorCondition(message = .makeMessage(..., domain = domain),
+    class = class, call = if (call.) call)
+
+
+ThisPathNotExistsError <- function(...) NULL
+body(ThisPathNotExistsError) <- bquote(Error(..., class = .(this.path_not_exists_error_class)))
+
+
+ThisPathUnimplementedError <- function(...) NULL
+body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimplemented_error_class)))
 
 
 .this.path <- function (verbose = getOption("verbose"))
@@ -552,7 +561,7 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
     # argument 'fileName' has been forced since all of the work is done
     # internally in C. This is why we use a 'tryCatch' statement instead of an
     # 'existsn'
-    dbgS <- if (.Platform$GUI == "RStudio")
+    dbgS <- if (gui.rstudio)
         get("debugSource", "tools:rstudio", inherits = FALSE)
 
 
@@ -634,11 +643,9 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
                     # the description of this connection should remove the
                     # leading characters
                     else if (grepl("^file://", path)) {
-                        con <- file(path, "r")
-                        on.exit(close(con))
-                        path <- summary.connection(con)$description
-                        on.exit()
-                        close(con)
+                        path <- if (os.windows && grepl("^file:///[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:", path))
+                            substr(path, 9L, 1000000L)
+                        else substr(path, 8L, 1000000L)
                     }
 
 
@@ -716,8 +723,9 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
                         stop("'this.path' cannot be used within a zip file")
 
 
-                    }, error("'this.path' unimplemented when source-ing a connection of class ",
-                        sQuote(path$class), class = this.path_unimplemented_error_class))
+                    }, stop(ThisPathUnimplementedError(
+                        "'this.path' unimplemented when source-ing a connection of class ",
+                        sQuote(path$class))))
                 }
 
 
@@ -751,8 +759,8 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
                 # "clipboard", "clipboard-128", or "stdin" since none of these
                 # refer to files
                 if (path %in% c("clipboard", "clipboard-128", "stdin"))
-                    error("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
-                        call = sys.call(n))
+                    stop(Error("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                        call = sys.call(n)))
 
 
                 else if (existsn("owd")) {
@@ -854,8 +862,8 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
                 # "clipboard", "clipboard-128", or "stdin" since none of these
                 # refer to files
                 if (path %in% c("clipboard", "clipboard-128", "stdin"))
-                    error("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
-                        call = sys.call(n))
+                    stop(Error("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                        call = sys.call(n)))
 
 
                 else if (existsn("old_dir")) {
@@ -878,6 +886,7 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
     #
     # next, check how R is being run
     #
+    # * from 'VSCode'
     # * from a shell
     # * from a shell under Unix-alikes with GUI 'Tk' (was treated as an
     #       unrecognized manner until this.path_0.5.0)
@@ -887,15 +896,40 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
     # * unrecognized manner, signal an error
 
 
-    if (.Platform$OS.type == "windows" && .Platform$GUI == "RTerm" ||  # running from a shell on Windows
-        .Platform$OS.type == "unix"    && .Platform$GUI == "X11") {    # running from a shell under Unix-alikes
+    if (in.vscode) {
+
+
+        context <- rstudioapi::getSourceEditorContext()
+        if (is.null(context))
+            stop(ThisPathNotExistsError(
+                "'this.path' used in an inappropriate fashion\n",
+                "* no appropriate source call was found up the calling stack\n",
+                "* R is being run from VSCode with no documents open\n",
+                "  (or document has no path)"
+            ))
+        path <- context[["path"]]
+        Encoding(path) <- "UTF-8"
+
+
+        if (nzchar(path)) {
+            where("document in VSCode")
+            return(normalizePath(path, winslash = "/", mustWork = FALSE))
+        }
+        else stop(
+            "'this.path' used in an inappropriate fashion\n",
+            "* no appropriate source call was found up the calling stack\n",
+            "* document in VSCode does not exist")
+    }
+
+
+    else if (in.shell) {
 
 
         value <- normalized.shFILE(default = {
-            error("'this.path' used in an inappropriate fashion\n",
+            stop(ThisPathNotExistsError(
+                "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
-                "* R is being run from a shell and argument 'FILE' is missing",
-                class = this.path_not_exists_error_class, call = sys.call(sys.nframe()))
+                "* R is being run from a shell and argument 'FILE' is missing"))
         })
         attr(value, "this.path.from.shell") <- TRUE
         where("shell argument 'FILE'")
@@ -904,47 +938,42 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
 
 
     # running from a shell under Unix-alikes with GUI 'Tk'
-    else if (.Platform$OS.type == "unix" && .Platform$GUI == "Tk") {
+    else if (os.unix && .Platform$GUI == "Tk") {
 
 
-        error(
+        stop(ThisPathNotExistsError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments",
-            class = this.path_not_exists_error_class)
+            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
 
 
     # running from 'RStudio'
-    else if (.Platform$GUI == "RStudio") {
+    else if (gui.rstudio) {
 
 
-        # function ".rs.api.getActiveDocumentContext" from the environment
-        # "tools:rstudio" returns a list of information about the document where
-        # your cursor is located
+        # ".rs.api.getActiveDocumentContext" from "tools:rstudio" returns a
+        # list of information about the document where your cursor is located
         #
-        # function ".rs.api.getSourceEditorContext" from the environment
-        # "tools:rstudio" returns a list of information about the document open
-        # in the current tab
+        # ".rs.api.getSourceEditorContext" from "tools:rstudio" returns a list
+        # of information about the document open in the current tab
         #
         # element 'id' is a character string, an identification for the document
         # element 'path' is a character string, the path of the document
 
 
         context <- get(".rs.api.getActiveDocumentContext", "tools:rstudio", inherits = FALSE)()
-        active <- context$id != "#console"
+        active <- context[["id"]] != "#console"
         if (!active) {
             context <- get(".rs.api.getSourceEditorContext", "tools:rstudio", inherits = FALSE)()
             if (is.null(context))
-                error(
+                stop(ThisPathNotExistsError(
                     "'this.path' used in an inappropriate fashion\n",
                     "* no appropriate source call was found up the calling stack\n",
                     "* R is being run from RStudio with no documents open\n",
-                    "  (or source document has no path)",
-                    class = this.path_not_exists_error_class
-                )
+                    "  (or source document has no path)"))
         }
-        path <- context$path
+        path <- context[["path"]]
 
 
         # the encoding is not explicitly set (at least on Windows),
@@ -968,27 +997,25 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
 
 
     # running from 'Rgui' on Windows
-    else if (.Platform$OS.type == "windows" && .Platform$GUI == "Rgui") {
+    else if (os.windows.gui.rgui) {
 
 
-        # function "getWindowsHandles" from package "utils" (Windows exclusive)
-        # returns a list of external pointers containing the windows handles.
-        # the thing of interest are the names of this list, these should be the
-        # names of the windows belonging to the current R process.
+        # "getWindowsHandles" from "utils" (Windows exclusive) returns a list
+        # of external pointers containing the windows handles. the thing of
+        # interest are the names of this list, these should be the names of the
+        # windows belonging to the current R process.
         #
         # we are only interested in window handles that:
         # * starts with "R Console" (for example "R Console", "R Console (64-bit)", etc.)
-        # * look like an open R script, starting with at least one character,
-        #       then " - ", then "R Editor" or any valid translation
-        #       (see
+        # * look like an open R script; ending with " - R Editor" or any valid
+        #   translation, see
         #
-        #           this.path:::R.Editor.regexp
+        #       this.path:::R.Editor.regexp
         #
-        #        and
+        #   and
         #
-        #           essentials::file.open(system.file(package = "this.path", "extdata", "write_r_editor_regexp.R"))
+        #       essentials::file.open(system.file(package = "this.path", "extdata", "write_r_editor_regexp.R"))
         #
-        #       )
         # * looks like a windows path
         # * matches one of the untitled document patterns, see
         #
@@ -1018,11 +1045,10 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
             nm <- nm[[1L]]
         else if (length(nm) >= 2L)
             nm <- nm[[2L]]
-        else error(
+        else stop(ThisPathNotExistsError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Rgui with no documents open",
-            class = this.path_not_exists_error_class)
+            "* R is being run from Rgui with no documents open"))
         if (nm %in% untitled)
             stop(
                 "'this.path' used in an inappropriate fashion\n",
@@ -1042,25 +1068,22 @@ stop(errorCondition(message = .makeMessage(..., domain = domain),
     }
 
 
-    # running from 'Rgui' on macOS
-    else if (.Platform$OS.type == "unix" && .Platform$GUI == "AQUA") {
+    else if (os.macos.gui.aqua) {
 
 
-        error(
+        stop(ThisPathUnimplementedError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
-            "      consider using RStudio until such a time when this is implemented",
-            class = this.path_unimplemented_error_class)
+            "  consider using RStudio until such a time when this is implemented"))
     }
 
 
     # running R in another manner
-    else error(
+    else stop(ThisPathUnimplementedError(
         "'this.path' used in an inappropriate fashion\n",
         "* no appropriate source call was found up the calling stack\n",
-        "* R is being run in an unrecognized manner",
-        class = this.path_unimplemented_error_class)
+        "* R is being run in an unrecognized manner"))
 }
 
 

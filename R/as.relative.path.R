@@ -5,8 +5,7 @@ file.URL.path <- function (path)
     # but specifically on Windows, where file URLs may look like
     # "file:///c:" ...
     # remove the leading "file:///" from those file URLs
-    if (.Platform$OS.type == "windows" &&
-        any(i <- grepl("^file:///[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:", path))) {
+    if (os.windows && any(i <- grepl("^file:///[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:", path))) {
         path[ i] <- substr(path[ i], 9L, 1000000L)
         path[!i] <- substr(path[!i], 8L, 1000000L)
         path

@@ -26,7 +26,7 @@ path.split.URL <- function (path)
 path.split.UNC.and.default <- function (path)
 {
     value <- vector("list", length(path))
-    path <- if (.Platform$OS.type == "windows")
+    path <- if (os.windows)
         chartr("\\", "/", path.expand(path))
     else path.expand(path)
     if (any(UNC <- grepl(UNC.pattern, path)))

@@ -5,3 +5,4 @@
 ^inst/extdata/.*\.csv$
 ^inst/extdata/.*\.py$
 ^inst/extdata/.*\.R$
+^src$
