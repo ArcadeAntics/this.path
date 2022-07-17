@@ -14,16 +14,73 @@ file.URL.path <- function (path)
 }
 
 
-normalizePath2 <- function (path, ...)
+file.URL.path.1 <- function (path)
+{
+    # do file.URL.path but a little bit faster when path is length 1
+    if (os.windows && grepl("^file:///[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:", path))
+        substr(path, 9L, 1000000L)
+    else substr(path, 8L, 1000000L)
+}
+
+
+extra.whitespace.pattern <- "^[\n\r]+|[\t\n\r ]+$"
+
+
+normalizeURL <- function (path)
+{
+    # x <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
+    # print(c(x, this.path:::.normalizeURL(x)))
+    # source(x)
+
+
+    vapply(path.split.URL(path), function(x) {
+        # x <- this.path:::path.split.URL("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")[[1L]]
+
+
+        y <- x[-1L]
+        y <- y[y != "."]
+        while (i <- match("..", y, 0L)) {
+            y <- y[-i + 0L:1L]
+        }
+        paste(c(x[[1L]], gsub(extra.whitespace.pattern, "", y)), collapse = "/")
+    }, FUN.VALUE = "")
+}
+
+
+normalizeURL.1 <- function (path)
+{
+    # path <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
+
+
+    y <- strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]]
+    y <- y[y != "."]
+    while (i <- match("..", y, 0L)) {
+        y <- y[-i + 0L:1L]
+    }
+    paste(c(sub(URL.pattern, "\\1", path), gsub(extra.whitespace.pattern, "", y)), collapse = "/")
+}
+
+
+normalizePath.and.URL <- function (path, ...)
 {
     # a version of normalizePath that will also normalize URLs
     if (any(i <- grepl("^file://", path)))
         path[i] <- file.URL.path(path[i])
     if (any(i <- !i & grepl("^(ftp|ftps|http|https)://", path))) {
-        path[i] <- .normalizeURL(path[i])
+        path[i] <- normalizeURL(path[i])
         path[!i] <- normalizePath(path = path[!i], ...)
         path
     }
+    else normalizePath(path = path, ...)
+}
+
+
+normalizePath.and.URL.1 <- function (path, ...)
+{
+    if (grepl("^file://", path))
+        normalizePath(path = file.URL.path.1(path), ...)
+    else if (grepl("^(ftp|ftps|http|https)://", path))
+        normalizeURL.1(path)
     else normalizePath(path = path, ...)
 }
 
@@ -32,13 +89,13 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
 {
     if (!is.character(path))
         stop("invalid 'path' argument")
-    path <- normalizePath2(path, winslash = "/", mustWork = FALSE)
+    path <- normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
     if (!missing(relative.to)) {
         if (!is.character(relative.to) || length(relative.to) != 1L)
             stop("invalid 'relative.to' argument")
-        relative.to <- normalizePath2(relative.to, winslash = "/", mustWork = FALSE)
+        relative.to <- normalizePath.and.URL.1(relative.to, winslash = "/", mustWork = FALSE)
     }
-    relative.to <- path.split(relative.to)[[1L]]
+    relative.to <- path.split.1(relative.to)
     len <- length(relative.to)
     x <- path.split(path)
     vapply(seq_along(x), function(i) {

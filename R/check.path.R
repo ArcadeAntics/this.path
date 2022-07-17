@@ -1,9 +1,29 @@
-URL.pattern <- "^((ftp|ftps|http|https)://[^/]+)(/+(.*))?$"
-UNC.pattern <- "^((//[^/]+)/+([^/]+))(/+(.*))?$"
+
+
+URL.pattern <- "^((?:ftp|ftps|http|https)://[^/]+)(?:/+(.*))?$"
+#               ^                                            ^ start and end of the string
+#                    ^^^^^^^^^^^^^^^^^^^^^^^                   ftp:// or ftps:// or http:// or https://
+#                                           ^^^^^              series of non-slash characters
+#                ^                               ^             the root of the URL
+#                                                    ^^^^^^    more paths
+#                                                           ^  more paths are optional
+#                  ^^                              ^^          non-capturing groups
+
+
+UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
+#               ^                                 ^ start and end of the string
+#                    ^^                             two slashes
+#                      ^^^^^    ^^^^^               series of non-slash characters, the host and share name
+#                            ^^                     one or more slashes
+#                                         ^^^^^^    more paths
+#                                                ^  more paths are optional
+#                 ^^                    ^^          non-capturing groups
 
 
 path.split <- function (path)
 {
+    #
+
     if (!is.character(path))
         stop(gettextf("invalid '%s' argument", "path"))
     value <- vector("list", length(path))
@@ -15,11 +35,32 @@ path.split <- function (path)
 }
 
 
+path.split.1 <- function (path)
+{
+    if (grepl(URL.pattern, path))
+        path.split.URL.1(path)
+    else path.split.UNC.and.default.1(path)
+}
+
+
 path.split.URL <- function (path)
 {
+    # tested a version which uses one call to regmatches and regexec,
+    # thinking it might be faster than two calls to sub
+    #
+    # it's not lmao, this is as fast as it gets
     root <- sub(URL.pattern, "\\1", path)
-    path <- sub(URL.pattern, "\\4", path)
-    .mapply(c, list(root, strsplit(path, "/+")), NULL)
+    rest <- sub(URL.pattern, "\\2", path)
+    .mapply(c, list(root, strsplit(rest, "/+")), NULL)
+}
+
+
+path.split.URL.1 <- function (path)
+{
+    # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
+
+
+    c(sub(URL.pattern, "\\1", path), strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]])
 }
 
 
@@ -37,16 +78,40 @@ path.split.UNC.and.default <- function (path)
 }
 
 
+path.split.UNC.and.default.1 <- function (path)
+{
+    path <- if (os.windows)
+        chartr("\\", "/", path.expand(path))
+    else path.expand(path)
+    if (grepl(UNC.pattern, path))
+        path.split.UNC.1(path)
+    else path.split.default.1(path)
+}
+
+
 path.split.UNC <- function (path)
 {
-    root <- sub(UNC.pattern, "\\2/\\3", path)
-    path <- sub(UNC.pattern, "\\5", path)
-    .mapply(c, list(root, strsplit(path, "/+")), NULL)
+    root <- sub(UNC.pattern, "\\1/\\2", path)
+    rest <- sub(UNC.pattern, "\\3"    , path)
+    .mapply(c, list(root, strsplit(rest, "/+")), NULL)
+}
+
+
+path.split.UNC.1 <- function (path)
+{
+    # path <- "//host-name/share-name/path/to/file"
+
+
+    c(sub(UNC.pattern, "\\1/\\2", path), strsplit(sub(UNC.pattern, "\\3", path), "/+")[[1L]])
 }
 
 
 path.split.default <- function (path)
 strsplit(path, "/+")
+
+
+path.split.default.1 <- function (path)
+strsplit(path, "/+")[[1L]]
 
 
 .check.path <- function (path, x, name)

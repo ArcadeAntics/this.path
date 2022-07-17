@@ -515,9 +515,9 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
 
     # function to save a path in the n-th frame
     assign.__file__ <- function(
-        value = `attr<-`(full.path, "this.path.n", n),
+        value = `attr<-`(full.path, "this.path::n", n),
         full.path = if (URL)
-            .normalizeURL(opath)
+            normalizeURL(opath)
         else normalizePath(opath, winslash = "/", mustWork = TRUE),
         opath = path,
         URL = FALSE) {
@@ -643,9 +643,7 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                     # the description of this connection should remove the
                     # leading characters
                     else if (grepl("^file://", path)) {
-                        path <- if (os.windows && grepl("^file:///[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:", path))
-                            substr(path, 9L, 1000000L)
-                        else substr(path, 8L, 1000000L)
+                        path <- file.URL.path.1(path)
                     }
 
 
@@ -825,11 +823,7 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                     URL <- TRUE
                 }
                 else if (grepl("^file://", path)) {
-                    con <- file(path, "r")
-                    on.exit(close(con))
-                    path <- summary.connection(con)$description
-                    on.exit()
-                    close(con)
+                    path <- file.URL.path.1(path)
                 }
 
 
@@ -940,7 +934,7 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from a shell and argument 'FILE' is missing"))
         })
-        attr(value, "this.path.from.shell") <- TRUE
+        attr(value, "this.path::from.shell") <- TRUE
         where("shell argument 'FILE'")
         return(value)
     }
@@ -1098,10 +1092,15 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
 
 .this.dir <- function (...)
 {
-    value <- .this.path(...)
-    if (grepl("^(ftp|ftps|http|https)://", value))
-        .normalizeURL(paste0(value, "/.."))
-    else dirname(value)
+    path <- .this.path(...)
+    if (grepl("^(ftp|ftps|http|https)://", path)) {
+        # path <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
+
+
+        y <- strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]]
+        paste(c(sub(URL.pattern, "\\1", path), y[-length(y)]), collapse = "/")
+    }
+    else dirname(path)  # dirname(), while not safe to use in 'here', is safe in '.this.dir' because it only applies once
 }
 
 
@@ -1178,12 +1177,58 @@ this.dir3 <- function (...)
 here <- ici <- function (..., .. = 0L)
 {
     base <- .this.path(verbose = FALSE)
-    if (grepl("^(ftp|ftps|http|https)://", base))
-        base <- .normalizeURL(paste(c(base, "..",
-            rep("..", length.out = ..)), collapse = "/"))
+    if (grepl("^(ftp|ftps|http|https)://", base)) {
+        # base <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
+        # .. <- "2"
+
+
+        y <- strsplit(sub(URL.pattern, "\\2", base), "/+")[[1L]]
+        len <- length(y) - length(seq_len(..)) - 1L
+        base <- if (len <= 0L)
+            sub(URL.pattern, "\\1", base)
+        else paste(c(sub(URL.pattern, "\\1", base), y[seq_len(len)]), collapse = "/")
+    }
     else {
+        # base <- "//host-name/share-name/path/to/file"
+        # base <- "C:/Users/andre/Documents/this.path/man/this.path.Rd"
+        # .. <- "10"
         base <- dirname(base)
-        for (.. in seq_len(..)) base <- dirname(base)
+        if (.. <- length(seq_len(..))) {
+            if (os.windows) {
+                y <- chartr("\\", "/", base)
+                if (grepl(UNC.pattern, y)) {
+                    y <- path.split.UNC.1(y)
+                    substr(y[[1L]], 1L, 2L) <- substr(base, 1L, 2L)
+                    len <- length(y) - ..
+                    base <- if (len > 1L)
+                        paste(y[seq_len(len)], collapse = "/")
+                    else y[[1L]]
+                }
+                else {
+                    y <- path.split.default.1(y)
+                    len <- length(y) - ..
+                    base <- if (len > 1L)
+                        paste(y[seq_len(len)], collapse = "/")
+                    else paste0(y[[1L]], "/")
+                }
+            }
+            else {
+                if (grepl(UNC.pattern, base)) {
+                    y <- path.split.UNC.1(base)
+                    len <- length(y) - ..
+                    base <- if (len > 1L)
+                        paste(y[seq_len(len)], collapse = "/")
+                    else y[[1L]]
+                }
+                else {
+                    y <- path.split.default.1(base)
+                    len <- length(y) - ..
+                    base <- if (len > 1L)
+                        paste(y[seq_len(len)], collapse = "/")
+                    else paste0(y[[1L]], "/")
+                }
+            }
+        }
     }
     file.path(base, ...)
 }

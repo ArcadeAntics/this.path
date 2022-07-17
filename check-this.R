@@ -1,7 +1,9 @@
 essentials:::check_this(  # this.path
-    check = TRUE, as.cran = TRUE,
+    special = TRUE,
 
-    chdir = TRUE, special = TRUE
+    check = FALSE, as.cran = TRUE,
+
+    chdir = TRUE
 )
 
 

@@ -4,10 +4,22 @@
 export(as.relative.path, as.rel.path)
 
 
+# asArgs.R               ----
+
+
+export(asArgs, from.shell, fileArgs, withArgs)
+
+
 # check.path.R           ----
 
 
 export(check.path, check.dir)
+
+
+# rprojroot.R            ----
+
+
+export(this.proj)
 
 
 # this.path.R            ----
