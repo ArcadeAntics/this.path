@@ -1,0 +1,31 @@
+In Rgui for Windows, this.path() works by looking at the windows
+handles belonging to that R process.
+
+For an open script, the windows handle will end with " - R Editor" OR
+ANY SUPPORTED TRANSLATION INTO ANOTHER LANGUAGE . For a new script, the
+windows handle will be "Untitled - R Editor", again possibly translated
+into another language.
+
+What we do in "write_r_editor_regexp.R" is:
+
+  * launch a new Rgui process in each supported language
+
+  * open an existing script and grab the translations of " - R Editor"
+    in that language
+
+  * open a new script and grab the whole windows handle
+
+This process is automated by a bot that moves the mouse for us,
+clicking all the appropriate buttons and typing all the necessary
+inputs.
+
+We will then save that information into files "r_editor_regexp.txt" and
+"untitled.txt".
+
+In "main.R", we run "write_r_editor_regexp.R" for both ucrt and
+non-ucrt R sessions (since the translations are different between the
+two).
+
+In "testing_coordinates.R", we make sure that the bot is actually
+moving the mouse to the correct locations and clicking the right
+buttons.

@@ -34,9 +34,7 @@ separator.
 \examples{
 this.path:::write.code(file = FILE <- tempfile(), {
 
-
     withAutoprint({
-
 
         shFILE()
         normalized.shFILE()
@@ -49,7 +47,7 @@ this.path:::write.code(file = FILE <- tempfile(), {
         })
 
 
-    }, width.cutoff = 60L)
+    }, width.cutoff = 60L, verbose = FALSE)
 
 })
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE))

@@ -1,10 +1,12 @@
-stopifnot(interactive())
+stopifnot(.Platform$OS.type == "windows", interactive())
 
 
 getResolution <- function ()
 {
-    value <- system("wmic path Win32_VideoController get CurrentHorizontalresolution,CurrentVerticalResolution", intern = TRUE)
-    as.integer(strsplit(value[[2L]], "[[:space:]]+")[[1L]])
+    text <- system("wmic path Win32_VideoController get CurrentHorizontalresolution,CurrentVerticalResolution",
+        intern = TRUE)
+    scan(text = text, what = integer(), nmax = 2L, skip = 1L,
+        quiet = TRUE)
 }
 
 
@@ -189,128 +191,149 @@ rescale <- function (make_lines_result, scaling)
 }
 
 
-position.options <- list()
-position.options$`1920x1080`$`1.00` <- make_lines(
-    select.r.console   = c(left =    8, top =  109, width =  631, height =  399),
-    file.button        = c(left =    0, top =   23, width =   31, height =   18),
-    new.script.button  = c(left =    3, top =   67, width =  213, height =   21),
-    open.script.button = c(left =    3, top =   89, width =  213, height =   21)
-)
-position.options$`1920x1080`$`1.25` <- rescale(position.options$`1920x1080`$`1.00`, 1.25)
+main <- function ()
+{
+    stopifnot(.Platform$OS.type == "windows", interactive())
+    failure <- TRUE
 
 
-abort <- "execution aborted by user"
+    position.options <- list()
+    position.options$`1920x1080`$`1.00` <- make_lines(
+        select.r.console   = c(left =    8, top =  109, width =  631, height =  399),
+        file.button        = c(left =    0, top =   23, width =   31, height =   18),
+        new.script.button  = c(left =    3, top =   67, width =  213, height =   21),
+        open.script.button = c(left =    3, top =   89, width =  213, height =   21)
+    )
+    position.options$`1920x1080`$`1.25` <- rescale(position.options$`1920x1080`$`1.00`, 1.25)
 
 
-resolution <- paste(getResolution(), collapse = "x")
-na.response <- "None of the above"
+    abort <- "execution aborted by user"
 
 
-if (is.na(response <- utils::askYesNo(sprintf("Your screen resolution is %s?", resolution)))) {
-    stop(abort)
-} else if (!response) {
-    resolution <- utils::select.list(c(names(position.options), na.response), title = "Select your screen resolution", graphics = TRUE)
-    if (resolution == "") {
+    resolution <- paste(getResolution(), collapse = "x")
+    na.response <- "None of the above"
+
+
+    if (is.na(response <- utils::askYesNo(sprintf("Your screen resolution is %s?", resolution)))) {
         stop(abort)
-    } else if (resolution == na.response) {
-        stop("please add your monitor dimensions to the list (or temporarily change your screen resolution)")
+    } else if (!response) {
+        resolution <- utils::select.list(c(names(position.options), na.response), title = "Select your screen resolution", graphics = TRUE)
+        if (resolution == "") {
+            stop(abort)
+        } else if (resolution == na.response) {
+            stop("please add your monitor dimensions to the list (or temporarily change your screen resolution)")
+        }
     }
-}
-if (!(resolution %in% names(position.options)))
-    stop("invalid 'resolution'; should never happen, please report!")
+    if (!(resolution %in% names(position.options)))
+        stop("invalid 'resolution'; should never happen, please report!")
 
 
-scaling <- utils::select.list(c(
-    sprintf("%.0f%%", as.numeric(names(position.options[[resolution]])) * 100),
-    na.response
-), title = "Select your screen scaling", graphics = TRUE)
-if (scaling == "") {
-    stop(abort)
-} else if (scaling == na.response) {
-    scaling <- readline("Enter your screen scaling: ")
-    if (scaling == "")
+    scaling <- utils::select.list(c(
+        sprintf("%.0f%%", as.numeric(names(position.options[[resolution]])) * 100),
+        na.response
+    ), title = "Select your screen scaling", graphics = TRUE)
+    if (scaling == "") {
         stop(abort)
-    pattern <- "^[[:blank:]]*([[:digit:]]+)[[:blank:]]*%[[:blank:]]*$"
-    if (grepl(pattern, scaling)) {
-        scaling <- as.integer(sub(pattern, "\\1", scaling))/100
-    } else scaling <- as.numeric(scaling)
-} else {
-    scaling <- as.integer(sub("%$", "", scaling))/100
+    } else if (scaling == na.response) {
+        scaling <- readline("Enter your screen scaling: ")
+        if (scaling == "")
+            stop(abort)
+        pattern <- "^[[:blank:]]*([[:digit:]]+)[[:blank:]]*%[[:blank:]]*$"
+        if (grepl(pattern, scaling)) {
+            scaling <- as.integer(sub(pattern, "\\1", scaling))/100
+        } else scaling <- as.numeric(scaling)
+    } else {
+        scaling <- as.integer(sub("%$", "", scaling))/100
+    }
+
+
+    scaling <- round(scaling, 2)
+    if (is.na(scaling) || scaling <= 0)
+        stop("invalid 'scaling'")
+
+
+    temp <- rescale(position.options[[resolution]][["1.00"]], scaling)
+    scaling <- sprintf("%.2f", scaling)
+    position.options[[resolution]][[scaling]] <- temp
+
+
+    RESOLUTIONS <- rep(names(position.options), lengths(position.options))
+    SCALINGS <- unlist(lapply(position.options, names))
+    FILES <- sprintf("py_%s_%s.py",
+        RESOLUTIONS, gsub(".", "", SCALINGS, fixed = TRUE))
+    temp.info.FILE <- tempfile("info", fileext = ".csv")
+    on.exit(if (!failure) file.copy(temp.info.FILE, this.path::here("info.csv")), add = TRUE)
+    on.exit(unlink(temp.info.FILE), add = TRUE)
+    utils::write.table(cbind(
+        name = sprintf("%s %.0f%%", RESOLUTIONS, as.numeric(SCALINGS) * 100),
+        resolution = RESOLUTIONS,
+        scaling = SCALINGS,
+        file = FILES
+    ), temp.info.FILE, row.names = FALSE, sep = ",", qmethod = "double")
+
+
+    temp.FILES <- tempfile(rep("py", length(FILES)), fileext = ".py")
+    on.exit(if (!failure) {
+        unlink(list.files(this.path::this.dir(verbose = FALSE), "^py_[[:digit:]]+x[[:digit:]]+_[[:digit:]]+\\.py$", full.names = TRUE))
+        file.copy(temp.FILES, this.path::here(FILES))
+    }, add = TRUE)
+    on.exit(unlink(temp.FILES), add = TRUE)
+
+
+    temp <- unlist(position.options, recursive = FALSE)
+    for (i in seq_along(temp)) {
+        writeLines(temp[[i]]$main, temp.FILES[[i]])
+    }
+
+
+    ##envir <- new.env(parent = baseenv())
+    ##source(this.path::here("select_screen_res.R"), envir)
+    ##i <- envir$select.screen.res()
+
+
+    position.option <- position.options[[resolution]][[scaling]]
+
+
+    confirm_choice <- function () {
+        FILE <- tempfile(fileext = ".py")
+        on.exit(unlink(FILE))
+        writeLines(position.option$test, FILE)
+        essentials:::Rgui(
+            options = c("--vanilla", "R_DEFAULT_PACKAGES=NULL"),
+            wait = FALSE, mustWork = TRUE, quiet = TRUE
+        )
+        Sys.sleep(0.2)
+        essentials::python(file = FILE, mustWork = TRUE, quiet = TRUE)
+        if (!isTRUE(utils::askYesNo("Did the previous work as intended?")))
+            stop(abort)
+    }
+
+
+    confirm_again <- function() {
+        FILES <- tempfile(fileext = c(".R", ".py"))
+        on.exit(unlink(FILES))
+        tmpR <- FILES[[1L]]
+        tmppy <- FILES[[2L]]
+        file.create(tmpR)
+
+
+        writeLines(position.option$full_test, tmppy)
+        essentials:::Rgui(
+            options = c("--vanilla", "R_DEFAULT_PACKAGES=NULL"),
+            wait = FALSE, mustWork = TRUE, quiet = TRUE
+        )
+        Sys.sleep(0.2)
+        essentials::python(file = tmppy, args = tmpR, mustWork = TRUE, quiet = TRUE)
+        if (!isTRUE(utils::askYesNo("Did the previous work as intended?")))
+            stop(abort)
+    }
+
+
+    confirm_choice()
+    confirm_again()
+    failure <- FALSE
+    invisible()
 }
 
 
-scaling <- round(scaling, 2)
-if (is.na(scaling) || scaling <= 0)
-    stop("invalid 'scaling'")
-
-
-temp <- rescale(position.options[[resolution]][["1.00"]], scaling)
-scaling <- sprintf("%.2f", scaling)
-position.options[[resolution]][[scaling]] <- temp
-
-
-RESOLUTIONS <- rep(names(position.options), lengths(position.options))
-SCALINGS <- unlist(lapply(position.options, names))
-FILES <- sprintf("py_%s_%s.py",
-    RESOLUTIONS, gsub(".", "", SCALINGS, fixed = TRUE))
-utils::write.table(cbind(
-    name = sprintf("%s %.0f%%", RESOLUTIONS, as.numeric(SCALINGS) * 100),
-    resolution = RESOLUTIONS,
-    scaling = SCALINGS,
-    file = FILES
-), this.path::here("info.csv"), row.names = FALSE, sep = ",", qmethod = "double")
-
-
-temp <- unlist(position.options, recursive = FALSE)
-for (i in seq_along(temp)) {
-    writeLines(temp[[i]]$main, this.path::here(FILES[[i]]))
-}
-
-
-##envir <- new.env(parent = baseenv())
-##source(this.path::here("select_screen_res.R"), envir)
-##i <- envir$select.screen.res()
-
-
-position.option <- position.options[[resolution]][[scaling]]
-
-
-confirm_choice <- function ()
-{
-    FILE <- tempfile(fileext = ".py")
-    on.exit(unlink(FILE))
-    writeLines(position.option$test, FILE)
-    essentials:::Rgui(
-        options = c("--vanilla", "R_DEFAULT_PACKAGES=NULL"),
-        wait = FALSE, mustWork = TRUE, quiet = TRUE
-    )
-    Sys.sleep(0.2)
-    essentials::python(file = FILE, mustWork = TRUE, quiet = TRUE)
-    if (!isTRUE(utils::askYesNo("Did the previous work as intended?")))
-        stop(abort)
-}
-
-
-confirm_again <- function ()
-{
-    FILES <- tempfile(fileext = c(".R", ".py"))
-    on.exit(unlink(FILES))
-    tmpR <- FILES[[1L]]
-    tmppy <- FILES[[2L]]
-    file.create(tmpR)
-
-
-    writeLines(position.option$full_test, tmppy)
-    essentials:::Rgui(
-        options = c("--vanilla", "R_DEFAULT_PACKAGES=NULL"),
-        wait = FALSE, mustWork = TRUE, quiet = TRUE
-    )
-    Sys.sleep(0.2)
-    essentials::python(file = tmppy, args = tmpR, mustWork = TRUE, quiet = TRUE)
-    if (!isTRUE(utils::askYesNo("Did the previous work as intended?")))
-        stop(abort)
-}
-
-
-confirm_choice()
-confirm_again()
+main()

@@ -313,17 +313,17 @@ normalized.shFILE <- function (default)
     # folder paths have backslash or slash
 
 
-    # abandoned because it is too many bytes long
-    windows.basename.good.char <- function(excluding = "") {
-        paste0("[^\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\"*/:<>?\\\\|",
-            excluding, "]")
-    }
-
-
-    # abandoned, not because it is too long, but because the new is shorter
-    windows.basename.good.char <- function(excluding = "") {
-        paste0("(\177|[^[:cntrl:]\"*/:<>?\\\\|", excluding, "])")
-    }
+    # # abandoned because it is too many bytes long
+    # windows.basename.good.char <- function(excluding = "") {
+    #     paste0("[^\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\"*/:<>?\\\\|",
+    #         excluding, "]")
+    # }
+    #
+    #
+    # # abandoned, not because it is too long, but because the new is shorter
+    # windows.basename.good.char <- function(excluding = "") {
+    #     paste0("(\177|[^[:cntrl:]\"*/:<>?\\\\|", excluding, "])")
+    # }
 
 
     # the current method, stopped using [[:cntrl:]] and now uses a \001-\037
@@ -529,22 +529,21 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
     # looking for an appropriate source call (a call to function source,
     # sys.source, debugSource in RStudio, or testthat::source_file)
     #
-    # An appropriate source call is a source call in which argument 'file'
+    # an appropriate source call is a source call in which argument 'file'
     # ('fileName' in the case of debugSource, 'path' in the case of
-    # testthat::source_file) has been evaluated (forced). For example, the
+    # testthat::source_file) has been evaluated (forced). for example, the
     # following is an inappropriate source call:
     #
     # source(this.path())
     #
-    # The argument 'file' is stored as a promise containing the expression
-    # this.path(). When the value of 'file' is requested, it assigns the value
-    # returned by evaluating this.path() to variable 'file'
+    # The argument 'file' is stored as a promise (see ?promise) to evaluate
+    # 'this.path()' if its value is requested.
     #
-    # There are two functions on the calling stack at this point being source
-    # and this.path. Clearly, you don't want to request the 'file' argument
-    # from that source call because the value of 'file' is under evaluation
-    # right now! The trick is to ask if a variable exists in that function's
-    # evaluation environment that is only created AFTER 'file' has been forced.
+    # There are two functions on the calling stack at this point being 'source'
+    # and 'this.path'. you don't want to request the 'file' argument from that
+    # source call because the value of 'file' is under evaluation right now!
+    # The trick is to ask if a variable exists in that function's evaluation
+    # environment that is only created AFTER 'file' has been forced.
     # For source, we ask if variable 'ofile' exists. For sys.source and
     # testthat::source_file, we ask if variable 'exprs' exists. For
     # debugSource, we cannot use this trick. Refer to the documentation below.
@@ -555,36 +554,32 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
     # inappropriate. The loop continues to the next iteration (if available)
 
 
-    # as of this.path_0.2.0, compatibility with 'debugSource' from the
-    # 'RStudio' environment was added. 'debugSource' presents challenges that
-    # other source functions do not. For example, it is impossible to test if
-    # argument 'fileName' has been forced since all of the work is done
-    # internally in C. This is why we use a 'tryCatch' statement instead of an
-    # 'existsn'
+    # in 0.2.0, compatibility with 'debugSource' in 'RStudio'  was added
     dbgS <- if (gui.rstudio)
         get("debugSource", "tools:rstudio", inherits = FALSE)
 
 
-    # as of this.path_0.4.0, compatibility with 'source_file' from package
-    # 'testthat' was added. 'testthat::source_file' is almost identical to
-    # 'sys.source'
+    # in 0.4.0, compatibility with 'testthat::source_file' was added. it is
+    # almost identical to 'sys.source'
     srcf <- if (isNamespaceLoaded("testthat"))
         testthat::source_file
         # getExportedValue("testthat", "source_file")
 
 
     for (n in seq.int(to = 1L, by = -1L, length.out = sys.nframe() - 1L)) {
+
+
         if (identical(sys.function(n), source)) {
-
-
-            # if the argument 'file' to 'source' has not been forced,
-            # continue to the next iteration
-            if (!existsn("ofile"))
-                next
 
 
             # if the path has yet to be saved
             if (!existsn(".__file__")) {
+
+
+                # if the argument 'file' to 'source' has not been forced,
+                # continue to the next iteration
+                if (!existsn("ofile"))
+                    next
 
 
                 # retrieve the unmodified 'file' argument
@@ -647,8 +642,8 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                     }
 
 
-                    # as of this.path_0.3.0, compatibility was added when
-                    # using 'source(chdir = TRUE)'. this changes the working
+                    # in 0.3.0, compatibility was added when using
+                    # 'source(chdir = TRUE)'. this changes the working
                     # directory to the directory of the 'file' argument. since
                     # the 'file' argument was relative to the working directory
                     # prior to being changed, we need to change it to the
@@ -734,18 +729,20 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
             where("call to function source")
             return(getn(".__file__"))
         }
+
+
         else if (identical(sys.function(n), sys.source)) {
-
-
-            # as with 'source', we check that argument 'file' has been
-            # forced, and continue to the next iteration if not
-            if (!existsn("exprs"))
-                next
 
 
             # much the same as 'source' except simpler, we don't have to
             # account for argument 'file' being a connection or ""
             if (!existsn(".__file__")) {
+
+
+                # as with 'source', we check that argument 'file' has been
+                # forced, and continue to the next iteration if not
+                if (!existsn("exprs"))
+                    next
 
 
                 path <- getn("file")
@@ -773,35 +770,49 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
             where("call to function sys.source")
             return(getn(".__file__"))
         }
+
+
         else if (!is.null(dbgS) && identical(sys.function(n), dbgS)) {
 
 
-            # unlike 'source' and 'sys.source', there is no way to
-            # check that argument 'fileName' has been forced, since all of the
-            # work is done internally in C. Instead, we have to use a
-            # 'tryCatch' statement. If argument 'fileName' has been forced, the
-            # statement will proceed without an issue. If it has not, it is
-            # because argument 'fileName' depends on itself recursively with
-            # message "promise already under evaluation: recursive default
-            # argument reference or earlier problems?". If you'd like to see,
-            # try this:
-            #
-            # test <- function() get("fileName", sys.frame(1), inherits = FALSE)
-            # debugSource(test())
-            #
-            # and you should see the error in which I'm referring. So the trick
-            # is to use the 'tryCatch' statement to request argument
-            # 'fileName', return TRUE if the statement proceeded without error
-            # and FALSE if the statement produced an error.
-            cond <- tryCatch({
-                path <- getn("fileName")
-                TRUE
-            }, error = function(c) FALSE)
-            if (!cond)
-                next
-
-
             if (!existsn(".__file__")) {
+
+
+                # unlike 'source' and 'sys.source', there is no way to check
+                # that argument 'fileName' has been forced (since all of the
+                # work is done internally in C).
+                #
+                # instead, we have to use a 'tryCatch' statement. If argument
+                # 'fileName' has been forced, the statement will proceed
+                # without an issue. If it has not, it is
+                # because argument 'fileName' depends on itself recursively with
+                # message "promise already under evaluation: recursive default
+                # argument reference or earlier problems?". If you'd like to see,
+                # try this:
+                #
+                # test <- function() get("fileName", sys.frame(1), inherits = FALSE)
+                # debugSource(test())
+                #
+                # and you should see the error in which I'm referring. So the trick
+                # is to use the 'tryCatch' statement to request argument
+                # 'fileName', return TRUE if the statement proceeded without error
+                # and FALSE if the statement produced an error.
+
+
+                # "object 'fileName' not found" is an error we DON'T WANT TO CATCH
+                if (!existsn("fileName"))
+                    stop(gettextf("object '%s' not found", "fileName", domain = "R"), "; should never happen, please report!")
+                expr <- quote(get("fileName", envir = sys.frame(n), inherits = FALSE))
+                attr(expr, ".__this.path::n__") <- n
+                attr(expr, ".__this.path::environment()__") <- environment()
+                do_next <- FALSE
+                path <- eval(substitute(tryCatch(., error = function(c) {
+                    if (identical(conditionCall(c), expr))
+                        do_next <<- TRUE
+                    else stop(c)
+                }), list(. = expr)))
+                if (do_next)
+                    next
 
 
                 URL <- FALSE
@@ -1078,7 +1089,7 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
-            "  consider using RStudio until such a time when this is implemented"))
+            "  consider using RStudio / / VSCode until such a time when this is implemented"))
     }
 
 

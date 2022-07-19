@@ -1,4 +1,4 @@
-(function() {
+local({
     owd <- getwd()
     if (is.null(owd)) {
         message("cannot 'chdir' as current directory is unknown")
@@ -17,6 +17,17 @@
     base.path  <- "test.R"
     full.path  <- this.path::here(base.path)
     short.path <- file.path(basename(dirname(full.path)), base.path)
+
+
+    on.exit(unlink(full.path), add = TRUE)
+    this.path:::write.code({
+        cat("Working directory:\n", if (!is.null(wd <- getwd()))
+            sQuote(wd)
+            else "NULL", "\n\n", sep = "")
+        cat("Executing script's path:\n")
+        cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n", sep = "")
+        cat("\n\n\n\n")
+    }, file = full.path)
 
 
     ## for 'base::source' and 'debugSource' specifically,
@@ -101,4 +112,4 @@
         testthat::source_file(full.path , env = environment(), chdir = TRUE , wrap = FALSE)
         testthat::source_file(full.path , env = environment(), chdir = TRUE , wrap = TRUE )
     }
-})()
+})

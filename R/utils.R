@@ -12,7 +12,7 @@
 
 build_this <- function (chdir = FALSE, file = here(), which = "tar")
 {
-    # build_this                                                 R Documentation
+    # build_this {this.path}                                     R Documentation
     #
     # Building Packages
     #
@@ -358,18 +358,21 @@ do_with_wd <- function (expr, wd)
 }
 
 
-write.code <- function (x, file = stdout(), evaluated = FALSE, simplify = !evaluated,
-    deparseCtrl = c("keepInteger", "showAttributes",
-        "useSource", "keepNA", "digits17"))
+write.code <- function (x, file = stdout(), evaluated, simplify = TRUE, deparseCtrl = c("keepInteger",
+    "showAttributes", "useSource", "keepNA", "digits17"))
 {
-    if (!evaluated)
+    if (missing(evaluated)) {
+        if (is.call(e <- substitute(x)) && is.name(e[[1L]]) && e[[1L]] == "{")
+            x <- e
+    } else if (!evaluated)
         x <- substitute(x)
-    x <- if (simplify && is.call(x) && is.symbol(x[[1]]) && x[[1]] == quote(`{`))
-        vapply(as.list(x[-1]), deparse1, collapse = "\n",
-            width.cutoff = 60L, backtick = TRUE, control = deparseCtrl,
-            FUN.VALUE = "")
-    else deparse1(x, collapse = "\n", width.cutoff = 60L,
-        backtick = TRUE, control = deparseCtrl)
+    fun <- function(xx) {
+        deparse1(xx, collapse = "\n", width.cutoff = 60L, backtick = TRUE,
+            control = deparseCtrl)
+    }
+    x <- if (simplify && is.call(x) && is.name(x[[1L]]) && x[[1L]] == "{")
+        vapply(as.list(x[-1]), fun, "")
+    else fun(x)
     if (is.null(file))
         x
     else {

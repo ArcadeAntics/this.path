@@ -1,7 +1,7 @@
 essentials:::check_this(  # this.path
     special = TRUE,
 
-    check = FALSE, as.cran = TRUE,
+    check = TRUE, as.cran = TRUE,
 
     chdir = TRUE
 )
@@ -17,29 +17,6 @@ essentials:::check_this(  # this.path
 #     print(i)
 #     print(xx)
 # })
-
-
-
-
-
-# add.attributes <- function (.Data, args = NULL)
-# {
-#     if (is.null(args))
-#         return(.Data)
-#     else if (!is.list(args))
-#         stop("second argument must be a list")
-#     if (length(args))
-#         do.call(structure, c(list(.Data = .Data), args), quote = TRUE)
-#     else .Data
-# }
-#
-#
-# scipy <- NULL
-# fun <- function ()
-# {
-#     scipy <<- reticulate::import("scipy", delay_load = TRUE)
-# }
-# fun()
 
 
 

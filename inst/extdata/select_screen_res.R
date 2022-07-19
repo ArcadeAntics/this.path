@@ -4,7 +4,7 @@ select.screen.res <- function ()
         colClasses = c(scaling = "character"))
     rownames(info) <- info$name
     info$file <- this.path::here(info$file)
-    if (length(args <- essentials::Args()))
+    if (length(args <- this.path::fileArgs()))
         arg <- args[[1L]]
     else arg <- utils::select.list(info$name, title = "Select your screen resolution:", graphics = TRUE)
     i <- match.arg(arg, info$name)

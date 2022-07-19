@@ -1,5 +1,21 @@
 this.path News
 
+CHANGES IN this.path 0.10.0:
+
+  NEW FEATURES
+
+    * Added asArgs(), fileArgs(), and withArgs() to more easily provide
+      arguments to a script.
+
+    * Added from.shell() to determine if a script was run from a shell.
+
+    * Added this.proj(...), similar to here::here(...), except that
+      this.proj() supports multiple projects in one R session.
+
+  BUG FIXES
+
+    * this.path::here() no longer uses dirname() on a UNC path.
+
 CHANGES IN this.path 0.9.0:
 
   NEW FEATURES:

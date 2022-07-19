@@ -1,3 +1,4 @@
+stopifnot(.Platform$OS.type == "windows")
 
 
 main <- function ()
@@ -10,12 +11,12 @@ main <- function ()
     screen.res <- envir$select.screen.res()$name
 
 
-    path <- R.home("..")
+    path <- dirname(R.home())
     pattern <- sprintf("^R-(%s)$", .standard_regexps()$valid_R_system_version)
     paths <- list.files(path, pattern)
     R.versions <- as.numeric_version(sub(pattern, "\\1", paths))
     i <- order(R.versions, decreasing = TRUE)
-    paths <- normalizePath(file.path(path, paths[i], "bin", "Rscript.exe"), mustWork = TRUE)
+    paths <- file.path(path, paths[i], "bin", "Rscript.exe")
     R.versions <- R.versions[i]
 
 

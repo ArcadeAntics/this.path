@@ -1,6 +1,26 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 0.10.0}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Added \code{asArgs()}, \code{fileArgs()}, and
+            \code{withArgs()} to more easily provide arguments to a
+            script.
+      \item Added \code{from.shell()} to determine if a script was run
+            from a shell.
+      \item Added \code{this.proj(...)}, similar to
+            \code{here::here(...)}, except that \code{this.proj()}
+            supports multiple projects in one \R session.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{this.path::here()} no longer uses \code{dirname()} on
+            a UNC path.
+    }
+  }
+}
 \section{CHANGES IN VERSION 0.9.0}{
   \subsection{NEW FEATURES}{
     \itemize{
