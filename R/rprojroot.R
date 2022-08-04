@@ -38,22 +38,19 @@ function (path, verbose = getOption("verbose"))
 {
     if (path %in% names(table))
         table[[path]]
-    else (table[[path]] <<- find_root(criterion = default.criterion, path = path, verbose = verbose))
+    else (table[[path]] <<- find_root(
+        criterion = rprojroot::has_file(".here") | rprojroot::is_rstudio_project |
+            rprojroot::is_r_package | rprojroot::is_remake_project |
+            rprojroot::is_projectile_project | rprojroot::is_vcs_root,
+        path = path,
+        verbose = verbose
+    ))
 }
 )
 evalq(envir = environment(.this.proj), {
-
-
-    # we use a delayed assign so that 'rprojroot' is not automatically loaded
-    delayedAssign("default.criterion", {
-        rprojroot::has_file(".here") | rprojroot::is_rstudio_project |
-            rprojroot::is_r_package | rprojroot::is_remake_project |
-            rprojroot::is_projectile_project | rprojroot::is_vcs_root
-    })
     table <- structure(character(), names = character())
 })
 lockEnvironment(environment(.this.proj))
-lockBinding("default.criterion", environment(.this.proj))
 
 
 this.proj <- function (...)

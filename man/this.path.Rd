@@ -33,9 +33,7 @@ this.dir3(...)   # deprecated, use this.dir(..., default = getwd()) instead
 be printed?
   }
   \item{default}{
-if there is no executing script, this value is returned. This facilitates
-retrieving the execting script's path / / directory and checking whether it
-exists and setting it separately if not.
+if there is no executing script, this value is returned.
   }
   \item{\dots}{
 arguments passed to \code{this.path}.
@@ -54,6 +52,9 @@ There are three ways in which \R code is typically run:
         \code{\link[testthat:source_file]{testthat::source_file}}
   \item from a shell, such as the Windows command-line / / Unix terminal
 }
+
+If you are using \code{this.path} in \sQuote{VSCode}, see
+\code{\link{this.path.in.VSCode}}
 
 To retrieve the executing script's filename, first an attempt is made to find a
 source call. The calls are searched in reverse order so as to grab the most
