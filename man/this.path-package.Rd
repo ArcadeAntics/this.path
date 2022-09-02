@@ -49,9 +49,8 @@ Check \code{this.path()} is functioning correctly: \code{\link{check.path}},
 Extract \option{FILE} from command line arguments: \code{\link{shFILE}},
 \code{\link{normalized.shFILE}}
 
-\code{\link[base]{source}}, \code{\link[base]{sys.source}},
-\href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
-\code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
+\code{\link[base]{source}}, \code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
+\code{\link[testthat:source_file]{testthat::source_file}}
 
 \code{\link{R.from.shell}}
 }

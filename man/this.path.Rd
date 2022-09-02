@@ -46,10 +46,8 @@ There are three ways in which \R code is typically run:
         the current line / / selection with the \strong{Run} button / /
         appropriate keyboard shortcut
   \item through a source call: a call to function \code{\link[base]{source}},
-        \code{\link[base]{sys.source}},
-        \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
-        \code{debugSource}} in \sQuote{RStudio}, or
-        \code{\link[testthat:source_file]{testthat::source_file}}
+        \code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}}
+        in \sQuote{RStudio}, or \code{\link[testthat:source_file]{testthat::source_file}}
   \item from a shell, such as the Windows command-line / / Unix terminal
 }
 
@@ -192,9 +190,8 @@ before calling \code{this.path} at least once.
 
 \code{\link{this.path-package}}
 
-\code{\link[base]{source}}, \code{\link[base]{sys.source}},
-\href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{
-\code{debugSource}}, \code{\link[testthat:source_file]{testthat::source_file}}
+\code{\link[base]{source}}, \code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
+\code{\link[testthat:source_file]{testthat::source_file}}
 
 \code{\link{R.from.shell}}
 }
