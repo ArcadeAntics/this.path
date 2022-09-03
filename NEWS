@@ -1,5 +1,15 @@
 this.path News
 
+CHANGES IN this.path 0.11.0:
+
+  NEW FEATURES
+
+    * Added tryCatch2(), introducing argument 'else.' similar to
+      'try except' in 'Python'.
+
+    * Added 'else.' argument to this.path(), this.dir(), shFILE(), and
+      normalized.shFILE(), a function to act on the return value.
+
 CHANGES IN this.path 0.10.0:
 
   NEW FEATURES

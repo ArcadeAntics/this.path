@@ -19,8 +19,8 @@ release that did not include \code{default} as an argument in
 development and should be removed from older code.
 }
 \usage{
-this.path(verbose = getOption("verbose"), default)
-this.dir(..., default)
+this.path(verbose = getOption("verbose"), default, else.)
+this.dir(..., default, else.)
 
 this.path2(...)  # deprecated, use this.path(..., default = NULL) instead
 this.dir2(...)   # deprecated, use this.dir(..., default = NULL) instead
@@ -34,6 +34,10 @@ be printed?
   }
   \item{default}{
 if there is no executing script, this value is returned.
+  }
+  \item{else.}{
+missing or a function to call on the return value if there is an executing
+script. See \code{\link{tryCatch2}} for inspiration.
   }
   \item{\dots}{
 arguments passed to \code{this.path}.
@@ -640,4 +644,14 @@ for (expr in c("this.path()",
                "this.dir(default = NULL)",
                "this.dir(default = getwd())"))
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+
+
+# an example from R package 'logr'
+this.path::this.path(verbose = FALSE, default = "script.log",
+    else. = function(x) {
+        x <- if (.Platform$OS.type == "windows")
+            sub("[.][^.\\\\/]+$", "", x)
+        else sub("[.][^./]+$", "", x)
+        paste0(x, ".log")
+    })
 \dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}

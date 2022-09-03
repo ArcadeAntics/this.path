@@ -1,6 +1,17 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 0.11.0}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Added \code{tryCatch2()}, introducing argument \code{else.} similar
+            to \code{try except} in \sQuote{Python}.
+      \item Added \code{else.} argument to \code{this.path()},
+            \code{this.dir()}, \code{shFILE()}, and \code{normalized.shFILE()},
+            a function to act on the return value.
+    }
+  }
+}
 \section{CHANGES IN VERSION 0.10.0}{
   \subsection{NEW FEATURES}{
     \itemize{

@@ -26,32 +26,19 @@
 # }
 
 
-tryCatch2 <- function (expr, ..., else., finally)
-{
-    stop("cannot use while checking package")
-}
-
-
-.onLoad <- function (libname, pkgname)
-{
-    # cat("> libname\n")
-    # print(libname)
-    # cat("> pkgname\n")
-    # print(pkgname)
-    if (Sys.getenv("_R_CHECK_PACKAGE_NAME_") != pkgname)
-        sys.source(
-            file = system.file(package = pkgname, "more-R", "tryCatch2.R", mustWork = TRUE),
-            envir = getNamespace(pkgname),
-            keep.source = FALSE,
-            keep.parse.data = FALSE
-        )
-    # sink("~/temp3.txt", append = TRUE)
-    # on.exit(sink())
-    # cat('> Sys.getenv("_R_CHECK_PACKAGE_NAME_")\n')
-    # print(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
-    # cat("> tryCatch2\n")
-    # print(tryCatch2)
-    # cat("> commandArgs()\n")
-    # print(commandArgs())
-    # cat("\n\n\n\n\n")
-}
+# .onLoad <- function (libname, pkgname)
+# {
+#     # cat("> libname\n")
+#     # print(libname)
+#     # cat("> pkgname\n")
+#     # print(pkgname)
+#     # sink("~/temp3.txt", append = TRUE)
+#     # on.exit(sink())
+#     # cat('> Sys.getenv("_R_CHECK_PACKAGE_NAME_")\n')
+#     # print(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+#     # cat("> tryCatch2\n")
+#     # print(tryCatch2)
+#     # cat("> commandArgs()\n")
+#     # print(commandArgs())
+#     # cat("\n\n\n\n\n")
+# }

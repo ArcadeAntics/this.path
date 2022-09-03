@@ -256,15 +256,25 @@ evalq(envir = environment(.shFILE), {
 lockEnvironment(environment(.shFILE))
 
 
-shFILE <- function (default)
+shFILE <- function (default, else.)
 {
     if (missing(default))
-        .shFILE()
+        if (missing(else.))
+            .shFILE()
+        else stop("'shFILE' with 'else.' but not 'default' makes no sense")
     else {
-        ans <- .shFILE()
-        if (is.na(ans))
-            default
-        else ans
+        if (missing(else.)) {
+            ans <- .shFILE()
+            if (is.na(ans))
+                default
+            else ans
+        }
+        else {
+            ans <- .shFILE()
+            if (is.na(ans))
+                default
+            else else.(ans)
+        }
     }
 }
 
@@ -276,7 +286,7 @@ shFILE <- function (default)
         return(.__file__)
 
 
-    file <- shFILE()
+    file <- .shFILE()
     file <- normalizePath(file, winslash = "/", mustWork = TRUE)
     .__file__ <<- file
     return(.__file__)
@@ -287,14 +297,23 @@ evalq(envir = environment(.normalized.shFILE), {
 lockEnvironment(environment(.normalized.shFILE))
 
 
-normalized.shFILE <- function (default)
+normalized.shFILE <- function (default, else.)
 {
     if (missing(default))
-        .normalized.shFILE()
+        if (missing(else.))
+            .normalized.shFILE()
+        else stop("'normalized.shFILE' with 'else.' but not 'default' makes no sense")
     else {
-        if (is.na(.shFILE()))
-            default
-        else .normalized.shFILE()
+        if (missing(else.)) {
+            if (is.na(.shFILE()))
+                default
+            else .normalized.shFILE()
+        }
+        else {
+            if (is.na(.shFILE()))
+                default
+            else else.(.normalized.shFILE())
+        }
     }
 }
 
@@ -1118,13 +1137,13 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
 
 
 
-this.path <- function (verbose = getOption("verbose"), default)
+this.path <- function (verbose = getOption("verbose"), default, else.)
 tryCatch({
     .this.path(verbose)
 }, function(c) default)
 
 
-this.dir <- function (..., default)
+this.dir <- function (..., default, else.)
 tryCatch({
     .this.dir(...)
 }, function(c) default)
@@ -1135,22 +1154,42 @@ this.path_not_exists_error_class[[1L]] ->
     names(body(this.dir ))[3L]
 
 
-body(this.path) <- substitute({
+tmp <- body(this.path)
+tmp[[1L]] <- as.name("tryCatch2")
+tmp[[2L]] <- call("<-", as.name("value"), tmp[[2L]])
+body(this.path) <- bquote({
     if (missing(default))
-        .this.path(verbose)
+        if (missing(else.))
+            .this.path(verbose)
+        else stop("'this.path' with 'else.' but not 'default' makes no sense")
     else {
-        body
+        if (missing(else.))
+            .(body(this.path))
+        else {
+            .(as.call(append(as.list(tmp), list(else. = quote(else.(value))))))
+        }
     }
-}, list(body = body(this.path)))
+})
+rm(tmp)
 
 
-body(this.dir) <- substitute({
+tmp <- body(this.dir)
+tmp[[1L]] <- as.name("tryCatch2")
+tmp[[2L]] <- call("<-", as.name("value"), tmp[[2L]])
+body(this.dir) <- bquote({
     if (missing(default))
-        .this.dir(...)
+        if (missing(else.))
+            .this.dir(...)
+        else stop("'this.dir' with 'else.' but not 'default' makes no sense")
     else {
-        body
+        if (missing(else.))
+            .(body(this.dir))
+        else {
+            .(as.call(append(as.list(tmp), list(else. = quote(else.(value))))))
+        }
     }
-}, list(body = body(this.dir)))
+})
+rm(tmp)
 
 
 
