@@ -18,6 +18,11 @@ UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
 #                                         ^^^^^^    more paths
 #                                                ^  more paths are optional
 #                 ^^                    ^^          non-capturing groups
+delayedAssign("UNC.pattern", {
+    if (os.windows)
+        "^(?:(\\\\\\\\[^/]+)/+([^/]+))(?:/+(.*))?$"
+    else "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
+})
 
 
 path.split <- function (path)
@@ -68,7 +73,7 @@ path.split.UNC.and.default <- function (path)
 {
     value <- vector("list", length(path))
     path <- if (os.windows)
-        chartr("\\", "/", path.expand(path))
+        sub("^//", "\\\\\\\\", chartr("\\", "/", path.expand(path)))
     else path.expand(path)
     if (any(UNC <- grepl(UNC.pattern, path)))
         value[UNC] <- path.split.UNC(path[UNC])
@@ -81,7 +86,7 @@ path.split.UNC.and.default <- function (path)
 path.split.UNC.and.default.1 <- function (path)
 {
     path <- if (os.windows)
-        chartr("\\", "/", path.expand(path))
+        sub("^//", "\\\\\\\\", chartr("\\", "/", path.expand(path)))
     else path.expand(path)
     if (grepl(UNC.pattern, path))
         path.split.UNC.1(path)

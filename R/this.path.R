@@ -517,6 +517,14 @@ ThisPathUnimplementedError <- function(...) NULL
 body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimplemented_error_class)))
 
 
+is.clipboard.or.stdin <- function (file)
+{
+    if (os.windows)
+        file %in% c("clipboard", "stdin") || startsWith(file, "clipboard-")
+    else file %in% c("clipboard", "X11_primary", "X11_secondary", "X11_clipboard", "stdin")
+}
+
+
 .this.path <- function (verbose = getOption("verbose"))
 {
     # function to print the method in which the
@@ -626,13 +634,13 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                     }
 
 
-                    # use of "clipboard", "clipboard-128", and "stdin" refer to
-                    # the clipboard or to the C-level 'standard input' of the
-                    # process. this means 'source' did not open a file, so we
+                    # use of "clipboard" and "stdin" refer to the clipboard or
+                    # to the C-level 'standard input' of the process.
+                    # this means 'source' did not open a file, so we
                     # assign .__file__ the value of NULL and continue to the
                     # next iteration. We use .__file__ as NULL to skip this
                     # source call the next time this.path leads here
-                    else if (path %in% c("clipboard", "clipboard-128", "stdin")) {
+                    else if (is.clipboard.or.stdin(path)) {
                         assign.__file__(NULL)
                         next
                     }
@@ -687,21 +695,19 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                     #     cbind(
                     #         summary(a <- stdin (                      )),
                     #         summary(b <- file  ("clipboard"           )),
-                    #         summary(c <- file  ("clipboard-128"       )),
-                    #         summary(d <- file  ("stdin"               )),
-                    #         summary(e <- file  ("file://clipboard"    )),
-                    #         summary(f <- file  ("file://clipboard-128")),
-                    #         summary(g <- file  ("file://stdin"        )),
-                    #         summary(h <- url   ("ftp://clipboard"     )),
-                    #         summary(i <- url   ("ftps://clipboard"    )),
-                    #         summary(j <- url   ("http://clipboard"    )),
-                    #         summary(k <- url   ("https://clipboard"   )),
-                    #         summary(l <- gzfile("clipboard"           )),
-                    #         summary(m <- bzfile("clipboard"           )),
-                    #         summary(n <- xzfile("clipboard"           )),
-                    #         summary(o <- unz   ("clipboard", "stdin"  )),
-                    #         summary(p <- pipe  ("clipboard"           )),
-                    #         summary(q <- fifo  ("clipboard"           ))
+                    #         summary(c <- file  ("stdin"               )),
+                    #         summary(d <- file  ("file://clipboard"    )),
+                    #         summary(e <- file  ("file://stdin"        )),
+                    #         summary(f <- url   ("ftp://clipboard"     )),
+                    #         summary(g <- url   ("ftps://clipboard"    )),
+                    #         summary(h <- url   ("http://clipboard"    )),
+                    #         summary(i <- url   ("https://clipboard"   )),
+                    #         summary(j <- gzfile("clipboard"           )),
+                    #         summary(k <- bzfile("clipboard"           )),
+                    #         summary(l <- xzfile("clipboard"           )),
+                    #         summary(m <- unz   ("clipboard", "stdin"  )),
+                    #         summary(n <- pipe  ("clipboard"           )),
+                    #         summary(o <- fifo  ("clipboard"           ))
                     #     )
                     # })
 
@@ -770,10 +776,9 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                 # unlike 'source', 'sys.source' is intended to
                 # source a file (not a connection), so we have to throw an
                 # error if the user attempts to source a file named
-                # "clipboard", "clipboard-128", or "stdin" since none of these
-                # refer to files
-                if (path %in% c("clipboard", "clipboard-128", "stdin"))
-                    stop(Error("invalid 'file', must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                # "clipboard" or "stdin" since none of these refer to files
+                if (is.clipboard.or.stdin(path))
+                    stop(Error("invalid 'file', must not be \"clipboard\" nor \"stdin\"",
                         call = sys.call(n)))
 
 
@@ -845,7 +850,7 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                     assign.__file__(NULL)
                     next
                 }
-                else if (path %in% c("clipboard", "clipboard-128", "stdin")) {
+                else if (is.clipboard.or.stdin(path)) {
                     assign.__file__(NULL)
                     next
                 }
@@ -883,10 +888,9 @@ body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimpl
                 # like 'sys.source', 'testthat::source_file' is intended
                 # to source a file (not a connection), so we have to throw an
                 # error if the user attempts to source a file named
-                # "clipboard", "clipboard-128", or "stdin" since none of these
-                # refer to files
-                if (path %in% c("clipboard", "clipboard-128", "stdin"))
-                    stop(Error("invalid 'path' argument, must not be \"clipboard\", \"clipboard-128\", nor \"stdin\"",
+                # "clipboard" or "stdin" since none of these refer to files
+                if (is.clipboard.or.stdin(path))
+                    stop(Error("invalid 'path' argument, must not be \"clipboard\" nor \"stdin\"",
                         call = sys.call(n)))
 
 
