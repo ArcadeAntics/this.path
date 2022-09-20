@@ -513,8 +513,8 @@ thisPathNotExistsError <- function(...) NULL
 body(thisPathNotExistsError) <- bquote(Error(..., class = .(thisPathNotExistError_class)))
 
 
-thisPathUnimplementedError <- function(...) NULL
-body(thisPathUnimplementedError) <- bquote(Error(..., class = .(thisPathNotImplementedError_class)))
+thisPathNotImplementedError <- function(...) NULL
+body(thisPathNotImplementedError) <- bquote(Error(..., class = .(thisPathNotImplementedError_class)))
 
 
 is.clipboard.or.stdin <- function (file)
@@ -741,7 +741,7 @@ is.clipboard.or.stdin <- function (file)
                         stop("'this.path' cannot be used within a zip file")
 
 
-                    }, stop(thisPathUnimplementedError(
+                    }, stop(thisPathNotImplementedError(
                         "'this.path' unimplemented when source-ing a connection of class ",
                         sQuote(path$class))))
                 }
@@ -1108,7 +1108,7 @@ is.clipboard.or.stdin <- function (file)
     else if (os.macos.gui.aqua) {
 
 
-        stop(thisPathUnimplementedError(
+        stop(thisPathNotImplementedError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
@@ -1117,7 +1117,7 @@ is.clipboard.or.stdin <- function (file)
 
 
     # running R in another manner
-    else stop(thisPathUnimplementedError(
+    else stop(thisPathNotImplementedError(
         "'this.path' used in an inappropriate fashion\n",
         "* no appropriate source call was found up the calling stack\n",
         "* R is being run in an unrecognized manner"))

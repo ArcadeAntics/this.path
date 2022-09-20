@@ -13,6 +13,12 @@ export(as.relative.path, as.rel.path)
 export(asArgs, from.shell, fileArgs, withArgs)
 
 
+# basename2.R            ----
+
+
+export(basename2, dirname2)
+
+
 # check.path.R           ----
 
 
@@ -22,7 +28,7 @@ export(check.path, check.dir)
 # path.join.R            ----
 
 
-export(path.join, basename2, dirname2)
+export(path.join)
 
 
 # rprojroot.R            ----
