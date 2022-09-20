@@ -349,6 +349,9 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 }
 
 
+build.this <- build_this
+
+
 do_with_wd <- function (expr, wd)
 {
     owd <- getwd()

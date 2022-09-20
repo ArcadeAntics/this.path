@@ -56,5 +56,5 @@ lockEnvironment(environment(.this.proj))
 this.proj <- function (...)
 {
     base <- .this.proj(.this.dir(), FALSE)
-    file.path(base, ...)
+    path.join(base, ...)
 }

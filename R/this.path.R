@@ -499,8 +499,8 @@ windows.abs.path <- .this.path_regexps$windows.absolute.path.anchored
 
 
 
-this.path_not_exists_error_class <- "this.path_this.path_not_exists_error"
-this.path_unimplemented_error_class <- "this.path_this.path_unimplemented_error"
+thisPathNotExistError_class <- c("this.path::thisPathNotExistError", "this.path_this.path_not_exists_error")
+thisPathNotImplementedError_class <- c("this.path::thisPathNotImplementedError", "this.path_this.path_unimplemented_error")
 
 
 Error <- function (..., call. = TRUE, domain = NULL, class = NULL,
@@ -509,12 +509,12 @@ errorCondition(message = .makeMessage(..., domain = domain),
     class = class, call = if (call.) call)
 
 
-ThisPathNotExistsError <- function(...) NULL
-body(ThisPathNotExistsError) <- bquote(Error(..., class = .(this.path_not_exists_error_class)))
+thisPathNotExistsError <- function(...) NULL
+body(thisPathNotExistsError) <- bquote(Error(..., class = .(thisPathNotExistError_class)))
 
 
-ThisPathUnimplementedError <- function(...) NULL
-body(ThisPathUnimplementedError) <- bquote(Error(..., class = .(this.path_unimplemented_error_class)))
+thisPathUnimplementedError <- function(...) NULL
+body(thisPathUnimplementedError) <- bquote(Error(..., class = .(thisPathNotImplementedError_class)))
 
 
 is.clipboard.or.stdin <- function (file)
@@ -741,7 +741,7 @@ is.clipboard.or.stdin <- function (file)
                         stop("'this.path' cannot be used within a zip file")
 
 
-                    }, stop(ThisPathUnimplementedError(
+                    }, stop(thisPathUnimplementedError(
                         "'this.path' unimplemented when source-ing a connection of class ",
                         sQuote(path$class))))
                 }
@@ -929,7 +929,7 @@ is.clipboard.or.stdin <- function (file)
 
         context <- rstudioapi::getSourceEditorContext()
         if (is.null(context))
-            stop(ThisPathNotExistsError(
+            stop(thisPathNotExistsError(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from VSCode with no documents open\n",
@@ -963,7 +963,7 @@ is.clipboard.or.stdin <- function (file)
 
 
         value <- normalized.shFILE(default = {
-            stop(ThisPathNotExistsError(
+            stop(thisPathNotExistsError(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from a shell and argument 'FILE' is missing"))
@@ -978,7 +978,7 @@ is.clipboard.or.stdin <- function (file)
     else if (os.unix && .Platform$GUI == "Tk") {
 
 
-        stop(ThisPathNotExistsError(
+        stop(thisPathNotExistsError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
@@ -1004,7 +1004,7 @@ is.clipboard.or.stdin <- function (file)
         if (!active) {
             context <- get(".rs.api.getSourceEditorContext", "tools:rstudio", inherits = FALSE)()
             if (is.null(context))
-                stop(ThisPathNotExistsError(
+                stop(thisPathNotExistsError(
                     "'this.path' used in an inappropriate fashion\n",
                     "* no appropriate source call was found up the calling stack\n",
                     "* R is being run from RStudio with no documents open\n",
@@ -1082,7 +1082,7 @@ is.clipboard.or.stdin <- function (file)
             nm <- nm[[1L]]
         else if (length(nm) >= 2L)
             nm <- nm[[2L]]
-        else stop(ThisPathNotExistsError(
+        else stop(thisPathNotExistsError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Rgui with no documents open"))
@@ -1108,7 +1108,7 @@ is.clipboard.or.stdin <- function (file)
     else if (os.macos.gui.aqua) {
 
 
-        stop(ThisPathUnimplementedError(
+        stop(thisPathUnimplementedError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
@@ -1117,7 +1117,7 @@ is.clipboard.or.stdin <- function (file)
 
 
     # running R in another manner
-    else stop(ThisPathUnimplementedError(
+    else stop(thisPathUnimplementedError(
         "'this.path' used in an inappropriate fashion\n",
         "* no appropriate source call was found up the calling stack\n",
         "* R is being run in an unrecognized manner"))
@@ -1134,7 +1134,7 @@ is.clipboard.or.stdin <- function (file)
         y <- strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]]
         paste(c(sub(URL.pattern, "\\1", path), y[-length(y)]), collapse = "/")
     }
-    else dirname(path)  # dirname(), while not safe to use in 'here', is safe in '.this.dir' because it only applies once
+    else dirname2(path)
 }
 
 
@@ -1153,7 +1153,7 @@ tryCatch({
 }, function(c) default)
 
 
-this.path_not_exists_error_class[[1L]] ->
+thisPathNotExistError_class[[1L]] ->
     names(body(this.path))[3L] ->
     names(body(this.dir ))[3L]
 
@@ -1207,14 +1207,12 @@ this.path2 <- function (...)
 }
 
 
-
 this.dir2 <- function (...)
 {
     .Deprecated("this.dir(..., default = NULL)",
         old = "this.dir2(...)")
     this.dir(..., default = NULL)
 }
-
 
 
 this.dir3 <- function (...)
@@ -1242,47 +1240,11 @@ here <- ici <- function (..., .. = 0L)
             sub(URL.pattern, "\\1", base)
         else paste(c(sub(URL.pattern, "\\1", base), y[seq_len(len)]), collapse = "/")
     }
-    else {
-        # base <- "//host-name/share-name/path/to/file"
-        # base <- "C:/Users/andre/Documents/this.path/man/this.path.Rd"
-        # .. <- "10"
-        base <- dirname(base)
-        if (.. <- length(seq_len(..))) {
-            if (os.windows) {
-                y <- chartr("\\", "/", base)
-                if (grepl(UNC.pattern, y)) {
-                    y <- path.split.UNC.1(y)
-                    substr(y[[1L]], 1L, 2L) <- substr(base, 1L, 2L)
-                    len <- length(y) - ..
-                    base <- if (len > 1L)
-                        paste(y[seq_len(len)], collapse = "/")
-                    else y[[1L]]
-                }
-                else {
-                    y <- path.split.default.1(y)
-                    len <- length(y) - ..
-                    base <- if (len > 1L)
-                        paste(y[seq_len(len)], collapse = "/")
-                    else paste0(y[[1L]], "/")
-                }
-            }
-            else {
-                if (grepl(UNC.pattern, base)) {
-                    y <- path.split.UNC.1(base)
-                    len <- length(y) - ..
-                    base <- if (len > 1L)
-                        paste(y[seq_len(len)], collapse = "/")
-                    else y[[1L]]
-                }
-                else {
-                    y <- path.split.default.1(base)
-                    len <- length(y) - ..
-                    base <- if (len > 1L)
-                        paste(y[seq_len(len)], collapse = "/")
-                    else paste0(y[[1L]], "/")
-                }
-            }
-        }
-    }
-    file.path(base, ...)
+
+
+    # base <- "//host-name/share-name/path/to/file"
+    # base <- "C:/Users/andre/Documents/this.path/man/this.path.Rd"
+    # .. <- "10"
+    else base <- .External2(C_dirname2, base, ..)
+    path.join(base, ...)
 }

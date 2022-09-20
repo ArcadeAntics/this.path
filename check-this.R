@@ -1,11 +1,11 @@
-# cat("", file = "~/temp3.txt")
-essentials:::check_this(  # this.path
+essentials:::check.this(  # this.path
     special = TRUE,
 
     check = TRUE, as.cran = TRUE,
 
     chdir = TRUE
 )
+
 
 
 
@@ -33,73 +33,73 @@ essentials:::check_this(  # this.path
 
 
 
-.regexps <- list()
-.regexps$hexadecimal <- paste0(
-    "([-+])?",
-    "0[xX]",
-    "(",
-            "[[:xdigit:]]+(\\.[[:xdigit:]]*)?",
-        "|",
-            "\\.[[:xdigit:]]+",
-    ")",
-    "([Pp]([-+]?[[:digit:]]+))?"
-)
-.regexps$decimal <- paste0(
-    "(",
-            "[[:digit:]]+(\\.[[:digit:]]*)?",
-        "|",
-            "\\.[[:digit:]]+",
-    ")",
-    "([Ee]([-+]?[[:digit:]]+))?"
-)
-.regexps$numeric <- paste0(
-    "(",
-            .regexps$hexadecimal,
-        "|",
-            .regexps$decimal,
-    ")"
-)
-
-
-num.choices <- list(
-    sign  = c("", "-", "+"),
-    start = c("0x", "0X"),
-    num   = c("9AB", "9AB.", "9.AB", ".9AB")
-)
-exp.choices <- list(
-    start = c("P", "p"),
-    sign  = c("", "-", "+"),
-    num   = c("123")
-)
-combinations <- function (x, lex.order = FALSE)
-{
-    lens <- lengths(x)
-    length.out <- prod(lens)
-    if (length.out <= 0L)
-        return(list())
-    each <- if (lex.order)
-        rev(cumprod(c(1L, rev(lens)[-length(lens)])))
-    else    cumprod(c(1L,      lens[-length(lens)]))
-    essentials::plapply(list(
-        x = x,
-        each = each
-    ), base::rep, length.out = length.out)
-}
-x <- combinations(num.choices)
-y <- combinations(num.choices, lex.order = TRUE)
-essentials::psapply(x, paste0, USE.NAMES = FALSE)
-essentials::psapply(y, paste0, USE.NAMES = FALSE)
-
-
-num.choices <- essentials::pvapply(combinations(num.choices), paste0, FUN.VALUE = "", USE.NAMES = FALSE)
-exp.choices <- essentials::pvapply(combinations(exp.choices), paste0, FUN.VALUE = "", USE.NAMES = FALSE)
-
-
-choices <- list(
-    num.choices = num.choices,
-    exp.choices = c("", exp.choices)  # the exponent is optional
-)
-choices <- essentials::pvapply(combinations(choices), paste0, FUN.VALUE = "", USE.NAMES = FALSE)
-
-
-all(grepl(paste0("^(", .regexps$hexadecimal, ")$"), choices))
+# .regexps <- list()
+# .regexps$hexadecimal <- paste0(
+#     "([-+])?",
+#     "0[xX]",
+#     "(",
+#             "[[:xdigit:]]+(\\.[[:xdigit:]]*)?",
+#         "|",
+#             "\\.[[:xdigit:]]+",
+#     ")",
+#     "([Pp]([-+]?[[:digit:]]+))?"
+# )
+# .regexps$decimal <- paste0(
+#     "(",
+#             "[[:digit:]]+(\\.[[:digit:]]*)?",
+#         "|",
+#             "\\.[[:digit:]]+",
+#     ")",
+#     "([Ee]([-+]?[[:digit:]]+))?"
+# )
+# .regexps$numeric <- paste0(
+#     "(",
+#             .regexps$hexadecimal,
+#         "|",
+#             .regexps$decimal,
+#     ")"
+# )
+#
+#
+# num.choices <- list(
+#     sign  = c("", "-", "+"),
+#     start = c("0x", "0X"),
+#     num   = c("9AB", "9AB.", "9.AB", ".9AB")
+# )
+# exp.choices <- list(
+#     start = c("P", "p"),
+#     sign  = c("", "-", "+"),
+#     num   = c("123")
+# )
+# combinations <- function (x, lex.order = FALSE)
+# {
+#     lens <- lengths(x)
+#     length.out <- prod(lens)
+#     if (length.out <= 0L)
+#         return(list())
+#     each <- if (lex.order)
+#         rev(cumprod(c(1L, rev(lens)[-length(lens)])))
+#     else    cumprod(c(1L,      lens[-length(lens)]))
+#     essentials::plapply(list(
+#         x = x,
+#         each = each
+#     ), base::rep, length.out = length.out)
+# }
+# x <- combinations(num.choices)
+# y <- combinations(num.choices, lex.order = TRUE)
+# essentials::psapply(x, paste0, USE.NAMES = FALSE)
+# essentials::psapply(y, paste0, USE.NAMES = FALSE)
+#
+#
+# num.choices <- essentials::pvapply(combinations(num.choices), paste0, FUN.VALUE = "", USE.NAMES = FALSE)
+# exp.choices <- essentials::pvapply(combinations(exp.choices), paste0, FUN.VALUE = "", USE.NAMES = FALSE)
+#
+#
+# choices <- list(
+#     num.choices = num.choices,
+#     exp.choices = c("", exp.choices)  # the exponent is optional
+# )
+# choices <- essentials::pvapply(combinations(choices), paste0, FUN.VALUE = "", USE.NAMES = FALSE)
+#
+#
+# all(grepl(paste0("^(", .regexps$hexadecimal, ")$"), choices))

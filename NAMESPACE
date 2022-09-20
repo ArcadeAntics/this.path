@@ -1,3 +1,6 @@
+useDynLib(this.path, .registration = TRUE, .fixes = "C_")
+
+
 # as.relative.path.R     ----
 
 
@@ -14,6 +17,12 @@ export(asArgs, from.shell, fileArgs, withArgs)
 
 
 export(check.path, check.dir)
+
+
+# path.join.R            ----
+
+
+export(path.join, basename2, dirname2)
 
 
 # rprojroot.R            ----

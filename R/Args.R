@@ -61,7 +61,9 @@ fileArgs <- function ()
     # cat("\nhere\n")
     if (!is.null(n <- attr(path, "this.path::n")) &&
         identical(sys.function(n - 1L), withArgs))
+    {
         get("args", envir = sys.frame(n - 1L), inherits = FALSE)
+    }
     else if (isTRUE(attr(path, "this.path::from.shell")))
         commandArgs(trailingOnly = TRUE)
     else character()
