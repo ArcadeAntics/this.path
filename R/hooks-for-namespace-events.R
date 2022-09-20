@@ -42,3 +42,9 @@
 #     # print(commandArgs())
 #     # cat("\n\n\n\n\n")
 # }
+
+
+.onUnload <- function (libpath)
+{
+    library.dynam.unload(.packageName, libpath)
+}
