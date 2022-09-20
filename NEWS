@@ -1,5 +1,21 @@
 this.path News
 
+CHANGES IN this.path 1.0.0:
+
+  NEW FEATURES
+
+    * Added path.join(), basename2(), and dirname2() for constructing
+      and manipulating paths to files. These are based on file.path(),
+      basename(), and dirname(), but behave differently with network
+      shares and a few important edge cases.
+
+  SIGNIFICANT USER-VISIBLE CHANGES
+
+    * this.dir(), here(), and this.proj() all use path.join() and
+      dirname2() instead of file.path() and dirname(), this may change
+      behaviour for some users and cases, but should be an
+      improvement overall.
+
 CHANGES IN this.path 0.11.0:
 
   NEW FEATURES

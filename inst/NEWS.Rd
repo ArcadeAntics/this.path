@@ -1,6 +1,25 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 1.0.0}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Added \code{path.join()}, \code{basename2()}, and \code{dirname2()}
+            for constructing and manipulating paths to files. These are based
+            on \code{file.path()}, \code{basename()}, and \code{dirname()}, but
+            behave differently with network shares and a few important edge
+            cases.
+    }
+  }
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item \code{this.dir()}, \code{here()}, and \code{this.proj()} all use
+            \code{path.join()} and \code{dirname2()} instead of
+            \code{file.path()} and \code{dirname()}, this may change behaviour
+            for some users and cases, but should be an improvement overall.
+    }
+  }
+}
 \section{CHANGES IN VERSION 0.11.0}{
   \subsection{NEW FEATURES}{
     \itemize{
