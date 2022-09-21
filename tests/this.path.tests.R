@@ -3,8 +3,7 @@ local({
     if (is.null(owd)) {
         message("cannot 'chdir' as current directory is unknown")
         return(invisible())
-    }
-    else on.exit(setwd(owd), add = TRUE)
+    } else on.exit(setwd(owd), add = TRUE)
     .unload <- !isNamespaceLoaded("testthat")
     if (.unload)
         on.exit(unloadNamespace("testthat"), add = TRUE)

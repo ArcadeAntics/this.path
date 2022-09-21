@@ -5,6 +5,9 @@
 #include <ctype.h>  /* includes tolower() */
 
 
+// #define debug
+
+
 
 
 
@@ -13,37 +16,69 @@
 #define IS_BYTES(X) (getCharCE((X)) == CE_BYTES)
 
 
+/* it might be more helpful if we returned a pointer to the pathspec of s
+ * instead of the drivespec width as an integer, but I can't be bothered to
+ * change it now. maybe fix me later?
+ */
+
+
 int get_drive_width(const char *s, int nchar)
 {
-    /*
-     * A Windows absolute path consists of a drive specification and a path specification:
+    /* there are three types of absolute paths in windows
      *
-     * D:/path/to/file
+     * there are those beginning with d:/ or some other letter
+     * we call these drives
      *
-     * D: is the drive specification
-     * /path/to/file is the path specification
+     * there are those beginning with //host/share
+     * we call these network shares (for accessing remote data)
      *
-     * specifically for R:
+     * and specifically for R, there are those beginning with ~
+     * for functions such as dirname() and basename(), we would normally expand
+     * those filenames with R_ExpandFileName(), but for path.join() we don't
+     * want to modify the inputs
      *
-     * ~/path/to/file
+     * unlike unix, a path beginning with / is NOT an absolute path.
+     * try this for yourself:
+
+setwd("C:/")
+normalizePath("/path/to/file")
+
+setwd("D:/")
+normalizePath("/path/to/file")
+
+     * which should do something like this:
+
+> setwd("C:/")
+> normalizePath("/path/to/file")
+[1] "C:\\path\\to\\file"
+>
+> setwd("D:/")
+> normalizePath("/path/to/file")
+[1] "D:\\path\\to\\file"
+>
+
+     * this function will return the width of the drive specification of the
+     * path, or 0 if no drive specification exists or is invalid
      *
-     * ~ is the drive specification
-     * /path/to/file is the path specification
+     * when I say drive specification, I am referring to all three of the above
+     * d:           is a drive specification
+     * //host/share is a drive specification
+     * ~            is a drive specification
      *
-     * and UNC paths:
+     * as a short-form, you can call it a drivespec
      *
-     * //host/share/path/to/file
+     * the path specification of a path is the portion of the string
+     * immediately following a possible drivespec
      *
-     * //host/share is the drive specification
-     * /path/to/file is the path specification
+     * you can call it a pathspec for short
      *
      *
      *
-     * return the number of characters in the drive specification
+     * Arguments:
      *
      * s
      *
-     *     the string in which we are looking for a drive
+     *     the string in which we are looking for a drivespec
      *
      * nchar
      *
@@ -55,22 +90,22 @@ int get_drive_width(const char *s, int nchar)
 
     if (nchar <= 0)
         return 0;
-    if (nchar >= 2 && s[1] == ':')  /* s starts with d: */
+    if (nchar >= 2 && *(s + 1) == ':')  /* s starts with d: or similar */
         return 2;
-    if (s[0] == '~' &&      /* s starts with ~ */
+    if (*s == '~' &&      /* s starts with ~ */
         (
-            nchar == 1 ||     /* s is exactly ~ */
-            s[1] == '/' ||  /* s starts with ~/ */
-            s[1] == '\\'    /* s starts with ~\ */
+            nchar == 1       ||  /* s is exactly ~ */
+            *(s + 1) == '/'  ||  /* s starts with ~/ */
+            *(s + 1) == '\\'     /* s starts with ~\ */
         ))
     {
         return 1;
     }
 
 
-    /* 5 character is the required minimum for a UNC path
+    /* 5 characters is the minimum required for a network share
      * the two slashes at the start, at least one for the host name,
-     * a slash betwenn the host name and share name,
+     * a slash between the host name and share name,
      * and at least one for the share name
      */
     if (nchar < 5)
@@ -78,18 +113,18 @@ int get_drive_width(const char *s, int nchar)
 
 
     const char *ptr = s;
-    if (ptr[0] != '/' && ptr[0] != '\\')  /* first character must be / or \ */
+    if (*ptr != '/' && *ptr != '\\')  /* first character must be / or \ */
         return 0;
     ptr++;
-    if (ptr[0] != '/' && ptr[0] != '\\')  /* second character must be / or \ */
+    if (*ptr != '/' && *ptr != '\\')  /* second character must be / or \ */
         return 0;
     ptr++;
 
 
     /* third character must NOT be / or \
-     * this is the start of the host name of the UNC
+     * this is the start of the host name of the network share
      */
-    if (ptr[0] == '/' || ptr[0] == '\\')
+    if (*ptr == '/' || *ptr == '\\')
         return 0;
 
 
@@ -110,18 +145,20 @@ int get_drive_width(const char *s, int nchar)
         else return 0;
     }
     ptr++;
+
+
     /* look for a non-slash and non-backslash character
-     * this is the start of the share name of the UNC
+     * this is the start of the share name of the network path
      */
     int found_share_name = 0;
 
 
-    /* previously, the condition of the for loop was 'ptr'
-     * but this doesn't work when 'ptr = "\0"' because 'ptr' is not NULL
-     * but we have found the end of the string
+    /* the condition *ptr can be also written as *ptr != '\0',
+     * which is to say that ptr does NOT point to the end of the string
+     * using *ptr is simply shorter
      */
-    for (; ptr[0] != '\0'; ptr++) {
-        if (ptr[0] != '/' && ptr[0] != '\\') {
+    for (; *ptr; ptr++) {
+        if (*ptr != '/' && *ptr != '\\') {
             found_share_name = 1;
             break;
         }
@@ -150,31 +187,12 @@ int get_drive_width(const char *s, int nchar)
 
 int get_drive_width_unix(const char *s, int nchar)
 {
-    /*
-     * UNC paths:
-     *
-     * //host/share/path/to/file
-     *
-     * //host/share is the 'drive'
-     * /path/to/file is the 'path specification'
-     *
-     *
-     *
-     * return the number of characters in the 'drive'
-     *
-     * s
-     *
-     *     the string in which we are looking for a drive
-     *
-     * nchar
-     *
-     *     the length of the string. this argument exists purely so that you
-     *     don't have to calculate strlen(s) twice (assuming you're using nchar
-     *     somewhere else in your program)
+    /* similar to the above get_drive_width() but specifically for unix,
+     * where a drivespec only really makes sense in terms of a network share
      */
 
 
-    /* 5 character is the required minimum for a UNC path
+    /* 5 characters is the minimum required for a network share
      * the two slashes at the start, at least one for the host name,
      * a slash betwenn the host name and share name,
      * and at least one for the share name
@@ -193,7 +211,7 @@ int get_drive_width_unix(const char *s, int nchar)
 
 
     /* third character must NOT be /
-     * this is the start of the host name of the UNC
+     * this is the start of the host name of the network share
      */
     if (*ptr == '/')
         return 0;
@@ -205,17 +223,15 @@ int get_drive_width_unix(const char *s, int nchar)
         ptr = ptr_slash;
     else return 0;
     ptr++;
-    /* look for a non-slash and non-backslash character
-     * this is the start of the share name of the UNC
+
+
+    /* look for a non-slash character
+     * this is the start of the share name of the network share
      */
     int found_share_name = 0;
 
 
-    /* previously, the condition of the for loop was 'ptr'
-     * but this doesn't work when 'ptr = "\0"' because 'ptr' is not NULL
-     * but we have found the end of the string
-     */
-    for (; *ptr != '\0'; ptr++) {
+    for (; *ptr; ptr++) {
         if (*ptr != '/') {
             found_share_name = 1;
             break;
@@ -240,29 +256,45 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
+    /* we don't pass the ... list directly because we want to avoid an
+     * accidental argument name match to PACKAGE
+     */
     SEXP dots = findVarInFrame(rho, install("..."));
     if (dots == R_UnboundValue)
         error("could not find the ... list; should never happen, please report!");
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
+    const int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
 
 
     if (dots_length == 0) return allocVector(STRSXP, 0);
 
 
     SEXP x = PROTECT(allocVector(VECSXP, dots_length)); nprotect++;
-    int x_length = dots_length;
+    const int x_length = dots_length;
     int i, j;
     SEXP d, xi;
 
 
+    /* the common length of a set of arguments is 0 if one has a length of 0,
+     * or the maximal length when all are non-zero
+     */
     int commonLength = 1;
-    for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) {
+    // for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) {  /* slightly slower */
+    for (i = 0, d = dots; i < x_length; i++, d = CDR(d)) {
+
+
+        /* evaluate each argument of 'dots' */
         xi = CAR(d);
         xi = eval(xi, rho);
         if (commonLength) {
+
+
+            /* add the evaluated object to 'x' */
             SET_VECTOR_ELT(x, i, xi);
+
+
+            /* coerce the object to string if needed */
             if (!isString(xi)) {
                 if (OBJECT(xi)) {
                     SEXP call2 = PROTECT(lang2(findVarInFrame(R_BaseEnv, R_AsCharacterSymbol), xi));
@@ -276,6 +308,14 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 if (!isString(VECTOR_ELT(x, i)))
                     errorcall(call, "non-string argument to 'C_pathjoin'");
             }
+
+
+            /* compute the length and possibly update 'commonLength' */
+            /* if the commonLength is 0, we don't need to do any more
+             * calculations, we know the return value is character(0), BUT
+             * we still want to evaluate all objects in 'dots', would be a
+             * little strange to not do that
+             */
             if (commonLength) {
                 int len = LENGTH(VECTOR_ELT(x, i));
                 if (len == 0 || len > commonLength)
@@ -304,17 +344,36 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP value = PROTECT(allocVector(STRSXP, commonLength)); nprotect++;
 
 
+    int drive_indx,                /*  largest index of the string vector which contains a drivespec */
+        abs_path_indx,             /*  largest index of the string vector which contains an absolute pathspec */
+        non_empty_path_spec_indx;  /* smallest index of the string vector which contains a non-empty pathspec, but always >= abs_path_indx */
+
+
+    /* width of the path and of the drivespec */
+    int pwidth, drivewidth;
+
+
+    const char *ptr;  /* points to the entire string from translateCharUTF8() */
+    int *need_trailing_slash;  /* which strings need a slash afterward */
+
+
+    int len, nchar;
+
+
     for (j = 0; j < commonLength; j++) {
-        int drive_indx = -1,  /* largest index of the string vector which contains a drive */
-            abs_path_indx = -1,  /* largest index of the string vector which contains an absolute path specification */
-            non_empty_path_spec_indx = -1;  /* smallest index of the string vector which contains a non-empty path specification, but always >= abs_path_indx */
 
 
-        /* width of the path and of the drive */
-        int pwidth = 0, drivewidth = 0;
-        const char *ptr = "";  /* for -Wall */
-        int *need_trailing_slash = (int *) calloc(x_length, sizeof(int));  /* which strings need a slash afterward */
-        int len, nchar;
+        drive_indx = -1;
+        abs_path_indx = -1;
+        non_empty_path_spec_indx = -1;
+
+
+        pwidth = 0;
+        drivewidth = 0;
+
+
+        ptr = "";  /* for -Wall */
+        need_trailing_slash = (int *) calloc(x_length, sizeof(int));  /* which strings need a slash afterward */
 
 
         /* we're going to work backwards here
@@ -324,39 +383,37 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             len = LENGTH(VECTOR_ELT(x, i));
             ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
             nchar = (int) strlen(ptr);
-            // Rprintf("ptr         = %s\n", ptr);
-            // Rprintf("strlen(ptr) = %d\n", nchar);
             if (!nchar)
                 continue;
 
 
-            /* look for a drive specification in ptr */
+            /* look for a drivespec in ptr */
             drivewidth = get_drive_width(ptr, nchar);
 
 
-            /* if we have no already found an absolute path specification,
+            /* if we have no already found an absolute pathspec,
              * then look for one
              */
             if (abs_path_indx == -1) {
 
 
-                /* a non-empty path specification */
+                /* non-empty pathspec */
                 if (drivewidth < nchar) {
 
 
-                    /* if the start of the path specification is / or \
+                    /* if the start of the pathspec is / or \
                      * then record this index as the last absolute path
                      */
                     if (ptr[drivewidth] == '/' || ptr[drivewidth] == '\\')
                         abs_path_indx = i;
 
 
-                    /* record this index as the first non-empty path specification */
+                    /* record this index as the first non-empty pathspec */
                     non_empty_path_spec_indx = i;
 
 
                     /* if there are characters already in the buffer
-                     * and this path specification does not end with / or \
+                     * and this pathspec does not end with / or \
                      * then we will need to add one manually,
                      * record this index as needing a trailing slash
                      */
@@ -364,33 +421,31 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ptr[nchar - 1] != '/' &&
                         ptr[nchar - 1] != '\\')
                     {
-                        // Rprintf("needs a slash\n");
                         need_trailing_slash[i] = 1;
                         pwidth++;
                     }
 
 
-                    /* add the number of chars in the path specification
+                    /* add the number of chars in the pathspec
                      * to the width of our output string
                      */
                     pwidth += nchar - drivewidth;
                 }
 
 
-                /* empty path specification, non-empty drive specification,
+                /* empty pathspec, non-empty drivespec,
                  * if there are no characters in the buffer, do not add a trailing slash
-                 * if this is a colon-drive specification, do not add a trailing slash
+                 * if this is a drive, do not add a trailing slash
                  * otherwise, add a trailing slash
                  */
                 else if (pwidth && drivewidth != 2) {
-                    // Rprintf("needs a slash\n");
                     need_trailing_slash[i] = 1;
                     pwidth++;
                 }
             }
 
 
-            /* non-empty drive specification
+            /* non-empty drivespec
              * record this index as the last index containing a drive
              * add the number of chars in the drive to the buffer
              * break immediately, will not be adding more to the path
@@ -403,14 +458,26 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-        // Rprintf("i = %d\n", i);
-
-
         /* if we have not found an absolute path
-         * and our drive is a colon-drive,
+         * and our drivespec is a drive
          *
          * then we will want to go back slightly further
          * incase there's more to add to the path
+         *
+         * this is because drives are not always absolute
+         *
+         * for example:
+         *
+         * path.join("D:p1", "p2", "d:p3", "p4", "p5")
+         *
+         * all of these are perfectly legitimate relative paths
+         *
+         * but combining them into "d:p3/p4/p5" would be incorrect
+         * since we should also be adding the portions before
+         * (since "d:" is not an absolute location and its pathspec is not
+         * absolute either)
+         *
+         * we expect the results "d:p1/p2/p3/p4/p5"
          */
         if (abs_path_indx == -1 && drivewidth == 2) {
 
@@ -440,7 +507,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                     continue;
 
 
-                /* look for a drive specification in ptr */
+                /* look for a drivespec in ptr */
                 maybe_drivewidth = get_drive_width(maybe_ptr, maybe_nchar);
 
 
@@ -453,17 +520,17 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 }
 
 
-                /* if we have no already found an absolute path specification,
+                /* if we have no already found an absolute pathspec,
                  * then look for one
                  */
                 if (maybe_abs_path_indx == -1) {
 
 
-                    /* a non-empty path specification */
+                    /* a non-empty pathspec */
                     if (maybe_drivewidth < maybe_nchar) {
 
 
-                        /* if the start of the path specification is / or \
+                        /* if the start of the pathspec is / or \
                          * then record this index as the last absolute path
                          */
                         if (maybe_ptr[maybe_drivewidth] == '/' ||
@@ -473,35 +540,35 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                         }
 
 
-                        /* record this index as the first non-empty path specification */
+                        /* record this index as the first non-empty pathspec */
                         maybe_non_empty_path_spec_indx = i;
 
 
                         /* if there are characters already in the buffer
-                         * and this path specification does not end with / or \
-                         * then we will need to add one manually,
-                         * record this index as needing a trailing slash
+                         * and this pathspec does not end with / or \ then we
+                         * will need to add one manually, record this index as
+                         * needing a trailing slash
                          */
                         if (pwidth &&  /* actually, do NOT use maybe_pwidth here */
                             maybe_ptr[maybe_nchar - 1] != '/' &&
                             maybe_ptr[maybe_nchar - 1] != '\\')
                         {
-                            // Rprintf("needs a slash\n");
                             need_trailing_slash[i] = 1;
                             maybe_pwidth++;
                         }
 
 
-                        /* add the number of chars in the path specification
+                        /* add the number of chars in the pathspec
                          * to the width of our output string
                          */
                         maybe_pwidth += maybe_nchar - maybe_drivewidth;
                     }
+                    /* unlike above, do not evaluate this else statement */
 //
 //
-//                     /* empty path specification, non-empty drive specification,
+//                     /* empty pathspec, non-empty drivespec,
 //                      * if there are no characters in the buffer, do not add a trailing slash
-//                      * if this is a colon-drive specification, do not add a trailing slash
+//                      * if this is a drive, do not add a trailing slash
 //                      * otherwise, add a trailing slash
 //                      */
 //                     else if (pwidth && drivewidth != 2) {
@@ -512,10 +579,13 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 }
 
 
-                /* non-empty drive specification
-                 * record this index as the last index containing a drive
-                 * add the number of chars in the drive to the buffer
-                 * break immediately, will not be adding more to the path
+                /* non-empty drivespec that matches our previous drivespec
+                 * add the absolute path index and the non empty pathspec index
+                 * back into our original variables
+                 * also add the width to the original pwidth
+                 *
+                 * if we have not found an absolute path, continue looking back
+                 * otherwise, we are done
                  */
                 if (maybe_drivewidth) {
                     abs_path_indx = maybe_abs_path_indx;
@@ -537,14 +607,6 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-        /*
-        for (int k = 0; k < x_length; k++) {
-            Rprintf("%d ", need_trailing_slash[k]);
-        }
-        Rprintf("\n");
-         */
-
-
         /* if all the strings were empty, return an empty string */
         if (pwidth <= 0) {
             SET_STRING_ELT(value, j, mkChar(""));
@@ -552,11 +614,13 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-        // Rprintf("pwidth = %d\n", pwidth);
+#ifdef debug
+        Rprintf("pwidth = %d\n", pwidth);
+        int check_width = 0;
+#endif
 
 
-        /* add one to the width for a '\0' char */
-        char _buf[pwidth + 1];
+        char _buf[pwidth];
 
 
         /* points to the current location where we will be pasting characters */
@@ -581,11 +645,19 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             if (start_from_here == drive_indx) {
                 strcpy(buf, ptr);
                 buf += nchar;
-                // Rprintf("copied to buffer: %s\n", ptr);
+#ifdef debug
+                Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
+                Rprintf("shifted buffer by %d bytes\n", nchar);
+                check_width += strlen(ptr);
+#endif
                 if (need_trailing_slash[drive_indx]) {
                     strcpy(buf, "/");
                     buf++;
-                    // Rprintf("copied to buffer: %s\n", "/");
+#ifdef debug
+                    Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
+                    Rprintf("shifted buffer by %d bytes\n", strlen("/"));
+                    check_width += strlen("/");
+#endif
                 }
                 start_from_here++;
             }
@@ -597,6 +669,11 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             else {
                 strncpy(buf, ptr, drivewidth);
                 buf += drivewidth;
+#ifdef debug
+                Rprintf("copied first %d bytes to buffer: %s", drivewidth, ptr); Rprintf("\n");
+                Rprintf("shifted buffer by %d bytes\n", drivewidth);
+                check_width += drivewidth;
+#endif
 
 
                 if (start_from_here > drive_indx &&
@@ -604,7 +681,11 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 {
                     strcpy(buf, "/");
                     buf++;
-                    // Rprintf("copied to buffer: %s\n", "/");
+#ifdef debug
+                    Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
+                    Rprintf("shifted buffer by %d bytes\n", strlen("/"));
+                    check_width += strlen("/");
+#endif
                 }
             }
         }
@@ -643,80 +724,38 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
                 strcpy(buf, ptr);
                 buf += nchar;
-                // Rprintf("copied to buffer: %s\n", ptr);
+#ifdef debug
+                Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
+                Rprintf("shifted buffer by %d bytes\n", nchar);
+                check_width += strlen(ptr);
+#endif
                 if (need_trailing_slash[i]) {
                     strcpy(buf, "/");
                     buf++;
-                    // Rprintf("copied to buffer: %s\n", "/");
+#ifdef debug
+                    Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
+                    Rprintf("shifted buffer by %d bytes\n", strlen("/"));
+                    check_width += strlen("/");
+#endif
                 }
             }
         }
 
 
-        /* add the terminating character, shouldn't be necessary but just in case */
-        // strcpy(buf, "\0");
-        _buf[pwidth] = '\0';
+#ifdef debug
+        if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
+        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(buf));
+        Rprintf("\n");
+#endif
 
 
         /* use cbuf because we want the whole string */
         SET_STRING_ELT(value, j, mkCharCE(cbuf, CE_UTF8));
-        // Rprintf("\n");
     }
 
 
     UNPROTECT(nprotect);
     return value;
-
-
-    // int ce = getCharCE(asChar(eval(CAR(dots), rho)));
-    // if (ce == CE_NATIVE)
-    //     return mkString("native.enc");
-    // if (ce == CE_UTF8)
-    //     return mkString("UTF-8");
-    // if (ce == CE_LATIN1)
-    //     return mkString("latin1");
-    // if (ce == CE_BYTES)
-    //     return mkString("bytes");
-    // if (ce == CE_SYMBOL)
-    //     return mkString("CE_SYMBOL");
-    // if (ce == CE_ANY)
-    //     return mkString("CE_ANY");
-    // UNPROTECT(nprotect);
-    // return mkString("unknown");
-    // return ScalarString(mkCharCE("testing", CE_UTF8));
-
-
-    // SEXP e1 = PROTECT(eval(CAR (dots), rho)); nprotect++;
-    // if (!isPairList(e1))
-    //     error("");
-    //
-    //
-    // for (SEXP ptr = e1; ptr != R_NilValue; ptr = CDR(ptr)) {
-    //     CAR(ptr);
-    // }
-    //
-    //
-    // UNPROTECT(nprotect);
-    // return R_NilValue;
-
-
-    // SEXP return_this = PROTECT(allocVector(VECSXP, 4)); nprotect++;
-    // SET_VECTOR_ELT(return_this, 0, call);
-    // SET_VECTOR_ELT(return_this, 1, op  );
-    // SET_VECTOR_ELT(return_this, 2, args);
-    // SET_VECTOR_ELT(return_this, 3, rho );
-    //
-    //
-    // SEXP names = allocVector(STRSXP, 4);
-    // setAttrib(return_this, R_NamesSymbol, names);
-    // SET_STRING_ELT(names, 0, mkChar("call"));
-    // SET_STRING_ELT(names, 1, mkChar("op"  ));
-    // SET_STRING_ELT(names, 2, mkChar("args"));
-    // SET_STRING_ELT(names, 3, mkChar("rho" ));
-    //
-    //
-    // UNPROTECT(nprotect);
-    // return return_this;
 }
 
 
@@ -789,14 +828,25 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP value = PROTECT(allocVector(STRSXP, commonLength)); nprotect++;
 
 
+    /* width of the path */
+    int pwidth;
+
+
+    const char *ptr;
+    int *need_trailing_slash;
+
+
+    int len, nchar;
+
+
     for (j = 0; j < commonLength; j++) {
 
 
-        /* width of the path */
-        int pwidth = 0;
-        const char *ptr = "";  /* for -Wall */
-        int *need_trailing_slash = (int *) calloc(x_length, sizeof(int));  /* which strings need a slash afterward */
-        int len, nchar;
+        pwidth = 0;
+
+
+        ptr = "";
+        need_trailing_slash = (int *) calloc(x_length, sizeof(int));
 
 
         /* we're going to work backwards here
@@ -806,8 +856,6 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             len = LENGTH(VECTOR_ELT(x, i));
             ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
             nchar = (int) strlen(ptr);
-            // Rprintf("ptr         = %s\n", ptr);
-            // Rprintf("strlen(ptr) = %d\n", nchar);
             if (!nchar)
                 continue;
 
@@ -818,7 +866,6 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
              * record this index as needing a trailing slash
              */
             if (pwidth && ptr[nchar - 1] != '/') {
-                // Rprintf("needs a slash\n");
                 need_trailing_slash[i] = 1;
                 pwidth++;
             }
@@ -833,21 +880,18 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
              * it is equal to ~
              * it starts with ~/
              */
-            if (ptr[0] == '/' ||
+            if (*ptr == '/' ||
                 (
-                    ptr[0] == '~' &&      /* s starts with ~ */
+                    *ptr == '~' &&      /* s starts with ~ */
                     (
                         nchar == 1 ||     /* s is exactly ~ */
-                        (nchar >= 2 && ptr[1] == '/')  /* s starts with ~/ */
+                        (nchar >= 2 && *(ptr + 1) == '/')  /* s starts with ~/ */
                     )
                 ))
             {
                 break;  /* we will not be needing any more paths */
             }
         }
-
-
-        // Rprintf("i = %d\n", i);
 
 
         /* if all the strings were empty, return an empty string */
@@ -857,11 +901,13 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-        // Rprintf("pwidth = %d\n", pwidth);
+#ifdef debug
+        Rprintf("pwidth = %d\n", pwidth);
+        int check_width = 0;
+#endif
 
 
-        /* add one to the width for a '\0' char */
-        char _buf[pwidth + 1];
+        char _buf[pwidth];
 
 
         /* points to the current location where we will be pasting characters */
@@ -872,9 +918,8 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         const char *cbuf = buf;
 
 
-        /* take where we exitted and start from there */
-        if (i < 0)
-            i = 0;
+        /* take where we exited and start from there */
+        if (i < 0) i = 0;
         for (; i < x_length; i++) {
             len = LENGTH(VECTOR_ELT(x, i));
             ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
@@ -890,23 +935,32 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
             strcpy(buf, ptr);
             buf += nchar;
-            // Rprintf("copied to buffer: %s\n", ptr);
+#ifdef debug
+                Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
+                Rprintf("shifted buffer by %d bytes\n", nchar);
+                check_width += strlen(ptr);
+#endif
             if (need_trailing_slash[i]) {
                 strcpy(buf, "/");
                 buf++;
-                // Rprintf("copied to buffer: %s\n", "/");
+#ifdef debug
+                    Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
+                    Rprintf("shifted buffer by %d bytes\n", strlen("/"));
+                    check_width += strlen("/");
+#endif
             }
         }
 
 
-        /* add the terminating character, shouldn't be necessary but just in case */
-        // strcpy(buf, "\0");
-        _buf[pwidth] = '\0';
+#ifdef debug
+        if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
+        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(buf));
+        Rprintf("\n");
+#endif
 
 
         /* use cbuf because we want the whole string */
         SET_STRING_ELT(value, j, mkCharCE(cbuf, CE_UTF8));
-        // Rprintf("\n");
     }
 
 

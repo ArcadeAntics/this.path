@@ -38,6 +38,12 @@ path.join("//h/s", "p1", "C:p2", "p3/", "p4") %check% "C:p2/p3/p4"
 path.join("//h/s/", "p1", "c:p2", "p3", "c:/p4", "p5", "C:p6", "p7/") %check% "C:/p4/p5/p6/p7/"
 
 
+path.join("~/p1", "p2", "~/p3", "p4/") %check% "~/p3/p4/"
+
+
+
+
+
 path.join <- this.path:::unix.path.join
 
 
@@ -60,3 +66,6 @@ path.join("/path/to/file1", "//host/share/path/to/file2") %check% "//host/share/
 
 
 path.join("//h/s", "p1", "/p2", "p3/", "p4") %check% "/p2/p3/p4"
+
+
+path.join("/testing", "~/", "p1", "p2", "p3/") %check% "~/p1/p2/p3/"
