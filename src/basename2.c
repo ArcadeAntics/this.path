@@ -198,7 +198,7 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     const char *ptr, *cbuf;
     char *buf, *p, *ptr_slash, *ptr_backslash;
-    int n, i, j, nchar, drivewidth;
+    int n, i, j, nchar, drivewidth, skip;
 
 
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;
@@ -233,6 +233,7 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
         p = buf + (nchar - 1);
 
 
+        skip = 0;
         for (j = -1; j < times; j++) {
 
 
@@ -250,7 +251,8 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
              * then the dirname is just the whole path */
             if (p < cbuf) {
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-                goto end_of_for;  /* goto allows us to more easily jump out of a nested for loop */
+                skip = 1;
+                break;
             }
 
 
@@ -282,7 +284,8 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
                         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                     }
                     else SET_STRING_ELT(value, i, mkChar("."));
-                    goto end_of_for;
+                    skip = 1;
+                    break;
                 }
             }
 
@@ -293,6 +296,7 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
             /* pointer should already point to the last character of buf */
         }
+        if (skip) continue;
 
 
         /* remove the trailing / and \ */
@@ -306,8 +310,6 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-end_of_for:
-        ;
     }
 
 
@@ -345,7 +347,7 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     const char *ptr, *cbuf;
     char *buf, *p, *ptr_slash;
-    int n, i, j, nchar, drivewidth;
+    int n, i, j, nchar, drivewidth, skip;
 
 
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;
@@ -376,6 +378,7 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
         p = buf + (nchar - 1);
 
 
+        skip = 0;
         for (j = -1; j < times; j++) {
 
 
@@ -393,7 +396,8 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
              * then the dirname is just the whole path */
             if (p < cbuf) {
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-                goto end_of_for;
+                skip = 1;
+                break;
             }
 
 
@@ -405,7 +409,8 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
                 p = ptr_slash;
             else {
                 SET_STRING_ELT(value, i, mkChar("."));
-                goto end_of_for;
+                skip = 1;
+                break;
             }
 
 
@@ -415,6 +420,7 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
             /* pointer should already point to the last character of buf */
         }
+        if (skip) continue;
 
 
         /* remove the trailing path separator */
@@ -428,8 +434,6 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-end_of_for:
-        ;
     }
 
 
