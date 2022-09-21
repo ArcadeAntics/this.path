@@ -194,7 +194,7 @@ int get_drive_width_unix(const char *s, int nchar)
 
     /* 5 characters is the minimum required for a network share
      * the two slashes at the start, at least one for the host name,
-     * a slash betwenn the host name and share name,
+     * a slash between the host name and share name,
      * and at least one for the share name
      */
     if (nchar < 5)
