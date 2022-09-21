@@ -744,7 +744,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #ifdef debug
         if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
-        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(buf));
+        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
         Rprintf("\n");
 #endif
 
@@ -954,7 +954,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #ifdef debug
         if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
-        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(buf));
+        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
         Rprintf("\n");
 #endif
 
