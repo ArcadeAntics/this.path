@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 
 
-#define debug
+// #define debug
 
 
 extern int get_drive_width(const char *s, int nchar);
