@@ -5,7 +5,7 @@
 #include <ctype.h>  /* includes tolower() */
 
 
-// #define debug
+#define debug
 
 
 
@@ -620,7 +620,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 
 
-        char _buf[pwidth];
+        char _buf[pwidth + 1];
 
 
         /* points to the current location where we will be pasting characters */
@@ -907,7 +907,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 
 
-        char _buf[pwidth];
+        char _buf[pwidth + 1];
 
 
         /* points to the current location where we will be pasting characters */

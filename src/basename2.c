@@ -2,6 +2,9 @@
 #include <Rinternals.h>
 
 
+#define debug
+
+
 extern int get_drive_width(const char *s, int nchar);
 extern int get_drive_width_unix(const char *s, int nchar);
 
@@ -23,27 +26,66 @@ SEXP do_windowsbasename2(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(path) != STRSXP)
         error("a character vector argument expected");
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;
+#ifdef debug
+    Rprintf("in C_basename2\n\n");
+#endif
     for (i = 0; i < n; i++) {
-        if (STRING_ELT(path, i) == NA_STRING)
+#ifdef debug
+        Rprintf("string %d: ", i + 1);
+#endif
+        if (STRING_ELT(path, i) == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
+#ifdef debug
+            Rprintf("NA\n");
+            Rprintf("assigning: NA\n\n");
+#endif
+        }
         else {
             ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
             nchar = strlen(ptr);
+#ifdef debug
+            Rprintf("%s", ptr); Rprintf("\n");
+            Rprintf("%d bytes long\n", nchar);
+#endif
             if (nchar == 0) {
-                SET_STRING_ELT(value, i, mkChar(""));
+                /* don't bother assigning an empty string, should already be empty */
+                // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("assigning: \n\n");
+#endif
                 continue;
             }
             drivewidth = get_drive_width(ptr, nchar);
+#ifdef debug
+            Rprintf("drivespec is %d bytes long\n", drivewidth);
+#endif
             nchar -= drivewidth;  /* number of characters EXCLUDING the drive */
             if (nchar == 0) {
-                SET_STRING_ELT(value, i, mkChar(""));
+                /* don't bother assigning an empty string, should already be empty */
+                // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("pathspec is 0 bytes long\n");
+                Rprintf("assigning: \n\n");
+#endif
                 continue;
             }
-            char _buf[nchar];  /* allocate a buffer to hold the basename */
+            /* allocate a buffer to hold the basename
+             * I made this mistake before, don't forget to add 1 for the trailing '\0'
+             */
+            char _buf[nchar + 1];
             buf = _buf;
             strcpy(buf, ptr + drivewidth);  /* copy the path specification from ptr to buf */
+#ifdef debug
+            Rprintf("made a buffer %d bytes long\n", nchar);
+            Rprintf("copied to buffer: %s", ptr + drivewidth); Rprintf("\n");
+            if (nchar != strlen(ptr + drivewidth)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr + drivewidth));
+#endif
             /* point to the last character of the buf */
             p = buf + (nchar - 1);
+#ifdef debug
+            Rprintf("made variable p pointing to last byte\n");
+            Rprintf("p = %s", p); Rprintf("\n");
+#endif
             /* remove the trailing / and \ */
             while (p >= buf &&
                    (
@@ -53,12 +95,20 @@ SEXP do_windowsbasename2(SEXP call, SEXP op, SEXP args, SEXP rho)
             {
                 *(p--) = '\0';
             }
+#ifdef debug
+            Rprintf("after removing trailing slashes: %s", buf); Rprintf("\n");
+#endif
 
 
             /* if the path specification was only comprised of / and \
              * then the basename is non-existent, return empty string */
-            if (!strlen(p)) {
-                SET_STRING_ELT(value, i, mkChar(""));
+            if (p < buf) {
+                /* don't bother assigning an empty string, should already be empty */
+                // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("pathspec was /\n");
+                Rprintf("assigning: \n\n");
+#endif
                 continue;
             }
 
@@ -71,18 +121,25 @@ SEXP do_windowsbasename2(SEXP call, SEXP op, SEXP args, SEXP rho)
             if (ptr_slash) {  /* slash was found */
                 if (ptr_backslash) {  /* backslash was also found */
                     if (ptr_slash < ptr_backslash)  /* slash found before backslash */
-                        buf = ptr_backslash + 1;
-                    else buf = ptr_slash + 1;  /* backslash found before slash */
+                        p = ptr_backslash + 1;
+                    else p = ptr_slash + 1;  /* backslash found before slash */
                 }
-                else buf = ptr_slash + 1;  /* backslash was not found */
+                else p = ptr_slash + 1;  /* backslash was not found */
             }
             else {  /* slash was not found */
                 if (ptr_backslash)  /* backslash was found */
-                    buf = ptr_backslash + 1;
+                    p = ptr_backslash + 1;
+                else p = buf;
             }
-            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+            SET_STRING_ELT(value, i, mkCharCE(p, CE_UTF8));
+#ifdef debug
+            Rprintf("assigning: %s", p); Rprintf("\n\n");
+#endif
         }
     }
+#ifdef debug
+    Rprintf("\n");
+#endif
 
 
     UNPROTECT(nprotect);
@@ -104,37 +161,81 @@ SEXP do_unixbasename2(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(path) != STRSXP)
         error("a character vector argument expected");
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;
+#ifdef debug
+    Rprintf("in C_basename2\n\n");
+#endif
     for (i = 0; i < n; i++) {
-        if (STRING_ELT(path, i) == NA_STRING)
+#ifdef debug
+        Rprintf("string %d: ", i + 1);
+#endif
+        if (STRING_ELT(path, i) == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
+#ifdef debug
+            Rprintf("NA\n");
+            Rprintf("assigning: NA\n\n");
+#endif
+        }
         else {
             ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
             nchar = strlen(ptr);
+#ifdef debug
+            Rprintf("%s", ptr); Rprintf("\n");
+            Rprintf("%d bytes long\n", nchar);
+#endif
             if (nchar == 0) {
-                SET_STRING_ELT(value, i, mkChar(""));
+                /* don't bother assigning an empty string, should already be empty */
+                // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("assigning: \n\n");
+#endif
                 continue;
             }
             drivewidth = get_drive_width_unix(ptr, nchar);
+#ifdef debug
+            Rprintf("drivespec is %d bytes long\n", drivewidth);
+#endif
             nchar -= drivewidth;
             if (nchar == 0) {
-                SET_STRING_ELT(value, i, mkChar(""));
+                /* don't bother assigning an empty string, should already be empty */
+                // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("pathspec is 0 bytes long\n");
+                Rprintf("assigning: \n\n");
+#endif
                 continue;
             }
-            char _buf[nchar];  /* allocate a buffer to hold the basename */
+            char _buf[nchar + 1];  /* allocate a buffer to hold the basename */
             buf = _buf;
             strcpy(buf, ptr + drivewidth);
+#ifdef debug
+            Rprintf("made a buffer %d bytes long\n", nchar);
+            Rprintf("copied to buffer: %s", ptr + drivewidth); Rprintf("\n");
+            if (nchar != strlen(ptr + drivewidth)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr + drivewidth));
+#endif
             /* point to the last character of the buf */
             p = buf + (nchar - 1);
+#ifdef debug
+            Rprintf("made variable p pointing to last byte\n");
+            Rprintf("p = %s", p); Rprintf("\n");
+#endif
             /* remove the trailing / */
             while (p >= buf && *p == '/') {
                 *(p--) = '\0';
             }
+#ifdef debug
+            Rprintf("after removing trailing slashes: %s", buf); Rprintf("\n");
+#endif
 
 
-            /* if the path specification was only comprised of / and \
+            /* if the path specification was only comprised of /
              * then the basename is non-existent, return empty string */
-            if (!strlen(p)) {
-                SET_STRING_ELT(value, i, mkChar(""));
+            if (p < buf) {
+                /* don't bother assigning an empty string, should already be empty */
+                // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("pathspec was /\n");
+                Rprintf("assigning: \n\n");
+#endif
                 continue;
             }
 
@@ -142,12 +243,19 @@ SEXP do_unixbasename2(SEXP call, SEXP op, SEXP args, SEXP rho)
             /* find the last slash */
             ptr_slash = strrchr(buf, '/');
             if (ptr_slash)
-                buf = ptr_slash + 1;
+                p = ptr_slash + 1;
+            else p = buf;
 
 
-            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+            SET_STRING_ELT(value, i, mkCharCE(p, CE_UTF8));
+#ifdef debug
+            Rprintf("assigning: %s", p); Rprintf("\n\n");
+#endif
         }
     }
+#ifdef debug
+    Rprintf("\n");
+#endif
 
 
     UNPROTECT(nprotect);
@@ -178,6 +286,21 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
     int times;
 
 
+    /* it's not documented in the R function dirname2() or in man/dirname2.Rd
+     * but dirname2() actually accepts 1 or 2 arguments
+     *
+     * the first argument is always the 'path' argument
+     * the second argument (optional) is the number of additional times to
+     * calculate dirname2(). for example:
+     *
+     * .External2(C_dirname2, path, 2)
+     *
+     * will calculate the dirname() once, then calculate it 2 more times
+     * afterward
+     *
+     * this saves miniscule time (because you don't have to setup a for loop
+     * at the R level) but it was easy enough to do so why not?
+     */
     int nargs = length(args) - 1;
     if (nargs == 1) {
         path = CADR(args);
@@ -202,35 +325,70 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;
+#ifdef debug
+    Rprintf("in C_dirname2\n\n");
+#endif
     for (i = 0; i < n; i++) {
+#ifdef debug
+        Rprintf("string %d: ", i + 1);
+#endif
         if (STRING_ELT(path, i) == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
+#ifdef debug
+            Rprintf("NA\n");
+            Rprintf("assigning: NA\n\n");
+#endif
             continue;
         }
 
 
         ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
         nchar = strlen(ptr);
+#ifdef debug
+            Rprintf("%s", ptr); Rprintf("\n");
+            Rprintf("%d bytes long\n", nchar);
+#endif
         if (nchar == 0) {
             /* don't bother assigning an empty string, should already be empty */
             // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("assigning: \n\n");
+#endif
             continue;
         }
         drivewidth = get_drive_width(ptr, nchar);
+#ifdef debug
+            Rprintf("drivespec is %d bytes long\n", drivewidth);
+#endif
         if (drivewidth == nchar) {
             SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
+#ifdef debug
+                Rprintf("pathspec is 0 bytes long\n");
+                Rprintf("assigning: %s", ptr); Rprintf("\n\n");
+#endif
             continue;
         }
 
 
-        char _buf[nchar];  /* allocate a buffer to hold the dirname */
+        char _buf[nchar + 1];  /* allocate a buffer to hold the dirname */
         buf = _buf;
         strcpy(buf, ptr);
+#ifdef debug
+        Rprintf("made a buffer %d bytes long\n", nchar);
+        Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
+        if (nchar != strlen(ptr)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr));
+#endif
         cbuf = buf + drivewidth;  /* point to the start of the path spec */
 
 
         /* point to the last character of buf */
         p = buf + (nchar - 1);
+#ifdef debug
+        Rprintf("made variable p pointing to last byte\n");
+        Rprintf("p = %s", p); Rprintf("\n");
+        Rprintf("made variable cbuf pointing to start of pathspec\n");
+        Rprintf("cbuf                           : %s", cbuf); Rprintf("\n");
+#endif
 
 
         skip = 0;
@@ -238,6 +396,11 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
             /* remove the trailing path separators */
+            /* we remove the trailing separators a little different than
+             * do_basename2()
+             * in this case, we only want to remove trailing slashes
+             * if there is a non-slash before those trailing slashes
+             */
             for (; p >= cbuf; p--) {
                 if (*p == '/' || *p == '\\') {}
                 else {
@@ -251,9 +414,16 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
              * then the dirname is just the whole path */
             if (p < cbuf) {
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+#ifdef debug
+                Rprintf("pathspec was /\n");
+                Rprintf("assigning: %s", buf); Rprintf("\n\n");
+#endif
                 skip = 1;
                 break;
             }
+#ifdef debug
+            Rprintf("after removing trailing slashes: %s", cbuf); Rprintf("\n");
+#endif
 
 
             /* find the last path separator */
@@ -275,15 +445,25 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
                 else {
 
 
-                    /* for a letter drive with a path without a path separator
+                    /* for a drive with a pathspec without a path separator
                      * e.g. d:test
                      */
                     if (drivewidth) {
                         p = _buf;
                         *(p + drivewidth) = '\0';
                         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+#ifdef debug
+                Rprintf("path is of the form d:file\n");
+                Rprintf("assigning: %s", buf); Rprintf("\n\n");
+#endif
                     }
-                    else SET_STRING_ELT(value, i, mkChar("."));
+                    else {
+                        SET_STRING_ELT(value, i, mkChar("."));
+#ifdef debug
+                Rprintf("pathspec has no path separators\n");
+                Rprintf("assigning: .\n\n");
+#endif
+                    }
                     skip = 1;
                     break;
                 }
@@ -292,6 +472,9 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
             /* remove the basename */
             *(p + 1) = '\0';
+#ifdef debug
+            Rprintf("after removing basename        : %s", cbuf); Rprintf("\n");
+#endif
 
 
             /* pointer should already point to the last character of buf */
@@ -307,10 +490,21 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
                 break;
             }
         }
+#ifdef debug
+        if (p >= cbuf) {
+            Rprintf("after removing trailing slashes: %s", cbuf); Rprintf("\n");
+        }
+#endif
 
 
         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+#ifdef debug
+        Rprintf("assigning: %s", buf); Rprintf("\n\n");
+#endif
     }
+#ifdef debug
+    Rprintf("\n");
+#endif
 
 
     UNPROTECT(nprotect);
@@ -351,31 +545,70 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;
+#ifdef debug
+    Rprintf("in C_dirname2\n\n");
+#endif
     for (i = 0; i < n; i++) {
+#ifdef debug
+        Rprintf("string %d: ", i + 1);
+#endif
         if (STRING_ELT(path, i) == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
+#ifdef debug
+            Rprintf("NA\n");
+            Rprintf("assigning: NA\n\n");
+#endif
             continue;
         }
 
 
         ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
         nchar = strlen(ptr);
-        if (nchar == 0) continue;
+#ifdef debug
+            Rprintf("%s", ptr); Rprintf("\n");
+            Rprintf("%d bytes long\n", nchar);
+#endif
+        if (nchar == 0) {
+            /* dont bother assigning an empty string, should already be empty */
+            // SET_STRING_ELT(value, i, mkChar(""));
+#ifdef debug
+                Rprintf("assigning: \n\n");
+#endif
+            continue;
+        }
         drivewidth = get_drive_width_unix(ptr, nchar);
+#ifdef debug
+            Rprintf("drivespec is %d bytes long\n", drivewidth);
+#endif
         if (drivewidth == nchar) {
             SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
+#ifdef debug
+                Rprintf("pathspec is 0 bytes long\n");
+                Rprintf("assigning: %s", ptr); Rprintf("\n\n");
+#endif
             continue;
         }
 
 
-        char _buf[nchar];  /* allocate a buffer to hold the dirname */
+        char _buf[nchar + 1];  /* allocate a buffer to hold the dirname */
         buf = _buf;
         strcpy(buf, ptr);
+#ifdef debug
+        Rprintf("made a buffer %d bytes long\n", nchar);
+        Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
+        if (nchar != strlen(ptr)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr));
+#endif
         cbuf = buf + drivewidth;  /* point to the start of the path spec */
 
 
         /* point to the last character of buf */
         p = buf + (nchar - 1);
+#ifdef debug
+        Rprintf("made variable p pointing to last byte\n");
+        Rprintf("p = %s", p); Rprintf("\n");
+        Rprintf("made variable cbuf pointing to start of pathspec\n");
+        Rprintf("cbuf                           : %s", cbuf); Rprintf("\n");
+#endif
 
 
         skip = 0;
@@ -396,9 +629,16 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
              * then the dirname is just the whole path */
             if (p < cbuf) {
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+#ifdef debug
+                Rprintf("pathspec was /\n");
+                Rprintf("assigning: %s", buf); Rprintf("\n\n");
+#endif
                 skip = 1;
                 break;
             }
+#ifdef debug
+            Rprintf("after removing trailing slashes: %s", cbuf); Rprintf("\n");
+#endif
 
 
             /* find the last path separator */
@@ -409,6 +649,10 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
                 p = ptr_slash;
             else {
                 SET_STRING_ELT(value, i, mkChar("."));
+#ifdef debug
+                Rprintf("pathspec has no path separators\n");
+                Rprintf("assigning: .\n\n");
+#endif
                 skip = 1;
                 break;
             }
@@ -416,6 +660,9 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
             /* remove the basename */
             *(p + 1) = '\0';
+#ifdef debug
+            Rprintf("after removing basename        : %s", cbuf); Rprintf("\n");
+#endif
 
 
             /* pointer should already point to the last character of buf */
@@ -431,10 +678,21 @@ SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
                 break;
             }
         }
+#ifdef debug
+        if (p >= cbuf) {
+            Rprintf("after removing trailing slashes: %s", cbuf); Rprintf("\n");
+        }
+#endif
 
 
         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+#ifdef debug
+        Rprintf("assigning: %s", buf); Rprintf("\n\n");
+#endif
     }
+#ifdef debug
+    Rprintf("\n");
+#endif
 
 
     UNPROTECT(nprotect);
