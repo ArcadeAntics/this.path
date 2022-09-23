@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 
 
-#include <ctype.h>  /* includes tolower() */
+#include <ctype.h>  /* includes toupper() */
 
 
 // #define debug
@@ -496,7 +496,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             int maybe_len, maybe_nchar;
 
 
-            const char drive_letter = tolower(ptr[0]);
+            const char drive_letter = toupper(ptr[0]);
 
 
             for (i--; i >= 0; i--) {
@@ -513,7 +513,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
                 if (maybe_drivewidth) {
                     if (maybe_drivewidth != 2 ||
-                        tolower(maybe_ptr[0]) != drive_letter)
+                        toupper(maybe_ptr[0]) != drive_letter)
                     {
                         break;
                     }
@@ -549,7 +549,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                          * will need to add one manually, record this index as
                          * needing a trailing slash
                          */
-                        if (pwidth &&  /* actually, do NOT use maybe_pwidth here */
+                        if ((pwidth > 2 || maybe_pwidth) &&
                             maybe_ptr[maybe_nchar - 1] != '/' &&
                             maybe_ptr[maybe_nchar - 1] != '\\')
                         {
