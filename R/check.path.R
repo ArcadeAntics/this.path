@@ -22,8 +22,6 @@ UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
 
 path.split <- function (path)
 {
-    #
-
     if (!is.character(path))
         stop(gettextf("invalid '%s' argument", "path"))
     value <- vector("list", length(path))

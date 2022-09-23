@@ -73,7 +73,7 @@
 
 
     # running R from a shell on Windows
-    if (os.windows.gui.rterm) {
+    if (os.windows.in.shell) {
 
 
         ca <- commandArgs()
@@ -199,8 +199,8 @@
     }
 
 
-    # running R from a shell under Unix-alikes with the default GUI
-    else if (os.unix.gui.x11) {
+    # running R from a shell under Unix-alikes with the default GUI (or similar)
+    else if (os.unix.in.shell) {
 
 
         # when running R from a shell under Unix-alikes, the shell arguments
@@ -542,12 +542,17 @@ is.clipboard.or.stdin <- function (file)
 
     # function to save a path in the n-th frame
     assign.__file__ <- function(
+
         value = `attr<-`(full.path, "this.path::n", n),
+
         full.path = if (URL)
             normalizeURL(opath)
         else normalizePath(opath, winslash = "/", mustWork = TRUE),
+
         opath = path,
-        URL = FALSE) {
+
+        URL = FALSE)
+    {
         assign(".__file__", value, envir = sys.frame(n), inherits = FALSE)
     }
 
@@ -924,42 +929,7 @@ is.clipboard.or.stdin <- function (file)
     # * unrecognized manner, signal an error
 
 
-    if (in.vscode) {
-
-
-        context <- rstudioapi::getSourceEditorContext()
-        if (is.null(context))
-            stop(thisPathNotExistsError(
-                "'this.path' used in an inappropriate fashion\n",
-                "* no appropriate source call was found up the calling stack\n",
-                "* R is being run from VSCode with no documents open\n",
-                "  (or document has no path)"
-            ))
-
-
-        if (startsWith(context[["id"]], "untitled:"))
-            stop(
-                "'this.path' used in an inappropriate fashion\n",
-                "* no appropriate source call was found up the calling stack\n",
-                "* document in VSCode does not exist")
-
-
-        path <- context[["path"]]
-        Encoding(path) <- "UTF-8"
-
-
-        if (nzchar(path)) {
-            where("document in VSCode")
-            return(normalizePath(path, winslash = "/", mustWork = FALSE))
-        }
-        else stop(
-            "'this.path' used in an inappropriate fashion\n",
-            "* no appropriate source call was found up the calling stack\n",
-            "* document in VSCode does not exist")
-    }
-
-
-    else if (in.shell) {
+    if (in.shell) {
 
 
         value <- normalized.shFILE(default = {
@@ -971,17 +941,6 @@ is.clipboard.or.stdin <- function (file)
         attr(value, "this.path::from.shell") <- TRUE
         where("shell argument 'FILE'")
         return(value)
-    }
-
-
-    # running from a shell under Unix-alikes with GUI 'Tk'
-    else if (os.unix && .Platform$GUI == "Tk") {
-
-
-        stop(thisPathNotExistsError(
-            "'this.path' used in an inappropriate fashion\n",
-            "* no appropriate source call was found up the calling stack\n",
-            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
 
 
@@ -1030,6 +989,41 @@ is.clipboard.or.stdin <- function (file)
             if (active)
                 "* active document in RStudio does not exist"
             else "* source document in RStudio does not exist")
+    }
+
+
+    else if (in.vscode) {
+
+
+        context <- rstudioapi::getSourceEditorContext()
+        if (is.null(context))
+            stop(thisPathNotExistsError(
+                "'this.path' used in an inappropriate fashion\n",
+                "* no appropriate source call was found up the calling stack\n",
+                "* R is being run from VSCode with no documents open\n",
+                "  (or document has no path)"
+            ))
+
+
+        if (startsWith(context[["id"]], "untitled:"))
+            stop(
+                "'this.path' used in an inappropriate fashion\n",
+                "* no appropriate source call was found up the calling stack\n",
+                "* document in VSCode does not exist")
+
+
+        path <- context[["path"]]
+        Encoding(path) <- "UTF-8"
+
+
+        if (nzchar(path)) {
+            where("document in VSCode")
+            return(normalizePath(path, winslash = "/", mustWork = FALSE))
+        }
+        else stop(
+            "'this.path' used in an inappropriate fashion\n",
+            "* no appropriate source call was found up the calling stack\n",
+            "* document in VSCode does not exist")
     }
 
 
@@ -1113,6 +1107,17 @@ is.clipboard.or.stdin <- function (file)
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
             "  consider using RStudio / / VSCode until such a time when this is implemented"))
+    }
+
+
+    # running from a shell under Unix-alikes with GUI 'Tk'
+    else if (os.unix && .Platform$GUI == "Tk") {
+
+
+        stop(thisPathNotExistsError(
+            "'this.path' used in an inappropriate fashion\n",
+            "* no appropriate source call was found up the calling stack\n",
+            "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
 
 
