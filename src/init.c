@@ -22,6 +22,22 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"dirname2"       , (DL_FUNC) &do_dirname2       , -1},
 
 
+    /* extension.c */
+
+
+    {"windowssplitext", (DL_FUNC) &do_windowssplitext, 2},
+    {"unixsplitext"   , (DL_FUNC) &do_unixsplitext   , 2},
+    {"splitext"       , (DL_FUNC) &do_splitext       , 2},
+
+    {"windowsextension", (DL_FUNC) &do_windowsextension, 2},
+    {"unixextension"   , (DL_FUNC) &do_unixextension   , 2},
+    {"extension"       , (DL_FUNC) &do_extension       , 2},
+
+    {"windowsremoveext", (DL_FUNC) &do_windowsremoveext, 2},
+    {"unixremoveext"   , (DL_FUNC) &do_unixremoveext   , 2},
+    {"removeext"       , (DL_FUNC) &do_removeext       , 2},
+
+
     /* pathjoin.c */
 
 

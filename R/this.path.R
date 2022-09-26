@@ -480,14 +480,14 @@ untitled.ucrt     <- readLines("inst/extdata/untitled_ucrt.txt", encoding = "UTF
 
 
 delayedAssign("R.Editor.regexp", {
-    if (os.windows.gui.rgui) {
+    if (gui.rgui) {
         if (identical(R.version[["crt"]], "ucrt"))
             .this.path_regexps$R.Editor.ucrt.anchored
         else .this.path_regexps$R.Editor.not_ucrt.anchored
     }
 })
 delayedAssign("untitled", {
-    if (os.windows.gui.rgui) {
+    if (gui.rgui) {
         if (identical(R.version[["crt"]], "ucrt"))
             untitled.ucrt
         else untitled.not_ucrt
@@ -1028,7 +1028,7 @@ is.clipboard.or.stdin <- function (file)
 
 
     # running from 'Rgui' on Windows
-    else if (os.windows.gui.rgui) {
+    else if (gui.rgui) {
 
 
         # "getWindowsHandles" from "utils" (Windows exclusive) returns a list
@@ -1099,7 +1099,7 @@ is.clipboard.or.stdin <- function (file)
     }
 
 
-    else if (os.macos.gui.aqua) {
+    else if (gui.aqua) {
 
 
         stop(thisPathNotImplementedError(

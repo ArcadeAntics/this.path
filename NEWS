@@ -1,5 +1,27 @@
 this.path News
 
+CHANGES IN this.path 1.1.0:
+
+  NEW FEATURES
+
+    * Added splitext(), removeext(), and ext() for manipulating paths
+      with extensions.
+
+CHANGES IN this.path 1.0.2:
+
+  BUG FIXES
+
+    * See issue #3 at BugReports URL. Fixed this.path() when called
+      in a script run from a shell on ubuntu installed on an andriod
+      (where .Platform$GUI == "unknown", normally "unix").
+
+CHANGES IN this.path 1.0.1:
+
+  BUG FIXES
+
+    * Fixed path.join(), basename2(), and dirname2() not having a
+      trailing nul-character.
+
 CHANGES IN this.path 1.0.0:
 
   NEW FEATURES

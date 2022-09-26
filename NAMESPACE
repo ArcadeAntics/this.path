@@ -25,6 +25,12 @@ export(basename2, dirname2)
 export(check.path, check.dir)
 
 
+# extension.R            ----
+
+
+export(splitext, extension, ext, removeext, rm.ext)
+
+
 # path.join.R            ----
 
 

@@ -36,6 +36,7 @@ check("d:path/to/file", "d:path/to", "file")
 check("d:/path/to/file", "d:/path/to", "file")
 check("//host/share/path/to/file", "//host/share/path/to", "file")
 check("/path/to/file", "/path/to", "file")
+check("/path/to/file/", "/path/to", "file")
 
 
 check(
@@ -80,6 +81,7 @@ check("file", ".", "file")
 
 check("//host/share/path/to/file", "//host/share/path/to", "file")
 check("/path/to/file", "/path/to", "file")
+check("/path/to/file/", "/path/to", "file")
 
 
 check(

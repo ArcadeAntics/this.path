@@ -1,0 +1,58 @@
+\name{extension}
+\alias{splitext}
+\alias{removeext}
+\alias{rm.ext}
+\alias{extension}
+\alias{ext}
+\title{
+File Extensions
+}
+\description{
+\code{splitext} splits an extension from a path.
+
+\code{removeext} removes an extension from a path.
+
+\code{ext} gets the extension of a path.
+}
+\usage{
+splitext(path, compression = FALSE)
+
+removeext(path, compression = FALSE)
+rm.ext(path, compression = FALSE)
+
+extension(path, compression = FALSE)
+ext(path, compression = FALSE)
+}
+\arguments{
+  \item{path}{
+character vector, containing path names.
+  }
+  \item{compression}{
+should compression extensions \sQuote{.gz}, \sQuote{.bz2}, and \sQuote{.xz} be
+taken into account when removing/getting an extension?
+  }
+}
+\details{
+\code{\link[base:path.expand]{tilde expansion}} of the path will be performed.
+
+Trailing path separators are removed before dissecting the path.
+
+It will always be true that \code{path == paste0(removeext(path), ext(path))}.
+}
+\value{
+for \code{splitext}, a matrix with 2 rows and \code{length(path)} columns. The
+first row will be the roots of the paths, the second row will be the extensions
+of the paths.
+
+for \code{removeext} and \code{ext}, a character vector the same length as
+\code{path}.
+}
+\examples{
+splitext(character(0))
+splitext("")
+
+splitext("file.ext")
+
+splitext(c("file.tar.gz", "file.tar.bz2", "file.tar.xz"), compression = FALSE)
+splitext(c("file.tar.gz", "file.tar.bz2", "file.tar.xz"), compression = TRUE)
+}
