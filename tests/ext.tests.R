@@ -3,14 +3,14 @@ check <- function (path, root, ext, compression = FALSE)
     stopifnot(
         identical(splitext(path, compression), matrix(c(character(), root, ext), 2, byrow = TRUE, dimnames = list(c("root", "ext"), NULL))),
         identical(removeext(path, compression), root),
-        identical(extension(path, compression), ext)
+        identical(ext(path, compression), ext)
     )
 }
 
 
 splitext  <- this.path:::windows.splitext
 removeext <- this.path:::windows.removeext
-extension <- this.path:::windows.extension
+ext       <- this.path:::windows.ext
 
 
 check(character(), character(), character())
@@ -63,7 +63,7 @@ check(letters, letters, character(26))
 
 splitext  <- this.path:::unix.splitext
 removeext <- this.path:::unix.removeext
-extension <- this.path:::unix.extension
+ext       <- this.path:::unix.ext
 
 
 check(character(), character(), character())

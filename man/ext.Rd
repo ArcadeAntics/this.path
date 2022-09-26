@@ -1,8 +1,6 @@
-\name{extension}
+\name{ext}
 \alias{splitext}
 \alias{removeext}
-\alias{rm.ext}
-\alias{extension}
 \alias{ext}
 \title{
 File Extensions
@@ -16,11 +14,7 @@ File Extensions
 }
 \usage{
 splitext(path, compression = FALSE)
-
 removeext(path, compression = FALSE)
-rm.ext(path, compression = FALSE)
-
-extension(path, compression = FALSE)
 ext(path, compression = FALSE)
 }
 \arguments{
