@@ -15,13 +15,13 @@ check.dir(...)
 }
 \arguments{
   \item{\dots}{
-further arguments passed to \code{\link[base]{file.path}} which must return a
+further arguments passed to \code{\link{path.join}} which must return a
 character string; the path you expect \code{this.path()} or \code{this.dir()}
 to return. The specified path can be as deep as necessary (just the basename,
-the last directory name and the basename, the last two directory names and the
-basename, \ldots), but using an absolute path is not intended (recommended
-against). \code{this.path()} makes \R scripts portable, but using an absolute
-path in \code{check.path} or \code{check.dir} makes an \R script non-portable,
+the last directory and the basename, the last two directories and the basename,
+\ldots), but using an absolute path is not intended (recommended against).
+\code{this.path()} makes \R scripts portable, but using an absolute path in
+\code{check.path} or \code{check.dir} makes an \R script non-portable,
 defeating the whole purpose of this package.
   }
 }

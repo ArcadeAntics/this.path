@@ -1,6 +1,6 @@
 .Rscript <- function (options = NULL, ...)
 {
-    command <- file.path(R.home("bin"), if (os.windows)
+    command <- path.join(R.home("bin"), if (os.windows)
         "Rscript.exe"
     else "Rscript")
     args <- c(command, options)
@@ -118,7 +118,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
 
     # check for file "DESCRIPTION"
-    DESCRIPTION <- file.path(file, "DESCRIPTION")
+    DESCRIPTION <- path.join(file, "DESCRIPTION")
     cat("* checking for file '", DESCRIPTION, "' ... ", sep = "")
     if (!file.exists(DESCRIPTION)) {
         cat("NO\n\n")
@@ -170,7 +170,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
 
     # directories to always exclude
-    i <- basename(files) %in% c(
+    i <- basename2(files) %in% c(
 
         # directories from source control systems
         "CSV", ".svn", ".arch-ids", ".bzr", ".git", ".hg",
@@ -187,7 +187,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
 
     # and, of course, are directories
-    i <- i & dir.exists(file.path(file, files))
+    i <- i & dir.exists(path.join(file, files))
 
 
     if (any(i)) {
@@ -215,7 +215,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
             ),
             ")", collapse = "|"
         ),
-        basename(files)
+        basename2(files)
     )
 
 
@@ -246,7 +246,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
     # look for a ".buildignore" file, a list of Perl patterns (case insensitive)
     # specifying files to ignore when archiving
-    ignore.file <- file.path(file, ".buildignore")
+    ignore.file <- path.join(file, ".buildignore")
     if (file.exists(ignore.file)) {
         for (exclude.pattern in readLines(ignore.file, warn = FALSE, encoding = "UTF-8")) {
             if (any(i <- grepl(exclude.pattern, files, ignore.case = TRUE, perl = TRUE))) {
@@ -258,7 +258,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
 
     # for directories in 'exclude', also exclude the files within said directories
-    exclude.dirs <- exclude[dir.exists(file.path(file, exclude))]
+    exclude.dirs <- exclude[dir.exists(path.join(file, exclude))]
     for (exclude.prefix in paste0(exclude.dirs, "/", recycle0 = TRUE)) {
         if (any(i <- startsWith(files, exclude.prefix))) {
             exclude <- c(exclude, files[i])
@@ -273,21 +273,21 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
 
     # create another directory to hold the temporary files
-    dir.create(pkgdir <- file.path(my.tmpdir, pkgname))
+    dir.create(pkgdir <- path.join(my.tmpdir, pkgname))
 
 
     # within said directory, make the appropriate sub-directories
-    isdir <- dir.exists(file.path(file, files))
+    isdir <- dir.exists(path.join(file, files))
     dirs <- files[isdir]
-    for (path in file.path(pkgdir, dirs))
+    for (path in path.join(pkgdir, dirs))
         dir.create(path, showWarnings = TRUE, recursive = TRUE)
 
 
     # fill the directory and sub-directories with their files,
     # while maintaining file modify time
     if (any(i <- !file.copy(
-        file.path(file  , files[!isdir]),
-        file.path(pkgdir, files[!isdir]),
+        path.join(file  , files[!isdir]),
+        path.join(pkgdir, files[!isdir]),
         copy.date = TRUE
     )))
         stop(ngettext(sum(i), "unable to copy file: ", "unable to copy files:\n  "),
@@ -296,15 +296,15 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
     # set the modify time of the sub-directories to their original values
     Sys.setFileTime(
-                  file.path(pkgdir, dirs),
-        file.info(file.path(file  , dirs), extra_cols = FALSE)$mtime
+                  path.join(pkgdir, dirs),
+        file.info(path.join(file  , dirs), extra_cols = FALSE)$mtime
     )
 
 
     for (apk in which) {
         switch(apk, tar = {
             build.name <- paste0(pkgname, "_", version, ".tar.gz")
-            build.path <- file.path(my.tmpdir, build.name)
+            build.path <- path.join(my.tmpdir, build.name)
             args <- c("tar", "-czf", shQuote(build.path), "-C", shQuote(my.tmpdir), shQuote(pkgname))
             command <- paste(args, collapse = " ")
             cat("* building '", build.name, "'\n", sep = "")
@@ -315,17 +315,17 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
                 stop("'", command, "' execution failed with error code ", res)
             } else if (i <- !file.copy(
                 build.path,
-                file.path(file, build.name),
+                path.join(file, build.name),
                 overwrite = TRUE
             )) {
                 stop("unable to move:\n  ",
                      encodeString(build.path, quote = "\""),
                      "\nto:\n  ",
-                     encodeString(file.path(file, build.name), quote = "\""))
+                     encodeString(path.join(file, build.name), quote = "\""))
             }
         }, zip = {
             build.name <- paste0(pkgname, "_", version, ".zip")
-            build.path <- file.path(my.tmpdir, build.name)
+            build.path <- path.join(my.tmpdir, build.name)
             args <- c("zip", "-r", shQuote(build.path), shQuote(pkgname))
             command <- paste(args, collapse = " ")
             cat("* building '", build.name, "'\n", sep = "")
@@ -336,13 +336,13 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
                 stop("'", command, "' execution failed with error code ", res)
             } else if (i <- !file.copy(
                 build.path,
-                file.path(file, build.name),
+                path.join(file, build.name),
                 overwrite = TRUE
             )) {
                 stop("unable to move:\n  ",
                      encodeString(build.path, quote = "\""),
                      "\nto:\n  ",
-                     encodeString(file.path(file, build.name), quote = "\""))
+                     encodeString(path.join(file, build.name), quote = "\""))
             }
         }, stop("invalid 'which'; should not happen, please report!"))
     }

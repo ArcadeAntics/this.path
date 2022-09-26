@@ -14,7 +14,7 @@ ici(..., .. = 0)
 }
 \arguments{
   \item{\dots}{
-further arguments passed to \code{\link[base]{file.path}()}.
+further arguments passed to \code{\link{path.join}()}.
   }
   \item{..}{
 the number of directories to go back.

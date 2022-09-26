@@ -14,7 +14,7 @@ this.proj(...)
 }
 \arguments{
   \item{\dots}{
-further arguments passed to \code{\link[base]{file.path}()}.
+further arguments passed to \code{\link{path.join}()}.
   }
 }
 \value{

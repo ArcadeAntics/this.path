@@ -643,15 +643,12 @@ for (expr in c("this.path()",
                "this.dir()",
                "this.dir(default = NULL)",
                "this.dir(default = getwd())"))
+{
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+}
 
 
 # an example from R package 'logr'
 this.path::this.path(verbose = FALSE, default = "script.log",
-    else. = function(x) {
-        x <- if (.Platform$OS.type == "windows")
-            sub("[.][^.\\\\/]+$", "", x)
-        else sub("[.][^./]+$", "", x)
-        paste0(x, ".log")
-    })
+    else. = function(path) paste0(removeext(path), ".log"))
 \dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}
