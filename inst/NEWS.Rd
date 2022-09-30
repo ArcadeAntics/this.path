@@ -6,6 +6,17 @@
     \itemize{
       \item Added \code{splitext()}, \code{removeext()}, and \code{ext()} for
             manipulating paths with extensions.
+      \item Added \code{\link{progArgs}()}, similar to \code{\link{fileArgs}()}
+            but better, might remove \code{\link{fileArgs}()} later.
+      \item Added \code{\link{is.main}()} for determining if an expression is
+            run in a top-level code environment.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{\link{check.path}()} and \code{\link{check.dir}()} now use
+            \code{\link{path.join}()} instead of
+            \code{\link[base]{file.path}()}.
     }
   }
 }

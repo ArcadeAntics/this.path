@@ -7,6 +7,17 @@ CHANGES IN this.path 1.1.0:
     * Added splitext(), removeext(), and ext() for manipulating paths
       with extensions.
 
+    * Added progArgs(), similar to fileArgs() but better, might remove
+      fileArgs() later.
+
+    * Added is.main() for determining if an expression is run in a
+      top-level code environment.
+
+  BUG FIXES
+
+    * check.path() and check.dir() now use path.join() instead of
+      file.path().
+
 CHANGES IN this.path 1.0.2:
 
   BUG FIXES

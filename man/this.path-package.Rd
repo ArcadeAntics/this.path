@@ -26,6 +26,28 @@ drives, network shares, and a few important edge cases.
 \code{\link{splitext}()}, \code{\link{removeext}()}, and \code{\link{ext}()}
 split paths into root and extension, remove extensions, and extract extensions,
 respectively.
+
+\code{\link{check.path}()} and \code{\link{check.dir}()} check that
+\code{\link{this.path}()} and \code{\link{this.dir}()} are functioning
+correctly.
+
+\code{\link{as.rel.path}()} ( or \code{\link{as.relative.path}()} ) will turn
+absolute paths into relative paths.
+
+\code{\link{asArgs}()}, \code{\link{fileArgs}()}, \code{\link{progArgs}()}, and
+\code{\link{withArgs}()} provide functionality for running scripts with
+arguments in the same session, as opposed to a new one with
+\code{\link[utils]{Rscript}}.
+
+\code{\link{is.main}()} and \code{\link{from.shell}()} determine if an \R
+script is the main executing script or is run from a shell.
+
+\code{\link{shFILE}()} and \code{\link{normalized.shFILE}()} extract
+\option{FILE} from the command line arguments.
+
+\code{\link{tryCatch2}()} adds argument \code{else.} that runs if no error is
+thrown. This helps to run extra code that is not intended to be protected by
+the condition handlers.
 }
 \note{
 This package started from a stack overflow posting, found at:
@@ -46,13 +68,5 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
-Check \code{\link{this.path}()}, \code{\link{this.dir}()} are functioning
-correctly: \code{\link{check.path}{}}, \code{\link{check.dir}{}}
-
-Extract \option{FILE} from command line arguments: \code{\link{shFILE}()},
-\code{\link{normalized.shFILE}()}
-
-Make paths relative to another path: \code{\link{as.rel.path}()}
-
 \code{\link{R.from.shell}}
 }
