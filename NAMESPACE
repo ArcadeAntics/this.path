@@ -7,10 +7,10 @@ useDynLib(this.path, .registration = TRUE, .fixes = "C_")
 export(as.relative.path, as.rel.path)
 
 
-# asArgs.R               ----
+# Args.R                 ----
 
 
-export(asArgs, from.shell, fileArgs, withArgs)
+export(asArgs, fileArgs, progArgs, withArgs)
 
 
 # basename2.R            ----
@@ -29,6 +29,12 @@ export(check.path, check.dir)
 
 
 export(splitext, removeext, ext)
+
+
+# from.shell.R           ----
+
+
+export(from.shell, is.main)
 
 
 # path.join.R            ----

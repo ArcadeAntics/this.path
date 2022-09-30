@@ -8,9 +8,6 @@
 \packageDescription{this.path}
 }
 \details{
-The three most important functions from this package are \code{this.path},
-\code{this.dir}, and \code{here}.
-
 \code{\link{this.path}()} returns the
 \code{\link[base:normalizePath]{normalized}} path of the executing script.
 
@@ -20,6 +17,15 @@ executing script is located.
 
 \code{\link{here}()} constructs file paths relative to the executing script's
 directory.
+
+\code{\link{path.join}()}, \code{\link{basename2}()}, and
+\code{\link{dirname2}()} are replacements for \code{\link{file.path}()},
+\code{\link{basename}()}, and \code{\link{dirname}()} that better handle
+drives, network shares, and a few important edge cases.
+
+\code{\link{splitext}()}, \code{\link{removeext}()}, and \code{\link{ext}()}
+split paths into root and extension, remove extensions, and extract extensions,
+respectively.
 }
 \note{
 This package started from a stack overflow posting, found at:
@@ -40,17 +46,13 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
-The main functions from \pkg{this.path}: \code{\link{this.path}},
-\code{\link{this.dir}}, \code{\link{here}}
+Check \code{\link{this.path}()}, \code{\link{this.dir}()} are functioning
+correctly: \code{\link{check.path}{}}, \code{\link{check.dir}{}}
 
-Check \code{this.path()} is functioning correctly: \code{\link{check.path}},
-\code{\link{check.dir}}
+Extract \option{FILE} from command line arguments: \code{\link{shFILE}()},
+\code{\link{normalized.shFILE}()}
 
-Extract \option{FILE} from command line arguments: \code{\link{shFILE}},
-\code{\link{normalized.shFILE}}
-
-\code{\link[base]{source}}, \code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
-\code{\link[testthat:source_file]{testthat::source_file}}
+Make paths relative to another path: \code{\link{as.rel.path}()}
 
 \code{\link{R.from.shell}}
 }

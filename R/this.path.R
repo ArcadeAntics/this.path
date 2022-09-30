@@ -481,14 +481,14 @@ untitled.ucrt     <- readLines("inst/extdata/untitled_ucrt.txt", encoding = "UTF
 
 delayedAssign("R.Editor.regexp", {
     if (gui.rgui) {
-        if (identical(R.version[["crt"]], "ucrt"))
+        if (ucrt)
             .this.path_regexps$R.Editor.ucrt.anchored
         else .this.path_regexps$R.Editor.not_ucrt.anchored
     }
 })
 delayedAssign("untitled", {
     if (gui.rgui) {
-        if (identical(R.version[["crt"]], "ucrt"))
+        if (ucrt)
             untitled.ucrt
         else untitled.not_ucrt
     }
@@ -499,8 +499,10 @@ windows.abs.path <- .this.path_regexps$windows.absolute.path.anchored
 
 
 
-thisPathNotExistError_class <- c("this.path::thisPathNotExistError", "this.path_this.path_not_exists_error")
+thisPathNotExistsError_class <- c("this.path::thisPathNotExistsError", "this.path::thisPathNotExistError", "this.path_this.path_not_exists_error")
 thisPathNotImplementedError_class <- c("this.path::thisPathNotImplementedError", "this.path_this.path_unimplemented_error")
+AQUAError_class <- c("this.path::AQUAError", thisPathNotImplementedError_class)
+thisPathUnrecognizedMannerError_class <- c("this.path::thisPathUnrecognizedMannerError", thisPathNotImplementedError_class)
 
 
 Error <- function (..., call. = TRUE, domain = NULL, class = NULL,
@@ -510,11 +512,19 @@ errorCondition(message = .makeMessage(..., domain = domain),
 
 
 thisPathNotExistsError <- function(...) NULL
-body(thisPathNotExistsError) <- bquote(Error(..., class = .(thisPathNotExistError_class)))
+body(thisPathNotExistsError) <- bquote(Error(..., class = .(thisPathNotExistsError_class)))
 
 
 thisPathNotImplementedError <- function(...) NULL
 body(thisPathNotImplementedError) <- bquote(Error(..., class = .(thisPathNotImplementedError_class)))
+
+
+AQUAError <- function(...) NULL
+body(AQUAError) <- bquote(Error(..., class = .(AQUAError_class)))
+
+
+thisPathUnrecognizedMannerError <- function(...) NULL
+body(thisPathUnrecognizedMannerError) <- bquote(Error(..., class = .(thisPathUnrecognizedMannerError_class)))
 
 
 is.clipboard.or.stdin <- function (file)
@@ -554,6 +564,7 @@ is.clipboard.or.stdin <- function (file)
         URL = FALSE)
     {
         assign(".__file__", value, envir = sys.frame(n), inherits = FALSE)
+        value
     }
 
 
@@ -568,25 +579,24 @@ is.clipboard.or.stdin <- function (file)
     #
     # source(this.path())
     #
-    # The argument 'file' is stored as a promise (see ?promise) to evaluate
-    # 'this.path()' if its value is requested.
+    # the argument 'file' is stored as an unevaluated promise (see ?promise) to
+    # evaluate 'this.path()' if/when 'file'  is requested.
     #
-    # There are two functions on the calling stack at this point being 'source'
-    # and 'this.path'. you don't want to request the 'file' argument from that
-    # source call because the value of 'file' is under evaluation right now!
-    # The trick is to ask if a variable exists in that function's evaluation
-    # environment that is only created AFTER 'file' has been forced.
-    # For source, we ask if variable 'ofile' exists. For sys.source and
-    # testthat::source_file, we ask if variable 'exprs' exists. For
-    # debugSource, we cannot use this trick. Refer to the documentation below.
+    # there are two functions on the calling stack at this point being 'source'
+    # and 'this.path'. We'd like to do is something like
+    # 'get("file", envir = , inherits = FALSE)', but you don't want to request
+    # the 'file' argument from that source call because the value of 'file' is
+    # under evaluation right now!
     #
-    # If that variable exists, then argument 'file' has been forced and the
-    # source call is deemed appropriate. If that variable does not exist, then
-    # argument 'file' has not been forced and the source call is deemed
-    # inappropriate. The loop continues to the next iteration (if available)
+    # instead, we use a C function to get variable 'file', check whether it is
+    # an unevaluated promise or something else, in which case we can safely
+    # retrieve it.
+    #
+    # however, this only makes sense for sys.source, debugSource, and
+    # testthat::source_file. see source section for an alternate workaround)
 
 
-    # in 0.2.0, compatibility with 'debugSource' in 'RStudio'  was added
+    # in 0.2.0, compatibility with 'debugSource' in 'RStudio' was added
     dbgS <- if (gui.rstudio)
         get("debugSource", "tools:rstudio", inherits = FALSE)
 
@@ -608,13 +618,13 @@ is.clipboard.or.stdin <- function (file)
             if (!existsn(".__file__")) {
 
 
-                # if the argument 'file' to 'source' has not been forced,
-                # continue to the next iteration
+                # 'ofile' is a copy of the original 'file' argument
+                # if it does not exist, we have not entered a file yet,
+                # then continue to the next iteration
                 if (!existsn("ofile"))
                     next
 
 
-                # retrieve the unmodified 'file' argument
                 path <- getn("ofile")
 
 
@@ -689,7 +699,7 @@ is.clipboard.or.stdin <- function (file)
                 }
 
 
-                # 'file' is not a character string
+                # 'file' is not a character string, but a connection
                 else {
 
 
@@ -769,9 +779,12 @@ is.clipboard.or.stdin <- function (file)
             if (!existsn(".__file__")) {
 
 
+                # if file is an unevaluated promise
+
+
                 # as with 'source', we check that argument 'file' has been
                 # forced, and continue to the next iteration if not
-                if (!existsn("exprs"))
+                if (.External2(C_isunevaluatedpromise, "file", sys.frame(n)))
                     next
 
 
@@ -828,20 +841,11 @@ is.clipboard.or.stdin <- function (file)
                 # and FALSE if the statement produced an error.
 
 
-                # "object 'fileName' not found" is an error we DON'T WANT TO CATCH
-                if (!existsn("fileName"))
-                    stop(gettextf("object '%s' not found", "fileName", domain = "R"), "; should never happen, please report!")
-                expr <- quote(get("fileName", envir = sys.frame(n), inherits = FALSE))
-                attr(expr, ".__this.path::n__") <- n
-                attr(expr, ".__this.path::environment()__") <- environment()
-                do_next <- FALSE
-                path <- eval(substitute(tryCatch(., error = function(c) {
-                    if (identical(conditionCall(c), expr))
-                        do_next <<- TRUE
-                    else stop(c)
-                }), list(. = expr)))
-                if (do_next)
+                if (.External2(C_isunevaluatedpromise, "fileName", sys.frame(n)))
                     next
+
+
+                path <- getn("fileName")
 
 
                 URL <- FALSE
@@ -877,14 +881,14 @@ is.clipboard.or.stdin <- function (file)
         else if (!is.null(srcf) && identical(sys.function(n), srcf)) {
 
 
-            # as with 'source' and 'sys.source', we check that
-            # argument 'path' has been forced, and continue to the next
-            # iteration if not
-            if (!existsn("exprs"))
-                next
-
-
             if (!existsn(".__file__")) {
+
+
+                # as with 'source' and 'sys.source', we check that
+                # argument 'path' has been forced, and continue to the next
+                # iteration if not
+                if (.External2(C_isunevaluatedpromise, "path", sys.frame(n)))
+                    next
 
 
                 path <- getn("path")
@@ -1102,7 +1106,7 @@ is.clipboard.or.stdin <- function (file)
     else if (gui.aqua) {
 
 
-        stop(thisPathNotImplementedError(
+        stop(AQUAError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
@@ -1129,9 +1133,9 @@ is.clipboard.or.stdin <- function (file)
 }
 
 
-.this.dir <- function (...)
+.this.dir <- function (verbose = getOption("verbose"))
 {
-    path <- .this.path(...)
+    path <- .this.path(verbose)
     if (grepl("^(ftp|ftps|http|https)://", path)) {
         # path <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
 
@@ -1152,13 +1156,13 @@ tryCatch({
 }, function(c) default)
 
 
-this.dir <- function (..., default, else.)
+this.dir <- function (verbose = getOption("verbose"), default, else.)
 tryCatch({
-    .this.dir(...)
+    .this.dir(verbose)
 }, function(c) default)
 
 
-thisPathNotExistError_class[[1L]] ->
+thisPathNotExistsError_class[[1L]] ->
     names(body(this.path))[3L] ->
     names(body(this.dir ))[3L]
 
@@ -1188,7 +1192,7 @@ tmp[[2L]] <- call("<-", as.name("value"), tmp[[2L]])
 body(this.dir) <- bquote({
     if (missing(default))
         if (missing(else.))
-            .this.dir(...)
+            .this.dir(verbose)
         else stop("'this.dir' with 'else.' but not 'default' makes no sense")
     else {
         if (missing(else.))
@@ -1205,27 +1209,27 @@ rm(tmp)
 
 
 this.path2 <- function (...)
-{
-    .Deprecated("this.path(..., default = NULL)",
-        old = "this.path2(...)")
-    this.path(..., default = NULL)
-}
+.Defunct(msg = c(
+    gettextf("'%s' is defunct.\n", "this.path2(...)", domain = "R-base"),
+    gettextf("Use '%s' instead.\n", "this.path(..., default = NULL)", domain = "R-base"),
+    gettextf("See help(\"Defunct\")", domain = "R-base")
+))
 
 
 this.dir2 <- function (...)
-{
-    .Deprecated("this.dir(..., default = NULL)",
-        old = "this.dir2(...)")
-    this.dir(..., default = NULL)
-}
+.Defunct(msg = c(
+    gettextf("'%s' is defunct.\n", "this.dir2(...)", domain = "R-base"),
+    gettextf("Use '%s' instead.\n", "this.dir(..., default = NULL)", domain = "R-base"),
+    gettextf("See help(\"Defunct\")", domain = "R-base")
+))
 
 
 this.dir3 <- function (...)
-{
-    .Deprecated("this.dir(..., default = getwd())",
-        old = "this.dir3(...)")
-    this.dir(..., default = getwd())
-}
+.Defunct(msg = c(
+    gettextf("'%s' is defunct.\n", "this.dir3(...)", domain = "R-base"),
+    gettextf("Use '%s' instead.\n", "this.dir(..., default = getwd())", domain = "R-base"),
+    gettextf("See help(\"Defunct\")", domain = "R-base")
+))
 
 
 

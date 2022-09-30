@@ -1,9 +1,6 @@
 \name{this.path}
 \alias{this.path}
 \alias{this.dir}
-\alias{this.path2-deprecated}
-\alias{this.dir2-deprecated}
-\alias{this.dir3-deprecated}
 \title{Determine Executing Script's Filename
 }
 \description{
@@ -12,20 +9,10 @@ path of the executing script.
 
 \code{this.dir()} returns the \code{\link[base:normalizePath]{normalized}} path
 of the directory in which the executing script is located.
-
-\code{this.path2()}, \code{this.dir2()}, and \code{this.dir3()} are from an old
-release that did not include \code{default} as an argument in
-\code{this.path()} or \code{this.dir()}. They should not be used in future code
-development and should be removed from older code.
 }
 \usage{
 this.path(verbose = getOption("verbose"), default, else.)
-this.dir(..., default, else.)
-
-this.path2(...)  # deprecated, use this.path(..., default = NULL) instead
-this.dir2(...)   # deprecated, use this.dir(..., default = NULL) instead
-
-this.dir3(...)   # deprecated, use this.dir(..., default = getwd()) instead
+this.dir (verbose = getOption("verbose"), default, else.)
 }
 \arguments{
   \item{verbose}{
@@ -38,9 +25,6 @@ if there is no executing script, this value is returned.
   \item{else.}{
 missing or a function to call on the return value if there is an executing
 script. See \code{\link{tryCatch2}} for inspiration.
-  }
-  \item{\dots}{
-arguments passed to \code{this.path}.
   }
 }
 \details{

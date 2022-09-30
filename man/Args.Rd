@@ -2,33 +2,29 @@
 \alias{Args}
 \alias{asArgs}
 \alias{fileArgs}
-\alias{from.shell}
+\alias{progArgs}
 \alias{withArgs}
 \title{
 Providing Arguments to a Script
 }
 \description{
-\code{withArgs} allows you \code{\link[base]{source}} \R code while providing
-arguments. This would be in the circumstance that you want to run a script and
-provide command-line arguments, but want the objects to appear in your
-environment, or if you just don't want to \code{\link[base]{shQuote}} the
-arguments.
+\code{withArgs} allows you \code{\link[base]{source}} an \R script while
+providing arguments. As opposed to running with \code{\link[utils]{Rscript}},
+the code will be evaluated in the same session, in an environment of your
+choosing.
 
-\code{fileArgs} is a generalized version of \code{\link[base]{commandArgs}},
-allowing you to access the script's arguments whether it was sourced or run
-from a shell.
+\code{fileArgs()} / / \code{progArgs()} are generalized versions of
+\code{\link[base]{commandArgs}(trailingOnly = TRUE)}, allowing you to access
+the script's arguments whether it was sourced or run from a shell.
 
 \code{asArgs} coerces \R objects into a character vector, for use with command
 line applications and \code{withArgs}.
-
-\code{from.shell} tells you if the \R script was run from a shell.
 }
 \usage{
 asArgs(...)
 fileArgs()
-withArgs(expr, ...)
-
-from.shell()
+progArgs()
+withArgs(...)
 }
 \arguments{
   \item{\dots}{
@@ -36,16 +32,24 @@ from.shell()
 \code{\link[base]{logical}}, \code{\link[base]{numeric}},
 \code{\link[base]{character}}, \code{\link[base:Dates]{Date}}, and
 \code{\link[base:DateTimeClasses]{POSIXt}} vectors.
-  }
-  \item{expr}{
-an (unevaluated) call to \code{\link[base]{source}},
-\code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
+
+for \code{withArgs}, the first argument should be an (unevaluated) call to
+\code{\link[base]{source}}, \code{\link[base]{sys.source}},
+\href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
 or \code{\link[testthat:source_file]{testthat::source_file}}.
   }
 }
 \details{
-\code{\dots} is first put into a list, and then each non-list element is
-converted to character. They are converted as follows:
+\code{fileArgs()} will return the arguments associated with the executing
+script, or \code{character(0)} when there is no executing script.
+
+\code{progArgs()} will return the arguments assocaited with the executing
+script, or \code{commandArgs(trailingOnly = TRUE)} when there is no executing
+script.
+
+\code{asArgs()} coerces objects into command-line arguments. \code{\dots} is
+first put into a list, and then each non-list element is converted to
+character. They are converted as follows:
 \describe{
   \item{Factors (class \code{"factor"})}{
 using \code{\link[base:character]{as.character.factor}}
@@ -71,24 +75,15 @@ The arguments will then be unlisted, and all attributes will be removed.
 Arguments that are \code{NA_character_} after conversion will be converted to
 \code{"NA"} (since the command-line arguments also never have missing strings).
 
-Consider that it may be better to use \code{\link{Rscript}} combined with
-\code{\link[base]{save}} and \code{\link[base]{load}} or
-\code{\link[base:readRDS]{saveRDS}} and \code{\link[base]{readRDS}}.
 
-Also consider that what you want is a function, and not a script. If you're
-already at the \R level, it is easier and more flexible to source a script that
-creates a function, and then use that function. This only applies if the script
-you are sourcing will never be run from the command-line, or at least will never
-be run on its own (it will only be used in the context of other scripts, it will
-\emph{NEVER} be used as a stand alone script).
 }
 \value{
-for \code{asArgs} and \code{fileArgs}, a character vector.
+for \code{asArgs}, \code{fileArgs}, and \code{progArgs}, a character vector.
 
 for \code{withArgs}, the result of evaluating \code{expr}.
 }
 \examples{
-asArgs(
+this.path::asArgs(
     NULL,
     c(TRUE, FALSE, NA),
     1:5,
@@ -112,9 +107,9 @@ this.path:::write.code(file = FILE <- tempfile(), {
     withAutoprint({
 
 
-        this.path()
-        fileArgs()
-        from.shell()
+        this.path::this.path()
+        this.path::fileArgs()
+        this.path::progArgs()
 
 
     }, verbose = FALSE)
@@ -122,24 +117,24 @@ this.path:::write.code(file = FILE <- tempfile(), {
 
 
 # wrap your source call with a call to 'withArgs'
-withArgs(
+this.path::withArgs(
     source(FILE, local = TRUE, verbose = FALSE),
     letters, pi, exp(1)
 )
-withArgs(
+this.path::withArgs(
     sys.source(FILE, environment()),
     letters, pi + 1i * exp(1)
 )
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE,
-    asArgs(letters, pi, as.POSIXct("2022-07-17 04:25"))))
+    this.path::asArgs(letters, pi, as.POSIXct("2022-07-17 04:25"))))
 
 
 # with R >= 4.1.0, use the forward pipe operator '|>' to
 # make calls to 'withArgs' more intuitive:
-# source(FILE, local = TRUE, verbose = FALSE) |> withArgs(
+# source(FILE, local = TRUE, verbose = FALSE) |> this.path::withArgs(
 #     letters, pi, exp(1)
 # )
-# sys.source(FILE, environment()) |> withArgs(
+# sys.source(FILE, environment()) |> this.path::withArgs(
 #     letters, pi + 1i * exp(1)
 # )
 \dontshow{unlink(FILE)}}

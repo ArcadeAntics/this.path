@@ -1,6 +1,12 @@
 #include <Rinternals.h>
 
 
+/* args.c */
+
+
+extern SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
 /* basename2.c */
 
 
@@ -35,3 +41,9 @@ extern SEXP do_ext       (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_unixpathjoin   (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_pathjoin       (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
+/* thispath.c */
+
+
+extern SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho);

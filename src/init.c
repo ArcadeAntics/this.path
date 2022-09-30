@@ -10,6 +10,12 @@ static const R_CallMethodDef callRoutines[] = {
 static const R_ExternalMethodDef externalRoutines[] = {
 
 
+    /* args.c */
+
+
+    {"asargs", (DL_FUNC) &do_asargs, -1},
+
+
     /* basename2.c */
 
 
@@ -44,6 +50,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"windowspathjoin", (DL_FUNC) &do_windowspathjoin, 0},
     {"unixpathjoin"   , (DL_FUNC) &do_unixpathjoin   , 0},
     {"pathjoin"       , (DL_FUNC) &do_pathjoin       , 0},
+
+
+    /* thispath.c */
+
+
+    {"isunevaluatedpromise", (DL_FUNC) &do_isunevaluatedpromise, 2},
 
 
     {NULL, NULL, 0}

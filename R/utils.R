@@ -361,8 +361,8 @@ do_with_wd <- function (expr, wd)
 }
 
 
-write.code <- function (x, file = stdout(), evaluated, simplify = TRUE, deparseCtrl = c("keepInteger",
-    "showAttributes", "useSource", "keepNA", "digits17"))
+write.code <- function (x, file = stdout(), evaluated, simplify = TRUE,
+    deparseCtrl = c("keepInteger", "showAttributes", "useSource", "keepNA", "digits17"))
 {
     if (missing(evaluated)) {
         if (is.call(e <- substitute(x)) && is.name(e[[1L]]) && e[[1L]] == "{")
@@ -379,7 +379,7 @@ write.code <- function (x, file = stdout(), evaluated, simplify = TRUE, deparseC
     if (is.null(file))
         x
     else {
-        writeLines(x, file, useBytes = TRUE)
+        writeLines(x, file, useBytes = !utf8)
         invisible(x)
     }
 }

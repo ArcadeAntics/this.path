@@ -36,7 +36,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         error("could not find the ... list; should never happen, please report!");
 
 
-    const int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
+    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
 
 
     if (dots_length == 0) return allocVector(STRSXP, 0);

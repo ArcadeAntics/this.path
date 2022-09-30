@@ -18,3 +18,7 @@ delayedAssign("in.vscode"  , "tools:vscode" %in% search()            )
 delayedAssign("os.unix.in.shell"   , os.unix    && !gui.rstudio && !in.vscode && !gui.aqua && .Platform$GUI != "Tk" &&                        "R" == basename2(commandArgs()[[1L]]) )
 delayedAssign("os.windows.in.shell", os.windows && !gui.rstudio && !in.vscode && !gui.rgui                          && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
 delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
+
+
+delayedAssign("ucrt", identical(R.version[["crt"]], "ucrt"))
+delayedAssign("utf8", identical(utils::localeToCharset()[1L], "UTF-8"))
