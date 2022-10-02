@@ -608,6 +608,11 @@ is.clipboard.or.stdin <- function (file)
         # getExportedValue("testthat", "source_file")
 
 
+    # in 1.1.0, compatibility with 'knitr::knit' was added.
+    knit <- if (isNamespaceLoaded("knitr"))
+        knitr::knit
+
+
     for (n in seq.int(to = 1L, by = -1L, length.out = sys.nframe() - 1L)) {
 
 
@@ -878,6 +883,8 @@ is.clipboard.or.stdin <- function (file)
             where("call to function debugSource in RStudio")
             return(getn(".__file__"))
         }
+
+
         else if (!is.null(srcf) && identical(sys.function(n), srcf)) {
 
 
@@ -913,6 +920,71 @@ is.clipboard.or.stdin <- function (file)
                 assign.__file__()
             }
             where("call to function source_file in package testthat")
+            return(getn(".__file__"))
+        }
+
+
+        else if (!is.null(knit) && identical(sys.function(n), knit)) {
+
+
+            # if the path has yet to be saved
+            if (!existsn(".__file__")) {
+
+
+                if (!existsn("in.file"))
+                    next
+
+
+                # if we are not in a file, go to next iteration
+                #
+                # also, assign NULL so we can skip this next time
+                if (!getn("in.file")) {
+                    assign.__file__(NULL)
+                    next
+                }
+
+
+                # we care about 'oenvir' because 'input' may be edited in lines
+                # 10 and 11 of knitr::knit, but after 'oenvir' is created on
+                # line 36, 'input' is never edited again
+                if (!existsn("oenvir"))
+                    next
+
+
+                path <- getn("input")
+
+
+                URL <- FALSE
+
+
+                if (path == "")
+                    stop(Error("invalid 'input' argument, must not be \"\"",
+                        call = sys.call(n)))
+
+
+                else if (is.clipboard.or.stdin(path))
+                    stop(Error("invalid 'input' argument, must not be \"clipboard\" nor \"stdin\"",
+                        call = sys.call(n)))
+
+
+                else if (grepl("^(ftp|ftps|http|https)://", path))
+                    stop(Error("invalid 'input' argument, cannot be a URL"))
+
+
+                else if (grepl("^file://", path))
+                    stop(Error("invalid 'input' argument, cannot be a file URL"))
+
+
+                outwd <- knitr::opts_knit$get("output.dir")
+                if (!is.null(outwd))
+                    path <- path.join(outwd, path)
+
+
+                assign.__file__(URL = URL)
+            }
+            else if (is.null(getn(".__file__")))
+                next
+            where("call to function knit in package knitr")
             return(getn(".__file__"))
         }
     }

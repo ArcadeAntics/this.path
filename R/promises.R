@@ -12,11 +12,12 @@ delayedAssign("os.macos"  , os.unix && capabilities("aqua"))
 delayedAssign("gui.aqua"   , os.macos   && .Platform$GUI == "AQUA"   )
 delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"   )
 delayedAssign("gui.rstudio",               .Platform$GUI == "RStudio")
+delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"     )
 delayedAssign("in.vscode"  , "tools:vscode" %in% search()            )
 
 
-delayedAssign("os.unix.in.shell"   , os.unix    && !gui.rstudio && !in.vscode && !gui.aqua && .Platform$GUI != "Tk" &&                        "R" == basename2(commandArgs()[[1L]]) )
-delayedAssign("os.windows.in.shell", os.windows && !gui.rstudio && !in.vscode && !gui.rgui                          && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
+delayedAssign("os.unix.in.shell"   , os.unix    && !gui.rstudio && !in.vscode && !gui.aqua && !gui.tk &&                        "R" == basename2(commandArgs()[[1L]]) )
+delayedAssign("os.windows.in.shell", os.windows && !gui.rstudio && !in.vscode && !gui.rgui            && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
 delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
 
 
