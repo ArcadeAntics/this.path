@@ -5,8 +5,8 @@
 Construct Path to File, Beginning with \code{this.dir()}
 }
 \description{
-Construct the path to a file from components in a platform-independent way,
-starting with \code{\link{this.dir}()}.
+Construct the path to a file from components/paths in a
+platform-\strong{DEPENDENT} way, starting with \code{\link{this.dir}()}.
 }
 \usage{
 here(..., .. = 0)

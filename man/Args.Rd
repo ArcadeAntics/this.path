@@ -34,7 +34,7 @@ withArgs(...)
 \code{\link[base:DateTimeClasses]{POSIXt}} vectors.
 
 for \code{withArgs}, the first argument should be an (unevaluated) call to
-\sources{}.
+\sourcesoptionlist{}.
   }
 }
 \details{

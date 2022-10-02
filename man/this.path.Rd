@@ -9,6 +9,9 @@ path of the executing script.
 
 \code{this.dir()} returns the \code{\link[base:normalizePath]{normalized}} path
 of the directory in which the executing script is located.
+
+See also \code{\link{here}()} for constructing paths to files, starting with
+\code{this.dir()}.
 }
 \usage{
 this.path(verbose = getOption("verbose"), default, else.)
@@ -33,9 +36,7 @@ There are three ways in which \R code is typically run:
   \item in \sQuote{RStudio} / / \sQuote{Rgui} / / \sQuote{VSCode} by running
         the current line / / selection with the \strong{Run} button / /
         appropriate keyboard shortcut
-  \item through a source call: a call to function \code{\link[base]{source}},
-        \code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}}
-        in \sQuote{RStudio}, or \code{\link[testthat:source_file]{testthat::source_file}}
+  \item through a source call: a call to function \sourcesoptionlist{}
   \item from a shell, such as the Windows command-line / / Unix terminal
 }
 
@@ -46,10 +47,11 @@ To retrieve the executing script's filename, first an attempt is made to find a
 source call. The calls are searched in reverse order so as to grab the most
 recent source call in the case of nested source calls. If a source call was
 found, the argument \var{file} (\var{fileName} in the case of
-\code{debugSource}, \var{path} in the case of \code{testthat::source_file}) is
-returned from the function's evaluation environment. If you have your own
-source-like function that you'd like to be recognized by \code{this.path},
-please contact the package maintainer so that it can be implemented.
+\code{debugSource}, \var{path} in the case of \code{testthat::source_file},
+\var{input} in the case of \code{knitr::knit}) is returned from the function's
+evaluation environment. If you have your own source-like function that you'd
+like to be recognized by \code{this.path}, please contact the package
+maintainer so that it can be implemented.
 
 If no source call is found up the calling stack, then an attempt is made to
 figure out how \R is currently being used.

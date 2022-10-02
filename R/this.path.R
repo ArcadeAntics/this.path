@@ -570,7 +570,8 @@ is.clipboard.or.stdin <- function (file)
 
     # loop through functions that lead here from most recent to earliest
     # looking for an appropriate source call (a call to function source,
-    # sys.source, debugSource in RStudio, or testthat::source_file)
+    # sys.source, debugSource in RStudio, testthat::source_file, or
+    # knitr::knit)
     #
     # an appropriate source call is a source call in which argument 'file'
     # ('fileName' in the case of debugSource, 'path' in the case of
@@ -594,6 +595,9 @@ is.clipboard.or.stdin <- function (file)
     #
     # however, this only makes sense for sys.source, debugSource, and
     # testthat::source_file. see source section for an alternate workaround)
+    #
+    # knitr::knit is similar to source in that we don't look for an unevaluated
+    # promise, but look for a variable to exist or not
 
 
     # in 0.2.0, compatibility with 'debugSource' in 'RStudio' was added
@@ -608,7 +612,7 @@ is.clipboard.or.stdin <- function (file)
         # getExportedValue("testthat", "source_file")
 
 
-    # in 1.1.0, compatibility with 'knitr::knit' was added.
+    # in 1.1.0, compatibility with 'knitr::knit' was added
     knit <- if (isNamespaceLoaded("knitr"))
         knitr::knit
 
