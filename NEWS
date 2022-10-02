@@ -4,8 +4,12 @@ CHANGES IN this.path 1.1.0:
 
   NEW FEATURES
 
-    * Added splitext(), removeext(), and ext() for manipulating paths
-      with extensions.
+    * this.path() now works inside knitr::knit(), fixing issue #4 at
+      BugReports URL. By extension, withArgs(knitr::knit()) now also
+      works.
+
+    * Added splitext(), removeext(), ext(), and ext<-() for
+      manipulating paths with extensions.
 
     * Added progArgs(), similar to fileArgs() but better, might remove
       fileArgs() later.
@@ -23,7 +27,7 @@ CHANGES IN this.path 1.0.2:
   BUG FIXES
 
     * See issue #3 at BugReports URL. Fixed this.path() when called
-      in a script run from a shell on ubuntu installed on an andriod
+      in a script run from a shell on ubuntu installed on an android
       (where .Platform$GUI == "unknown", normally "unix").
 
 CHANGES IN this.path 1.0.1:

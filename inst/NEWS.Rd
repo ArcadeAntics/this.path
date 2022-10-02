@@ -4,19 +4,21 @@
 \section{CHANGES IN VERSION 1.1.0}{
   \subsection{NEW FEATURES}{
     \itemize{
-      \item Added \code{splitext()}, \code{removeext()}, and \code{ext()} for
-            manipulating paths with extensions.
-      \item Added \code{\link{progArgs}()}, similar to \code{\link{fileArgs}()}
-            but better, might remove \code{\link{fileArgs}()} later.
-      \item Added \code{\link{is.main}()} for determining if an expression is
-            run in a top-level code environment.
+      \item \code{this.path()} now works inside \code{knitr::knit()}, fixing
+            \href{https://github.com/ArcadeAntics/this.path/issues/4}{issue #4 at BugReports URL}.
+            By extension, \code{withArgs(knitr::knit())} now also works.
+      \item Added \code{splitext()}, \code{removeext()}, \code{ext()}, and
+            \code{ext<-()} for manipulating paths with extensions.
+      \item Added \code{progArgs()}, similar to \code{fileArgs()} but better,
+            might remove \code{fileArgs()} later.
+      \item Added \code{is.main()} for determining if an expression is run in a
+            top-level code environment.
     }
   }
   \subsection{BUG FIXES}{
     \itemize{
-      \item \code{\link{check.path}()} and \code{\link{check.dir}()} now use
-            \code{\link{path.join}()} instead of
-            \code{\link[base]{file.path}()}.
+      \item \code{check.path()} and \code{check.dir()} now use
+            \code{path.join()} instead of \code{file.path()}.
     }
   }
 }

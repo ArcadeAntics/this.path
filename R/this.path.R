@@ -1187,7 +1187,7 @@ is.clipboard.or.stdin <- function (file)
 
 
     # running from a shell under Unix-alikes with GUI 'Tk'
-    else if (os.unix && .Platform$GUI == "Tk") {
+    else if (gui.tk) {
 
 
         stop(thisPathNotExistsError(
