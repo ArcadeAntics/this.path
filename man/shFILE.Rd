@@ -61,5 +61,8 @@ for (expr in c("shFILE()",
                "shFILE(default = NULL)",
                "normalized.shFILE()",
                "normalized.shFILE(default = NULL)"))
+{
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+    cat("\\n")
+}
 \dontshow{unlink(FILE)}}
