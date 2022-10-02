@@ -34,9 +34,7 @@ withArgs(...)
 \code{\link[base:DateTimeClasses]{POSIXt}} vectors.
 
 for \code{withArgs}, the first argument should be an (unevaluated) call to
-\code{\link[base]{source}}, \code{\link[base]{sys.source}},
-\href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
-or \code{\link[testthat:source_file]{testthat::source_file}}.
+\sources{}.
   }
 }
 \details{

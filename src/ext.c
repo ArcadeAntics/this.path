@@ -12,10 +12,142 @@ extern int get_drive_width_unix(const char *s, int nchar);
 
 
 
+const char * validate_ext(const char *s)
+{
+    if (!strlen(s)) return s;
+    const char *p = s;
+    int add_dot = 1;
+    if (*s == '.') {
+        add_dot = 0;
+        p++;
+        if (!strlen(p)) {
+            error("extension \".\" is invalid");
+            return NULL;
+        }
+        if (*p == '.') {
+            error("extension starting with \"..\" is invalid");
+            return NULL;
+        }
+    }
+    for (; *p; p++) {
+        if (*p == '/' || *p == '\\') {
+            error("extension containing / is invalid");
+            return NULL;
+        }
+        if (*p == '.') {
+            if (strlen(p) == 3 &&
+                *(p + 1) == 'g' &&
+                *(p + 2) == 'z')
+            {
+                break;
+            }
+            if (strlen(p) == 4 &&
+                *(p + 1) == 'b' &&
+                *(p + 2) == 'z' &&
+                *(p + 3) == '2')
+            {
+                break;
+            }
+            if (strlen(p) == 3 &&
+                *(p + 1) == 'x' &&
+                *(p + 2) == 'z')
+            {
+                break;
+            }
+            error("extension containing \".\" but is not a compression extension");
+            return NULL;
+        }
+    }
+    if (add_dot) {
+        char _buf[strlen(s) + 2];
+        char *buf = _buf;
+        const char *cbuf = _buf;
+        *buf = '.';
+        strcpy(buf + 1, s);
+        return cbuf;
+    }
+    return s;
+}
+
+
+const char * validate_ext_unix(const char *s)
+{
+    if (!strlen(s)) return s;
+    const char *p = s;
+    int add_dot = 1;
+    if (*s == '.') {
+        add_dot = 0;
+        p++;
+        if (!strlen(p)) {
+            error("extension \".\" is invalid");
+            return NULL;
+        }
+        if (*p == '.') {
+            error("extension starting with \"..\" is invalid");
+            return NULL;
+        }
+    }
+    for (; *p; p++) {
+        if (*p == '/') {
+            error("extension containing / is invalid");
+            return NULL;
+        }
+        if (*p == '.') {
+            if (strlen(p) == 3 &&
+                *(p + 1) == 'g' &&
+                *(p + 2) == 'z')
+            {
+                break;
+            }
+            if (strlen(p) == 4 &&
+                *(p + 1) == 'b' &&
+                *(p + 2) == 'z' &&
+                *(p + 3) == '2')
+            {
+                break;
+            }
+            if (strlen(p) == 3 &&
+                *(p + 1) == 'x' &&
+                *(p + 2) == 'z')
+            {
+                break;
+            }
+            error("extension containing \".\" but is not a compression extension");
+            return NULL;
+        }
+    }
+    if (add_dot) {
+        char _buf[strlen(s) + 2];
+        char *buf = _buf;
+        const char *cbuf = _buf;
+        *buf = '.';
+        strcpy(buf + 1, s);
+        return cbuf;
+    }
+    return s;
+}
+
+
+const char * maybe_add_dot(const char *s)
+{
+    if (!strlen(s) || *s == '.') return s;
+    char _buf[strlen(s) + 2];
+    char *buf = _buf;
+    const char *cbuf = _buf;
+    *buf = '.';
+    strcpy(buf + 1, s);
+    return cbuf;
+}
+
+
+
+
+
 #define SPLITEXT 0
 #define REMOVEEXT 1
 #define EXT 2
-#define ext(windows, op)                                       \
+#define EXTGETS 3
+#define ext(windows, op)\
 {                                                              \
     if (debug) {                                               \
         if (op == SPLITEXT) {                                  \
@@ -27,20 +159,65 @@ extern int get_drive_width_unix(const char *s, int nchar);
         else if (op == EXT) {                                  \
             Rprintf((windows) ? "in do_windowsext\n\n" : "in do_unixext\n\n");\
         }                                                      \
+        else if (op == EXTGETS) {                              \
+            Rprintf((windows) ? "in do_windowsextgets\n\n" : "in do_unixextgets\n\n");\
+        }                                                      \
     }                                                          \
                                                                \
                                                                \
     int nprotect = 0;                                          \
+    args = CDR(args);                                          \
                                                                \
                                                                \
-    SEXP path = CADR(args);                                    \
+    if (op == EXTGETS) {                                       \
+        /* ext<-(), duplicate 'path' if we need to */          \
+        if (MAYBE_REFERENCED(CAR(args))) {                     \
+            SETCAR(args, R_shallow_duplicate_attr(CAR(args))); \
+        }                                                      \
+    }                                                          \
+                                                               \
+                                                               \
+    SEXP path = CAR(args);                                     \
     if (TYPEOF(path) != STRSXP)                                \
         error("a character vector argument expected");         \
                                                                \
                                                                \
-    Rboolean compression = asLogical(CADDR(args));             \
+    Rboolean compression = asLogical(CADR(args));              \
     if (compression == NA_LOGICAL)                             \
         error("invalid 'compression' value");                  \
+                                                               \
+                                                               \
+    SEXP newext;                                               \
+    int length_newext;                                         \
+    if (op == EXTGETS) {                                       \
+        if (!isString(CADDR(args))) {                          \
+            if (OBJECT(CADDR(args))) {                         \
+                SEXP expr = lang2(                             \
+                    findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),\
+                    lang2(                                     \
+                        findVarInFrame(R_BaseEnv, install("quote")),\
+                        CADDR(args)                            \
+                    )                                          \
+                );                                             \
+                PROTECT(expr);                                 \
+                SETCADDR(args, eval(expr, rho));               \
+                UNPROTECT(1);                                  \
+            }                                                  \
+            else if (isSymbol(CADDR(args)))                    \
+                SETCADDR(args, ScalarString(PRINTNAME(CADDR(args))));\
+            else SETCADDR(args, coerceVector(CADDR(args), STRSXP));\
+            if (!isString(CADDR(args)))                        \
+                errorcall(call, "non-string argument to '%s'", "C_extgets");\
+        }                                                      \
+                                                               \
+                                                               \
+        length_newext = length(CADDR(args));                   \
+        if (!length_newext) {                                  \
+            SETCADDR(args, mkString(""));                      \
+            length_newext = 1;                                 \
+        }                                                      \
+        newext = CADDR(args);                                  \
+    }                                                          \
                                                                \
                                                                \
     const char *ptr;                                           \
@@ -60,7 +237,11 @@ extern int get_drive_width_unix(const char *s, int nchar);
         SET_VECTOR_ELT(dimnames, 0, rownames);                 \
         SET_STRING_ELT(rownames, 0, mkChar("root"));           \
         SET_STRING_ELT(rownames, 1, mkChar("ext"));            \
-    } else {                                                   \
+    }                                                          \
+    else if (op == EXTGETS) {                                  \
+        value = path;                                          \
+    }                                                          \
+    else {                                                     \
         value = allocVector(STRSXP, n);                        \
         PROTECT(value); nprotect++;                            \
     }                                                          \
@@ -79,14 +260,28 @@ extern int get_drive_width_unix(const char *s, int nchar);
                     Rprintf("assigning: NA\n");                \
                     Rprintf("assigning: NA\n");                \
                 }                                              \
-            } else {                                           \
+            }                                                  \
+            else if (op == REMOVEEXT || op == EXT) {           \
                 SET_STRING_ELT(value, i, NA_STRING);           \
+                if (debug) {                                   \
+                    Rprintf("assigning: NA\n");                \
+                }                                              \
+            }                                                  \
+            else if (op == EXTGETS) {                          \
                 if (debug) {                                   \
                     Rprintf("assigning: NA\n");                \
                 }                                              \
             }                                                  \
             if (debug) Rprintf("\n");                          \
             continue;                                          \
+        }                                                      \
+                                                               \
+                                                               \
+        if (op == EXTGETS) {                                   \
+            if (STRING_ELT(newext, i % length_newext) == NA_STRING) {\
+                SET_STRING_ELT(value, i, NA_STRING);           \
+                continue;                                      \
+            }                                                  \
         }                                                      \
                                                                \
                                                                \
@@ -136,16 +331,36 @@ extern int get_drive_width_unix(const char *s, int nchar);
                     Rprintf("assigning: \"\"\n");              \
                 }                                              \
             }                                                  \
+            else if (op == EXTGETS) {                          \
+                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("assigning: \"%s\"\n", ptr);       \
+                }                                              \
+            }                                                  \
             if (debug) Rprintf("\n");                          \
             continue;                                          \
         }                                                      \
                                                                \
                                                                \
-        char _buf[nchar + 1];                                  \
+        const char *ptr_ext;                                   \
+        const char *cext;                                      \
+        if (op == EXTGETS) {                                   \
+            if (i < length_newext) {                           \
+                ptr_ext = translateCharUTF8(STRING_ELT(newext, i));\
+                cext = (windows) ? validate_ext(ptr_ext) : validate_ext_unix(ptr_ext);\
+            } else {                                           \
+                ptr_ext = translateCharUTF8(STRING_ELT(newext, i % length_newext));\
+                cext = maybe_add_dot(ptr_ext);                 \
+            }                                                  \
+            if (debug) Rprintf("ext %d: \"%s\"\n", i + 1, cext);\
+        }                                                      \
+                                                               \
+                                                               \
+        char _buf[(op != EXTGETS) ? (nchar + 1) : (nchar + strlen(cext) + 1)];\
         buf = _buf;                                            \
         strcpy(buf, ptr);                                      \
         if (debug) {                                           \
-            Rprintf("made a buffer %d bytes long\n", nchar);   \
+            Rprintf("made a buffer %d bytes long\n", strlen(_buf));\
             Rprintf("copied to buffer: \"%s\"\n", ptr);        \
             if (nchar != strlen(ptr)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr));\
         }                                                      \
@@ -160,6 +375,8 @@ extern int get_drive_width_unix(const char *s, int nchar);
             Rprintf("made variable pathspec pointing to start of pathspec\n");\
             Rprintf("pathspec                       : \"%s\"\n", pathspec);\
         }                                                      \
+                                                               \
+                                                               \
         /* remove trailing path separators */                  \
         if (windows) {                                         \
             while (last_char >= pathspec && (*last_char == '/' || *last_char == '\\')) {\
@@ -171,7 +388,7 @@ extern int get_drive_width_unix(const char *s, int nchar);
             }                                                  \
         }                                                      \
         if (debug) {                                           \
-            Rprintf("after removing trailing slashes: \"%s\"\n", buf);\
+            Rprintf("after removing trailing slashes: \"%s\"\n", pathspec);\
         }                                                      \
                                                                \
                                                                \
@@ -195,6 +412,12 @@ extern int get_drive_width_unix(const char *s, int nchar);
             else if (op == EXT) {                              \
                 if (debug) {                                   \
                     Rprintf("assigning: \"\"\n");              \
+                }                                              \
+            }                                                  \
+            else if (op == EXTGETS) {                          \
+                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("assigning: \"%s\"\n", ptr);       \
                 }                                              \
             }                                                  \
             if (debug) Rprintf("\n");                          \
@@ -248,6 +471,22 @@ extern int get_drive_width_unix(const char *s, int nchar);
             else if (op == EXT) {                              \
                 if (debug) {                                   \
                     Rprintf("assigning: \"\"\n");              \
+                }                                              \
+            }                                                  \
+            else if (op == EXTGETS) {                          \
+                found_non_dot = 0;                             \
+                for (tmp = basename; *tmp; tmp++) {            \
+                    if (*tmp != '.') {                         \
+                        found_non_dot = 1;                     \
+                        break;                                 \
+                    }                                          \
+                }                                              \
+                if (found_non_dot) {                           \
+                    strcpy(last_char + 1, cext);               \
+                }                                              \
+                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("assigning: \"%s\"\n", buf);       \
                 }                                              \
             }                                                  \
             if (debug) Rprintf("\n");                          \
@@ -317,6 +556,13 @@ extern int get_drive_width_unix(const char *s, int nchar);
                                 Rprintf("assigning: \"%s\"\n", dot);\
                             }                                  \
                         }                                      \
+                        else if (op == EXTGETS) {              \
+                            strcpy(dot, cext);                 \
+                            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));\
+                            if (debug) {                       \
+                                Rprintf("assigning: \"%s\"\n", buf);\
+                            }                                  \
+                        }                                      \
                         if (debug) Rprintf("\n");              \
                         continue;                              \
                     }                                          \
@@ -347,6 +593,22 @@ extern int get_drive_width_unix(const char *s, int nchar);
             else if (op == EXT) {                              \
                 if (debug) {                                   \
                     Rprintf("assigning: \"\"\n");              \
+                }                                              \
+            }                                                  \
+            else if (op == EXTGETS) {                          \
+                found_non_dot = 0;                             \
+                for (tmp = basename; *tmp; tmp++) {            \
+                    if (*tmp != '.') {                         \
+                        found_non_dot = 1;                     \
+                        break;                                 \
+                    }                                          \
+                }                                              \
+                if (found_non_dot) {                           \
+                    strcpy(last_char + 1, cext);               \
+                }                                              \
+                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("assigning: \"%s\"\n", buf);       \
                 }                                              \
             }                                                  \
             if (debug) Rprintf("\n");                          \
@@ -382,6 +644,12 @@ extern int get_drive_width_unix(const char *s, int nchar);
                     Rprintf("assigning: \"\"\n");              \
                 }                                              \
             }                                                  \
+            else if (op == EXTGETS) {                          \
+                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("assigning: \"%s\"\n", buf);       \
+                }                                              \
+            }                                                  \
             if (debug) Rprintf("\n");                          \
             continue;                                          \
         }                                                      \
@@ -407,6 +675,13 @@ extern int get_drive_width_unix(const char *s, int nchar);
             SET_STRING_ELT(value, i, mkCharCE(dot, CE_UTF8));  \
             if (debug) {                                       \
                 Rprintf("assigning: \"%s\"\n", dot);           \
+            }                                                  \
+        }                                                      \
+        else if (op == EXTGETS) {                              \
+            strcpy(dot, cext);                                 \
+            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));  \
+            if (debug) {                                       \
+                Rprintf("assigning: \"%s\"\n", buf);           \
             }                                                  \
         }                                                      \
         if (debug) Rprintf("\n");                              \
@@ -487,4 +762,27 @@ SEXP do_ext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (windows)
         return do_windowsext(call, op, args, rho);
     else return do_unixext(call, op, args, rho);
+}
+
+
+
+
+
+SEXP do_windowsextgets(SEXP call, SEXP op, SEXP args, SEXP rho) ext(1, EXTGETS)
+
+
+SEXP do_unixextgets(SEXP call, SEXP op, SEXP args, SEXP rho) ext(0, EXTGETS)
+
+
+SEXP do_extgets(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    if (debug) {
+        Rprintf("in do_extgets\n\n");
+    }
+    int windows = asLogical(eval(install("os.windows"), rho));
+    if (windows == NA_LOGICAL)
+        error("invalid 'os.windows'; should never happen, please report!");
+    if (windows)
+        return do_windowsextgets(call, op, args, rho);
+    else return do_unixextgets(call, op, args, rho);
 }

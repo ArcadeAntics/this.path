@@ -99,3 +99,62 @@ check("file.ext.gz" , "file"  , ".ext.gz" , compression = TRUE)
 
 
 check(letters, letters, character(26))
+
+
+# windows replacement tests ----
+
+
+ext     <- this.path:::windows.ext
+`ext<-` <- this.path:::`windows.ext<-`
+
+
+x   <- c(NA, "", ""    , "C:"  , "//host/share", "C:/" , "/path/to/fi", "/path/to/.", "/path/to/..", "/"   )
+val <- c("", NA, ".png", ".png", ".png"        , ".png", ".png"       , ".png"      , ".png"       , ".png")
+names(x) <- rev(LETTERS)[seq_along(x)]
+ext(x) <- val
+stopifnot(identical(x, c(Z = NA_character_, Y = NA_character_, X = "", W = "C:", V = "//host/share", U = "C:/", T = "/path/to/fi.png", S = "/path/to/.", R = "/path/to/..", Q = "/")))
+
+
+x <- paste0("this.path_1.0.0.tar", c(".gz", ".bz2", ".xz"))
+names(x) <- x
+ext(x, compression = TRUE) <- ".png"
+stopifnot(identical(x, c(this.path_1.0.0.tar.gz = "this.path_1.0.0.png", this.path_1.0.0.tar.bz2 = "this.path_1.0.0.png", this.path_1.0.0.tar.xz = "this.path_1.0.0.png")))
+
+
+x   <- c("C:/path/to/file", "C:/path/to/.file", "C:/path/to/file.", "C:/path/to/.....", "C:/path/to/file.jpg", "C:/path/to/file.jpg")
+val <- c(".png"           , ".png"            , ".png"            , ".png"            , ".png"               , ""                   )
+names(x) <- rev(LETTERS)[seq_along(x)]
+ext(x) <- val
+stopifnot(identical(x, c(Z = "C:/path/to/file.png", Y = "C:/path/to/.file.png", X = "C:/path/to/file..png", W = "C:/path/to/.....", V = "C:/path/to/file.png", U = "C:/path/to/file")))
+
+
+# unix replacement tests ----
+
+
+ext     <- this.path:::unix.ext
+`ext<-` <- this.path:::`unix.ext<-`
+
+
+x <- "C:.jpg"
+ext(x) <- ".png"
+stopifnot(identical(x, "C:.png"))
+
+
+x   <- c(NA, "", ""    , "C:"  , "//host/share", "C:/" , "/path/to/fi", "/path/to/.", "/path/to/..", "/"   )
+val <- c("", NA, ".png", ".png", ".png"        , ".png", ".png"       , ".png"      , ".png"       , ".png")
+names(x) <- rev(LETTERS)[seq_along(x)]
+ext(x) <- val
+stopifnot(identical(x, c(Z = NA_character_, Y = NA_character_, X = "", W = "C:.png", V = "//host/share", U = "C:.png", T = "/path/to/fi.png", S = "/path/to/.", R = "/path/to/..", Q = "/")))
+
+
+x <- paste0("this.path_1.0.0.tar", c(".gz", ".bz2", ".xz"))
+names(x) <- x
+ext(x, compression = TRUE) <- ".png"
+stopifnot(identical(x, c(this.path_1.0.0.tar.gz = "this.path_1.0.0.png", this.path_1.0.0.tar.bz2 = "this.path_1.0.0.png", this.path_1.0.0.tar.xz = "this.path_1.0.0.png")))
+
+
+x   <- c("/path/to/file", "/path/to/.file", "/path/to/file.", "/path/to/.....", "/path/to/file.jpg", "/path/to/file.jpg")
+val <- c(".png"         , ".png"          , ".png"          , ".png"          , ".png"             , ""                 )
+names(x) <- rev(LETTERS)[seq_along(x)]
+ext(x) <- val
+stopifnot(identical(x, c(Z = "/path/to/file.png", Y = "/path/to/.file.png", X = "/path/to/file..png", W = "/path/to/.....", V = "/path/to/file.png", U = "/path/to/file")))

@@ -43,6 +43,10 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"unixext"   , (DL_FUNC) &do_unixext   , 2},
     {"ext"       , (DL_FUNC) &do_ext       , 2},
 
+    {"windowsextgets", (DL_FUNC) &do_windowsextgets, 3},
+    {"unixextgets"   , (DL_FUNC) &do_unixextgets   , 3},
+    {"extgets"       , (DL_FUNC) &do_extgets       , 3},
+
 
     /* pathjoin.c */
 

@@ -34,6 +34,10 @@ extern SEXP do_windowsext(SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_unixext   (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_ext       (SEXP call, SEXP op, SEXP args, SEXP rho);
 
+extern SEXP do_windowsextgets(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_unixextgets   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_extgets       (SEXP call, SEXP op, SEXP args, SEXP rho);
+
 
 /* pathjoin.c */
 

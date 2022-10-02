@@ -43,17 +43,31 @@ ext <- function (path, compression = FALSE)
 
 
 
+`windows.ext<-` <- function (path, compression = FALSE, value)
+.External2(C_windowsextgets, path, compression, value)
+
+
+`unix.ext<-` <- function (path, compression = FALSE, value)
+.External2(C_unixextgets, path, compression, value)
+
+
 `ext<-` <- function (path, compression = FALSE, value)
-{
-    path <- splitext(path, compression)
-    if (!is.character(value))
-        value <- as.character(value)
-    if (any(i <- !is.na(value) & nzchar(value) & !startsWith(value, ".")))
-        value[i] <- paste0(".", value[i])
-    path[2L, ] <- rep(value, length.out = ncol(path))
-    isna <- apply(path, 2L, anyNA)
-    path <- paste0(path[1L, ], path[2L, ], recycle0 = TRUE)
-    path[isna] <- NA_character_
-    path
-}
-# .External2(C_extgets, path, compression, value)
+.External2(C_extgets, path, compression, value)
+
+
+
+
+
+# `ext<-` <- function (path, compression = FALSE, value)
+# {
+#     path <- splitext(path, compression)
+#     if (!is.character(value))
+#         value <- as.character(value)
+#     if (any(i <- !is.na(value) & nzchar(value) & !startsWith(value, ".")))
+#         value[i] <- paste0(".", value[i])
+#     path[2L, ] <- rep(value, length.out = ncol(path))
+#     isna <- apply(path, 2L, anyNA)
+#     path <- paste0(path[1L, ], path[2L, ], recycle0 = TRUE)
+#     path[isna] <- NA_character_
+#     path
+# }

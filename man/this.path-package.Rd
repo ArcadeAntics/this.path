@@ -23,9 +23,9 @@ directory.
 \code{\link{basename}()}, and \code{\link{dirname}()} that better handle
 drives, network shares, and a few important edge cases.
 
-\code{\link{splitext}()}, \code{\link{removeext}()}, and \code{\link{ext}()}
-split paths into root and extension, remove extensions, and extract extensions,
-respectively.
+\code{\link{splitext}()}, \code{\link{removeext}()}, \code{\link{ext}()}, and
+\code{\link{ext<-}()} split paths into root and extension, remove extensions,
+get extensions, and set extensions, respectively.
 
 \code{\link{check.path}()} and \code{\link{check.dir}()} check that
 \code{\link{this.path}()} and \code{\link{this.dir}()} are functioning
@@ -68,5 +68,7 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
+\sources{}
+
 \code{\link{R.from.shell}}
 }

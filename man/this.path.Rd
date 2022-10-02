@@ -178,8 +178,7 @@ before calling \code{this.path} at least once.
 
 \code{\link{this.path-package}}
 
-\code{\link[base]{source}}, \code{\link[base]{sys.source}}, \href{https://support.rstudio.com/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}},
-\code{\link[testthat:source_file]{testthat::source_file}}
+\sources{}
 
 \code{\link{R.from.shell}}
 }
@@ -629,10 +628,16 @@ for (expr in c("this.path()",
                "this.dir(default = getwd())"))
 {
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+    cat("\\n");
 }
 
 
 # an example from R package 'logr'
 this.path::this.path(verbose = FALSE, default = "script.log",
-    else. = function(path) paste0(removeext(path), ".log"))
+    else. = function(path) {
+        # replace extension (probably .R) with .log
+        this.path::ext(path) <- ".log"
+        path
+        # or you could use paste0(this.path::removeext(path), ".log")
+    })
 \dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}

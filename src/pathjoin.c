@@ -69,7 +69,14 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             /* coerce the object to string if needed */
             if (!isString(xi)) {
                 if (OBJECT(xi)) {
-                    SEXP call2 = PROTECT(lang2(findVarInFrame(R_BaseEnv, R_AsCharacterSymbol), xi));
+                    SEXP call2 = lang2(
+                        findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),
+                        lang2(
+                            findVarInFrame(R_BaseEnv, install("quote")),
+                            xi
+                        )
+                    );
+                    PROTECT(call2);
                     SET_VECTOR_ELT(x, i, eval(call2, rho));
                     UNPROTECT(1);
                 }

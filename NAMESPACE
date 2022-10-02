@@ -28,7 +28,7 @@ export(check.path, check.dir)
 # ext.R                  ----
 
 
-export(splitext, removeext, ext)
+export(splitext, removeext, ext, "ext<-")
 
 
 # from.shell.R           ----

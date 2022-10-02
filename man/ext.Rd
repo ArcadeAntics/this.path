@@ -2,6 +2,7 @@
 \alias{splitext}
 \alias{removeext}
 \alias{ext}
+\alias{ext<-}
 \title{
 File Extensions
 }
@@ -11,11 +12,14 @@ File Extensions
 \code{removeext} removes an extension from a path.
 
 \code{ext} gets the extension of a path.
+
+\code{ext<-} sets the extension of a path.
 }
 \usage{
 splitext(path, compression = FALSE)
 removeext(path, compression = FALSE)
 ext(path, compression = FALSE)
+ext(path, compression = FALSE) <- value
 }
 \arguments{
   \item{path}{
@@ -24,6 +28,9 @@ character vector, containing path names.
   \item{compression}{
 should compression extensions \sQuote{.gz}, \sQuote{.bz2}, and \sQuote{.xz} be
 taken into account when removing/getting an extension?
+  }
+  \item{value}{
+a character vector, typically of length \code{1} or \code{length(path)}, or \code{NULL}.
   }
 }
 \details{
@@ -40,6 +47,8 @@ of the paths.
 
 for \code{removeext} and \code{ext}, a character vector the same length as
 \code{path}.
+
+for \code{ext<-}, the updated object.
 }
 \examples{
 splitext(character(0))
@@ -49,4 +58,12 @@ splitext("file.ext")
 
 splitext(c("file.tar.gz", "file.tar.bz2", "file.tar.xz"), compression = FALSE)
 splitext(c("file.tar.gz", "file.tar.bz2", "file.tar.xz"), compression = TRUE)
+
+x <- "this.path_1.0.0.tar.gz"
+ext(x) <- ".png"
+x
+
+x <- "this.path_1.0.0.tar.gz"
+ext(x, compression = TRUE) <- ".png"
+x
 }
