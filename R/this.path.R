@@ -601,13 +601,13 @@ is.clipboard.or.stdin <- function (file)
 
 
     # in 0.2.0, compatibility with 'debugSource' in 'RStudio' was added
-    dbgS <- if (gui.rstudio)
+    debugSource <- if (gui.rstudio)
         get("debugSource", "tools:rstudio", inherits = FALSE)
 
 
     # in 0.4.0, compatibility with 'testthat::source_file' was added. it is
     # almost identical to 'sys.source'
-    srcf <- if (isNamespaceLoaded("testthat"))
+    source_file <- if (isNamespaceLoaded("testthat"))
         testthat::source_file
         # getExportedValue("testthat", "source_file")
 
@@ -823,7 +823,7 @@ is.clipboard.or.stdin <- function (file)
         }
 
 
-        else if (!is.null(dbgS) && identical(sys.function(n), dbgS)) {
+        else if (!is.null(debugSource) && identical(sys.function(n), debugSource)) {
 
 
             if (!existsn(".__file__")) {
@@ -889,7 +889,7 @@ is.clipboard.or.stdin <- function (file)
         }
 
 
-        else if (!is.null(srcf) && identical(sys.function(n), srcf)) {
+        else if (!is.null(source_file) && identical(sys.function(n), source_file)) {
 
 
             if (!existsn(".__file__")) {

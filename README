@@ -7,26 +7,30 @@ or from GitHub:
   * install.packages("this.path", repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES")
 
 
-This is the README file for R package 'this.path'. The goal
-of 'this.path' is to provide a mechanism for retrieving the
-absolute path of an R script from within said R script, and
-without needing to explicitly write down the path within
-said R script or anywhere outside the context of the R
-script. As an added benefit, it provides a mechanism for
-specifying absolute file paths relative to a script's
-directory (without changing the working directory).
+This is the README file for R package 'this.path'. The goal of
+'this.path' is to provide a mechanism for retrieving the absolute path
+of an R script from within said R script, and without needing to
+explicitly write down the path within said R script or anywhere outside
+the context of the R script. Additionally, it provides a mechanism for
+specifying absolute file paths relative to the script's directory
+(without changing the working directory).
 
-This is something that Python has natively. When a Python
-script is run, it makes a variable '__file__' that is the
-absolute path of the script in which it was created. This
-package seeks to provide the same.
+This is something that Python has natively. When a Python script is
+run, it makes a variable __file__ that is the absolute path of the
+script in which it was created. This package seeks to provide the same.
 
-'this.path()' will return the absolute path of the R script
-in which it is written. 'this.dir()' will return the
-absolute path of the directory of the R script in which it
-is written. 'here()' is a method of specifying file paths
-in a similar manner to 'file.path()', prepended by the
-directory of the executing R script.
+this.path() will return the absolute path of the R script/Rmd file in
+which it is written. this.dir() will return the absolute path of the
+directory of the R script/Rmd file in which it is written. here() is a
+method of specifying file paths in a similar manner to file.path(),
+prepended by the directory of the executing R script.
+
+This package also provides functions for constructing and manipulating 
+file paths. path.join(), basename2(), and dirname2() are drop in
+replacements for file.path(), basename(), and dirname() which better
+handle drives and network shares. splitext(), removeext(), ext(), and
+ext<-() split a path into root and extension, remove a file extension,
+get an extension, or set an extension for a file path.
 
 
 
@@ -34,122 +38,84 @@ directory of the executing R script.
 
 # this.path vs whereami ----
 
-The only equivalent to 'this.path::this.path()' (that I've
-seen) is 'whereami::thisfile()'. R package 'whereami' has
-many issues that 'this.path' resolves:
+The only equivalent to this.path() (that I've seen) is
+whereami::thisfile(). R package 'whereami' has many issues that
+this.path resolves:
 
-First, 'this.path' works with four types of source
-functions being source, sys.source, debugSource in RStudio,
-and testthat::source_file, while 'whereami' only works with
-source.
+  1. this.path() works with sys.source(), debugSource() in RStudio, and
+     testthat::source_file(). It also works in interactive mode inside
+     RStudio, VSCode, and Rgui for Windows. 'whereami' does not.
 
-Second, 'this.path' will not fail if it is involved in the
-'file' argument of a source call.
+  2. Related to source(), this.path():
 
-```
-FILE <- tempfile(c("file1_", "file2_"))
+     2.1. takes argument 'chdir' into account
 
+     2.2. recognizes that 'file = ""', 'file = "clipboard"', and
+          'file = "stdin"' are not opening files and skips them
 
-this.path:::write.code(bquote({
+     2.3. accounts for 'file' being a URL path
 
+     2.4. accounts for 'file' being a connection instead of a character
+          string
 
-    this.path::this.path(verbose = FALSE)
-    source(file.path(dirname(this.path::this.path(verbose = FALSE)),
-        .(basename(FILE[2]))), echo = TRUE)
+     2.5. skips calls in which 'file' is missing and 'exprs' is used
+          instead
 
+     'whereami' does not take any of this into consideration.
 
-    whereami::thisfile()
-    source(file.path(dirname(whereami::thisfile()),
-        .(basename(FILE[2]))), echo = TRUE)
+  3. if an R script is being run from a shell, this.path() does a much
+     better job of extracting the command line argument -f FILE or
+     --file=FILE
 
+  4. this.path() saves all normalized paths within their appropriate
+     environments, making it much faster subsequent times within the
+     same script, and independent of working directory.
 
-}), file = FILE[1], evaluated = TRUE, simplify = TRUE)
+  5. if this.path() does not find an executing script, it throws an
+     error. This is better than 'whereami' which returns NULL when it
+     cannot find the executing script. If the executing script cannot
+     be found, obviously there is a problem that needs to be addressed,
+     so the script should not continue.
 
+Ignoring the direct comparison of 'this.path' and 'whereami',
+'whereami' has some objectively incorrect coding issues and poor
+recommendations for how you should structure your projects.
 
-this.path:::write.code({
+  1. It treats R and Rscript as two separate applications to look for
+     command line arguments. At least since R 2.5.0 (15 years ago),
+     Rscript directly calls R, so there should not be separate cases.
+     Additionally, it does NOT take into account the differences
+     between the command line applications on Windows and on Unix.
 
+  2. It checks for uses of knitr::knit() after checking the entire call
+     stack for source() and checking the command line arguments. This
+     is 100% incorrect, it should be checking for knitr::knit() at the
+     same time as it checks for source().
 
-    this.path::this.path(verbose = FALSE)
-    whereami::thisfile()
+  3. When 'whereami' is loaded or attached, it changes option
+     'keep.source' to TRUE. A package should never be changing YOUR
+     options, ESPECIALLY without informing you. While that might not be
+     a bad thing for you (it may be completely irrelevant whether
+     'keep.source' is FALSE or TRUE), it is still bad practice that
+     should be avoided, especially for being a CRAN package.
 
+  4. When you call whereami::thisfile(), it forces package 'knitr' to
+     be loaded as well. Again, this is such a problem with this
+     package, it changes your environment without asking you. It should
+     use something like isNamespaceLoaded("knitr") instead of
+     requireNamespace("knitr") because, contrary to what the package
+     claims, 'whereami' should enhance the use of knitr, not require
+     the use of knitr.
 
-}, file = FILE[2])
-
-
-source(FILE[1], echo = TRUE)
-
-
-unlink(FILE)
-```
-
-As you can see, 'whereami::thisfile()' fails where
-'this.path::this.path()' works perfectly. This is related
-to what I call an "appropriate source call" in the comments
-at the top of function 'this.path::this.path', of which
-'whereami::thisfile' has no such concept.
-
-Third, 'this.path' knows if the source call didn't open a
-file and skips that source call appropriately. For example,
-'source("")', 'source("clipboard")', and 'source("stdin")'
-would all be skipped because they do not open files,
-whereas 'whereami::thisfile' would return the string above
-(incorrectly normalized against the working directory).
-
-Fourth, 'this.path' won't fail if given a URL or file URL
-for a string instead of a path, whereas 'whereami::thisfile'
-would attempt to normalize such a path.
-
-Fifth, 'this.path' takes argument 'chdir' into account when
-specifying relative paths in source, 'whereami::thisfile'
-does not.
-
-Sixth, 'this.path' handles connections within source,
-'whereami::thisfile' does not.
-
-Seventh, if an R script is being run from a shell,
-'this.path' does a much better job at extracting the
-argument -f FILE or --file=FILE.
-
-Eighth, 'this.path' works in interactive mode in RStudio,
-Rgui, and (hopefully soon) AQUA, 'whereami::thisfile' does
-not.
-
-Ninth, 'this.path' saves the path it finds within the
-appropriate environment, making it much faster subsequent
-times within the same script, and independent of working
-directory, 'whereami::thisfile' does not.
-
-Finally, if 'this.path' finds that there is no executing
-script, it throws an error. This is better than
-'whereami::thisfile' which returns NULL when it cannot find
-the executing script. If the executing script cannot be
-found, obviously there is an error that needs to be fixed,
-so the script shouldn't continue.
-
-Ignoring the direct comparison of 'this.path::this.path'
-and 'whereami::thisfile', 'whereami' has some other issues.
-'whereami' suggests that an R script needing to know its
-own path should only be done if absolutely necessary, and
-that it should be set outside the context of the R script
-if possible. This is a giant load of shit. No elaboration
-is offered, they simply assert that an R script knowing its
-own path is bad. Windows batch scripts, bash scripts, C
-scripts, and Python scripts all have methods of requesting
-their own path without issue, so R should too. We shouldn't
-be scaring programmers into thinking that this is
-rule-breaking or bad practice. Two last things, 'whereami'
-changes your options without telling you! When 'whereami'
-is loaded, it changes option 'keep.source' to TRUE. While
-that might not be a bad thing for you, it might be
-completely irrelevant whether 'keep.source' is FALSE or
-TRUE, a package should not be changing your options without
-asking in some manner. And finally, 'whereami' forces R
-package 'knitr' to be loaded when you use
-'whereami::thisfile', another thing the package shouldn't
-be doing. 'this.path::this.path' enhances R package
-'testthat', but at no point does 'this.path::this.path'
-force the loading of 'testthat'. The user is free to have
-it loaded or not when using 'this.path::this.path'.
+  5. Code aside, 'whereami' suggests that an R script needing to know
+     its own path should only be done if absolutely necessary, and that
+     it should be set outside the context of the R script if possible.
+     This is a giant load of shit. No elaboration is offered, they
+     simply assert that an R script knowing its own path is bad.
+     Windows batch scripts, bash scripts, C scripts, and Python scripts
+     all have methods of requesting their own path without issue, so R
+     should too. We shouldn't be scaring programmers into thinking that
+     this is rule-breaking or bad practice.
 
 
 
@@ -157,102 +123,99 @@ it loaded or not when using 'this.path::this.path'.
 
 # this.path vs here ----
 
-If you're not using 'this.path' for the function
-'this.path::this.path', you're probably using it for
-'this.path::here'. The only equivalent (that I know of) is
-R package 'here' with its function 'here::here'.
-'this.path' provides a mechanism for specifying a path
-relative to the executing R script's directory, while
-'here' provides a mechanism for specifying a path relative
-to the project's directory.
+If you're not using 'this.path' for the function this.path(), you're
+probably using it for this.path::here(). The only equivalent (that I
+know of) is R package 'here' with its function here::here().
+'this.path' provides a mechanism for specifying a path relative to the
+executing scripts directory, while 'here' provides a mechanism for
+specifying a path relative to the project's directory.
 
-As a long time 'here' user, I appreciate all the
-functionality and convenience this package offered, but it
-has some faults that cannot be ignored (which 'this.path'
-overcomes). I mean no hate when I say the things I'm about
-to say, it's not that I dislike 'here', but that I could no
-longer use it because of my use-case.
+As a long time 'here' user, I appreciate all the functionality and
+convenience this package offered, but it has some faults that I could
+not ignore (which 'this.path' fixes). It's not that I dislike 'here',
+but that I could no longer use it because of my use-case.
 
-First, 'here' does not work when two projects rely on each
-other. In my scenario, I had project A and B, both of which
-rarely relied on the other (so I did not want to combine
-them into one project), but had once instance in which they
-ran a script from the other project. However, the project
-root was already set to the root of project A, so when I
-tried to run the script in project B from a script in
-project A, the project root did not update and the script
-in project B would fail.
+  1. 'here' does not work when two projects rely on each other. In my
+     scenario, I had project A and B, both of which rarely relied on
+     the other (so I did not want to combine them into one project),
+     but had once instance in which they ran a script from the other
+     project. However, the project root was already set to the root of
+     project A, so when I tried to run the script in project B from a
+     script in project A, the project root did not update and the
+     script in project B would fail.
 
-Second, 'here' does not work when a project is stored on
-the internet. When I say on the internet, I am not
-referring to a project stored in a UNC drive, that still
-works correctly. I'm talking about projects uploaded to a
-website. The work I do requires that all source code and
-input be publicly available through our website, and that
-the code should run as expected (slow as it may be, and
-only code that exclusively reads files and / / or produces
-graphics). Since the project root of 'here' cannot be a
-URL, I can't use it.
+  2. 'here' does not work when a project is stored on the internet.
+     When I say on the internet, I am not referring to a project stored
+     on a network share, that works correctly. I'm talking about
+     projects uploaded to a website. The work I do requires that all
+     source code and input be publicly available through our website,
+     and that the code should run as expected (slow as it may be, and
+     only code that exclusively reads files and / / or produces
+     graphics). Since the project root of 'here' cannot be a URL, I
+     can't use it.
 
-With 'this.path', both of these issues are solved. I can
-run a script in project B from a script in project A
-without issue, and I can run a script that is uplodaded to
-a website without issue.
+It should be noted that if you prefer specifying files relative to the
+projects' directory instead of the executing scripts' directory, you
+could use this.path::this.proj() instead. It behaves very similarly to
+here::here(), but can handle multiple projects in use at once, and can
+run projects stored on the internet.
 
 
 
 
 
-# Other methods ----
+# other methods ----
 
-There are a few alternatives to 'this.path()', though they
-are very limiting.
+There are a few alternatives to this.path(), though they are very
+limiting.
 
-First, you could always change the working directory to the
-directory of the executing R script before running it. This
-would be
+  1. You could always change the working directory to the directory of
+     the executing R script before running it. This would be
 
 ```
 cd /path/to
 Rscript file
 ```
 
-or
+     or
 
 ```
 source("/path/to/file", chdir = TRUE)
 ```
 
-This works for just about every use-case, except for
-interactive use where you probably aren't changing the
-working directory as you move from file to file, and it
-won't if your R script is stored on a website.
+     This works for just about every use-case, except for interactive
+     use where you probably aren't changing the working directory as
+     you move from file to file, and it won't if your R script is
+     stored on a website. This also means that you cannot make R
+     scripts that act like executables.
 
-Second, you could use 'utils::getSrcFilename'. Everywhere
-you would use 'this.path()', use
-'utils::getSrcFilename(function() NULL, full.names = TRUE)'
-(yes it is quite lengthy), and everywhere you would use
-'this.dir()', use 'utils::getSrcDirectory(function() NULL)'
-(again, quite lengthy).
+     For example, the Rscript executable needs to know its own path so
+     that it can invoke the R executable. It would be bad practice for
+     Rscript to change the working directory before invoking R, the
+     working directory is YOUR directory, not Rscript's directory.
+     Similarly, if you made an R script that acts like an executable,
+     calling other scripts in the same directory, you could not call
+     those other scripts without the original script knowing its path.
 
-While this will work for R scripts uploaded to a website,
-this won't work in interactive use since you have to source
-your scripts. Also, it means you must have option
-'keep.source' set to TRUE, once again probably not a big
-deal, but something that may cause issues. This means you
-couldn't run your R scripts from a shell anymore,
-making it a very inconvenient substitute.
+  2. You could use utils::getSrcFilename(). Everywhere you would use
+     this.path(), use utils::getSrcFilename(function() NULL, full.names = TRUE)
+     instead (yes it is quite lengthy), and everywhere you would use
+     this.dir(), use utils::getSrcDirectory(function() NULL)
+     (again, quite lengthy).
 
-I know of no other methods, though maybe you've found your
-own.
+     While this will work for R scripts uploaded to a website, this
+     will not work in interactive use since you have to source your
+     scripts. Also, it means you must have option 'keep.source' set to
+     TRUE, once again probably not a big deal, but something that may
+     cause issues. This means you couldn't run your R scripts from a
+     shell ever again, making it an incredibly inconvenient substitute.
 
 
 
 
 
-# Closing ----
+# closing ----
 
-If you think I've overlooked 'whereami' or 'here', or think
-there are any improvements I could make to 'this.path',
-feel free to let me know, and I hope this package serves
-you well!
+If you think I've overlooked 'whereami' or 'here', or think there are
+any improvements I could make to 'this.path', please let me know, I'm
+open to all suggestions! And I hope this package serves you well!
