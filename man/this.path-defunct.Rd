@@ -3,6 +3,7 @@
 \alias{this.path2}
 \alias{this.dir2}
 \alias{this.dir3}
+\alias{normalized.shFILE}
 \title{
 Defunct Functions in Package \pkg{this.path}
 }
@@ -12,9 +13,10 @@ they are no longer needed.
 }
 \usage{
 # Defunct in 1.1.0
-this.path2(...)  # use 'this.path(..., default = NULL)' instead
-this.dir2(...)   # use 'this.dir(..., default = NULL)' instead
-this.dir3(...)   # use 'this.dir(..., default = getwd())' instead
+this.path2(...)         # use 'this.path(..., default = NULL)' instead
+this.dir2(...)          # use 'this.dir(..., default = NULL)' instead
+this.dir3(...)          # use 'this.dir(..., default = getwd())' instead
+normalized.shFILE(...)  # use 'shFILE()' instead
 }
 \arguments{
   \item{\dots}{

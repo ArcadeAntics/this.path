@@ -56,6 +56,7 @@ export(shFILE, normalized.shFILE)
 export(this.path, this.dir)
 export(this.path2, this.dir2, this.dir3)
 export(here, ici)
+export(Sys.path, Sys.dir)
 
 
 # tryCatch2.R            ----

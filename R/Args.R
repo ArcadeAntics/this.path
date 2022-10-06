@@ -59,14 +59,18 @@ asArgs <- function (...)
 
 fileArgs <- function ()
 {
-    path <- this.path(verbose = FALSE, default = return(character()))
-    n <- attr(path, "this.path::n")
-    if (!is.null(n)) {
-        if (identical(sys.function(n - 1L), withArgs))
+    n <- .this.path(get.frame.number = TRUE)
+    if (n) {
+        if (n == 1L) {
+            if (has.shFILE)
+                character()
+            else commandArgs(trailingOnly = TRUE)
+        }
+        else if (identical(sys.function(n - 1L), withArgs))
             get("args", envir = sys.frame(n - 1L), inherits = FALSE)
         else character()
     }
-    else if (isTRUE(attr(path, "this.path::from.shell")))
+    else if (has.shFILE)
         commandArgs(trailingOnly = TRUE)
     else character()
 }
@@ -74,14 +78,14 @@ fileArgs <- function ()
 
 progArgs <- function ()
 {
-    path <- this.path(verbose = FALSE, default = return({
-        if (in.shell)
-            commandArgs(trailingOnly = TRUE)
-        else character()
-    }))
-    n <- attr(path, "this.path::n")
-    if (!is.null(n)) {
-        if (identical(sys.function(n - 1L), withArgs))
+    n <- .this.path(get.frame.number = TRUE)
+    if (n) {
+        if (n == 1L) {
+            if (has.shFILE)
+                character()
+            else commandArgs(trailingOnly = TRUE)
+        }
+        else if (identical(sys.function(n - 1L), withArgs))
             get("args", envir = sys.frame(n - 1L), inherits = FALSE)
         else character()
     }

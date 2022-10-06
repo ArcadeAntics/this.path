@@ -1,6 +1,8 @@
 \name{this.path}
 \alias{this.path}
 \alias{this.dir}
+\alias{Sys.path}
+\alias{Sys.dir}
 \title{Determine Executing Script's Filename
 }
 \description{
@@ -12,15 +14,32 @@ of the directory in which the executing script is located.
 
 See also \code{\link{here}()} for constructing paths to files, starting with
 \code{this.dir()}.
+
+\code{Sys.path()} and \code{Sys.dir()} are versions of \code{this.path()} and
+\code{this.dir()} that takes no arguments.
 }
 \usage{
-this.path(verbose = getOption("verbose"), default, else.)
-this.dir (verbose = getOption("verbose"), default, else.)
+this.path(verbose = getOption("verbose"), original = FALSE,
+    for.msg = FALSE, default, else.)
+this.dir (verbose = getOption("verbose"), original = FALSE,
+    for.msg = FALSE, default, else.)
+
+Sys.path()  # short for 'this.path(verbose = FALSE)'
+Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
 }
 \arguments{
   \item{verbose}{
 \code{TRUE} or \code{FALSE}; should the method in which the path was determined
 be printed?
+  }
+  \item{original}{
+\code{TRUE} or \code{FALSE}; should the original or the normalized path be
+returned?
+  }
+  \item{for.msg}{
+\code{TRUE} or \code{FALSE}; do you want the path for the purpose of printing a
+diagnostic message/warning/error? This will return \code{NA_character_} in most
+cases where an error would've be thrown.
   }
   \item{default}{
 if there is no executing script, this value is returned.
@@ -148,10 +167,11 @@ character string; the executing script's filename.
 \note{
 The first time \code{this.path} is called within a script, it will
 \code{\link[base:normalizePath]{normalize}} the script's path, check that the
-script exists (throwing an error if it does not), and save it in the appropriate
-environment. When \code{this.path} is called subsequent times within the same
-script, it returns the saved path. This will be faster than the first time, will
-not check for file existence, and will be independent of the working directory.
+script exists (throwing an error if it does not), and save it in the
+appropriate environment. When \code{this.path} is called subsequent times
+within the same script, it returns the saved path. This will be faster than the
+first time, will not check for file existence, and will be independent of the
+working directory.
 
 As a side effect, this means that a script can delete itself using
 \code{\link[base:files]{file.remove}} or \code{\link[base]{unlink}} but still
@@ -586,7 +606,7 @@ before calling \code{this.path} at least once.
 %
 %
 %
-\examples{\dontshow{.unload <- !isNamespaceLoaded("testthat")}
+\examples{\dontshow{.unload.testthat <- !isNamespaceLoaded("testthat") ; .unload.knitr <- !isNamespaceLoaded("knitr")}
 this.path:::write.code(file = FILE <- tempfile(), {
 
     withAutoprint({
@@ -611,6 +631,27 @@ if (.Platform$GUI == "RStudio")
     get("debugSource", "tools:rstudio", inherits = FALSE)(FILE)
 if (requireNamespace("testthat"))
     testthat::source_file(FILE, chdir = FALSE, wrap = FALSE)
+if (requireNamespace("knitr")) {
+    writeLines(con = FILE2 <- tempfile(fileext = ".Rmd"), c(
+        "```{r}",
+        "cat(sQuote(this.path::this.path(verbose = TRUE, default = {",
+        "    stop(\\"interestingly enough, because the executing script's\\\\n\\",",
+        "        \\"  path will be found, argument 'default' won't be evaluated,\\\\n\\",",
+        "        \\"  and so this error won't actually print, isn't that\\\\n\\",",
+        "        \\"  neat? you can use this to your advantage in a similar\\\\n\\",",
+        "        \\"  manner, doing arbitrary things only if the executing\\\\n\\",",
+        "        \\"  script does not exist\\")",
+        "})), \\"\\\\n\\\\n\\")",
+        "```"
+    ))
+    knitr::knit(input = FILE2, output = FILE3 <- tempfile(fileext = ".md"))
+    lines <- readLines(FILE3)
+    n <- length(lines)
+    cat("\\n$ cat -n", shQuote(FILE3), "\\n")
+    writeLines(paste0(sprintf("    \%*d  ", nchar(n), seq_len(n)), lines))
+    cat("\\n")
+    unlink(c(FILE2, FILE3))
+}
 
 
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
@@ -630,7 +671,7 @@ for (expr in c("this.path()",
                "this.dir(default = getwd())"))
 {
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
-    cat("\\n");
+    cat("\\n")
 }
 
 
@@ -642,4 +683,4 @@ this.path::this.path(verbose = FALSE, default = "script.log",
         path
         # or you could use paste0(this.path::removeext(path), ".log")
     })
-\dontshow{unlink(FILE) ; if (.unload) unloadNamespace("testthat")}}
+\dontshow{unlink(FILE) ; if (.unload.testthat) unloadNamespace("testthat") ; if (.unload.knitr) unloadNamespace("knitr")}}

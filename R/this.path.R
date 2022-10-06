@@ -1,4 +1,17 @@
-.shFILE <- evalq(envir = new.env(), function ()
+.Defunct2 <- function (new, old = as.character(sys.call(sys.parent()))[1L])
+{
+    .Defunct(msg = c(
+        gettextf("'%s' is defunct.\n", old, domain = "R-base"),
+        gettextf("Use '%s' instead.\n", new, domain = "R-base"),
+        gettextf("See help(\"Defunct\")", domain = "R-base")
+    ))
+}
+
+
+
+
+
+.shFILE <- function (original = TRUE)
 {
     # shFILE {this.path}                                         R Documentation
     #
@@ -48,16 +61,8 @@
     # separator.
 
 
-    # The details between how the shell arguments are handled is
+    # the details between how the shell arguments are handled is
     # different on Windows and under Unix-alikes, see the comments below.
-
-
-    # return the already saved result, if available
-    if (!is.null(.__file__))
-        return(.__file__)
-
-
-    .__file__ <<- NA_character_
 
 
     # when running R from a shell, there are a few things to keep in mind when
@@ -72,257 +77,260 @@
     # (it seems as though) 'R' takes input from the last 'FILE' argument.
 
 
-    # running R from a shell on Windows
-    if (os.windows.in.shell) {
+    # return the already saved result, if available
+    if (is.null(.__ofile__)) {
 
 
-        ca <- commandArgs()
+        # running R from a shell on Windows
+        if (os.windows.in.shell) {
 
 
-        # select the shell arguments intended for the R executable. also remove
-        # the first argument, this is the name of the executable by which this
-        # R process was invoked (not useful here)
-        ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
-        ca <- ca[-1L]
-        if (length(ca) <= 0L)
-            return(.__file__)
+            ca <- commandArgs()
 
 
-        # remove the --encoding enc shell arguments. these arguments have the
-        # highest priority (ALWAYS handled first), regardless of the preceding
-        # argument.
-        #
-        # Example:
-        #
-        # R -f --encoding UTF-8 FILE
-        #
-        # you might think the value for -f would be --encoding but it's
-        # actually FILE because --encoding enc is processed first
-        enc <- ca == "--encoding"
-        if (any(enc)) {
-            for (n in seq_len(length(enc) - 1L)) {
-                if (enc[[n]])
-                    enc[[n + 1L]] <- FALSE
+            # select the shell arguments intended for the R executable. also remove
+            # the first argument, this is the name of the executable by which this
+            # R process was invoked (not useful here)
+            ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
+            ca <- ca[-1L]
+            if (length(ca) <= 0L) {
+                .__ofile__ <<- NA_character_
+                return(fun(original))
             }
-            enc <- which(enc)
-            ca <- ca[-c(enc, enc + 1L)]
-            if (length(ca) <= 0L)
-                return(.__file__)
-        }
 
 
-        # there are 17 more arguments that are evaluated before -f is
-        # grouped with its corresponding value. Some of them are constant (the
-        # first fifteen) while the others are variable (same beginning,
-        # different values after)
-        #
-        # Example:
-        #
-        # R -f --silent --max-ppsize=10000 FILE
-        #
-        # you might think the value of -f would be --silent but it's
-        # actually FILE because --silent and --max-ppsize=N are processed
-        # before -f is processed
-        pre <- ca %in% c(
-            "--save"              , "--no-save"           ,
-            "--no-environ"        , "--no-site-file"      , "--no-init-file"      ,
-            "--restore"           , "--no-restore-data"   ,
-            "--no-restore-history", "--no-restore"        ,
-            "--vanilla"           ,
-            "-q"                  , "--quiet"             , "--silent"            ,
-            "--no-echo"           , "--verbose"
-        ) | grepl("^--(encoding|max-ppsize)=", ca)
-        if (any(pre)) {
-            ca <- ca[!pre]
-            if (length(ca) <= 0L)
-                return(.__file__)
-        }
+            # remove the --encoding enc shell arguments. these arguments have the
+            # highest priority (ALWAYS handled first), regardless of the preceding
+            # argument.
+            #
+            # Example:
+            #
+            # R -f --encoding UTF-8 FILE
+            #
+            # you might think the value for -f would be --encoding but it's
+            # actually FILE because --encoding enc is processed first
+            enc <- ca == "--encoding"
+            if (any(enc)) {
+                for (n in seq_len(length(enc) - 1L)) {
+                    if (enc[[n]])
+                        enc[[n + 1L]] <- FALSE
+                }
+                enc <- which(enc)
+                ca <- ca[-c(enc, enc + 1L)]
+                if (length(ca) <= 0L) {
+                    .__ofile__ <<- NA_character_
+                    return(fun(original))
+                }
+            }
 
 
-        # next, we group the shell arguments where the name and value are
-        # separate. there are two left being -f FILE and -e EXPR. find the
-        # locations of these special arguments
-        special <- ca %in% c("-f", "-e")
+            # there are 17 more arguments that are evaluated before -f is
+            # grouped with its corresponding value. Some of them are constant (the
+            # first fifteen) while the others are variable (same beginning,
+            # different values after)
+            #
+            # Example:
+            #
+            # R -f --silent --max-ppsize=10000 FILE
+            #
+            # you might think the value of -f would be --silent but it's
+            # actually FILE because --silent and --max-ppsize=N are processed
+            # before -f is processed
+            pre <- ca %in% c(
+                "--save"              , "--no-save"           ,
+                "--no-environ"        , "--no-site-file"      , "--no-init-file"      ,
+                "--restore"           , "--no-restore-data"   ,
+                "--no-restore-history", "--no-restore"        ,
+                "--vanilla"           ,
+                "-q"                  , "--quiet"             , "--silent"            ,
+                "--no-echo"           , "--verbose"
+            ) | grepl("^--(encoding|max-ppsize)=", ca)
+            if (any(pre)) {
+                ca <- ca[!pre]
+                if (length(ca) <= 0L) {
+                    .__ofile__ <<- NA_character_
+                    return(fun(original))
+                }
+            }
 
 
-        # next, we figure out which of these special arguments are ACTUALLY
-        # special.
-        #
-        # Example:
-        #
-        # R -f -f -f -e
-        # R -e -e -e -f
-        #
-        # the first and third arguments are special
-        # while the second and fourth are not
-        if (any(special)) {
-            for (n in seq_len(length(special) - 1L)) {
-                if (special[[n]])
-                    special[[n + 1L]] <- FALSE
+            # next, we group the shell arguments where the name and value are
+            # separate. there are two left being -f FILE and -e EXPR. find the
+            # locations of these special arguments
+            special <- ca %in% c("-f", "-e")
+
+
+            # next, we figure out which of these special arguments are ACTUALLY
+            # special.
+            #
+            # Example:
+            #
+            # R -f -f -f -e
+            # R -e -e -e -f
+            #
+            # the first and third arguments are special
+            # while the second and fourth are not
+            if (any(special)) {
+                for (n in seq_len(length(special) - 1L)) {
+                    if (special[[n]])
+                        special[[n + 1L]] <- FALSE
+                }
+            }
+            special <- which(special)
+
+
+            # with the locations of the special arguments,
+            #     figure out which of those are -f FILE arguments
+            f <- special[ca[special] == "-f"]
+
+
+            # use the locations of the special arguments to
+            #     find the non-special argument locations
+            not.special <- setdiff(seq_along(ca), c(special, special + 1L))
+
+
+            # in these non-special shell arguments,
+            #     figure out which arguments start with --file=
+            file <- not.special[grep("^--file=", ca[not.special])]
+
+
+            # given the number of -f FILE and --file=FILE arguments,
+            #     signal a possible error or warning
+            n <- length(f) + length(file)
+            if (n <= 0L) {
+                .__ofile__ <<- NA_character_
+                return(fun(original))
+            }
+            else if (n > 1L)
+                stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
+
+
+            # since 'R' uses the last -f FILE or --file=FILE argument,
+            #     use max to find the index of the last one of these arguments
+            n <- max(f, file)
+            .__ofile__ <<- {
+                if (n %in% file)
+                    sub("^--file=", "", ca[[n]])
+                else ca[[n + 1L]]
             }
         }
-        special <- which(special)
 
 
-        # with the locations of the special arguments,
-        #     figure out which of those are -f FILE arguments
-        f <- special[ca[special] == "-f"]
+        # running R from a shell under Unix-alikes with the default GUI (or similar)
+        else if (os.unix.in.shell) {
 
 
-        # use the locations of the special arguments to
-        #     find the non-special argument locations
-        not.special <- setdiff(seq_along(ca), c(special, special + 1L))
+            # when running R from a shell under Unix-alikes, the shell arguments
+            # are parsed in a different manner (of course they are, smh). luckily,
+            # it is far less confusing to grab argument 'FILE' than above
 
 
-        # in these non-special shell arguments,
-        #     figure out which arguments start with --file=
-        file <- not.special[grep("^--file=", ca[not.special])]
+            ca <- commandArgs()
 
 
-        # given the number of -f FILE and --file=FILE arguments,
-        #     signal a possible error or warning
-        n <- length(f) + length(file)
-        if (n <= 0L)
-            return(.__file__)
-        else if (n > 1L)
-            stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
+            ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
+            ca <- ca[-1L]
+            if (length(ca) <= 0L) {
+                .__ofile__ <<- NA_character_
+                return(fun(original))
+            }
 
 
-        # since 'R' uses the last -f FILE or --file=FILE argument,
-        #     use max to find the index of the last one of these arguments
-        n <- max(f, file)
-        .__file__ <<- {
-            if (n %in% file)
-                sub("^--file=", "", ca[[n]])
-            else ca[[n + 1L]]
+            enc <- ca == "--encoding"
+            if (any(enc)) {
+                for (n in seq_len(length(enc) - 1L)) {
+                    if (enc[[n]])
+                        enc[[n + 1L]] <- FALSE
+                }
+                enc <- which(enc)
+                ca <- ca[-c(enc, enc + 1L)]
+                if (length(ca) <= 0L) {
+                    .__ofile__ <<- NA_character_
+                    return(fun(original))
+                }
+            }
+
+
+            f <- which(ca == "-f")
+            file <- grep("^--file=", ca)
+
+
+            n <- length(f) + length(file)
+            if (n <= 0L) {
+                .__ofile__ <<- NA_character_
+                return(fun(original))
+            }
+            else if (n > 1L)
+                stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
+
+
+            n <- max(f, file)
+            .__ofile__ <<- gsub("~+~", " ", {
+                if (n %in% file)
+                    sub("^--file=", "", ca[[n]])
+                else ca[[n + 1L]]
+            }, fixed = TRUE)
         }
+
+
+        else .__ofile__ <<- NA_character_
     }
 
 
-    # running R from a shell under Unix-alikes with the default GUI (or similar)
-    else if (os.unix.in.shell) {
-
-
-        # when running R from a shell under Unix-alikes, the shell arguments
-        # are parsed in a different manner (of course they are, smh). luckily,
-        # it is far less confusing to grab argument 'FILE' than above
-
-
-        ca <- commandArgs()
-
-
-        ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
-        ca <- ca[-1L]
-        if (length(ca) <= 0L)
-            return(.__file__)
-
-
-        enc <- ca == "--encoding"
-        if (any(enc)) {
-            for (n in seq_len(length(enc) - 1L)) {
-                if (enc[[n]])
-                    enc[[n + 1L]] <- FALSE
-            }
-            enc <- which(enc)
-            ca <- ca[-c(enc, enc + 1L)]
-            if (length(ca) <= 0L)
-                return(.__file__)
-        }
-
-
-        f <- which(ca == "-f")
-        file <- grep("^--file=", ca)
-
-
-        n <- length(f) + length(file)
-        if (n <= 0L)
-            return(.__file__)
-        else if (n > 1L)
-            stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
-
-
-        n <- max(f, file)
-        .__file__ <<- gsub("~+~", " ", {
-            if (n %in% file)
-                sub("^--file=", "", ca[[n]])
-            else ca[[n + 1L]]
-        }, fixed = TRUE)
+    fun(original)
+}
+tmp <- new.env()
+environment(.shFILE) <- tmp
+evalq(envir = tmp, {
+    .__ofile__ <- NULL
+    delayedAssign(".__file__", normalizePath(.__ofile__, winslash = "/", mustWork = TRUE))
+    fun <- function(original) {
+        if (original) .__ofile__ else .External2(C_getpromisewithoutwarning, ".__file__")
     }
-    return(.__file__)
 })
-evalq(envir = environment(.shFILE), {
-    .__file__ <- NULL
-})
-lockEnvironment(environment(.shFILE))
+lockEnvironment(tmp)
+lockBinding(".__file__", tmp)
+lockBinding("fun", tmp)
+rm(tmp)
 
 
-shFILE <- function (default, else.)
+shFILE <- function (original = FALSE, default, else.)
 {
     if (missing(default))
         if (missing(else.))
-            .shFILE()
+            .shFILE(original)
         else stop("'shFILE' with 'else.' but not 'default' makes no sense")
     else {
         if (missing(else.)) {
-            ans <- .shFILE()
-            if (is.na(ans))
+            if (is.na(.shFILE()))
                 default
-            else ans
+            else .shFILE(original)
         }
         else {
-            ans <- .shFILE()
-            if (is.na(ans))
+            if (is.na(.shFILE()))
                 default
-            else else.(ans)
+            else {
+                else. <- match.fun(else.)
+                value <- .shFILE(original)
+                else.(value)
+            }
         }
     }
 }
 
 
-.normalized.shFILE <- evalq(envir = new.env(), function ()
-{
-    # return the already saved result, if available
-    if (!is.null(.__file__))
-        return(.__file__)
+delayedAssign("has.shFILE", in.shell && !is.na(.shFILE()))
 
 
-    file <- .shFILE()
-    file <- normalizePath(file, winslash = "/", mustWork = TRUE)
-    .__file__ <<- file
-    return(.__file__)
-})
-evalq(envir = environment(.normalized.shFILE), {
-    .__file__ <- NULL
-})
-lockEnvironment(environment(.normalized.shFILE))
-
-
-normalized.shFILE <- function (default, else.)
-{
-    if (missing(default))
-        if (missing(else.))
-            .normalized.shFILE()
-        else stop("'normalized.shFILE' with 'else.' but not 'default' makes no sense")
-    else {
-        if (missing(else.)) {
-            if (is.na(.shFILE()))
-                default
-            else .normalized.shFILE()
-        }
-        else {
-            if (is.na(.shFILE()))
-                default
-            else else.(.normalized.shFILE())
-        }
-    }
-}
+normalized.shFILE <- function (...)
+.Defunct2("shFILE", old = "normalized.shFILE")
 
 
 
 
 
 .this.path_regexps <- list()
-.this.path_regexps$windows.file.sep            <- "[/\\\\]"
+.this.path_regexps$windows.fsep                <- "[/\\\\]"
 .this.path_regexps$windows.basename            <- local({
 
 
@@ -381,7 +389,7 @@ normalized.shFILE <- function (default, else.)
     paste0(
         "(",
             .this.path_regexps$windows.basename,
-            .this.path_regexps$windows.file.sep,
+            .this.path_regexps$windows.fsep    ,
         ")*",
         .this.path_regexps$windows.basename
     )
@@ -398,16 +406,16 @@ normalized.shFILE <- function (default, else.)
     # and a backslash or slash. the letter and colon may be omitted
     paste0(
         .this.path_regexps$windows.local.drive.no.sep,
-        .this.path_regexps$windows.file.sep
+        .this.path_regexps$windows.fsep
     )
 })
 .this.path_regexps$windows.UNC.drive           <- local({
 
 
     paste0(
-        .this.path_regexps$windows.file.sep,
+        .this.path_regexps$windows.fsep,
         "(",
-            .this.path_regexps$windows.file.sep,
+            .this.path_regexps$windows.fsep    ,
             .this.path_regexps$windows.basename,
         "){2}"
     )
@@ -422,7 +430,7 @@ normalized.shFILE <- function (default, else.)
             "|",
                 .this.path_regexps$windows.local.drive.no.sep,
                 "(",
-                    .this.path_regexps$windows.file.sep,
+                    .this.path_regexps$windows.fsep    ,
                     .this.path_regexps$windows.basename,
                 ")+",
         ")"
@@ -433,9 +441,9 @@ normalized.shFILE <- function (default, else.)
 
     # paste0("[/\\\\]{2}", "(", .this.path_regexps$windows.basename, "[/\\\\])+", .this.path_regexps$windows.basename)
     paste0(
-        .this.path_regexps$windows.file.sep,
+        .this.path_regexps$windows.fsep,
         "(",
-            .this.path_regexps$windows.file.sep,
+            .this.path_regexps$windows.fsep    ,
             .this.path_regexps$windows.basename,
         "){2,}"
     )
@@ -499,10 +507,10 @@ windows.abs.path <- .this.path_regexps$windows.absolute.path.anchored
 
 
 
-thisPathNotExistsError_class <- c("this.path::thisPathNotExistsError", "this.path::thisPathNotExistError", "this.path_this.path_not_exists_error")
-thisPathNotImplementedError_class <- c("this.path::thisPathNotImplementedError", "this.path_this.path_unimplemented_error")
-AQUAError_class <- c("this.path::AQUAError", thisPathNotImplementedError_class)
-thisPathUnrecognizedMannerError_class <- c("this.path::thisPathUnrecognizedMannerError", thisPathNotImplementedError_class)
+thisPathNotExistsError_class          <- c("this.path::thisPathNotExistsError"         , "this.path::thisPathNotExistError"       , "this.path_this.path_not_exists_error")
+thisPathNotImplementedError_class     <- c("this.path::thisPathNotImplementedError"    , "this.path_this.path_unimplemented_error")
+thisPathAQUAError_class               <- c("this.path::thisPathAQUAError"              , thisPathNotImplementedError_class        )
+thisPathUnrecognizedMannerError_class <- c("this.path::thisPathUnrecognizedMannerError")
 
 
 Error <- function (..., call. = TRUE, domain = NULL, class = NULL,
@@ -519,52 +527,84 @@ thisPathNotImplementedError <- function(...) NULL
 body(thisPathNotImplementedError) <- bquote(Error(..., class = .(thisPathNotImplementedError_class)))
 
 
-AQUAError <- function(...) NULL
-body(AQUAError) <- bquote(Error(..., class = .(AQUAError_class)))
+thisPathAQUAError <- function(...) NULL
+body(thisPathAQUAError) <- bquote(Error(..., class = .(thisPathAQUAError_class)))
 
 
 thisPathUnrecognizedMannerError <- function(...) NULL
 body(thisPathUnrecognizedMannerError) <- bquote(Error(..., class = .(thisPathUnrecognizedMannerError_class)))
 
 
+# helper functions for .this.path()   ----
+
+
 is.clipboard.or.stdin <- function (file)
 {
+    # if we were to open a connection to this file (e.g. file(file, "r"))
+    # would it connect to a clipboard or to the C-level standard input?
+    #
+    # this is useful because we'd like to know if 'file' actually connected
+    # to a file
     if (os.windows)
         file %in% c("clipboard", "stdin") || startsWith(file, "clipboard-")
-    else file %in% c("clipboard", "X11_primary", "X11_secondary", "X11_clipboard", "stdin")
+    else file %in% c("clipboard", "stdin", "X11_primary", "X11_secondary", "X11_clipboard")
 }
 
 
-.this.path <- function (verbose = getOption("verbose"))
+assign.NULL <- function (envir)
+{
+    assign(".__ofile__", NULL, envir = envir)
+    delayedAssign(".__file__", NULL, assign.env = envir)
+}
+
+
+assign.URL <- function (path, envir)
+{
+    assign(".__ofile__", path, envir = envir)
+    delayedAssign(".__file__", normalizeURL(path), assign.env = envir)
+}
+
+
+assign.chdir <- function (path, envir, owd)
+{
+    assign(".__ofile__", path, envir = envir)
+    owd  # force 'owd'
+    fun <- function() {
+        cwd <- getwd()
+        on.exit(setwd(cwd))
+        setwd(owd)
+        normalizePath(path, winslash = "/", mustWork = TRUE)
+    }
+    delayedAssign(".__file__", fun(), assign.env = envir)
+}
+
+
+assign.default <- function (path, envir)
+{
+    assign(".__ofile__", path, envir = envir)
+    delayedAssign(".__file__", normalizePath(path, winslash = "/", mustWork = TRUE), assign.env = envir)
+}
+
+
+getInFrame <- function (x, frame)
+get(x, envir = frame, inherits = FALSE)
+
+
+existsInFrame <- function (x, frame)
+exists(x, envir = frame, inherits = FALSE)
+
+
+# this.path(), this.dir(), and here() ----
+
+
+.this.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE,
+    N = sys.nframe() - 1L, get.frame.number = FALSE)
 {
     # function to print the method in which the
     # path of the executing script was determined
     where <- function(x) {
         if (verbose)
             cat("Source: ", x, "\n", sep = "")
-    }
-
-
-    # functions to get or check for an object in the n-th frame
-    existsn <- function(x) exists(x, envir = sys.frame(n), inherits = FALSE)
-    getn <- function(x) get(x, envir = sys.frame(n), inherits = FALSE)
-
-
-    # function to save a path in the n-th frame
-    assign.__file__ <- function(
-
-        value = `attr<-`(full.path, "this.path::n", n),
-
-        full.path = if (URL)
-            normalizeURL(opath)
-        else normalizePath(opath, winslash = "/", mustWork = TRUE),
-
-        opath = path,
-
-        URL = FALSE)
-    {
-        assign(".__file__", value, envir = sys.frame(n), inherits = FALSE)
-        value
     }
 
 
@@ -617,27 +657,24 @@ is.clipboard.or.stdin <- function (file)
         knitr::knit
 
 
-    for (n in seq.int(to = 1L, by = -1L, length.out = sys.nframe() - 1L)) {
+    for (n in seq.int(to = 1L, by = -1L, length.out = N)) {
 
 
         if (identical(sys.function(n), source)) {
 
 
             # if the path has yet to be saved
-            if (!existsn(".__file__")) {
+            if (!existsInFrame(".__ofile__", frame <- sys.frame(n))) {
 
 
                 # 'ofile' is a copy of the original 'file' argument
                 # if it does not exist, we have not entered a file yet,
-                # then continue to the next iteration
-                if (!existsn("ofile"))
+                # so go to the next iteration
+                if (!existsInFrame("ofile", frame))
                     next
 
 
-                path <- getn("ofile")
-
-
-                URL <- FALSE
+                path <- getInFrame("ofile", frame)
 
 
                 # there are two options for 'file'
@@ -653,7 +690,7 @@ is.clipboard.or.stdin <- function (file)
                     # iteration. We use .__file__ as NULL to skip this source
                     # call the next time this.path leads here
                     if (path == "") {
-                        assign.__file__(NULL)
+                        assign.NULL(frame)
                         next
                     }
 
@@ -665,7 +702,7 @@ is.clipboard.or.stdin <- function (file)
                     # next iteration. We use .__file__ as NULL to skip this
                     # source call the next time this.path leads here
                     else if (is.clipboard.or.stdin(path)) {
-                        assign.__file__(NULL)
+                        assign.NULL(frame)
                         next
                     }
 
@@ -676,8 +713,7 @@ is.clipboard.or.stdin <- function (file)
                     # previously, the error would've occured at 'normalizePath',
                     # so it makes more sense to have this error here
                     else if (grepl("^(ftp|ftps|http|https)://", path)) {
-                        # stop("'this.path' makes no sense for a URL")
-                        URL <- TRUE
+                        assign.URL(path, frame)
                     }
 
 
@@ -689,7 +725,7 @@ is.clipboard.or.stdin <- function (file)
                     # the description of this connection should remove the
                     # leading characters
                     else if (grepl("^file://", path)) {
-                        path <- file.URL.path.1(path)
+                        assign.default(file.URL.path.1(path), frame)
                     }
 
 
@@ -700,10 +736,13 @@ is.clipboard.or.stdin <- function (file)
                     # prior to being changed, we need to change it to the
                     # previous working directory before we can normalize the
                     # path
-                    else if (existsn("owd")) {
-                        cwd <- getwd()
-                        on.exit(setwd(cwd))
-                        setwd(getn("owd"))
+                    else if (existsInFrame("owd", frame)) {
+                        assign.chdir(path, frame, getInFrame("owd", frame))
+                    }
+
+
+                    else {
+                        assign.default(path, frame)
                     }
                 }
 
@@ -737,46 +776,74 @@ is.clipboard.or.stdin <- function (file)
 
 
                     path <- summary.connection(path)
-                    switch(path$class, file = , gzfile = , bzfile = ,
-                        xzfile = , fifo = {
+                    switch(path$class,
 
 
-                        path <- path$description
+                    file   = ,
+                    gzfile = ,
+                    bzfile = ,
+                    xzfile = ,
+                    fifo   = {
+                        assign.default(path$description, frame)
+                    },
 
 
-                    }, `url-libcurl` = , `url-wininet` = {
+                    `url-libcurl` = ,
+                    `url-wininet` = {
+                        assign.URL(path$description, frame)
+                    },
 
 
-                        # stop("'this.path' makes no sense for a URL")
-                        URL <- TRUE
-                        path <- path$description
-
-
-                    }, terminal = , clipboard = , pipe = {
-
-
-                        assign.__file__(NULL)
+                    terminal  = ,
+                    clipboard = ,
+                    pipe      = {
+                        assign.NULL(frame)
                         next
+                    },
 
 
-                    }, unz = {
+                    unz = {
+                        if (for.msg)
+                            return(path$description)
+                        else stop("'this.path' cannot be used within a zip file")
+                    },
 
 
-                        stop("'this.path' cannot be used within a zip file")
-
-
-                    }, stop(thisPathNotImplementedError(
-                        "'this.path' unimplemented when source-ing a connection of class ",
-                        sQuote(path$class))))
+                    {
+                        if (for.msg)
+                            return(NA_character_)
+                        else {
+                            cond <- thisPathNotImplementedError(
+                                "'this.path' not implemented when source-ing a connection of class ",
+                                sQuote(path$class))
+                            attr(cond, "summary.connection") <- path
+                            stop(cond)
+                        }
+                    })
                 }
-
-
-                assign.__file__(URL = URL)
             }
-            else if (is.null(getn(".__file__")))
+
+
+            path <- getInFrame(".__ofile__", frame)
+            if (is.null(path))
                 next
+            if (get.frame.number)
+                return(n)
+            else if (for.msg) {
+                return({
+                    if (original)
+                        path
+                    else tryCatch({
+                        .External2(C_getpromisewithoutwarning, ".__file__", frame)
+                    }, error = function(cond) path)
+                })
+            }
+            else if (original) {}
+            else path <- .External2(C_getpromisewithoutwarning, ".__file__", frame)
+
+
             where("call to function source")
-            return(getn(".__file__"))
+            return(path)
         }
 
 
@@ -785,19 +852,20 @@ is.clipboard.or.stdin <- function (file)
 
             # much the same as 'source' except simpler, we don't have to
             # account for argument 'file' being a connection or ""
-            if (!existsn(".__file__")) {
-
-
-                # if file is an unevaluated promise
+            if (!existsInFrame(".__ofile__", frame <- sys.frame(n))) {
 
 
                 # as with 'source', we check that argument 'file' has been
                 # forced, and continue to the next iteration if not
-                if (.External2(C_isunevaluatedpromise, "file", sys.frame(n)))
+                #
+                # in source, we could do exists("ofile"), but we can't do the
+                # same here, so call this C function to test if file is an
+                # unevaluated promise
+                if (.External2(C_isunevaluatedpromise, "file", frame))
                     next
 
 
-                path <- getn("file")
+                path <- getInFrame("file", frame)
 
 
                 # unlike 'source', 'sys.source' is intended to
@@ -805,59 +873,55 @@ is.clipboard.or.stdin <- function (file)
                 # error if the user attempts to source a file named
                 # "clipboard" or "stdin" since none of these refer to files
                 if (is.clipboard.or.stdin(path))
-                    stop(Error("invalid 'file', must not be \"clipboard\" nor \"stdin\"",
+                    stop(simpleError("invalid 'file', must not be \"clipboard\" nor \"stdin\"",
                         call = sys.call(n)))
 
 
-                else if (existsn("owd")) {
-                    cwd <- getwd()
-                    on.exit(setwd(cwd))
-                    setwd(getn("owd"))
+                else if (existsInFrame("owd", frame)) {
+                    assign.chdir(path, frame, getInFrame("owd", frame))
                 }
 
 
-                assign.__file__()
+                else {
+                    assign.default(path, frame)
+                }
             }
+
+
+            path <- getInFrame(".__ofile__", frame)
+            if (is.null(path))
+                next
+            if (get.frame.number)
+                return(n)
+            else if (for.msg) {
+                return({
+                    if (original)
+                        path
+                    else tryCatch({
+                        .External2(C_getpromisewithoutwarning, ".__file__", frame)
+                    }, error = function(cond) path)
+                })
+            }
+            else if (original) {}
+            else path <- .External2(C_getpromisewithoutwarning, ".__file__", frame)
+
+
             where("call to function sys.source")
-            return(getn(".__file__"))
+            return(path)
         }
 
 
         else if (!is.null(debugSource) && identical(sys.function(n), debugSource)) {
 
 
-            if (!existsn(".__file__")) {
+            if (!existsInFrame(".__ofile__", frame <- sys.frame(n))) {
 
 
-                # unlike 'source' and 'sys.source', there is no way to check
-                # that argument 'fileName' has been forced (since all of the
-                # work is done internally in C).
-                #
-                # instead, we have to use a 'tryCatch' statement. If argument
-                # 'fileName' has been forced, the statement will proceed
-                # without an issue. If it has not, it is
-                # because argument 'fileName' depends on itself recursively with
-                # message "promise already under evaluation: recursive default
-                # argument reference or earlier problems?". If you'd like to see,
-                # try this:
-                #
-                # test <- function() get("fileName", sys.frame(1), inherits = FALSE)
-                # debugSource(test())
-                #
-                # and you should see the error in which I'm referring. So the trick
-                # is to use the 'tryCatch' statement to request argument
-                # 'fileName', return TRUE if the statement proceeded without error
-                # and FALSE if the statement produced an error.
-
-
-                if (.External2(C_isunevaluatedpromise, "fileName", sys.frame(n)))
+                if (.External2(C_isunevaluatedpromise, "fileName", frame))
                     next
 
 
-                path <- getn("fileName")
-
-
-                URL <- FALSE
+                path <- getInFrame("fileName", frame)
 
 
                 # we have to use 'enc2utf8' because 'debugSource' does as well
@@ -865,44 +929,62 @@ is.clipboard.or.stdin <- function (file)
 
 
                 if (path == "") {
-                    assign.__file__(NULL)
+                    assign.NULL(frame)
                     next
                 }
                 else if (is.clipboard.or.stdin(path)) {
-                    assign.__file__(NULL)
+                    assign.NULL(frame)
                     next
                 }
                 else if (grepl("^(ftp|ftps|http|https)://", path)) {
-                    URL <- TRUE
+                    assign.URL(path, frame)
                 }
                 else if (grepl("^file://", path)) {
-                    path <- file.URL.path.1(path)
+                    assign.default(file.URL.path.1(path), frame)
                 }
-
-
-                assign.__file__(URL = URL)
+                else {
+                    assign.default(path, frame)
+                }
             }
-            else if (is.null(getn(".__file__")))
+
+
+            path <- getInFrame(".__ofile__", frame)
+            if (is.null(path))
                 next
+            if (get.frame.number)
+                return(n)
+            else if (for.msg) {
+                return({
+                    if (original)
+                        path
+                    else tryCatch({
+                        .External2(C_getpromisewithoutwarning, ".__file__", frame)
+                    }, error = function(cond) path)
+                })
+            }
+            else if (original) {}
+            else path <- .External2(C_getpromisewithoutwarning, ".__file__", frame)
+
+
             where("call to function debugSource in RStudio")
-            return(getn(".__file__"))
+            return(path)
         }
 
 
         else if (!is.null(source_file) && identical(sys.function(n), source_file)) {
 
 
-            if (!existsn(".__file__")) {
+            if (!existsInFrame(".__ofile__", frame <- sys.frame(n))) {
 
 
                 # as with 'source' and 'sys.source', we check that
                 # argument 'path' has been forced, and continue to the next
                 # iteration if not
-                if (.External2(C_isunevaluatedpromise, "path", sys.frame(n)))
+                if (.External2(C_isunevaluatedpromise, "path", frame))
                     next
 
 
-                path <- getn("path")
+                path <- getInFrame("path", frame)
 
 
                 # like 'sys.source', 'testthat::source_file' is intended
@@ -910,21 +992,41 @@ is.clipboard.or.stdin <- function (file)
                 # error if the user attempts to source a file named
                 # "clipboard" or "stdin" since none of these refer to files
                 if (is.clipboard.or.stdin(path))
-                    stop(Error("invalid 'path' argument, must not be \"clipboard\" nor \"stdin\"",
+                    stop(simpleError("invalid 'path' argument, must not be \"clipboard\" nor \"stdin\"",
                         call = sys.call(n)))
 
 
-                else if (existsn("old_dir")) {
-                    cwd <- getwd()
-                    on.exit(setwd(cwd))
-                    setwd(getn("old_dir"))
+                else if (existsInFrame("old_dir", frame)) {
+                    assign.chdir(path, frame, getInFrame("old_dir", frame))
                 }
 
 
-                assign.__file__()
+                else {
+                    assign.default(path, frame)
+                }
             }
+
+
+            path <- getInFrame(".__ofile__", frame)
+            if (is.null(path))
+                next
+            if (get.frame.number)
+                return(n)
+            else if (for.msg) {
+                return({
+                    if (original)
+                        path
+                    else tryCatch({
+                        .External2(C_getpromisewithoutwarning, ".__file__", frame)
+                    }, error = function(cond) path)
+                })
+            }
+            else if (original) {}
+            else path <- .External2(C_getpromisewithoutwarning, ".__file__", frame)
+
+
             where("call to function source_file in package testthat")
-            return(getn(".__file__"))
+            return(path)
         }
 
 
@@ -932,18 +1034,18 @@ is.clipboard.or.stdin <- function (file)
 
 
             # if the path has yet to be saved
-            if (!existsn(".__file__")) {
+            if (!existsInFrame(".__ofile__", frame <- sys.frame(n))) {
 
 
-                if (!existsn("in.file"))
+                if (!existsInFrame("in.file", frame))
                     next
 
 
                 # if we are not in a file, go to next iteration
                 #
                 # also, assign NULL so we can skip this next time
-                if (!getn("in.file")) {
-                    assign.__file__(NULL)
+                if (!getInFrame("in.file", frame)) {
+                    assign.NULL()
                     next
                 }
 
@@ -951,47 +1053,70 @@ is.clipboard.or.stdin <- function (file)
                 # we care about 'oenvir' because 'input' may be edited in lines
                 # 10 and 11 of knitr::knit, but after 'oenvir' is created on
                 # line 36, 'input' is never edited again
-                if (!existsn("oenvir"))
+                if (!existsInFrame("oenvir", frame))
                     next
 
 
-                path <- getn("input")
-
-
-                URL <- FALSE
+                path <- getInFrame("input", frame)
 
 
                 if (path == "")
-                    stop(Error("invalid 'input' argument, must not be \"\"",
+                    stop(simpleError("invalid 'input' argument, must not be \"\"",
                         call = sys.call(n)))
 
 
                 else if (is.clipboard.or.stdin(path))
-                    stop(Error("invalid 'input' argument, must not be \"clipboard\" nor \"stdin\"",
+                    stop(simpleError("invalid 'input' argument, must not be \"clipboard\" nor \"stdin\"",
                         call = sys.call(n)))
 
 
                 else if (grepl("^(ftp|ftps|http|https)://", path))
-                    stop(Error("invalid 'input' argument, cannot be a URL"))
+                    stop(simpleError("invalid 'input' argument, cannot be a URL",
+                        call = sys.call(n)))
 
 
                 else if (grepl("^file://", path))
-                    stop(Error("invalid 'input' argument, cannot be a file URL"))
+                    stop(simpleError("invalid 'input' argument, cannot be a file URL",
+                        call = sys.call(n)))
 
 
-                outwd <- knitr::opts_knit$get("output.dir")
-                if (!is.null(outwd))
-                    path <- path.join(outwd, path)
-
-
-                assign.__file__(URL = URL)
+                owd <- knitr::opts_knit$get("output.dir")
+                if (!is.null(owd)) {
+                    assign.chdir(path, frame, owd)
+                }
+                else {
+                    assign.default(path, frame)
+                }
             }
-            else if (is.null(getn(".__file__")))
+
+
+            path <- getInFrame(".__ofile__", frame)
+            if (is.null(path))
                 next
+            if (get.frame.number)
+                return(n)
+            else if (for.msg) {
+                return({
+                    if (original)
+                        path
+                    else tryCatch({
+                        .External2(C_getpromisewithoutwarning, ".__file__", frame)
+                    }, error = function(cond) path)
+                })
+            }
+            else if (original) {}
+            else path <- .External2(C_getpromisewithoutwarning, ".__file__", frame)
+
+
             where("call to function knit in package knitr")
-            return(getn(".__file__"))
+            return(path)
         }
     }
+
+
+    # if you're only interested in the frame number, return 0,
+    # meaning that a frame with an appropriate source call was not found
+    if (get.frame.number) return(0L)
 
 
     # if the for loop is passed, no appropriate
@@ -1012,13 +1137,22 @@ is.clipboard.or.stdin <- function (file)
     if (in.shell) {
 
 
-        value <- normalized.shFILE(default = {
+        if (for.msg)
+            return({
+                if (original)
+                    .shFILE()
+                else tryCatch({
+                    .shFILE(FALSE)
+                }, error = function(cond) .shFILE())
+            })
+
+
+        value <- shFILE(original, default = {
             stop(thisPathNotExistsError(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from a shell and argument 'FILE' is missing"))
         })
-        attr(value, "this.path::from.shell") <- TRUE
         where("shell argument 'FILE'")
         return(value)
     }
@@ -1042,12 +1176,15 @@ is.clipboard.or.stdin <- function (file)
         active <- context[["id"]] != "#console"
         if (!active) {
             context <- get(".rs.api.getSourceEditorContext", "tools:rstudio", inherits = FALSE)()
-            if (is.null(context))
-                stop(thisPathNotExistsError(
+            if (is.null(context)) {
+                if (for.msg)
+                    return(NA_character_)
+                else stop(thisPathNotExistsError(
                     "'this.path' used in an inappropriate fashion\n",
                     "* no appropriate source call was found up the calling stack\n",
                     "* R is being run from RStudio with no documents open\n",
                     "  (or source document has no path)"))
+            }
         }
         path <- context[["path"]]
 
@@ -1063,6 +1200,8 @@ is.clipboard.or.stdin <- function (file)
             else "source document in RStudio")
             return(normalizePath(path, winslash = "/", mustWork = FALSE))
         }
+        else if (for.msg)
+            return(NA_character_)
         else stop(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
@@ -1076,20 +1215,26 @@ is.clipboard.or.stdin <- function (file)
 
 
         context <- rstudioapi::getSourceEditorContext()
-        if (is.null(context))
-            stop(thisPathNotExistsError(
+        if (is.null(context)) {
+            if (for.msg)
+                return(NA_character_)
+            else stop(thisPathNotExistsError(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* R is being run from VSCode with no documents open\n",
                 "  (or document has no path)"
             ))
+        }
 
 
-        if (startsWith(context[["id"]], "untitled:"))
-            stop(
+        if (startsWith(context[["id"]], "untitled:")) {
+            if (for.msg)
+                return(NA_character_)
+            else stop(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 "* document in VSCode does not exist")
+        }
 
 
         path <- context[["path"]]
@@ -1100,6 +1245,8 @@ is.clipboard.or.stdin <- function (file)
             where("document in VSCode")
             return(normalizePath(path, winslash = "/", mustWork = FALSE))
         }
+        else if (for.msg)
+            return(NA_character_)
         else stop(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
@@ -1156,17 +1303,22 @@ is.clipboard.or.stdin <- function (file)
             nm <- nm[[1L]]
         else if (length(nm) >= 2L)
             nm <- nm[[2L]]
+        else if (for.msg)
+            return(NA_character_)
         else stop(thisPathNotExistsError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Rgui with no documents open"))
-        if (nm %in% untitled)
-            stop(
+        if (nm %in% untitled) {
+            if (for.msg)
+                return(NA_character_)
+            else stop(
                 "'this.path' used in an inappropriate fashion\n",
                 "* no appropriate source call was found up the calling stack\n",
                 if (active)
                     "* active document in Rgui does not exist"
                 else "* source document in Rgui does not exist")
+        }
         path <- sub(R.Editor.regexp, "\\1", nm)
         active <- active && nm != path
         if (grepl(windows.abs.path, path)) {
@@ -1182,7 +1334,9 @@ is.clipboard.or.stdin <- function (file)
     else if (gui.aqua) {
 
 
-        stop(AQUAError(
+        if (for.msg)
+            NA_character_
+        else stop(thisPathAQUAError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
@@ -1194,7 +1348,9 @@ is.clipboard.or.stdin <- function (file)
     else if (gui.tk) {
 
 
-        stop(thisPathNotExistsError(
+        if (for.msg)
+            NA_character_
+        else stop(thisPathNotExistsError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
@@ -1202,16 +1358,22 @@ is.clipboard.or.stdin <- function (file)
 
 
     # running R in another manner
-    else stop(thisPathNotImplementedError(
-        "'this.path' used in an inappropriate fashion\n",
-        "* no appropriate source call was found up the calling stack\n",
-        "* R is being run in an unrecognized manner"))
+    else {
+
+
+        if (for.msg)
+            NA_character_
+        else stop(thisPathNotImplementedError(
+            "'this.path' used in an inappropriate fashion\n",
+            "* no appropriate source call was found up the calling stack\n",
+            "* R is being run in an unrecognized manner"))
+    }
 }
 
 
-.this.dir <- function (verbose = getOption("verbose"))
+.this.dir <- function (...)
 {
-    path <- .this.path(verbose)
+    path <- .this.path(...)
     if (grepl("^(ftp|ftps|http|https)://", path)) {
         # path <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
 
@@ -1226,15 +1388,15 @@ is.clipboard.or.stdin <- function (file)
 
 
 
-this.path <- function (verbose = getOption("verbose"), default, else.)
+this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.)
 tryCatch({
-    .this.path(verbose)
+    .this.path(verbose, original, for.msg)
 }, function(c) default)
 
 
-this.dir <- function (verbose = getOption("verbose"), default, else.)
+this.dir <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.)
 tryCatch({
-    .this.dir(verbose)
+    .this.dir(verbose, original, for.msg)
 }, function(c) default)
 
 
@@ -1249,13 +1411,13 @@ tmp[[2L]] <- call("<-", as.name("value"), tmp[[2L]])
 body(this.path) <- bquote({
     if (missing(default))
         if (missing(else.))
-            .this.path(verbose)
+            .(body(this.path)[[2L]])
         else stop("'this.path' with 'else.' but not 'default' makes no sense")
     else {
         if (missing(else.))
             .(body(this.path))
         else {
-            .(as.call(append(as.list(tmp), list(else. = quote(else.(value))))))
+            .(as.call(append(as.list(tmp), list(else. = quote(match.fun(else.)(value))))))
         }
     }
 })
@@ -1268,13 +1430,13 @@ tmp[[2L]] <- call("<-", as.name("value"), tmp[[2L]])
 body(this.dir) <- bquote({
     if (missing(default))
         if (missing(else.))
-            .this.dir(verbose)
+            .(body(this.dir)[[2L]])
         else stop("'this.dir' with 'else.' but not 'default' makes no sense")
     else {
         if (missing(else.))
             .(body(this.dir))
         else {
-            .(as.call(append(as.list(tmp), list(else. = quote(else.(value))))))
+            .(as.call(append(as.list(tmp), list(else. = quote(match.fun(else.)(value))))))
         }
     }
 })
@@ -1285,27 +1447,15 @@ rm(tmp)
 
 
 this.path2 <- function (...)
-.Defunct(msg = c(
-    gettextf("'%s' is defunct.\n", "this.path2(...)", domain = "R-base"),
-    gettextf("Use '%s' instead.\n", "this.path(..., default = NULL)", domain = "R-base"),
-    gettextf("See help(\"Defunct\")", domain = "R-base")
-))
+.Defunct2("this.path(..., default = NULL)", old = "this.path2(...)")
 
 
 this.dir2 <- function (...)
-.Defunct(msg = c(
-    gettextf("'%s' is defunct.\n", "this.dir2(...)", domain = "R-base"),
-    gettextf("Use '%s' instead.\n", "this.dir(..., default = NULL)", domain = "R-base"),
-    gettextf("See help(\"Defunct\")", domain = "R-base")
-))
+.Defunct2("this.dir(..., default = NULL)", old = "this.dir2(...)")
 
 
 this.dir3 <- function (...)
-.Defunct(msg = c(
-    gettextf("'%s' is defunct.\n", "this.dir3(...)", domain = "R-base"),
-    gettextf("Use '%s' instead.\n", "this.dir(..., default = getwd())", domain = "R-base"),
-    gettextf("See help(\"Defunct\")", domain = "R-base")
-))
+.Defunct2("this.dir(..., default = getwd())", old = "this.dir3(...)")
 
 
 
@@ -1313,7 +1463,7 @@ this.dir3 <- function (...)
 
 here <- ici <- function (..., .. = 0L)
 {
-    base <- .this.path(verbose = FALSE)
+    base <- .this.path()
     if (grepl("^(ftp|ftps|http|https)://", base)) {
         # base <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
         # .. <- "2"
@@ -1333,3 +1483,14 @@ here <- ici <- function (..., .. = 0L)
     else base <- .External2(C_dirname2, base, ..)
     path.join(base, ...)
 }
+
+
+
+
+
+Sys.path <- function ()
+.this.path()
+
+
+Sys.dir <- function ()
+.this.dir()

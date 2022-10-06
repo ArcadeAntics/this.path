@@ -56,10 +56,11 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"pathjoin"       , (DL_FUNC) &do_pathjoin       , 0},
 
 
-    /* thispath.c */
+    /* promises.c */
 
 
-    {"isunevaluatedpromise", (DL_FUNC) &do_isunevaluatedpromise, 2},
+    {"isunevaluatedpromise"    , (DL_FUNC) &do_isunevaluatedpromise    ,  2},
+    {"getpromisewithoutwarning", (DL_FUNC) &do_getpromisewithoutwarning, -1},
 
 
     {NULL, NULL, 0}

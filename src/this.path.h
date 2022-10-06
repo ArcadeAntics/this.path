@@ -47,7 +47,8 @@ extern SEXP do_unixpathjoin   (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_pathjoin       (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
-/* thispath.c */
+/* promises.c */
 
 
-extern SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_isunevaluatedpromise    (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho);
