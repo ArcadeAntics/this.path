@@ -555,6 +555,10 @@ assign.NULL <- function (envir)
 {
     assign(".__ofile__", NULL, envir = envir)
     delayedAssign(".__file__", NULL, assign.env = envir)
+
+
+    # force .__file__ so that garbage collection can collect this environment
+    getInFrame(".__file__", envir)
 }
 
 
@@ -562,6 +566,10 @@ assign.URL <- function (path, envir)
 {
     assign(".__ofile__", path, envir = envir)
     delayedAssign(".__file__", normalizeURL(path), assign.env = envir)
+
+
+    # force .__file__ so that garbage collection can collect this environment
+    getInFrame(".__file__", envir)
 }
 
 

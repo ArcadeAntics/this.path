@@ -45,8 +45,8 @@ cases where an error would've be thrown.
 if there is no executing script, this value is returned.
   }
   \item{else.}{
-missing or a function to call on the return value if there is an executing
-script. See \code{\link{tryCatch2}} for inspiration.
+missing or a function to apply if there is an executing script. See
+\code{\link{tryCatch2}} for inspiration.
   }
 }
 \details{

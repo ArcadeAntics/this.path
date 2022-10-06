@@ -58,8 +58,8 @@ this.path:::write.code(file = FILE <- tempfile(), {
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE))
 
 
-for (expr in c("shFILE()",
-               "shFILE(default = NULL)",
+for (expr in c("shFILE(original = TRUE)",
+               "shFILE(original = TRUE, default = NULL)",
                "shFILE()",
                "shFILE(default = NULL)"))
 {
