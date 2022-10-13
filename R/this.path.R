@@ -13,54 +13,6 @@
 
 .shFILE <- function (original = TRUE)
 {
-    # shFILE {this.path}                                         R Documentation
-    #
-    # Get Argument 'FILE' Provided to R by a Shell
-    #
-    #
-    #
-    # Description:
-    #
-    # Look through the shell arguments, extracting argument 'FILE' from the
-    # following:
-    # --file=FILE
-    # -f FILE
-    #
-    #
-    #
-    # Usage:
-    #
-    # shFILE()
-    # normalized.shFILE()
-    #
-    #
-    #
-    # Details:
-    #
-    # Both functions will save their return values; this makes them faster
-    # when called subsequent times.
-    #
-    # For 'shFILE', if there are no such arguments, 'NA' is returned.
-    # For 'normalized.shFILE', if there are no such arguments, an error is
-    # raised.
-    #
-    # For both functions, if there are multiple such arguments, an error is
-    # raised.
-    #
-    #
-    #
-    # Value:
-    #
-    # A string. For 'normalized.shFILE', an absolute path.
-    #
-    #
-    #
-    # Note:
-    #
-    # For 'normalized.shFILE', the path on Windows will use / as the file
-    # separator.
-
-
     # the details between how the shell arguments are handled is
     # different on Windows and under Unix-alikes, see the comments below.
 
@@ -507,32 +459,40 @@ windows.abs.path <- .this.path_regexps$windows.absolute.path.anchored
 
 
 
-thisPathNotExistsError_class          <- c("this.path::thisPathNotExistsError"         , "this.path::thisPathNotExistError"       , "this.path_this.path_not_exists_error")
-thisPathNotImplementedError_class     <- c("this.path::thisPathNotImplementedError"    , "this.path_this.path_unimplemented_error")
-thisPathAQUAError_class               <- c("this.path::thisPathAQUAError"              , thisPathNotImplementedError_class        )
-thisPathUnrecognizedMannerError_class <- c("this.path::thisPathUnrecognizedMannerError")
-
-
 Error <- function (..., call. = TRUE, domain = NULL, class = NULL,
     call = if ((n <- sys.parents()[[sys.nframe()]] - 3L) > 0L) sys.call(n))
 errorCondition(message = .makeMessage(..., domain = domain),
     class = class, call = if (call.) call)
 
 
-thisPathNotExistsError <- function(...) NULL
-body(thisPathNotExistsError) <- bquote(Error(..., class = .(thisPathNotExistsError_class)))
+tmpfun <- function (x)
+{
+    e <- substitute(x)
+    classes <- x
+    if (!is.call(e) || e[[1L]] != "<-") stop("invalid argument, must be a call to <-")
+    e <- e[[2L]]
+    if (!is.name(e)) stop("invalid argument, second element must be a symbol")
+    e <- as.character(e)
+    if (!endsWith(e, "_class")) stop("invalid argument, second element must end with '_class_'")
+    x <- sub("_class$", "", e)
+    value <- function(...) NULL
+    body(value) <- bquote(Error(..., class = .(str2lang(deparse1(classes)))))
+    environment(value) <- parent.frame()
+    assign(x, value, parent.frame())
+}
 
 
-thisPathNotImplementedError <- function(...) NULL
-body(thisPathNotImplementedError) <- bquote(Error(..., class = .(thisPathNotImplementedError_class)))
+tmpfun(thisPathNotExistsError_class                   <- c("this.path::thisPathNotExistsError"             , "this.path::thisPathNotExistError"       , "this.path_this.path_not_exists_error"))
+tmpfun(thisPathNotImplementedError_class              <- c("this.path::thisPathNotImplementedError"        , "this.path_this.path_unimplemented_error", "notImplementedError"                 , "NotImplementedError"))
 
 
-thisPathAQUAError <- function(...) NULL
-body(thisPathAQUAError) <- bquote(Error(..., class = .(thisPathAQUAError_class)))
+tmpfun(thisPathInZipFileError_class                   <- c("this.path::thisPathInZipFileError"             ))
+tmpfun(thisPathUnrecognizedConnectionClassError_class <- c("this.path::thisPathUnrecognizedConnectionClassError"))
+tmpfun(thisPathInAQUAError_class                      <- c("this.path::thisPathInAQUAError"                , thisPathNotImplementedError_class        ))
+tmpfun(thisPathUnrecognizedMannerError_class          <- c("this.path::thisPathUnrecognizedMannerError"    ))
 
 
-thisPathUnrecognizedMannerError <- function(...) NULL
-body(thisPathUnrecognizedMannerError) <- bquote(Error(..., class = .(thisPathUnrecognizedMannerError_class)))
+rm(tmpfun)
 
 
 # helper functions for .this.path()   ----
@@ -784,7 +744,7 @@ exists(x, envir = frame, inherits = FALSE)
 
 
                     path <- summary.connection(path)
-                    switch(path$class,
+                    switch(path[["class"]],
 
 
                     file   = ,
@@ -792,13 +752,16 @@ exists(x, envir = frame, inherits = FALSE)
                     bzfile = ,
                     xzfile = ,
                     fifo   = {
-                        assign.default(path$description, frame)
+
+
+                        # the file:// in a file URL will already be removed
+                        assign.default(path[["description"]], frame)
                     },
 
 
                     `url-libcurl` = ,
                     `url-wininet` = {
-                        assign.URL(path$description, frame)
+                        assign.URL(path[["description"]], frame)
                     },
 
 
@@ -812,8 +775,8 @@ exists(x, envir = frame, inherits = FALSE)
 
                     unz = {
                         if (for.msg)
-                            return(path$description)
-                        else stop("'this.path' cannot be used within a zip file")
+                            return(path[["description"]])
+                        else stop(thisPathInZipFileError("'this.path' cannot be used within a zip file"))
                     },
 
 
@@ -821,9 +784,9 @@ exists(x, envir = frame, inherits = FALSE)
                         if (for.msg)
                             return(NA_character_)
                         else {
-                            cond <- thisPathNotImplementedError(
+                            cond <- thisPathUnrecognizedConnectionClassError(
                                 "'this.path' not implemented when source-ing a connection of class ",
-                                sQuote(path$class))
+                                sQuote(path[["class"]]))
                             attr(cond, "summary.connection") <- path
                             stop(cond)
                         }
@@ -1344,7 +1307,7 @@ exists(x, envir = frame, inherits = FALSE)
 
         if (for.msg)
             NA_character_
-        else stop(thisPathAQUAError(
+        else stop(thisPathInAQUAError(
             "'this.path' used in an inappropriate fashion\n",
             "* no appropriate source call was found up the calling stack\n",
             "* R is being run from AQUA which is currently unimplemented\n",
@@ -1379,9 +1342,9 @@ exists(x, envir = frame, inherits = FALSE)
 }
 
 
-.this.dir <- function (...)
+.this.dir <- function (verbose = FALSE)
 {
-    path <- .this.path(...)
+    path <- .this.path(verbose = FALSE)
     if (grepl("^(ftp|ftps|http|https)://", path)) {
         # path <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
 
@@ -1402,9 +1365,9 @@ tryCatch({
 }, function(c) default)
 
 
-this.dir <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.)
+this.dir <- function (verbose = getOption("verbose"), default, else.)
 tryCatch({
-    .this.dir(verbose, original, for.msg)
+    .this.dir(verbose)
 }, function(c) default)
 
 

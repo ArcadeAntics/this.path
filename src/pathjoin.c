@@ -5,7 +5,7 @@
 #include <ctype.h>  /* includes toupper() */
 
 
-// #define debug
+#define debug 0
 
 
 
@@ -25,102 +25,110 @@ extern int get_drive_width_unix(const char *s, int nchar);
 
 SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    int nprotect = 0;
+#if debug
+    Rprintf("in %s\n\n", "C_windowspathjoin");
+#endif
 
 
-    /* we don't pass the ... list directly because we want to avoid an
-     * accidental argument name match to PACKAGE
-     */
-    SEXP dots = findVarInFrame(rho, install("..."));
-    if (dots == R_UnboundValue)
-        error("could not find the ... list; should never happen, please report!");
+#define pathjoin_start                                         \
+    int nprotect = 0;                                          \
+                                                               \
+                                                               \
+    /* we don't pass the ... list directly because we want to avoid an */\
+    /* accidental argument name match to PACKAGE                       */\
+    SEXP dots = findVarInFrame(rho, install("..."));           \
+    if (dots == R_UnboundValue)                                \
+        error("could not find the ... list; should never happen, please report!");\
+                                                               \
+                                                               \
+    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);\
+                                                               \
+                                                               \
+    if (dots_length == 0) return allocVector(STRSXP, 0);       \
+                                                               \
+                                                               \
+    SEXP x = allocVector(VECSXP, dots_length);                 \
+    PROTECT(x); nprotect++;                                    \
+    int x_length = dots_length;                                \
+    int i, j;                                                  \
+    SEXP d, xi;                                                \
+                                                               \
+                                                               \
+    /* the common length of a set of arguments is 0 if one has a length of 0 */\
+    /* or the maximal length when all are non-zero                           */\
+    int commonLength = 1;                                      \
+    /* for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) { *//* slightly slower */\
+    for (i = 0, d = dots; i < x_length; i++, d = CDR(d)) {     \
+                                                               \
+                                                               \
+        /* evaluate each argument of 'dots' */                 \
+        xi = CAR(d);                                           \
+        xi = eval(xi, rho);                                    \
+        if (commonLength) {                                    \
+                                                               \
+                                                               \
+            /* add the evaluated object to 'x' */              \
+            SET_VECTOR_ELT(x, i, xi);                          \
+                                                               \
+                                                               \
+            /* coerce the object to string if needed */        \
+            if (!isString(xi)) {                               \
+                if (OBJECT(xi)) {                              \
+                    SEXP call2 = lang2(                        \
+                        findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),\
+                        lang2(                                 \
+                            findVarInFrame(R_BaseEnv, install("quote")),\
+                            xi                                 \
+                        )                                      \
+                    );                                         \
+                    PROTECT(call2);                            \
+                    SET_VECTOR_ELT(x, i, eval(call2, rho));    \
+                    UNPROTECT(1);                              \
+                }                                              \
+                else if (isSymbol(xi))                         \
+                    SET_VECTOR_ELT(x, i, ScalarString(PRINTNAME(xi)));\
+                else SET_VECTOR_ELT(x, i, coerceVector(xi, STRSXP));\
+                                                               \
+                if (!isString(VECTOR_ELT(x, i)))               \
+                    errorcall(call, "non-string argument to 'C_pathjoin'");\
+            }                                                  \
+                                                               \
+                                                               \
+            /* compute the length and possibly update 'commonLength'       */\
+            /* if the commonLength is 0, we don't need to do any more      */\
+            /* calculations, we know the return value is character(0), BUT */\
+            /* we still want to evaluate all objects in 'dots', would be a */\
+            /* little strange to not do that                               */\
+            if (commonLength) {                                \
+                int len = LENGTH(VECTOR_ELT(x, i));            \
+                if (len == 0 || len > commonLength)            \
+                    commonLength = len;                        \
+            }                                                  \
+        }                                                      \
+    }                                                          \
+                                                               \
+                                                               \
+    if (commonLength == 0) {                                   \
+        UNPROTECT(nprotect);                                   \
+        return allocVector(STRSXP, 0);                         \
+    }                                                          \
+                                                               \
+                                                               \
+    for (i = 0; i < x_length; i++) {                           \
+        int len = LENGTH(VECTOR_ELT(x, i));                    \
+        for (j = 0; j < len; j++) {                            \
+            SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);         \
+            if (IS_BYTES(cs))                                  \
+                error("strings with \"bytes\" encoding are not allowed");\
+        }                                                      \
+    }                                                          \
+                                                               \
+                                                               \
+    SEXP value = allocVector(STRSXP, commonLength);            \
+    PROTECT(value); nprotect++;
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
-
-
-    if (dots_length == 0) return allocVector(STRSXP, 0);
-
-
-    SEXP x = PROTECT(allocVector(VECSXP, dots_length)); nprotect++;
-    int x_length = dots_length;
-    int i, j;
-    SEXP d, xi;
-
-
-    /* the common length of a set of arguments is 0 if one has a length of 0,
-     * or the maximal length when all are non-zero
-     */
-    int commonLength = 1;
-    // for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) {  /* slightly slower */
-    for (i = 0, d = dots; i < x_length; i++, d = CDR(d)) {
-
-
-        /* evaluate each argument of 'dots' */
-        xi = CAR(d);
-        xi = eval(xi, rho);
-        if (commonLength) {
-
-
-            /* add the evaluated object to 'x' */
-            SET_VECTOR_ELT(x, i, xi);
-
-
-            /* coerce the object to string if needed */
-            if (!isString(xi)) {
-                if (OBJECT(xi)) {
-                    SEXP call2 = lang2(
-                        findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),
-                        lang2(
-                            findVarInFrame(R_BaseEnv, install("quote")),
-                            xi
-                        )
-                    );
-                    PROTECT(call2);
-                    SET_VECTOR_ELT(x, i, eval(call2, rho));
-                    UNPROTECT(1);
-                }
-                else if (isSymbol(xi))
-                    SET_VECTOR_ELT(x, i, ScalarString(PRINTNAME(xi)));
-                else SET_VECTOR_ELT(x, i, coerceVector(xi, STRSXP));
-
-                if (!isString(VECTOR_ELT(x, i)))
-                    errorcall(call, "non-string argument to 'C_pathjoin'");
-            }
-
-
-            /* compute the length and possibly update 'commonLength' */
-            /* if the commonLength is 0, we don't need to do any more
-             * calculations, we know the return value is character(0), BUT
-             * we still want to evaluate all objects in 'dots', would be a
-             * little strange to not do that
-             */
-            if (commonLength) {
-                int len = LENGTH(VECTOR_ELT(x, i));
-                if (len == 0 || len > commonLength)
-                    commonLength = len;
-            }
-        }
-    }
-
-
-    if (commonLength == 0) {
-        UNPROTECT(nprotect);
-        return allocVector(STRSXP, 0);
-    }
-
-
-    for (i = 0; i < x_length; i++) {
-        int len = LENGTH(VECTOR_ELT(x, i));
-        for (j = 0; j < len; j++) {
-            SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);
-            if (IS_BYTES(cs))
-                error("strings with \"bytes\" encoding are not allowed");
-        }
-    }
-
-
-    SEXP value = PROTECT(allocVector(STRSXP, commonLength)); nprotect++;
+    pathjoin_start
 
 
     int drive_indx,                /*  largest index of the string vector which contains a drivespec */
@@ -396,7 +404,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-#ifdef debug
+#if debug
         Rprintf("pwidth = %d\n", pwidth);
         int check_width = 0;
 #endif
@@ -427,7 +435,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             if (start_from_here == drive_indx) {
                 strcpy(buf, ptr);
                 buf += nchar;
-#ifdef debug
+#if debug
                 Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
                 Rprintf("shifted buffer by %d bytes\n", nchar);
                 check_width += strlen(ptr);
@@ -435,7 +443,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 if (need_trailing_slash[drive_indx]) {
                     strcpy(buf, "/");
                     buf++;
-#ifdef debug
+#if debug
                     Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
                     Rprintf("shifted buffer by %d bytes\n", strlen("/"));
                     check_width += strlen("/");
@@ -451,7 +459,8 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             else {
                 strncpy(buf, ptr, drivewidth);
                 buf += drivewidth;
-#ifdef debug
+                *buf = '\0';  // copy a nul character
+#if debug
                 Rprintf("copied first %d bytes to buffer: %s", drivewidth, ptr); Rprintf("\n");
                 Rprintf("shifted buffer by %d bytes\n", drivewidth);
                 check_width += drivewidth;
@@ -463,7 +472,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 {
                     strcpy(buf, "/");
                     buf++;
-#ifdef debug
+#if debug
                     Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
                     Rprintf("shifted buffer by %d bytes\n", strlen("/"));
                     check_width += strlen("/");
@@ -506,7 +515,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
                 strcpy(buf, ptr);
                 buf += nchar;
-#ifdef debug
+#if debug
                 Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
                 Rprintf("shifted buffer by %d bytes\n", nchar);
                 check_width += strlen(ptr);
@@ -514,7 +523,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                 if (need_trailing_slash[i]) {
                     strcpy(buf, "/");
                     buf++;
-#ifdef debug
+#if debug
                     Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
                     Rprintf("shifted buffer by %d bytes\n", strlen("/"));
                     check_width += strlen("/");
@@ -524,7 +533,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-#ifdef debug
+#if debug
         if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
         if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
         Rprintf("\n");
@@ -543,71 +552,12 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    int nprotect = 0;
+#if debug
+    Rprintf("in %s\n\n", "C_unixpathjoin");
+#endif
 
 
-    SEXP dots = findVarInFrame(rho, install("..."));
-    if (dots == R_UnboundValue)
-        error("could not find the ... list; should never happen, please report!");
-
-
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
-
-
-    if (dots_length == 0) return allocVector(STRSXP, 0);
-
-
-    SEXP x = PROTECT(allocVector(VECSXP, dots_length)); nprotect++;
-    int x_length = dots_length;
-    int i, j;
-    SEXP d, xi;
-
-
-    int commonLength = 1;
-    for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) {
-        xi = CAR(d);
-        xi = eval(xi, rho);
-        if (commonLength) {
-            SET_VECTOR_ELT(x, i, xi);
-            if (!isString(xi)) {
-                if (OBJECT(xi)) {
-                    SEXP call2 = PROTECT(lang2(findVarInFrame(R_BaseEnv, R_AsCharacterSymbol), xi));
-                    SET_VECTOR_ELT(x, i, eval(call2, rho));
-                    UNPROTECT(1);
-                }
-                else if (isSymbol(xi))
-                    SET_VECTOR_ELT(x, i, ScalarString(PRINTNAME(xi)));
-                else SET_VECTOR_ELT(x, i, coerceVector(xi, STRSXP));
-
-                if (!isString(VECTOR_ELT(x, i)))
-                    errorcall(call, "non-string argument to 'C_pathjoin'");
-            }
-            if (commonLength) {
-                int len = LENGTH(VECTOR_ELT(x, i));
-                if (len == 0 || len > commonLength)
-                    commonLength = len;
-            }
-        }
-    }
-
-
-    if (commonLength == 0) {
-        UNPROTECT(nprotect);
-        return allocVector(STRSXP, 0);
-    }
-
-
-    for (i = 0; i < x_length; i++) {
-        int len = LENGTH(VECTOR_ELT(x, i));
-        for (j = 0; j < len; j++) {
-            SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);
-            if (IS_BYTES(cs))
-                error("strings with \"bytes\" encoding are not allowed");
-        }
-    }
-
-
-    SEXP value = PROTECT(allocVector(STRSXP, commonLength)); nprotect++;
+    pathjoin_start
 
 
     /* width of the path */
@@ -681,7 +631,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-#ifdef debug
+#if debug
         Rprintf("pwidth = %d\n", pwidth);
         int check_width = 0;
 #endif
@@ -715,7 +665,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
             strcpy(buf, ptr);
             buf += nchar;
-#ifdef debug
+#if debug
                 Rprintf("copied to buffer: %s", ptr); Rprintf("\n");
                 Rprintf("shifted buffer by %d bytes\n", nchar);
                 check_width += strlen(ptr);
@@ -723,7 +673,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
             if (need_trailing_slash[i]) {
                 strcpy(buf, "/");
                 buf++;
-#ifdef debug
+#if debug
                     Rprintf("copied to buffer: %s", "/"); Rprintf("\n");
                     Rprintf("shifted buffer by %d bytes\n", strlen("/"));
                     check_width += strlen("/");
@@ -732,7 +682,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-#ifdef debug
+#if debug
         if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
         if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
         Rprintf("\n");
@@ -751,6 +701,11 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP do_pathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
+#if debug
+    Rprintf("in %s\n\n", "C_pathjoin");
+#endif
+
+
     int windows = asLogical(eval(install("os.windows"), rho));
     if (windows == NA_LOGICAL)
         error("invalid 'os.windows'; should never happen, please report!");

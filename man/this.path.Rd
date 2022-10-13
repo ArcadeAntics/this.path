@@ -21,8 +21,7 @@ See also \code{\link{here}()} for constructing paths to files, starting with
 \usage{
 this.path(verbose = getOption("verbose"), original = FALSE,
     for.msg = FALSE, default, else.)
-this.dir (verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, default, else.)
+this.dir (verbose = getOption("verbose"), default, else.)
 
 Sys.path()  # short for 'this.path(verbose = FALSE)'
 Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
@@ -38,8 +37,8 @@ returned?
   }
   \item{for.msg}{
 \code{TRUE} or \code{FALSE}; do you want the path for the purpose of printing a
-diagnostic message/warning/error? This will return \code{NA_character_} in most
-cases where an error would've be thrown.
+diagnostic message / / warning / / error? This will return \code{NA_character_}
+in most cases where an error would've be thrown.
   }
   \item{default}{
 if there is no executing script, this value is returned.

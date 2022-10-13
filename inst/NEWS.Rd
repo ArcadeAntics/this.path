@@ -7,6 +7,15 @@
       \item \code{this.path()} now works inside \code{knitr::knit()}, fixing
             \href{https://github.com/ArcadeAntics/this.path/issues/4}{issue #4 at BugReports URL}.
             By extension, \code{withArgs(knitr::knit())} now also works.
+      \item \code{this.path()} now accepts arguments \code{original} and
+            \code{for.msg} that return the original argument from
+            \code{source} / / \code{knit} / / \code{Rscript} or return a
+            character string that can be used in diagnostic messages / /
+            warnings / / errors. It should be noted that
+            \code{this.path(for.msg = TRUE)} should not be used for
+            constructing file paths.
+      \item \code{shFILE()} also accepts argument \code{original} that returns
+            the original \option{FILE} argument from \code{Rscript}.
       \item Added \code{splitext()}, \code{removeext()}, \code{ext()}, and
             \code{ext<-()} for manipulating paths with extensions.
       \item Added \code{progArgs()}, similar to \code{fileArgs()} but better,
@@ -15,10 +24,23 @@
             top-level code environment.
     }
   }
+  \subsection{DEPRECATED AND DEFUNCT}{
+    \itemize{
+      \item \code{normalized.shFILE()}, \code{this.path2()},
+            \code{this.dir2()}, and \code{this.dir3()} are defunct and should
+            be replaced with \code{shFILE()}, \code{this.path(default = NULL)},
+            \code{this.dir(default = NULL)}, and
+            \code{this.dir(default = getwd())}, respectively.
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item \code{check.path()} and \code{check.dir()} now use
             \code{path.join()} instead of \code{file.path()}.
+      \item \code{fileArgs()}, \code{progArgs()}, \code{from.shell()}, and
+            \code{is.main()} no longer force the normalization of the
+            \code{source} / / \code{knit} / / \code{Rscript} path, but instead
+            save it as a promise to be evaluated later if / / when desired.
     }
   }
 }

@@ -44,6 +44,12 @@
 # }
 
 
+.onLoad <- function (libname, pkgname)
+{
+    getinitwd()  # force the promise for the initial working directory
+}
+
+
 .onUnload <- function (libpath)
 {
     library.dynam.unload(.packageName, libpath)

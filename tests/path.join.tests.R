@@ -44,6 +44,11 @@ path.join("~/p1", "p2", "~/p3", "p4/") %check% "~/p3/p4/"
 path.join("c:p1", "p2", "p3", "C:") %check% "C:p1/p2/p3"
 
 
+# in 1.0.2-60 fixed mistake where forgot to
+# nul terminate a string with no pathspec
+path.join("//host/share") %check% "//host/share"
+
+
 
 
 

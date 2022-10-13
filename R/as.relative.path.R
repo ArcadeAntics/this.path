@@ -68,10 +68,10 @@ normalizePath.and.URL <- function (path, ...)
         path[i] <- file.URL.path(path[i])
     if (any(i <- !i & grepl("^(ftp|ftps|http|https)://", path))) {
         path[i] <- normalizeURL(path[i])
-        path[!i] <- normalizePath(path = path[!i], ...)
+        path[!i] <- normpath(path = path[!i], ...)
         path
     }
-    else normalizePath(path = path, ...)
+    else normpath(path = path, ...)
 }
 
 
@@ -81,7 +81,7 @@ normalizePath.and.URL.1 <- function (path, ...)
         normalizePath(path = file.URL.path.1(path), ...)
     else if (grepl("^(ftp|ftps|http|https)://", path))
         normalizeURL.1(path)
-    else normalizePath(path = path, ...)
+    else normpath(path = path, ...)
 }
 
 

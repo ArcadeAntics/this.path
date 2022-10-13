@@ -59,7 +59,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* promises.c */
 
 
-    {"isunevaluatedpromise"    , (DL_FUNC) &do_isunevaluatedpromise    ,  2},
+    {"isunevaluatedpromise"    , (DL_FUNC) &do_isunevaluatedpromise    , -1},
     {"getpromisewithoutwarning", (DL_FUNC) &do_getpromisewithoutwarning, -1},
 
 

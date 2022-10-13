@@ -24,5 +24,10 @@ delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
 delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !in.vscode && !gui.rgui && !gui.aqua && !gui.tk)
 
 
-delayedAssign("ucrt", identical(R.version[["crt"]], "ucrt"))
-delayedAssign("utf8", identical(utils::localeToCharset()[1L], "UTF-8"))
+delayedAssign("initwd", getwd())
+delayedAssign("ucrt"  , identical(R.version[["crt"]], "ucrt"))
+delayedAssign("utf8"  , identical(utils::localeToCharset()[1L], "UTF-8"))
+
+
+getinitwd <- function ()
+initwd

@@ -8,6 +8,37 @@ extern void (SET_PRSEEN)(SEXP x, int v);
 
 
 
+#define get_sym                                                \
+    sym = CADR(args);                                          \
+    if (TYPEOF(sym) == SYMSXP) {}                              \
+    else if (isValidStringF(sym)) {                            \
+        if (XLENGTH(sym) > 1)                                  \
+            errorcall(call, "first argument has length > 1");  \
+        sym = installTrChar(STRING_ELT(sym, 0));               \
+    }                                                          \
+    else errorcall(call, "invalid first argument");
+
+
+#define handles_nargs(one_arg_env, name)                       \
+    switch (length(args) - 1) {                                \
+    case 1:                                                    \
+        get_sym                                                \
+        env = (one_arg_env);                                   \
+        break;                                                 \
+    case 2:                                                    \
+        get_sym                                                \
+        env = CADDR(args);                                     \
+        if (TYPEOF(env) != ENVSXP)                             \
+            errorcall(call, "invalid second argument");        \
+        break;                                                 \
+    default:                                                   \
+        errorcall(call, "%d arguments passed to .External(%s) which requires 1 or 2", length(args) - 1, (name));\
+    }
+
+
+
+
+
 SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     /* return TRUE if get(sym, env, inherits = FALSE) will force a promise,
@@ -15,19 +46,8 @@ SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
      */
 
 
-    SEXP sym = CADR(args);
-    if (TYPEOF(sym) == SYMSXP) {}
-    else if (isValidStringF(sym)) {
-        if (XLENGTH(sym) > 1)
-            errorcall(call, "first argument has length > 1");
-        sym = installTrChar(STRING_ELT(sym, 0));
-    }
-    else errorcall(call, "invalid first argument");
-
-
-    SEXP env = CADDR(args);
-    if (TYPEOF(env) != ENVSXP)
-        errorcall(call, "invalid second argument");
+    SEXP sym, env;
+    handles_nargs(rho, "C_isunevaluatedpromise");
 
 
     SEXP value = findVarInFrame(env, sym);
@@ -42,37 +62,22 @@ SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    int nargs = length(args) - 1;
+    /* return the result of getting a promise, silencing a possible warning
+     * about "restarting interrupted promise evaluation"
+     *
+     * if the requested variable is not a promise, throw an error
+     */
+
+
     SEXP sym, env;
-
-
-#define get_sym                                                \
-    sym = CADR(args);                                          \
-    if (TYPEOF(sym) == SYMSXP) {}                              \
-    else if (isValidStringF(sym)) {                            \
-        if (XLENGTH(sym) > 1)                                  \
-            errorcall(call, "first argument has length > 1");  \
-        sym = installTrChar(STRING_ELT(sym, 0));               \
-    }                                                          \
-    else errorcall(call, "invalid first argument");
-
-
-    if (nargs == 1) {
-        get_sym
-        env = ENCLOS(rho);
-    }
-    else if (nargs == 2) {
-        get_sym
-        env = CADDR(args);
-        if (TYPEOF(env) != ENVSXP)
-            errorcall(call, "invalid second argument");
-    }
-    else errorcall(call, "%d arguments passed to .External(%s) which requires 1 or 2", nargs, "C_getpromisewithoutwarning");
+    handles_nargs(ENCLOS(rho), "C_getpromisewithoutwarning");
 
 
     SEXP value = findVarInFrame(env, sym);
     if (value == R_UnboundValue)
         errorcall(call, "object '%s' not found", CHAR(PRINTNAME(sym)));
+
+
     if (TYPEOF(value) != PROMSXP)
         errorcall(call, "'%s' is not a promise", CHAR(PRINTNAME(sym)));
 
@@ -84,5 +89,7 @@ SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
         eval(value, env);
     }
+
+
     return PRVALUE(value);
 }

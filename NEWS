@@ -8,6 +8,15 @@ CHANGES IN this.path 1.1.0:
       BugReports URL. By extension, withArgs(knitr::knit()) now also
       works.
 
+    * this.path() now accepts arguments original and for.msg that return the
+      original argument from source / / knit / / Rscript or return a character
+      string that can be used in diagnostic messages / / warnings / / errors.
+      It should be noted that this.path(for.msg = TRUE) should not be used for
+      constructing file paths.
+
+    * shFILE() also accepts argument original that returns the original FILE
+      argument from Rscript.
+
     * Added splitext(), removeext(), ext(), and ext<-() for
       manipulating paths with extensions.
 
@@ -17,10 +26,21 @@ CHANGES IN this.path 1.1.0:
     * Added is.main() for determining if an expression is run in a
       top-level code environment.
 
+  DEPRECATED AND DEFUNCT:
+
+    * normalized.shFILE(), this.path2(), this.dir2(), and this.dir3() are
+      defunct and should be replaced with shFILE(), this.path(default = NULL),
+      this.dir(default = NULL), and this.dir(default = getwd()),
+      respectively.
+
   BUG FIXES
 
     * check.path() and check.dir() now use path.join() instead of
       file.path().
+
+    * fileArgs(), progArgs(), from.shell(), and is.main() no longer force the
+      normalization of the source / / knit / / Rscript path, but instead save
+      it as a promise to be evaluated later if / / when desired.
 
 CHANGES IN this.path 1.0.2:
 
