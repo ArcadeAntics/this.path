@@ -4,15 +4,16 @@ local({
     this.path:::write.code(file = FILE, {
         invisible(loadNamespace("microbenchmark"))
         invisible(loadNamespace("this.path"))
-        first.time <- microbenchmark::microbenchmark(
-            first.time = this.path::this.path(verbose = FALSE),
-            times = 1
-        )
-        subsequent <- microbenchmark::microbenchmark(
-            subsequent = this.path::this.path(verbose = FALSE),
-            times = 100
-        )
-        print(rbind(first.time, subsequent))
+        print(this.path:::faster.subsequent.times.test())
     })
+    cat("\n")
     this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
+
+
+    cat("\n> source(FILE, chdir = FALSE)\n")
+    source(FILE, chdir = FALSE)
+
+
+    cat("\n> source(FILE, chdir = TRUE)\n")
+    source(FILE, chdir = TRUE)
 })

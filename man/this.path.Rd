@@ -32,13 +32,17 @@ Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
 be printed?
   }
   \item{original}{
-\code{TRUE} or \code{FALSE}; should the original or the normalized path be
-returned?
+\code{TRUE}, \code{FALSE}, or \code{NA}; should the original or the normalized
+path be returned? \code{NA} means the normalized path will be returned if it
+has already been forced, and the original path if not.
   }
   \item{for.msg}{
 \code{TRUE} or \code{FALSE}; do you want the path for the purpose of printing a
 diagnostic message / / warning / / error? This will return \code{NA_character_}
 in most cases where an error would've be thrown.
+
+\code{for.msg = TRUE} will ignore \code{original = FALSE}, and will
+use \code{original = NA} instead.
   }
   \item{default}{
 if there is no executing script, this value is returned.
@@ -54,7 +58,7 @@ There are three ways in which \R code is typically run:
   \item in \sQuote{RStudio} / / \sQuote{Rgui} / / \sQuote{VSCode} by running
         the current line / / selection with the \strong{Run} button / /
         appropriate keyboard shortcut
-  \item through a source call: a call to function \sourcesoptionlist{}
+  \item through a source call: a call to function \sourceorlist{}
   \item from a shell, such as the Windows command-line / / Unix terminal
 }
 
@@ -197,9 +201,11 @@ before calling \code{this.path} at least once.
 
 \code{\link{shFILE}}
 
+\code{\link{wrap.source}}, \code{\link{inside.source}}
+
 \code{\link{this.path-package}}
 
-\sources{}
+\sourcelinks{}
 
 \code{\link{R.from.shell}}
 }
@@ -633,23 +639,20 @@ if (requireNamespace("testthat"))
 if (requireNamespace("knitr")) {
     writeLines(con = FILE2 <- tempfile(fileext = ".Rmd"), c(
         "```{r}",
-        "cat(sQuote(this.path::this.path(verbose = TRUE, default = {",
-        "    stop(\\"interestingly enough, because the executing script's\\\\n\\",",
-        "        \\"  path will be found, argument 'default' won't be evaluated,\\\\n\\",",
-        "        \\"  and so this error won't actually print, isn't that\\\\n\\",",
-        "        \\"  neat? you can use this to your advantage in a similar\\\\n\\",",
-        "        \\"  manner, doing arbitrary things only if the executing\\\\n\\",",
-        "        \\"  script does not exist\\")",
-        "})), \\"\\\\n\\\\n\\")",
+        # same expression as above
+        deparse(parse(FILE)[[c(1L, 2L, 2L)]]),
         "```"
     ))
-    knitr::knit(input = FILE2, output = FILE3 <- tempfile(fileext = ".md"))
-    lines <- readLines(FILE3)
-    n <- length(lines)
-    cat("\\n$ cat -n", shQuote(FILE3), "\\n")
-    writeLines(paste0(sprintf("    \%*d  ", nchar(n), seq_len(n)), lines))
+    knitr::knit(input = FILE2, output = FILE3 <- tempfile(fileext = ".md"),
+        quiet = TRUE)
+    cat(sprintf("\\n$ cat -bsT \%s\\n", shQuote(FILE2)))
+    this.path:::cat.file(FILE2, number.nonblank = TRUE,
+        squeeze.blank = TRUE, show.tabs = TRUE)
+    cat(sprintf("\\n$ cat -bsT \%s\\n", shQuote(FILE3)))
+    this.path:::cat.file(FILE3, number.nonblank = TRUE,
+        squeeze.blank = TRUE, show.tabs = TRUE)
     cat("\\n")
-    unlink(c(FILE2, FILE3))
+    unlink(c(FILE3, FILE2))
 }
 
 

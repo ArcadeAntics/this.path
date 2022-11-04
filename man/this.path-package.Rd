@@ -68,7 +68,7 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
-\sources{}
+\sourcelinks{}
 
 \code{\link{R.from.shell}}
 }

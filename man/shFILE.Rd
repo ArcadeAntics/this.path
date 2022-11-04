@@ -8,12 +8,18 @@ Look through the command line arguments, extracting \option{FILE} from either
 of the following: \option{--file=FILE} or \option{-f} \option{FILE}
 }
 \usage{
-shFILE(original = FALSE, default, else.)
+shFILE(original = FALSE, for.msg = FALSE, default, else.)
 }
 \arguments{
   \item{original}{
-\code{TRUE} or \code{FALSE}; should the original or the normalized
-\option{FILE} be returned?
+\code{TRUE}, \code{FALSE}, or \code{NA}; should the original or the normalized
+path be returned? \code{NA} means the normalized path will be returned if it
+has already been forced, and the original path if not.
+  }
+  \item{for.msg}{
+\code{TRUE} or \code{FALSE}; do you want the path for the purpose of printing a
+diagnostic message / / warning / / error? \code{for.msg = TRUE} will ignore
+\code{original = FALSE}, and will use \code{original = NA} instead.
   }
   \item{default}{
 if \option{FILE} is not found, this value is returned.

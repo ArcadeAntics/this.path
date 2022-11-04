@@ -5,23 +5,22 @@
 
 delayedAssign("os.unix"   , .Platform$OS.type == "unix")
 delayedAssign("os.windows", .Platform$OS.type == "windows")
-delayedAssign("os.macos"  , os.unix && capabilities("aqua"))
 
 
 # popular GUIs for which specific methods of this.path() are implemented
-delayedAssign("gui.aqua"   , os.macos   && .Platform$GUI == "AQUA"   )
+delayedAssign("gui.aqua"   , os.unix    && .Platform$GUI == "AQUA"   )
 delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"   )
 delayedAssign("gui.rstudio",               .Platform$GUI == "RStudio")
 delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"     )
-delayedAssign("in.vscode"  , "tools:vscode" %in% search()            )
+delayedAssign("gui.vscode" , "tools:vscode" %in% search()            )
 
 
-delayedAssign("os.unix.in.shell"   , os.unix    && (.Platform$GUI == "X11"   || .Platform$GUI == "unknown" &&                        "R" == basename2(commandArgs()[[1L]]) ) && !in.vscode)
-delayedAssign("os.windows.in.shell", os.windows && (.Platform$GUI == "RTerm" || .Platform$GUI == "unknown" && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]]))) && !in.vscode)
+delayedAssign("os.unix.in.shell"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown") &&                        "R" == basename2(commandArgs()[[1L]])  && !gui.vscode)
+delayedAssign("os.windows.in.shell", os.windows && .Platform$GUI %in% c("RTerm", "unknown") && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])) && !gui.vscode)
 delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
 
 
-delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !in.vscode && !gui.rgui && !gui.aqua && !gui.tk)
+delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.rgui && !gui.aqua && !gui.tk)
 
 
 delayedAssign("initwd", getwd())
@@ -31,3 +30,8 @@ delayedAssign("utf8"  , identical(utils::localeToCharset()[1L], "UTF-8"))
 
 getinitwd <- function ()
 initwd
+
+
+PRINFO <- function (x, pos = -1L, envir = as.environment(pos), inherits = TRUE,
+    evaluated = FALSE)
+.External2(C_prinfo, if (evaluated) x else substitute(x), envir, inherits)

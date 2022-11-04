@@ -46,11 +46,15 @@
 
 .onLoad <- function (libname, pkgname)
 {
+    lockEnvironment(environment(.shFILE), bindings = TRUE)
     getinitwd()  # force the promise for the initial working directory
+    .External2(C_onload)
+    # print(list(libname = libname, pkgname = pkgname))
 }
 
 
 .onUnload <- function (libpath)
 {
     library.dynam.unload(.packageName, libpath)
+    # print(list(libpath = libpath))
 }

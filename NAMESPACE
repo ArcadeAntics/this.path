@@ -69,3 +69,9 @@ export(Sys.path, Sys.dir)
 
 
 export(tryCatch2)
+
+
+# wrapsource.R           ----
+
+
+export(wrap.source, inside.source)

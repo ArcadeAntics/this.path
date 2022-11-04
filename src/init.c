@@ -10,6 +10,12 @@ static const R_CallMethodDef callRoutines[] = {
 static const R_ExternalMethodDef externalRoutines[] = {
 
 
+    /* aquarootscript.c */
+
+
+    {"aquarootscript", (DL_FUNC) &do_aquarootscript, 0},
+
+
     /* args.c */
 
 
@@ -48,6 +54,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"extgets"       , (DL_FUNC) &do_extgets       , 3},
 
 
+    /* hooks-for-namespace-events.c */
+
+
+    {"onload", (DL_FUNC) &do_onload, 0},
+
+
     /* pathjoin.c */
 
 
@@ -61,6 +73,34 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
     {"isunevaluatedpromise"    , (DL_FUNC) &do_isunevaluatedpromise    , -1},
     {"getpromisewithoutwarning", (DL_FUNC) &do_getpromisewithoutwarning, -1},
+    {"prinfo"                  , (DL_FUNC) &do_prinfo                  , -1},
+
+
+    /* shfile.c */
+
+
+    {"shfile", (DL_FUNC) &do_shfile, 2},
+
+
+    /* thispath.c */
+
+
+    {"thispathunrecognizedconnectionclasserror", (DL_FUNC) &do_thispathunrecognizedconnectionclasserror, 2},
+    {"thispathunrecognizedmannererror"         , (DL_FUNC) &do_thispathunrecognizedmannererror         , 1},
+    {"thispathnotimplementederror"             , (DL_FUNC) &do_thispathnotimplementederror             , 2},
+    {"thispathnotexistserror"                  , (DL_FUNC) &do_thispathnotexistserror                  , 2},
+    {"thispathinzipfileerror"                  , (DL_FUNC) &do_thispathinzipfileerror                  , 2},
+    {"thispathinaquaerror"                     , (DL_FUNC) &do_thispathinaquaerror                     , 1},
+    {"thispath", (DL_FUNC) &do_thispath, 5},
+
+
+    /* wrapsource.c */
+
+
+    {"makepromise" , (DL_FUNC) &do_makepromise , -1},
+    {"setprseen2"  , (DL_FUNC) &do_setprseen2  ,  1},
+    {"wrapsource"  , (DL_FUNC) &do_wrapsource  , -1},
+    {"insidesource", (DL_FUNC) &do_insidesource,  3},
 
 
     {NULL, NULL, 0}

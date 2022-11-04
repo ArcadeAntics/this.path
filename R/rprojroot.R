@@ -28,8 +28,9 @@ find_root <- function (criterion, path = getwd(), verbose = getOption("verbose")
         }
         components <- components[-len]
     }
-    stop("no root directory found in ", encodeString(opath, quote = "\""), " or its' parent directories\n",
-        paste(format(criterion), collapse = "\n"))
+    stop(sprintf("no root directory found in %s or its parent directories\n%s",
+        encodeString(opath, quote = "\""),
+        paste(format(criterion), collapse = "\n")))
 }
 
 

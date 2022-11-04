@@ -1,4 +1,14 @@
+#ifndef THIS_PATH_H
+#define THIS_PATH_H
+
+
 #include <Rinternals.h>
+
+
+/* aquarootscript.c */
+
+
+extern SEXP do_aquarootscript(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 /* args.c */
@@ -39,6 +49,12 @@ extern SEXP do_unixextgets   (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_extgets       (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
+/* hooks-for-namespace-events.c */
+
+
+extern SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
 /* pathjoin.c */
 
 
@@ -52,3 +68,34 @@ extern SEXP do_pathjoin       (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 extern SEXP do_isunevaluatedpromise    (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_prinfo                  (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
+/* shfile.c */
+
+
+extern SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
+/* thispath.c */
+
+
+extern SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathunrecognizedmannererror         (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathnotimplementederror             (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathnotexistserror                  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathinzipfileerror                  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathinaquaerror                     (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
+/* wrapsource.c */
+
+
+extern SEXP do_makepromise (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_setprseen2  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_wrapsource  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
+#endif  /* #ifndef THIS_PATH_H */

@@ -1,5 +1,5 @@
 Package: this.path
-Version: 1.0.2-62
+Version: 1.0.2-77
 License: MIT + file LICENSE
 Title: Get Executing Script's Path, from 'RStudio', 'Rgui', 'VSCode', 'Rscript'
     (Shells Including Windows Command-Line / / Unix Terminal), and 'source'
@@ -9,6 +9,7 @@ Description: Determine the full path of the executing script. Works when
     'testthat::source_file', and 'knitr::knit', and when running from a shell.
 Author: Andrew Simmons
 Maintainer: Andrew Simmons <akwsimmo@gmail.com>
+Depends: R (>= 3.3.0)
 Suggests: utils, microbenchmark
 Enhances: knitr, rprojroot, rstudioapi, testthat
 URL: https://github.com/ArcadeAntics/this.path
