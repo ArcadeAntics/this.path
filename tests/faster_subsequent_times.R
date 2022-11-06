@@ -1,4 +1,5 @@
-local({
+main <- function ()
+{
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE)
     this.path:::write.code(file = FILE, {
@@ -16,4 +17,7 @@ local({
 
     cat("\n> source(FILE, chdir = TRUE)\n")
     source(FILE, chdir = TRUE)
-})
+}
+
+
+main()

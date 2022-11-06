@@ -1658,6 +1658,8 @@ normalizePath(path, winslash = "/", mustWork = TRUE)
 .normalizeAgainst <- function (ofile, owd)
 {
     cwd <- getwd()
+    if (is.null(cwd))
+        stop("cannot '.normalizeAgainst' as current directory is unknown")
     on.exit(setwd(cwd))
     setwd(owd)
     .normalizePath(ofile)
