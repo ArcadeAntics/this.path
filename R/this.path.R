@@ -854,7 +854,7 @@ gsub("%", "%%", x, fixed = TRUE, useBytes = TRUE)
 
 
 EncodeChar <- function (x)
-encodeString(x, na.encode = TRUE)
+encodeString(x, na.encode = FALSE)
 
 
 .is.simple <- function (x)

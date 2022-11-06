@@ -4,7 +4,7 @@
 const char *EncodeChar(SEXP x)
 {
     /* accepts a CHARSXP and escapes the special / / non-printing characters */
-    SEXP expr = lang3(encodeStringSymbol, ScalarString(x), ScalarLogical(TRUE));
+    SEXP expr = lang3(encodeStringSymbol, ScalarString(x), ScalarLogical(FALSE));
     PROTECT(expr);
     SET_TAG(CDDR(expr), na_encodeSymbol);
     SEXP value = eval(expr, R_BaseEnv);
