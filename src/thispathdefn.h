@@ -32,7 +32,7 @@
 
 
 extern SEXP findFun3(SEXP symbol, SEXP rho, SEXP call);
-extern int pmatch(SEXP, SEXP, int);
+extern Rboolean pmatch(SEXP, SEXP, Rboolean);
 
 
 extern void SET_PRCODE (SEXP x, SEXP v);
