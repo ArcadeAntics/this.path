@@ -91,7 +91,7 @@ local({
     on.exit(close(con), add = TRUE, after = FALSE)
 
 
-    fun(try(source(con, local = new.env())), as.is = TRUE)
+    fun(try(source(print(con), local = new.env())), as.is = TRUE)
 
 
     con2 <- gzcon(file(file, "rb"))

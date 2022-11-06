@@ -87,7 +87,8 @@ SEXP do_thispathinaquaerror(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP file = CADR(args);
-    if (TYPEOF(file) != STRSXP)error(_("a character vector argument expected"));
+    if (TYPEOF(file) != STRSXP)
+        error(_("a character vector argument expected"));
     int n = LENGTH(file);
     SEXP value = allocVector(LGLSXP, n);
     PROTECT(value);
