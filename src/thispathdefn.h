@@ -322,6 +322,17 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                     assign_null(frame);                        \
             }                                                  \
             else if (streql(klass, "unz")) {                   \
+                /* we save this error to throw later           \
+                   because it does not indicate an error with  \
+                   the user's usage of the source-like function,\
+                   but rather an error that the executing document\
+                   has no path. we also save thispathformsg as the\
+                   object to return when the user requests this.path()\
+                   inside a message. we also assign thispathassocwfile\
+                   so that we know this source-call is assocaited with a file\
+                   even though that file has no path (well it has a path,\
+                   but it cannot be represented by a single string)\
+                 */                                            \
                 SEXP tmp = thisPathInZipFileError(R_NilValue, description);\
                 INCREMENT_NAMED(tmp);                          \
                 defineVar(thispatherrorSymbol, tmp, frame);    \
@@ -351,6 +362,12 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                     errorcall(call, "invalid '%s' (a connection of class '%s'), expected a file connection",\
                               EncodeChar(PRINTNAME(sym)), EncodeChar(mkChar(klass)));\
                 else {                                         \
+                    /* save as for "unz", we save the error    \
+                       and the description for a message       \
+                       however, we do not save thispathassocwfile\
+                       because we don't know if this connection\
+                       has an associated path/file             \
+                     */                                        \
                     SEXP tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon);\
                     INCREMENT_NAMED(tmp);                      \
                     defineVar(thispatherrorSymbol, tmp, frame);\

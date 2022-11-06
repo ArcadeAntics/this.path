@@ -38,6 +38,7 @@ local({
             }
 
             bindings <- grep("^__this\\.path::.+__$", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
+            stopifnot(vapply(bindings, bindingIsLocked, frame, FUN.VALUE = NA))
             getwd()
             try(this.path:::PRINFO("__this.path::file__", frame, inherits = FALSE))
             # don't use as.list yet, will force the promises
@@ -136,7 +137,7 @@ local({
     file3 <- as.rel.path(FILE3, ".")
     if (.Platform$OS.type == "windows")
         file3 <- chartr("/", "\\", file3)
-    fun(knitr::knit(file3, output = FILE4))
+    fun(knitr::knit(file3, FILE4, quiet = TRUE))
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
@@ -152,7 +153,14 @@ local({
     on.exit(close(con3), add = TRUE, after = FALSE)
 
 
-    fun(try(knitr::knit(con3, output = FILE4)), as.is = TRUE)
+    fun(try(knitr::knit(print(con3), FILE4, quiet = TRUE)), as.is = TRUE)
+    this.path:::cat.file(FILE4, number = TRUE,
+        squeeze.blank = TRUE, show.tabs = TRUE)
+
+
+    con4 <- gzcon(file(file3, "rb"))
+    on.exit(close(con4), add = TRUE, after = FALSE)
+    fun(knitr::knit(print(con4), FILE4, quiet = TRUE), as.is = TRUE)
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
@@ -169,7 +177,7 @@ local({
 
 
     sourcelike2 <- function(file, envir = parent.frame()) {
-        this.path::within.source(file)
+        this.path::inside.source(file)
         exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
         for (i in seq_along(exprs)) eval(exprs[i], envir)
     }
