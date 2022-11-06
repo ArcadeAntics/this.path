@@ -52,18 +52,35 @@ SEXP
     C_setprseen2Symbol        = NULL,
     thispathtempSymbol        = NULL,
     parent_frameSymbol        = NULL,
-    invisibleSymbol           = NULL;
+    invisibleSymbol           = NULL,
+    getConnectionSymbol       = NULL,
+    as_environmentSymbol      = NULL;
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    thispathofileSymbol       = install("__this.path::ofile__");
-    thispathfileSymbol        = install("__this.path::file__");
-    thispathformsgSymbol      = install("__this.path::for msg__");
-    thispatherrorSymbol       = install("__this.path::error__");
-    thispathassocwfileSymbol  = install("__this.path::associated with file__");
-    thispathdoneSymbol        = install("__this.path::done__");
-    insidesourcewashereSymbol = install("__this.path::inside.source() was here__");
+/* code is written this way on purpose, do not reformat */
+#define thispathofileChar                                      \
+    "__this.path::ofile__"
+#define thispathfileChar                                       \
+    "__this.path::file__"
+#define thispathformsgChar                                     \
+    "__this.path::for msg__"
+#define thispatherrorChar                                      \
+    "__this.path::error__"
+#define thispathassocwfileChar                                 \
+    "__this.path::associated with file__"
+#define thispathdoneChar                                       \
+    "__this.path::done__"
+#define insidesourcewashereChar                                \
+    "__this.path::inside.source() was here__"
+    thispathofileSymbol       = install(thispathofileChar);
+    thispathfileSymbol        = install(thispathfileChar);
+    thispathformsgSymbol      = install(thispathformsgChar);
+    thispatherrorSymbol       = install(thispatherrorChar);
+    thispathassocwfileSymbol  = install(thispathassocwfileChar);
+    thispathdoneSymbol        = install(thispathdoneChar);
+    insidesourcewashereSymbol = install(insidesourcewashereChar);
     _normalizePathSymbol      = install(".normalizePath");
     _normalizeAgainstSymbol   = install(".normalizeAgainst");
     stopSymbol                = install("stop");
@@ -107,5 +124,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     thispathtempSymbol        = install("__this.path::temp__");
     parent_frameSymbol        = install("parent.frame");
     invisibleSymbol           = install("invisible");
+    getConnectionSymbol       = install("getConnection");
+    as_environmentSymbol      = install("as.environment");
     return R_NilValue;
 }

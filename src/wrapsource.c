@@ -423,7 +423,7 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP ofile = TYPEOF(e) == PROMSXP ? PRVALUE(e) : e;
     checkfile(
-        /* const char *name   = */ "file",
+        /* SEXP sym           = */ fileSymbol,
         /* SEXP ofile         = */ ofile,
         /* SEXP frame         = */ rho  ,
         /* int character_only = */ character_only,
@@ -472,7 +472,7 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
         if (file_only == NA_LOGICAL)
             error(_("invalid '%s' argument"), "file.only");
         checkfile(
-            /* const char *name   = */ "file",
+            /* SEXP sym           = */ fileSymbol,
             /* SEXP ofile         = */ ofile,
             /* SEXP frame         = */ rho  ,
             /* int character_only = */ character_only,
@@ -502,8 +502,17 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    if (asInteger(eval(lang1(sys_nframeSymbol), rho)) < 2)
+    int n = asInteger(eval(lang1(sys_nframeSymbol), rho));
+    if (n < 2)
         error("inside.source() must be called within another function");
+
+
+    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(n - 1));
+    PROTECT(expr);
+    SEXP function = eval(expr, rho);
+    UNPROTECT(1);
+    if (TYPEOF(function) != CLOSXP)
+        error("inside.source() cannot be used within a '%s', possible errors with eval?", type2char(TYPEOF(function)));
 
 
     SEXP ofile, frame;
@@ -524,7 +533,7 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     checkfile(
-        /* const char *name   = */ "file",
+        /* SEXP sym           = */ fileSymbol,
         /* SEXP ofile         = */ ofile,
         /* SEXP frame         = */ frame,
         /* int character_only = */ character_only,

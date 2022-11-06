@@ -23,13 +23,15 @@ static R_INLINE int asFlag(SEXP x, const char *name)
     }                                                          \
     const char *msg = translateChar(STRING_ELT(CAR(args), 0)); \
     args = CDR(args);                                          \
-    SEXP call2 = lazy_duplicate(CAR(args));
+    SEXP call2 = CAR(args);                                    \
+    ENSURE_NAMEDMAX(call2)
 
 
 SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     args = CDR(args);
-    SEXP call2 = lazy_duplicate(CAR(args));
+    SEXP call2 = CAR(args);
+    ENSURE_NAMEDMAX(call2);
     args = CDR(args);
     Rconnection Rcon = R_GetConnection(CAR(args));
     return thisPathUnrecognizedConnectionClassError(call2, Rcon);
@@ -38,20 +40,22 @@ SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, 
 
 SEXP do_thispathunrecognizedmannererror(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    return thisPathUnrecognizedMannerError(lazy_duplicate(CADR(args)));
+    op = CADR(args);
+    ENSURE_NAMEDMAX(op);
+    return thisPathUnrecognizedMannerError(op);
 }
 
 
 SEXP do_thispathnotimplementederror(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    errorbody
+    errorbody;
     return thisPathNotImplementedError(msg, call2);
 }
 
 
 SEXP do_thispathnotexistserror(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    errorbody
+    errorbody;
     return thisPathNotExistsError(msg, call2);
 }
 
@@ -80,6 +84,25 @@ SEXP do_thispathinaquaerror(SEXP call, SEXP op, SEXP args, SEXP rho)
 #undef errorbody
 
 
+SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    SEXP file = CADR(args);
+    if (TYPEOF(file) != STRSXP)
+	    error(_("a character vector argument expected"));
+    int n = LENGTH(file);
+    SEXP value = allocVector(LGLSXP, n);
+    PROTECT(value);
+    int *ivalue = INTEGER(value);
+    const char *url;
+    for (int i = 0; i < n; i++) {
+        url = CHAR(STRING_ELT(file, i));
+        ivalue[i] = isclipboard(url);
+    }
+    UNPROTECT(1);
+    return value;
+}
+
+
 SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP returnthis = NULL;
@@ -93,7 +116,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     int for_msg  = asFlag(CADDR(args), "for.msg");
     int N        = asInteger(CADDDR(args));
     if (N == NA_INTEGER || N < 0)
-        error("invalid 'N' argument");
+        error(_("invalid '%s' argument"), "N");
     int get_frame_number = asFlag(CAD4R(args), "get.frame.number");
 
 
@@ -139,7 +162,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
-    int testthat_loaded, knitr_loaded, testthat_uses_brio = 0;
+    int testthat_loaded, knitr_loaded;
 
 
     SEXP source = PRVALUE(findVarInFrame(R_BaseEnv, sourceSymbol));
@@ -161,7 +184,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
         gui_rstudio = LOGICAL_ELT(tmp, 0);
     }
     if (gui_rstudio) {
-        tools_rstudio = matchEnvir("tools:rstudio");
+        tools_rstudio = as_environment_char("tools:rstudio");
         debugSource = findVarInFrame(tools_rstudio, debugSourceSymbol);
         if (debugSource == R_UnboundValue)
             error(_("object '%s' not found"), "debugSource");
@@ -178,12 +201,8 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     testthat_loaded = (findVarInFrame(R_NamespaceRegistry, testthatSymbol) != R_UnboundValue);
-    if (testthat_loaded) {
+    if (testthat_loaded)
         source_file = R_getNSValue(R_NilValue, testthatSymbol, source_fileSymbol, TRUE);
-        testthat_uses_brio = asLogical(eval(lang1(testthat_uses_brioSymbol), rho));
-        if (testthat_uses_brio == NA_LOGICAL)
-            error("invalid '%s()'; should never happen, please report!", EncodeChar(PRINTNAME(testthat_uses_brioSymbol)));
-    }
     else
         source_file = R_NilValue;
 
@@ -226,9 +245,9 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP which = allocVector(INTSXP, 1);
     int *iwhich = INTEGER(which);
-    SEXP getframe = lang2(findVarInFrame(R_BaseEnv, sys_frameSymbol), which);
+    SEXP getframe = lang2(getInFrame(sys_frameSymbol, R_BaseEnv, FALSE), which);
     PROTECT(getframe); nprotect++;
-    SEXP getfunction = lang2(findVarInFrame(R_BaseEnv, sys_functionSymbol), which);
+    SEXP getfunction = lang2(getInFrame(sys_functionSymbol, R_BaseEnv, FALSE), which);
     PROTECT(getfunction); nprotect++;
 
 
@@ -253,7 +272,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* const char *name   = */ EncodeChar(PRINTNAME(ofileSymbol)),
+                    /* SEXP sym           = */ ofileSymbol,
                     /* SEXP ofile         = */ ofile,
                     /* SEXP frame         = */ frame,
                     /* int character_only = */ FALSE,
@@ -268,89 +287,125 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     /* int normalize      = */ FALSE
                 )
             }
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-            /* don't check right away that this is missing, in case another */
-            /* error must be thrown or the user requests the frame number   */
-#define file_only FALSE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only FALSE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        return ((findVarInFrame(frame, thispathassocwfileSymbol) != R_UnboundValue) ?
-                            which : ScalarInteger(NA_INTEGER));
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        /* should not reach here */
-                        UNPROTECT(1);
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                /* if thispathfile has already been evaluated, return it */
-                /* otherwise, return the original file */
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    return thispathofile;
-                else
-                    return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));
-                else
-                    returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function source\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+
+
+#define returnfile(character_only, file_only, maybe_decrement, \
+    promise_must_be_forced, fun_name)                          \
+            thispathofile = findVarInFrame(frame, thispathofileSymbol);\
+            /* don't check right away that this is missing, in case another */\
+            /* error must be thrown or the user requests the frame number   */\
+            if (!file_only) {                                  \
+                /* if file_only is TRUE, thispathofile cannot be NULL */\
+                if (thispathofile == R_NilValue) {             \
+                    UNPROTECT(1);                              \
+                    continue;                                  \
+                }                                              \
+            }                                                  \
+            if (!character_only) {                             \
+                /* if character_only is TRUE, there cannot be a delayed error */\
+                thispatherror = findVarInFrame(frame, thispatherrorSymbol);\
+                /* if there is an error which needs to be thrown */\
+                if (thispatherror != R_UnboundValue) {         \
+                    if (for_msg) {                             \
+                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);\
+                        if (thispathformsg == R_UnboundValue)  \
+                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));\
+                        UNPROTECT(nprotect + 1);               \
+                        return thispathformsg;                 \
+                    }                                          \
+                    else if (get_frame_number) {               \
+                        UNPROTECT(nprotect + 1);               \
+                        if (findVarInFrame(frame, thispathassocwfileSymbol) == R_UnboundValue)\
+                            return ScalarInteger(NA_INTEGER);  \
+                        if (maybe_decrement) {                 \
+                            if (iwhich[0] >= 2) {              \
+                                iwhich[0]--;                   \
+                            }                                  \
+                        }                                      \
+                        return which;                          \
+                    }                                          \
+                    else {                                     \
+                        thispatherror = duplicate(thispatherror);\
+                        PROTECT(thispatherror);                \
+                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));\
+                        stop(thispatherror);                   \
+                        /* should not reach here */            \
+                        UNPROTECT(1);                          \
+                        UNPROTECT(nprotect + 1);               \
+                        return R_NilValue;                     \
+                    }                                          \
+                }                                              \
+            }                                                  \
+            if (get_frame_number) {                            \
+                UNPROTECT(nprotect + 1);                       \
+                if (maybe_decrement) {                         \
+                    if (iwhich[0] >= 2) {                      \
+                        iwhich[0]--;                           \
+                    }                                          \
+                }                                              \
+                return which;                                  \
+            }                                                  \
+            if (thispathofile == R_UnboundValue)               \
+                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));\
+            if (for_msg) {                                     \
+                if (original == TRUE) {                        \
+                    UNPROTECT(nprotect + 1);                   \
+                    return thispathofile;                      \
+                }                                              \
+                thispathfile = findVarInFrame(frame, thispathfileSymbol);\
+                if (thispathfile == R_UnboundValue)            \
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));\
+                if (TYPEOF(thispathfile) != PROMSXP)           \
+                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));\
+                if (promise_must_be_forced) {                  \
+                    if (PRVALUE(thispathfile) == R_UnboundValue)\
+                        error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));\
+                    UNPROTECT(nprotect + 1);                   \
+                    return PRVALUE(thispathfile);              \
+                }                                              \
+                else {                                         \
+                    UNPROTECT(nprotect + 1);                   \
+                    /* if thispathfile has already been evaluated, return it */\
+                    /* otherwise, return the original file */  \
+                    if (PRVALUE(thispathfile) == R_UnboundValue)\
+                        return thispathofile;                  \
+                    else                                       \
+                        return PRVALUE(thispathfile);          \
+                }                                              \
+            }                                                  \
+            if (original == TRUE)                              \
+                returnthis = thispathofile;                    \
+            else {                                             \
+                thispathfile = findVarInFrame(frame, thispathfileSymbol);\
+                if (thispathfile == R_UnboundValue)            \
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));\
+                if (TYPEOF(thispathfile) != PROMSXP)           \
+                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));\
+                if (promise_must_be_forced) {                  \
+                    if (PRVALUE(thispathfile) == R_UnboundValue)\
+                        error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));\
+                    returnthis = PRVALUE(thispathfile);        \
+                }                                              \
+                else {                                         \
+                    if (PRVALUE(thispathfile) == R_UnboundValue)\
+                        returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));\
+                    else                                       \
+                        returnthis = PRVALUE(thispathfile);    \
+                }                                              \
+            }                                                  \
+            if (verbose) Rprintf("Source: call to function %s\n", fun_name);\
+            UNPROTECT(nprotect + 1);                           \
+            return returnthis
+
+
+            returnfile(
+                /* int character_only         = */ FALSE,
+                /* int file_only              = */ FALSE,
+                /* int maybe_decrement        = */ FALSE,
+                /* int promise_must_be_forced = */ FALSE,
+                /* const char *fun_name       = */
+                "source"
+            );
         }
 
 
@@ -371,7 +426,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* const char *name   = */ EncodeChar(PRINTNAME(fileSymbol)),
+                    /* SEXP sym           = */ fileSymbol,
                     /* SEXP ofile         = */ ofile,
                     /* SEXP frame         = */ frame,
                     /* int character_only = */ TRUE ,
@@ -386,89 +441,14 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     /* int normalize      = */ FALSE
                 )
             }
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-            /* don't check right away that this is missing, in case another */
-            /* error must be thrown or the user requests the frame number   */
-#define file_only TRUE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only TRUE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        return ((findVarInFrame(frame, thispathassocwfileSymbol) != R_UnboundValue) ?
-                            which : ScalarInteger(NA_INTEGER));
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        /* should not reach here */
-                        UNPROTECT(1);
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                /* if thispathfile has already been evaluated, return it */
-                /* otherwise, return the original file */
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    return thispathofile;
-                else
-                    return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));
-                else
-                    returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function sys.source\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+            returnfile(
+                /* int character_only         = */ TRUE ,
+                /* int file_only              = */ TRUE ,
+                /* int maybe_decrement        = */ FALSE,
+                /* int promise_must_be_forced = */ FALSE,
+                /* const char *fun_name       = */
+                "sys.source"
+            );
         }
 
 
@@ -489,7 +469,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* const char *name   = */ EncodeChar(PRINTNAME(fileNameSymbol)),
+                    /* SEXP sym           = */ fileNameSymbol,
                     /* SEXP ofile         = */ ofile,
                     /* SEXP frame         = */ frame,
                     /* int character_only = */ TRUE ,
@@ -504,89 +484,14 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     /* int normalize      = */ FALSE
                 )
             }
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-            /* don't check right away that this is missing, in case another */
-            /* error must be thrown or the user requests the frame number   */
-#define file_only FALSE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only TRUE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        return ((findVarInFrame(frame, thispathassocwfileSymbol) != R_UnboundValue) ?
-                            which : ScalarInteger(NA_INTEGER));
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        UNPROTECT(1);
-                        /* should not reach here */
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                /* if thispathfile has already been evaluated, return it */
-                /* otherwise, return the original file */
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    return thispathofile;
-                else
-                    return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));
-                else
-                    returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function debugSource in RStudio\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+            returnfile(
+                /* int character_only         = */ TRUE ,
+                /* int file_only              = */ FALSE,
+                /* int maybe_decrement        = */ FALSE,
+                /* int promise_must_be_forced = */ FALSE,
+                /* const char *fun_name       = */
+                "debugSource in RStudio"
+            );
         }
 
 
@@ -607,7 +512,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* const char *name   = */ EncodeChar(PRINTNAME(pathSymbol)),
+                    /* SEXP sym           = */ pathSymbol,
                     /* SEXP ofile         = */ ofile,
                     /* SEXP frame         = */ frame,
                     /* int character_only = */ TRUE ,
@@ -619,91 +524,17 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     /* SEXP getowd        = */ findVarInFrame(frame, old_dirSymbol),
                     /* int hasowd         = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
                     /* int do_enc2utf8    = */ FALSE,
-                    /* int normalize      = */ testthat_uses_brio
+                    /* int normalize      = */ asLogical(eval(lang1(testthat_uses_brioSymbol), rho))
                 )
             }
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-            /* don't check right away that this is missing, in case another */
-            /* error must be thrown or the user requests the frame number   */
-#define file_only TRUE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only TRUE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        return ((findVarInFrame(frame, thispathassocwfileSymbol) != R_UnboundValue) ? which : ScalarInteger(NA_INTEGER));
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        UNPROTECT(1);
-                        /* should not reach here */
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                /* if thispathfile has already been evaluated, return it */
-                /* otherwise, return the original file */
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    return thispathofile;
-                else
-                    return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));
-                else
-                    returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function source_file in package testthat\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+            returnfile(
+                /* int character_only         = */ TRUE ,
+                /* int file_only              = */ TRUE ,
+                /* int maybe_decrement        = */ FALSE,
+                /* int promise_must_be_forced = */ FALSE,
+                /* const char *fun_name       = */
+                "source_file in package testthat"
+            );
         }
 
 
@@ -719,12 +550,13 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 UNPROTECT(1);
                 if (missing_input) {
                     assign_null(frame);
+                    assign_done(frame);
                     UNPROTECT(1);
                     continue;
                 }
-                ofile = getVarValInFrame(frame, inputSymbol, FALSE);
+                ofile = getInFrame(inputSymbol, frame, FALSE);
                 checkfile(
-                    /* const char *name   = */ EncodeChar(PRINTNAME(inputSymbol)),
+                    /* SEXP sym           = */ inputSymbol,
                     /* SEXP ofile         = */ ofile,
                     /* SEXP frame         = */ frame,
                     /* int character_only = */ FALSE,
@@ -739,89 +571,14 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     /* int normalize      = */ FALSE
                 )
             }
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-            /* don't check right away that this is missing, in case another */
-            /* error must be thrown or the user requests the frame number   */
-#define file_only FALSE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only FALSE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        return ((findVarInFrame(frame, thispathassocwfileSymbol) != R_UnboundValue) ?
-                            which : ScalarInteger(NA_INTEGER));
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        UNPROTECT(1);
-                        /* should not reach here */
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                /* if thispathfile has already been evaluated, return it */
-                /* otherwise, return the original file */
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    return thispathofile;
-                else
-                    return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));
-                else
-                    returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function knit in package knitr\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+            returnfile(
+                /* int character_only         = */ FALSE,
+                /* int file_only              = */ FALSE,
+                /* int maybe_decrement        = */ FALSE,
+                /* int promise_must_be_forced = */ FALSE,
+                /* const char *fun_name       = */
+                "knit in package knitr"
+            );
         }
 
 
@@ -830,174 +587,26 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 UNPROTECT(1);
                 continue;
             }
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-#define file_only FALSE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only FALSE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        if (findVarInFrame(frame, thispathassocwfileSymbol) == R_UnboundValue)
-                            return ScalarInteger(NA_INTEGER);
-                        if (iwhich[0] >= 2)
-                            iwhich[0]--;
-                        return which;
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        UNPROTECT(1);
-                        /* should not reach here */
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                if (iwhich[0] >= 2)
-                    iwhich[0]--;
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function wrap.source in package this.path\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+            returnfile(
+                /* int character_only         = */ FALSE,
+                /* int file_only              = */ FALSE,
+                /* int maybe_decrement        = */ TRUE ,
+                /* int promise_must_be_forced = */ TRUE ,
+                /* const char *fun_name       = */
+                "wrap.source in package this.path"
+            );
         }
 
 
         else if (findVarInFrame(frame, insidesourcewashereSymbol) != R_UnboundValue) {
-            thispathofile = findVarInFrame(frame, thispathofileSymbol);
-#define file_only FALSE
-            if (!file_only) {
-#undef file_only
-                /* if file_only is TRUE, thispathofile cannot be NULL */
-                if (thispathofile == R_NilValue) {
-                    UNPROTECT(1);
-                    continue;
-                }
-            }
-#define character_only FALSE
-            if (!character_only) {
-#undef character_only
-                /* if character_only is TRUE, there cannot be a delayed error */
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);
-                /* if there is an error which needs to be thrown */
-                if (thispatherror != R_UnboundValue) {
-                    if (for_msg) {
-                        thispathformsg = findVarInFrame(frame, thispathformsgSymbol);
-                        if (thispathformsg == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));
-                        UNPROTECT(nprotect + 1);
-                        return thispathformsg;
-                    }
-                    else if (get_frame_number) {
-                        UNPROTECT(nprotect + 1);
-                        if (findVarInFrame(frame, thispathassocwfileSymbol) == R_UnboundValue)
-                            return ScalarInteger(NA_INTEGER);
-                        if (iwhich[0] >= 2)
-                            iwhich[0]--;
-                        return which;
-                    }
-                    else {
-                        thispatherror = duplicate(thispatherror);
-                        PROTECT(thispatherror);
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));
-                        stop(thispatherror);
-                        UNPROTECT(1);
-                        /* should not reach here */
-                        UNPROTECT(nprotect + 1);
-                        return R_NilValue;
-                    }
-                }
-            }
-            if (get_frame_number) {
-                UNPROTECT(nprotect + 1);
-                if (iwhich[0] >= 2)
-                    iwhich[0]--;
-                return which;
-            }
-            if (thispathofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            if (for_msg) {
-                if (original == TRUE) {
-                    UNPROTECT(nprotect + 1);
-                    return thispathofile;
-                }
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                UNPROTECT(nprotect + 1);
-                return PRVALUE(thispathfile);
-            }
-            if (original == TRUE)
-                returnthis = thispathofile;
-            else {
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);
-                if (thispathfile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (TYPEOF(thispathfile) != PROMSXP)
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                if (PRVALUE(thispathfile) == R_UnboundValue)
-                    error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                returnthis = PRVALUE(thispathfile);
-            }
-            if (verbose) Rprintf("Source: call to function inside.source in package this.path\n");
-            UNPROTECT(nprotect + 1);
-            return returnthis;
+            returnfile(
+                /* int character_only         = */ FALSE,
+                /* int file_only              = */ FALSE,
+                /* int maybe_decrement        = */ TRUE ,
+                /* int promise_must_be_forced = */ TRUE ,
+                /* const char *fun_name       = */
+                "inside.source in package this.path"
+            );
         }
 
 
@@ -1011,4 +620,5 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #undef toplevel
 #undef identical
+#undef returnfile
 }

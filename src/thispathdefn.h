@@ -114,13 +114,15 @@ extern SEXP
     C_setprseen2Symbol       ,
     thispathtempSymbol       ,
     parent_frameSymbol       ,
-    invisibleSymbol          ;
+    invisibleSymbol          ,
+    getConnectionSymbol      ,
+    as_environmentSymbol     ;
 
 
-extern SEXP getVarValInFrame(SEXP rho, SEXP sym, int unbound_ok);
+extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 
 
-extern SEXP matchEnvir(const char *what);
+extern SEXP as_environment_char(const char *what);
 
 
 extern SEXP summaryconnection(Rconnection Rcon);
@@ -197,15 +199,22 @@ extern void assign_fileurl2(SEXP description, SEXP frame, SEXP rho);
 extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
 
 
-#define checkfile(name, ofile, frame, character_only, file_only, rho,\
-    forcepromise, call, maybe_chdir, getowd, hasowd, do_enc2utf8, normalize)\
+#define assign_done(frame) do {                                \
+    defineVar(thispathdoneSymbol, R_NilValue, (frame));        \
+    R_LockBinding(thispathdoneSymbol, (frame));                \
+} while (0)
+
+
+#define checkfile(sym, ofile, frame, character_only, file_only,\
+    rho, forcepromise, call, maybe_chdir, getowd, hasowd,      \
+    do_enc2utf8, normalize)                                    \
 {                                                              \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
-            errorcall(call, "invalid '%s', must be a character string", name);\
+            errorcall(call, "invalid '%s', must be a character string", EncodeChar(PRINTNAME(sym)));\
         SEXP file = STRING_ELT(ofile, 0);                      \
         if (file == NA_STRING)                                 \
-            errorcall(call, "invalid '%s', must not be NA", name);\
+            errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
         const char *url;                                       \
         if (do_enc2utf8) {                                     \
             if (IS_UTF8(file) || IS_ASCII(file) || IS_BYTES(file))\
@@ -228,13 +237,15 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
         }                                                      \
         else if (!(LENGTH(file) > 0)) {                        \
             if (file_only)                                     \
-                errorcall(call, "invalid '%s', must not be \"\"", name);\
-            assign_null(frame);                                \
+                errorcall(call, "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(sym)));\
+            else                                               \
+                assign_null(frame);                            \
         }                                                      \
         else if (isclipboard(url) || strcmp(url, "stdin") == 0) {\
             if (file_only)                                     \
-                errorcall(call, "invalid '%s', must not be \"clipboard\" nor \"stdin\"", name);\
-            assign_null(frame);                                \
+                errorcall(call, "invalid '%s', must not be \"clipboard\" nor \"stdin\"", EncodeChar(PRINTNAME(sym)));\
+            else                                               \
+                assign_null(frame);                            \
         }                                                      \
         else if (strncmp(url, "http://" , 7) == 0 ||           \
                  strncmp(url, "https://", 8) == 0 ||           \
@@ -242,13 +253,15 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                  strncmp(url, "ftps://" , 7) == 0)             \
         {                                                      \
             if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a URL", name);\
-            assign_url(ofile, file, frame, rho);               \
+                errorcall(call, "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(sym)));\
+            else                                               \
+                assign_url(ofile, file, frame, rho);           \
         }                                                      \
         else if (strncmp(url, "file://", 7) == 0) {            \
             if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a file URL", name);\
-            assign_fileurl(ofile, file, frame, rho);           \
+                errorcall(call, "invalid '%s', cannot be a file URL", EncodeChar(PRINTNAME(sym)));\
+            else                                               \
+                assign_fileurl(ofile, file, frame, rho);       \
         }                                                      \
         else if (maybe_chdir) {                                \
             SEXP owd = getowd;                                 \
@@ -262,88 +275,95 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
     }                                                          \
     else {                                                     \
         if (character_only)                                    \
-            errorcall(call, "invalid '%s', must be a character string", name);\
-        if (!inherits(ofile, "connection"))                     \
-            errorcall(call, "invalid '%s', must be a string or connection", name);\
-        Rconnection Rcon = R_GetConnection(ofile);             \
-        if (Rcon->isGzcon) {                                   \
-            /* copied from https://github.com/wch/r-source/blob/50ff41b742a1ac655314be5e25897a12d3096661/src/main/connections.c#L6018 */\
-            /* this gives us access to the original connection that the gzcon was derived from */\
-            Rcon = ((Rgzconn)(Rcon->private))->con;            \
-        }                                                      \
-        SEXP description;                                      \
-        if (Rcon->enc == CE_UTF8)                              \
-            description = mkCharCE(Rcon->description, CE_UTF8);\
-        else                                                   \
-            description = mkChar(Rcon->description);           \
-        const char *klass = Rcon->class;                       \
-                                                               \
-                                                               \
-        if (streql(klass, "file"  ) ||                         \
-            streql(klass, "gzfile") ||                         \
-            streql(klass, "bzfile") ||                         \
-            streql(klass, "xzfile") ||                         \
-            streql(klass, "fifo"  ))                           \
-        {                                                      \
-            assign_fileurl2(description, frame, rho);          \
-            if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
-        }                                                      \
-        else if (streql(klass, "url-libcurl") ||               \
-                 streql(klass, "url-wininet"))                 \
-        {                                                      \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a URL connection", name);\
-            assign_url(ScalarString(description), description, frame, rho);\
-            if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
-        }                                                      \
-        else if (isclipboard(klass)        ||                  \
-                 streql(klass, "pipe"    ) ||                  \
-                 streql(klass, "terminal"))                    \
-        {                                                      \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a clipboard / / pipe / / terminal connection", name);\
-            assign_null(frame);                                \
-        }                                                      \
-        else if (streql(klass, "unz")) {                       \
-            SEXP tmp = thisPathInZipFileError(R_NilValue, description);\
-            INCREMENT_NAMED(tmp);                              \
-            defineVar(thispatherrorSymbol, tmp, frame);        \
-            R_LockBinding(thispatherrorSymbol, frame);         \
-            tmp = ScalarString(description);                   \
-            INCREMENT_NAMED(tmp);                              \
-            defineVar(thispathformsgSymbol, tmp, frame);       \
-            R_LockBinding(thispathformsgSymbol, frame);        \
-            defineVar(thispathassocwfileSymbol, R_NilValue, frame);\
-            R_LockBinding(thispathassocwfileSymbol, frame);    \
-        }                                                      \
-        else if (streql(klass, "textConnection") ||            \
-                 streql(klass, "rawConnection" ) ||            \
-                 streql(klass, "sockconn"      ) ||            \
-                 streql(klass, "servsockconn"  ))              \
-        {                                                      \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a textConnection / / rawConnection / / sockconn / / servsockconn", name);\
-            assign_null(frame);                                \
-        }                                                      \
-        else if (Rcon->isGzcon && streql(klass, "gzcon")) {    \
-            error("invalid connection; should never happen, please report!");\
-        }                                                      \
+            errorcall(call, "invalid '%s', must be a character string", EncodeChar(PRINTNAME(sym)));\
+        else if (!inherits(ofile, "connection"))               \
+            errorcall(call, "invalid '%s', must be a string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s' (a connection of class '%s'), expected a file connection",\
-                    name, EncodeChar(mkChar(klass)));          \
-            SEXP tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon);\
-            INCREMENT_NAMED(tmp);                              \
-            defineVar(thispatherrorSymbol, tmp, frame);        \
-            R_LockBinding(thispatherrorSymbol, frame);         \
-            tmp = ScalarString(description);                   \
-            INCREMENT_NAMED(tmp);                              \
-            defineVar(thispathformsgSymbol, tmp, frame);       \
-            R_LockBinding(thispathformsgSymbol, frame);        \
+            Rconnection Rcon = R_GetConnection(ofile);         \
+            if (Rcon->isGzcon) {                               \
+                /* copied from https://github.com/wch/r-source/blob/50ff41b742a1ac655314be5e25897a12d3096661/src/main/connections.c#L6018 */\
+                /* this gives us access to the original connection that the gzcon was derived from */\
+                Rcon = ((Rgzconn)(Rcon->private))->con;        \
+            }                                                  \
+            SEXP description;                                  \
+            if (Rcon->enc == CE_UTF8)                          \
+                description = mkCharCE(Rcon->description, CE_UTF8);\
+            else                                               \
+                description = mkChar(Rcon->description);       \
+            const char *klass = Rcon->class;                   \
+                                                               \
+                                                               \
+            if (streql(klass, "file"  ) ||                     \
+                streql(klass, "gzfile") ||                     \
+                streql(klass, "bzfile") ||                     \
+                streql(klass, "xzfile") ||                     \
+                streql(klass, "fifo"  ))                       \
+            {                                                  \
+                assign_fileurl2(description, frame, rho);      \
+                if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
+            }                                                  \
+            else if (streql(klass, "url-libcurl") ||           \
+                     streql(klass, "url-wininet"))             \
+            {                                                  \
+                if (file_only)                                 \
+                    errorcall(call, "invalid '%s', cannot be a URL connection", EncodeChar(PRINTNAME(sym)));\
+                else {                                         \
+                    assign_url(ScalarString(description), description, frame, rho);\
+                    if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
+                }                                              \
+            }                                                  \
+            else if (isclipboard(klass)        ||              \
+                     streql(klass, "pipe"    ) ||              \
+                     streql(klass, "terminal"))                \
+            {                                                  \
+                if (file_only)                                 \
+                    errorcall(call, "invalid '%s', cannot be a clipboard / / pipe / / terminal connection", EncodeChar(PRINTNAME(sym)));\
+                else                                           \
+                    assign_null(frame);                        \
+            }                                                  \
+            else if (streql(klass, "unz")) {                   \
+                SEXP tmp = thisPathInZipFileError(R_NilValue, description);\
+                INCREMENT_NAMED(tmp);                          \
+                defineVar(thispatherrorSymbol, tmp, frame);    \
+                R_LockBinding(thispatherrorSymbol, frame);     \
+                tmp = ScalarString(description);               \
+                INCREMENT_NAMED(tmp);                          \
+                defineVar(thispathformsgSymbol, tmp, frame);   \
+                R_LockBinding(thispathformsgSymbol, frame);    \
+                defineVar(thispathassocwfileSymbol, R_NilValue, frame);\
+                R_LockBinding(thispathassocwfileSymbol, frame);\
+            }                                                  \
+            else if (streql(klass, "textConnection") ||        \
+                     streql(klass, "rawConnection" ) ||        \
+                     streql(klass, "sockconn"      ) ||        \
+                     streql(klass, "servsockconn"  ))          \
+            {                                                  \
+                if (file_only)                                 \
+                    errorcall(call, "invalid '%s', cannot be a textConnection / / rawConnection / / sockconn / / servsockconn", EncodeChar(PRINTNAME(sym)));\
+                else                                           \
+                    assign_null(frame);                        \
+            }                                                  \
+            else if (Rcon->isGzcon && streql(klass, "gzcon")) {\
+                error("invalid connection; should never happen, please report!");\
+            }                                                  \
+            else {                                             \
+                if (file_only)                                 \
+                    errorcall(call, "invalid '%s' (a connection of class '%s'), expected a file connection",\
+                              EncodeChar(PRINTNAME(sym)), EncodeChar(mkChar(klass)));\
+                else {                                         \
+                    SEXP tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon);\
+                    INCREMENT_NAMED(tmp);                      \
+                    defineVar(thispatherrorSymbol, tmp, frame);\
+                    R_LockBinding(thispatherrorSymbol, frame); \
+                    tmp = ScalarString(description);           \
+                    INCREMENT_NAMED(tmp);                      \
+                    defineVar(thispathformsgSymbol, tmp, frame);\
+                    R_LockBinding(thispathformsgSymbol, frame);\
+                }                                              \
+            }                                                  \
         }                                                      \
     }                                                          \
-    defineVar(thispathdoneSymbol, R_NilValue, frame);          \
-    R_LockBinding(thispathdoneSymbol, frame);                  \
+    assign_done(frame);                                        \
     set_R_Visible(1);                                          \
 }
 

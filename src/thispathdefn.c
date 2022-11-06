@@ -27,22 +27,22 @@ const char *EncodeChar(SEXP x)
  */
 
 
-SEXP getVarValInFrame(SEXP rho, SEXP sym, int unbound_ok)
+SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 {
-    SEXP val = findVarInFrame(rho, sym);
-    if (!unbound_ok && val == R_UnboundValue)
+    SEXP value = findVarInFrame(env, sym);
+    if (!unbound_ok && value == R_UnboundValue)
         error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
-    if (TYPEOF(val) == PROMSXP) {
-        if (PRVALUE(val) == R_UnboundValue)
-            return eval(val, R_EmptyEnv);
+    if (TYPEOF(value) == PROMSXP) {
+        if (PRVALUE(value) == R_UnboundValue)
+            return eval(value, R_EmptyEnv);
         else
-            return PRVALUE(val);
+            return PRVALUE(value);
     }
-    else return val;
+    else return value;
 }
 
 
-SEXP matchEnvir(const char *what)
+SEXP as_environment_char(const char *what)
 {
     SEXP name;
     for (SEXP t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
@@ -54,7 +54,7 @@ SEXP matchEnvir(const char *what)
             return t;
         }
     }
-    errorcall(lang2(install("as.environment"), mkString(what)),
+    errorcall(lang2(as_environmentSymbol, mkString(what)),
         _("no item called \"%s\" on the search list"), what);
     return R_NilValue;
 }
@@ -87,71 +87,58 @@ SEXP summaryconnection(Rconnection Rcon)
 }
 
 
-static void addMsgCallClass(SEXP cond, const char *msg, SEXP call, const char **cls, int n)
+SEXP errorCondition(const char *msg, SEXP call, const char **cls, int n, int nfields)
 {
-    SET_VECTOR_ELT(cond, 0, mkString(msg));
-    SET_VECTOR_ELT(cond, 1, call);
+    SEXP value = allocVector(VECSXP, 2 + nfields);
+    PROTECT(value);
+    SEXP names = allocVector(STRSXP, 2 + nfields);
+    setAttrib(value, R_NamesSymbol, names);
 
 
-    SEXP names = getAttrib(cond, R_NamesSymbol);
     SET_STRING_ELT(names, 0, mkChar("message"));
+    SET_VECTOR_ELT(value, 0, mkString(msg));
     SET_STRING_ELT(names, 1, mkChar("call"));
+    SET_VECTOR_ELT(value, 1, call);
 
 
     SEXP klass = allocVector(STRSXP, n + 2);
-    setAttrib(cond, R_ClassSymbol, klass);
+    setAttrib(value, R_ClassSymbol, klass);
     int i;
-    for (i = 0; i < n; i++)
-        SET_STRING_ELT(klass, i, mkChar(cls[i]));
-    SET_STRING_ELT(klass, i, mkChar("error"));
-    SET_STRING_ELT(klass, i + 1, mkChar("condition"));
+    for (i = 0; i < n; i++) {
+        SET_STRING_ELT(klass, i    , mkChar(cls[i]));
+    }
+    SET_STRING_ELT(    klass, n    , mkChar("error"));
+    SET_STRING_ELT(    klass, n + 1, mkChar("condition"));
 
 
-    return;
-}
-
-
-static void addMsgCallClass1(SEXP cond, const char *msg, SEXP call, const char *cls)
-{
-    SET_VECTOR_ELT(cond, 0, mkString(msg));
-    SET_VECTOR_ELT(cond, 1, call);
-
-
-    SEXP names = getAttrib(cond, R_NamesSymbol);
-    SET_STRING_ELT(names, 0, mkChar("message"));
-    SET_STRING_ELT(names, 1, mkChar("call"));
-
-
-    SEXP klass = allocVector(STRSXP, 3);
-    setAttrib(cond, R_ClassSymbol, klass);
-    SET_STRING_ELT(klass, 0, mkChar(cls));
-    SET_STRING_ELT(klass, 1, mkChar("error"));
-    SET_STRING_ELT(klass, 2, mkChar("condition"));
-
-
-    return;
-}
-
-
-SEXP errorCondition(const char *msg, SEXP call, const char **cls, int n, int nfields)
-{
-    SEXP cond = allocVector(VECSXP, 2 + nfields);
-    PROTECT(cond);
-    setAttrib(cond, R_NamesSymbol, allocVector(STRSXP, 2 + nfields));
-    addMsgCallClass(cond, msg, call, cls, n);
     UNPROTECT(1);
-    return cond;
+    return value;
 }
 
 
 SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int nfields)
 {
-    SEXP cond = allocVector(VECSXP, 2 + nfields);
-    PROTECT(cond);
-    setAttrib(cond, R_NamesSymbol, allocVector(STRSXP, 2 + nfields));
-    addMsgCallClass1(cond, msg, call, cls);
+    SEXP value = allocVector(VECSXP, 2 + nfields);
+    PROTECT(value);
+    SEXP names = allocVector(STRSXP, 2 + nfields);
+    setAttrib(value, R_NamesSymbol, names);
+
+
+    SET_STRING_ELT(names, 0, mkChar("message"));
+    SET_VECTOR_ELT(value, 0, mkString(msg));
+    SET_STRING_ELT(names, 1, mkChar("call"));
+    SET_VECTOR_ELT(value, 1, call);
+
+
+    SEXP klass = allocVector(STRSXP, 3);
+    setAttrib(value, R_ClassSymbol, klass);
+    SET_STRING_ELT(klass, 0, mkChar(cls));
+    SET_STRING_ELT(klass, 1, mkChar("error"));
+    SET_STRING_ELT(klass, 2, mkChar("condition"));
+
+
     UNPROTECT(1);
-    return cond;
+    return value;
 }
 
 
@@ -244,7 +231,6 @@ void stop(SEXP cond)
 
 
 int gui_rstudio = -1;
-
 
 
 SEXP _assign(SEXP file, SEXP frame)
@@ -355,7 +341,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 
 
     SET_PRCODE(e, lang2(normalizeURL_1Symbol, ofile));
-    SET_PRENV(e, rho);
+    SET_PRENV(e, ENCLOS(rho));
 
 
     /* force the promise */

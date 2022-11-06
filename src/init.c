@@ -91,7 +91,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"thispathnotexistserror"                  , (DL_FUNC) &do_thispathnotexistserror                  , 2},
     {"thispathinzipfileerror"                  , (DL_FUNC) &do_thispathinzipfileerror                  , 2},
     {"thispathinaquaerror"                     , (DL_FUNC) &do_thispathinaquaerror                     , 1},
-    {"thispath", (DL_FUNC) &do_thispath, 5},
+    {"isclipboard", (DL_FUNC) &do_isclipboard, 1},
+    {"thispath"   , (DL_FUNC) &do_thispath   , 5},
 
 
     /* wrapsource.c */
