@@ -383,3 +383,7 @@ write.code <- function (x, file = stdout(), evaluated, simplify = TRUE,
         invisible(x)
     }
 }
+
+
+readFiles <- function (files)
+vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")

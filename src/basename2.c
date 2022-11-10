@@ -456,12 +456,11 @@ SEXP do_basename2(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_basename2\n\n");
     }
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
-    if (windows)
-        return do_windowsbasename2(call, op, args, rho);
-    else return do_unixbasename2(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowsbasename2(call, op, args, rho);
+#else
+    return do_unixbasename2(call, op, args, rho);
+#endif
 }
 
 
@@ -474,15 +473,14 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho) dirname2(1)
 SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho) dirname2(0)
 
 
-#include "symbols.h"
-
-
 SEXP do_dirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     if (debug) {
         Rprintf("in do_dirname2\n\n");
     }
-    if (windows)
-        return do_windowsdirname2(call, op, args, rho);
-    else return do_unixdirname2(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowsdirname2(call, op, args, rho);
+#else
+    return do_unixdirname2(call, op, args, rho);
+#endif
 }

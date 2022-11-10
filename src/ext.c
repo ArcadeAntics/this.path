@@ -6,7 +6,6 @@
 
 
 #include "drivewidth.h"
-#include "symbols.h"
 
 
 
@@ -710,9 +709,11 @@ SEXP do_splitext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_splitext\n\n");
     }
-    if (windows)
-        return do_windowssplitext(call, op, args, rho);
-    else return do_unixsplitext(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowssplitext(call, op, args, rho);
+#else
+    return do_unixsplitext(call, op, args, rho);
+#endif
 }
 
 
@@ -730,9 +731,11 @@ SEXP do_removeext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_removeext\n\n");
     }
-    if (windows)
-        return do_windowsremoveext(call, op, args, rho);
-    else return do_unixremoveext(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowsremoveext(call, op, args, rho);
+#else
+    return do_unixremoveext(call, op, args, rho);
+#endif
 }
 
 
@@ -750,9 +753,11 @@ SEXP do_ext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_ext\n\n");
     }
-    if (windows)
-        return do_windowsext(call, op, args, rho);
-    else return do_unixext(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowsext(call, op, args, rho);
+#else
+    return do_unixext(call, op, args, rho);
+#endif
 }
 
 
@@ -770,7 +775,9 @@ SEXP do_extgets(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_extgets\n\n");
     }
-    if (windows)
-        return do_windowsextgets(call, op, args, rho);
-    else return do_unixextgets(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowsextgets(call, op, args, rho);
+#else
+    return do_unixextgets(call, op, args, rho);
+#endif
 }

@@ -3,7 +3,6 @@
 
 
 #include "drivewidth.h"
-#include "symbols.h"
 #include "translations.h"
 
 
@@ -41,7 +40,9 @@ SEXP do_unixisabspath(SEXP call, SEXP op, SEXP args, SEXP rho) isabspath(0)
 
 SEXP do_isabspath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    if (windows)
-        return do_windowsisabspath(call, op, args, rho);
-    else return do_unixisabspath(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowsisabspath(call, op, args, rho);
+#else
+    return do_unixisabspath(call, op, args, rho);
+#endif
 }

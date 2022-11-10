@@ -9,7 +9,6 @@
 
 
 #include "drivewidth.h"
-#include "symbols.h"
 
 
 
@@ -706,7 +705,9 @@ SEXP do_pathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 
 
-    if (windows)
-        return do_windowspathjoin(call, op, args, rho);
-    else return do_unixpathjoin(call, op, args, rho);
+#ifdef _WIN32
+    return do_windowspathjoin(call, op, args, rho);
+#else
+    return do_unixpathjoin(call, op, args, rho);
+#endif
 }

@@ -58,6 +58,4 @@ extern SEXP
     as_environmentSymbol     ;
 
 
-extern int windows;
-
 #endif
