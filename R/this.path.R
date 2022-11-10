@@ -1206,10 +1206,19 @@ simplify <- function (expr)
 }
 
 
-identical2 <- function (x, y)
+delayedAssign("identical2", {
+    if (getRversion() >= "4.2.0") {
+function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE,
     extptr.as.ref = TRUE)
+    }
+    else {
+function (x, y)
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+    ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE)
+    }
+})
 
 
 rm.list <- c(rm.list, "returnfile")
