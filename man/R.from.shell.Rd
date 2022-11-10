@@ -123,9 +123,9 @@ following command:
 
 On Windows, for me, this is:
 
-\file{\verb{C:\Program Files\R\R-4.2.0\bin\x64}}
+\file{\verb{C:\Program Files\R\R-}\Sexpr{getRversion()}\verb{\bin\x64}}
 
 On Linux, for me, this is:
 
-\file{/usr/lib/R/bin}
+\file{\verb{/usr/lib/R/bin}}
 }

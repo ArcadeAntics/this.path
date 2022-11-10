@@ -42,7 +42,7 @@ session. After closing all of your \R sessions, click the button
 \strong{R: (not attached)} and \sQuote{VSCode} should now attach itself
 successfully. You should see something like this:
 
-\strong{R 4.2.2}
+\strong{R \Sexpr{getRversion()}}
 
 in the place of \strong{R: (not attached)}.
 }

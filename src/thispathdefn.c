@@ -280,10 +280,10 @@ void assign_fileurl(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
      * or file:/// on windows where path is file:///d:/path/to/file */
     const char *url;
     cetype_t ienc;
-#ifdef Win32
+#ifdef _WIN32
     if (!IS_ASCII(file)) {
         ienc = CE_UTF8;
-        url = trCharUTF8(file);
+        url = translateCharUTF8(file);
     } else {
         ienc = getCharCE(file);
         url = CHAR(file);
@@ -294,7 +294,7 @@ void assign_fileurl(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 #endif
 
 
-#ifdef Win32
+#ifdef _WIN32
     if (strlen(url) > 9 && url[7] == '/' && url[9] == ':')
         url += 8;
     else url += 7;
@@ -331,9 +331,9 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
     SEXP e = _assign(ofile, frame);
 
 
-#ifdef Win32
+#ifdef _WIN32
     if (!IS_ASCII(file))
-        ofile = ScalarString(mkCharCE(trCharUTF8(file), CE_UTF8));
+        ofile = ScalarString(mkCharCE(translateCharUTF8(file), CE_UTF8));
 #endif
 
 

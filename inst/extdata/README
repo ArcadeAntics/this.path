@@ -6,7 +6,7 @@ ANY SUPPORTED TRANSLATION INTO ANOTHER LANGUAGE . For a new script, the
 windows handle will be "Untitled - R Editor", again possibly translated
 into another language.
 
-What we do in "write_r_editor_regexp.R" is:
+What we do in "write-r-editor.R" is:
 
   * launch a new Rgui process in each supported language
 
@@ -17,9 +17,8 @@ What we do in "write_r_editor_regexp.R" is:
 
 This process is automated by a python script that types automatically for us.
 
-We will then save that information into files "r_editor_regexp.txt" and
+We will then save that information into files "r-editor.txt" and
 "untitled.txt".
 
-In "main.R", we run "write-r-editor-regexp.R" for both ucrt and
-non-ucrt R sessions (since the translations are different between the
-two).
+In "main.R", we run "write-r-editor.R" for both ucrt and non-ucrt
+R sessions (since the translations are different between the two).

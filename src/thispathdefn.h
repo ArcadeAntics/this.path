@@ -41,7 +41,6 @@ extern int IS_UTF8(SEXP x);
 extern int ENC_KNOWN(SEXP x);
 extern int SET_CACHED(SEXP x);
 extern int IS_CACHED(SEXP x);
-extern const char *trCharUTF8(SEXP x);
 
 
 extern void (ENSURE_NAMEDMAX)(SEXP x);
@@ -112,7 +111,7 @@ typedef struct gzconn {
 } *Rgzconn;
 
 
-#ifdef Win32
+#ifdef _WIN32
 #define isclipboard(url) (                                             \
                               strcmp ((url), "clipboard"     ) == 0 || \
                               strncmp((url), "clipboard-", 10) == 0    \
