@@ -290,185 +290,51 @@ normalized.shFILE <- function (...)
 
 
 
-.regexps <- list()
-.regexps$windows.fsep                <- "[/\\\\]"
-.regexps$windows.basename            <- local({
-
-
-    # a regular expression for one character, determines if character is good in
-    # windows BASENAMES. there are places where some of these characters are
-    # allowed, for example, drives have a colon as the second character, and
-    # folder paths have backslash or slash
-
-
-    # # abandoned because it is too many bytes long
-    # windows.basename.good.char <- function(excluding = "") {
-    #     paste0("[^\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\"*/:<>?\\\\|",
-    #         excluding, "]")
-    # }
-    #
-    #
-    # # abandoned, not because it is too long, but because the new is shorter
-    # windows.basename.good.char <- function(excluding = "") {
-    #     paste0("(\177|[^[:cntrl:]\"*/:<>?\\\\|", excluding, "])")
-    # }
-
-
-    # the current method, stopped using [[:cntrl:]] and now uses a \001-\037
-    windows.basename.good.char <- function(excluding = "") {
-        paste0("[^\001-\037\"*/:<>?\\\\|", excluding, "]")
-    }
-
-
-    # a windows basename is a series of one or more good characters
-    #
-    #
-    # * does not start with a space
-    # * does not end with a space or full stop
-    #
-    # or
-    #
-    # * is exactly "."
-    # * is exactly ".."
-    paste0(
-        "(",
-                "(",
-                    windows.basename.good.char(excluding = " "),
-                    windows.basename.good.char(), "*",
-                ")?",
-                windows.basename.good.char(excluding = " ."),
-            "|",
-                "\\.{1,2}",
-        ")"
-    )
-})
-.regexps$windows.relative.path       <- local({
-
-
-    # a windows relative path is at least one basename,
-    # separated from each other by a file separator
-    paste0(
-        "(",
-            .regexps$windows.basename,
-            .regexps$windows.fsep    ,
-        ")*",
-        .regexps$windows.basename
-    )
-})
-.regexps$windows.local.drive.no.sep  <- local({
-
-    # a windows drive is any ASCII letter and a colon
-    "([a-zA-Z]:)?"
-})
-.regexps$windows.local.drive         <- local({
-
-
-    # a windows drive is any ASCII letter, a colon,
-    # and a backslash or slash. the letter and colon may be omitted
-    paste0(
-        .regexps$windows.local.drive.no.sep,
-        .regexps$windows.fsep
-    )
-})
-.regexps$windows.UNC.drive           <- local({
-
-
-    paste0(
-        .regexps$windows.fsep,
-        "(",
-            .regexps$windows.fsep    ,
-            .regexps$windows.basename,
-        "){2}"
-    )
-})
-.regexps$windows.local.absolute.path <- local({
-
-
-    # paste0(.regexps$windows.local.drive, "(", .regexps$windows.relative.path, ")?")
-    paste0(
-        "(",
-                .regexps$windows.local.drive,
-            "|",
-                .regexps$windows.local.drive.no.sep,
-                "(",
-                    .regexps$windows.fsep    ,
-                    .regexps$windows.basename,
-                ")+",
-        ")"
-    )
-})
-.regexps$windows.UNC.absolute.path   <- local({
-
-
-    # paste0("[/\\\\]{2}", "(", .regexps$windows.basename, "[/\\\\])+", .regexps$windows.basename)
-    paste0(
-        .regexps$windows.fsep,
-        "(",
-            .regexps$windows.fsep    ,
-            .regexps$windows.basename,
-        "){2,}"
-    )
-})
-.regexps$windows.absolute.path       <- local({
-
-
-    paste0(
-        "(",
-                .regexps$windows.local.absolute.path,
-            "|",
-                .regexps$windows.UNC.absolute.path,
-        ")"
-    )
-})
-.regexps$R.Editor.not_ucrt           <- readLines("inst/extdata/r_editor_regexp_not_ucrt.txt", encoding = "UTF-8")
-.regexps$R.Editor.ucrt               <- readLines("inst/extdata/r_editor_regexp_ucrt.txt", encoding = "UTF-8")
-
-
-.regexps$windows.local.absolute.path.anchored <- paste0("^", .regexps$windows.local.absolute.path, "$")
-.regexps$windows.UNC.absolute.path.anchored   <- paste0("^", .regexps$windows.UNC.absolute.path  , "$")
-.regexps$windows.absolute.path.anchored       <- paste0("^", .regexps$windows.absolute.path      , "$")
-.regexps$R.Editor.not_ucrt.anchored           <- paste0("^", .regexps$R.Editor.not_ucrt          , "$")
-.regexps$R.Editor.ucrt.anchored               <- paste0("^", .regexps$R.Editor.ucrt              , "$")
+is.abs.path <- function (path)
+.External2(C_isabspath, path)
 
 
 
 
 
-if (!all(nchar(.regexps, type = "bytes") < 256L))
-    stop(gettext("each regular expression in '.regexps' must be less than 256 bytes"))
+r.editor_not.ucrt <- readLines("inst/extdata/r-editor_not-ucrt.txt", encoding = "UTF-8")
+r.editor_ucrt     <- readLines("inst/extdata/r-editor_ucrt.txt"    , encoding = "UTF-8")
+
+
+untitled_not.ucrt <- readLines("inst/extdata/untitled_not-ucrt.txt", encoding = "UTF-8")
+untitled_ucrt     <- readLines("inst/extdata/untitled_ucrt.txt"    , encoding = "UTF-8")
 
 
 
 
 
-untitled.not_ucrt <- readLines("inst/extdata/untitled_not_ucrt.txt", encoding = "UTF-8")
-untitled.ucrt     <- readLines("inst/extdata/untitled_ucrt.txt", encoding = "UTF-8")
-
-
-
-
-
-delayedAssign("R.Editor.regexp", {
+delayedAssign("r.editor", {
     if (gui.rgui) {
         if (ucrt)
-            .regexps$R.Editor.ucrt.anchored
-        else .regexps$R.Editor.not_ucrt.anchored
+            r.editor_ucrt
+        else r.editor_not.ucrt
     }
 })
 delayedAssign("untitled", {
     if (gui.rgui) {
         if (ucrt)
-            untitled.ucrt
-        else untitled.not_ucrt
+            untitled_ucrt
+        else untitled_not.ucrt
     }
 })
-windows.abs.path <- .regexps$windows.absolute.path.anchored
+delayedAssign("nchar_r.editor", {
+    if (gui.rgui) {
+        nchar(r.editor)
+    }
+})
+is.r.editor <- function (x)
+vapply(x, function(xx) any(endsWith(xx, r.editor)), NA)
 
 
 
 
 
-getClosureCall <- function (N = sys.nframe() - 2L)
+getCurrentCall <- function (n = 3L)
 {
     # find the call that stop() would have also found
     #
@@ -478,9 +344,17 @@ getClosureCall <- function (N = sys.nframe() - 2L)
     # this is intended to be used as such:
     # stop(errorMakingFunction())
     #
-    # where errorMakingFunction calls getClosureCall()
+    # where errorMakingFunction calls getCurrentCall()
+
+
+    n <- sys.nframe() - n
+    if (n <= 0L)
+        return(NULL)
+    n <- sys.parents()[[n]]
+    if (n <= 0L)
+        return(NULL)
     skip.stop <- TRUE
-    for (n in seq.int(to = 1L, by = -1L, length.out = N)) {
+    for (n in seq.int(to = 1L, by = -1L, length.out = n)) {
         if (typeof(fun <- sys.function(n)) == "closure") {
             if (skip.stop && identical2(fun, stop)) {
                 skip.stop <- FALSE
@@ -493,27 +367,27 @@ getClosureCall <- function (N = sys.nframe() - 2L)
 }
 
 
-thisPathUnrecognizedConnectionClassError <- function (con, call = getClosureCall(), call. = TRUE)
+thisPathUnrecognizedConnectionClassError <- function (con, call = getCurrentCall(), call. = TRUE)
 .External2(C_thispathunrecognizedconnectionclasserror, if (call.) call, con)
 
 
-thisPathUnrecognizedMannerError <- function (call = getClosureCall(), call. = TRUE)
+thisPathUnrecognizedMannerError <- function (call = getCurrentCall(), call. = TRUE)
 .External2(C_thispathunrecognizedmannererror, if (call.) call)
 
 
-thisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = getClosureCall())
+thisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = getCurrentCall())
 .External2(C_thispathnotimplementederror, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-thisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = getClosureCall())
+thisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = getCurrentCall())
 .External2(C_thispathnotexistserror, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-thisPathInZipFileError <- function (description, call = getClosureCall(), call. = TRUE)
+thisPathInZipFileError <- function (description, call = getCurrentCall(), call. = TRUE)
 .External2(C_thispathinzipfileerror, if (call.) call, description)
 
 
-thisPathInAQUAError <- function (call = getClosureCall(), call. = TRUE)
+thisPathInAQUAError <- function (call = getCurrentCall(), call. = TRUE)
 .External2(C_thispathinaquaerror, if (call.) call)
 
 
@@ -1137,10 +1011,12 @@ simplify <- function (expr)
         # element 'path' is a character string, the path of the document
 
 
-        context <- get(".rs.api.getActiveDocumentContext", "tools:rstudio", inherits = FALSE)()
+        # this might look stupid af, but we need to do this so the byte
+        # compiler doesn't try to evaluate these promises early
+        context <- (.rs.api.getActiveDocumentContext)()
         active <- context[["id"]] != "#console"
         if (!active) {
-            context <- get(".rs.api.getSourceEditorContext", "tools:rstudio", inherits = FALSE)()
+            context <- (.rs.api.getSourceEditorContext)()
             if (is.null(context)) {
                 if (for.msg)
                     return(NA_character_)
@@ -1254,25 +1130,25 @@ simplify <- function (expr)
         # the previous regular expression exceeded 256 bytes, more than the
         # POSIX standard. now, each part of the regular expression is its own
         # regular expression of less than 256 bytes
-        nm <- names(utils::getWindowsHandles(minimized = TRUE))
-        nm <- nm[
-            startsWith(nm, "R Console") |
-            grepl(R.Editor.regexp , nm) |
-            grepl(windows.abs.path, nm) |
-            nm %in% untitled
+        x <- names(utils::getWindowsHandles(minimized = TRUE))
+        x <- x[
+            startsWith(x, "R Console") |
+            is.r.editor(x)             |
+            is.abs.path(x)             |
+            x %in% untitled
         ]
-        if (!length(nm))
+        if (!length(x))
             stop("no windows in Rgui; should never happen, please report!")
-        else if (active <- !startsWith(nm[[1L]], "R Console"))
-            nm <- nm[[1L]]
-        else if (length(nm) >= 2L)
-            nm <- nm[[2L]]
+        else if (active <- !startsWith(x[[1L]], "R Console"))
+            x <- x[[1L]]
+        else if (length(x) >= 2L)
+            x <- x[[2L]]
         else if (for.msg)
             return(NA_character_)
         else stop(thisPathNotExistsError(
             this_path_used_in_an_inappropriate_fashion,
             "* R is being run from Rgui with no documents open"))
-        if (nm %in% untitled) {
+        if (x %in% untitled) {
             if (for.msg)
                 return(NA_character_)
             else stop(
@@ -1281,9 +1157,10 @@ simplify <- function (expr)
                     "* active document in Rgui does not exist"
                 else "* source document in Rgui does not exist")
         }
-        path <- sub(R.Editor.regexp, "\\1", nm)
-        active <- active && nm != path
-        if (grepl(windows.abs.path, path)) {
+        if (any(i <- endsWith(x, r.editor)))
+            x <- substr(x, 1L, nchar(x) - nchar_r.editor[[which(i)]])
+        else active <- FALSE
+        if (is.abs.path(x)) {
             if (verbose)
                 cat(
                     if (active)
@@ -1291,9 +1168,9 @@ simplify <- function (expr)
                     else
                         "Source: source document in Rgui\n"
                 )
-            return(normalizePath(path, winslash = "/", mustWork = FALSE))
+            return(normalizePath(x, winslash = "/", mustWork = TRUE))
         }
-        else stop("invalid windows handles; should not happen, please report!")
+        else stop("invalid windows handles, path preceding \" - R Editor\" must be absolute")
     }
 
 
@@ -1456,11 +1333,6 @@ body(.this.path.old) <- bquote({
     }
 
 
-    # in 0.2.0, compatibility with 'debugSource' in 'RStudio' was added
-    debugSource <- if (gui.rstudio)
-        get("debugSource", "tools:rstudio", inherits = FALSE)
-
-
     # in 0.4.0, compatibility with 'testthat::source_file' was added. it is
     # almost identical to 'sys.source'
     source_file <- if (testthat_loaded <- isNamespaceLoaded("testthat"))
@@ -1534,6 +1406,7 @@ body(.this.path.old) <- bquote({
         }
 
 
+        # in 0.2.0, compatibility with 'debugSource' in 'RStudio' was added
         else if (gui.rstudio && identical2(fun, debugSource)) {
 
 

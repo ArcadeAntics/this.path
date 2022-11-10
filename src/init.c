@@ -60,6 +60,14 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"onload", (DL_FUNC) &do_onload, 0},
 
 
+    /* isabspath.c */
+
+
+    {"windowsisabspath", (DL_FUNC) &do_windowsisabspath, 1},
+    {"unixisabspath"   , (DL_FUNC) &do_unixisabspath   , 1},
+    {"isabspath"       , (DL_FUNC) &do_isabspath       , 1},
+
+
     /* pathjoin.c */
 
 

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <R.h>
 
 
 
@@ -220,4 +221,106 @@ int get_drive_width_unix(const char *s, int nchar)
     if (p)  /* slash was found */
         return p - s;
     else return nchar;
+}
+
+
+int is_abs_path(const char *s)
+{
+    int nchar = strlen(s);
+    if (nchar <= 0) return 0;
+
+
+    /* s starts with d:/ or similar */
+    if (nchar >= 3 && *(s + 1) == ':' &&
+        (*(s + 2) == '/' || *(s + 2) == '\\'))
+    {
+        return 1;
+    }
+
+
+    if (*s == '~' &&             /* s starts with ~ */
+        (
+            nchar == 1       ||  /* s is exactly ~   */
+            *(s + 1) == '/'  ||  /* s starts with ~/ */
+            *(s + 1) == '\\'     /* s starts with ~\ */
+        ))
+    {
+        return 1;
+    }
+
+
+    /* 5 characters is the minimum required for a network share
+     * the two slashes at the start, at least one for the host name,
+     * a slash between the host name and share name,
+     * and at least one for the share name
+     */
+    if (nchar < 5) return 0;
+
+
+    const char *p = s;
+    if (*p != '/' && *p != '\\') return 0;  /* first character must be / or \ */
+    p++;
+    if (*p != '/' && *p != '\\') return 0;  /* second character must be / or \ */
+    p++;
+
+
+    /* third character must NOT be / or \
+     * this is the start of the host name of the network share
+     */
+    if (*p == '/' || *p == '\\') return 0;
+
+
+    /* look for path separators */
+    const char *slash     = strchr(p, '/'),
+               *backslash = strchr(p, '\\');
+    if (slash) {  /* slash was found */
+        if (backslash) {  /* backslash was also found */
+            if (slash < backslash)  /* slash found before backslash */
+                p = slash;
+            else p = backslash;  /* backslash found before slash */
+        }
+        else p = slash;  /* backslash was not found */
+    }
+    else {  /* slash was not found */
+        if (backslash)  /* backslash was found */
+            p = backslash;
+        else return 0;
+    }
+    p++;
+
+
+    /* the condition *p can be also written as *p != '\0',
+     * which is to say that p does NOT point to the end of the string
+     * using *p is simply shorter
+     */
+    for (; *p; p++) {
+        if (*p != '/' && *p != '\\') {
+            /* this means we found a share name, so the path is absolute */
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+int is_abs_path_unix(const char *s)
+{
+    int nchar = strlen(s);
+    if (nchar <= 0) return 0;
+
+
+    /* tests for absolute paths:
+     * if it starts with /
+     * if it is equal to ~
+     * if it starts with ~/
+     */
+    if (*s == '/') return 1;  /* path starts with / */
+    if (*s == '~') {
+        if (nchar == 1) return 1;  /* path equals ~ */
+        if (*(s + 1) == '/') return 1;  /* path starts with ~/ */
+        if (*R_ExpandFileName(s) == '/') return 1;  /* path expands to an absolute path, e.g. ~iris/foo might expand to /home/iris/foo */
+    }
+
+
+    return 0;
 }

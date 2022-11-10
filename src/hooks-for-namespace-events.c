@@ -57,6 +57,9 @@ SEXP
     as_environmentSymbol      = NULL;
 
 
+int windows = -1;
+
+
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 /* code is written this way on purpose, do not reformat */
@@ -126,5 +129,10 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     invisibleSymbol           = install("invisible");
     getConnectionSymbol       = install("getConnection");
     as_environmentSymbol      = install("as.environment");
+
+
+    windows = asLogical(eval(install("os.windows"), rho));
+
+
     return R_NilValue;
 }

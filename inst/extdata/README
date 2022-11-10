@@ -15,17 +15,11 @@ What we do in "write_r_editor_regexp.R" is:
 
   * open a new script and grab the whole windows handle
 
-This process is automated by a bot that moves the mouse for us,
-clicking all the appropriate buttons and typing all the necessary
-inputs.
+This process is automated by a python script that types automatically for us.
 
 We will then save that information into files "r_editor_regexp.txt" and
 "untitled.txt".
 
-In "main.R", we run "write_r_editor_regexp.R" for both ucrt and
+In "main.R", we run "write-r-editor-regexp.R" for both ucrt and
 non-ucrt R sessions (since the translations are different between the
 two).
-
-In "testing_coordinates.R", we make sure that the bot is actually
-moving the mouse to the correct locations and clicking the right
-buttons.

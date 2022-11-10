@@ -16,15 +16,7 @@
 #endif
 
 
-#include <zlib.h>
-
-
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("R", String)
-#else
-#define _(String) (String)
-#endif
+#include "translations.h"
 
 
 #define set_R_Visible(v) (eval((v) ? R_NilValue : lang1(invisibleSymbol), R_BaseEnv))
@@ -64,59 +56,7 @@ extern const char *EncodeChar(SEXP x);
 extern void R_LockBinding(SEXP sym, SEXP env);
 
 
-extern SEXP
-    thispathofileSymbol      ,
-    thispathfileSymbol       ,
-    thispathformsgSymbol     ,
-    thispatherrorSymbol      ,
-    thispathassocwfileSymbol ,
-    thispathdoneSymbol       ,
-    insidesourcewashereSymbol,
-    _normalizePathSymbol     ,
-    _normalizeAgainstSymbol  ,
-    stopSymbol               ,
-    delayedAssignSymbol      ,
-    normalizePathSymbol      ,
-    winslashSymbol           ,
-    mustWorkSymbol           ,
-    normalizeURL_1Symbol     ,
-    sourceSymbol             ,
-    sys_sourceSymbol         ,
-    gui_rstudioSymbol        ,
-    debugSourceSymbol        ,
-    testthatSymbol           ,
-    source_fileSymbol        ,
-    testthat_uses_brioSymbol ,
-    knitr_output_dirSymbol   ,
-    knitrSymbol              ,
-    knitSymbol               ,
-    this_pathSymbol          ,
-    wrap_sourceSymbol        ,
-    sys_callSymbol           ,
-    sys_frameSymbol          ,
-    sys_functionSymbol       ,
-    sys_nframeSymbol         ,
-    ofileSymbol              ,
-    owdSymbol                ,
-    old_dirSymbol            ,
-    fileSymbol               ,
-    fileNameSymbol           ,
-    pathSymbol               ,
-    inputSymbol              ,
-    missingSymbol            ,
-    returnSymbol             ,
-    this_path_toplevelSymbol ,
-    encodeStringSymbol       ,
-    na_encodeSymbol          ,
-    exprSymbol               ,
-    on_exitSymbol            ,
-    External2Symbol          ,
-    C_setprseen2Symbol       ,
-    thispathtempSymbol       ,
-    parent_frameSymbol       ,
-    invisibleSymbol          ,
-    getConnectionSymbol      ,
-    as_environmentSymbol     ;
+#include "symbols.h"
 
 
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
@@ -154,9 +94,6 @@ extern SEXP thisPathInAQUAError                     (SEXP call);
 
 
 extern void stop(SEXP cond);
-
-
-extern int gui_rstudio;
 
 
 #define Z_BUFSIZE 16384

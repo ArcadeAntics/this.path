@@ -8,16 +8,16 @@
 #define debug 0
 
 
+#include "drivewidth.h"
+#include "symbols.h"
+
+
 
 
 
 // #define IS_ASCII(X) (getCharCE((X)) == CE_ANY)
 // #define IS_UTF8(X)  (getCharCE((X)) == CE_UTF8)
 #define IS_BYTES(X) (getCharCE((X)) == CE_BYTES)
-
-
-extern int get_drive_width(const char *s, int nchar);
-extern int get_drive_width_unix(const char *s, int nchar);
 
 
 
@@ -36,7 +36,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                                                                \
     /* we don't pass the ... list directly because we want to avoid an */\
     /* accidental argument name match to PACKAGE                       */\
-    SEXP dots = findVarInFrame(rho, install("..."));           \
+    SEXP dots = findVarInFrame(rho, R_DotsSymbol);             \
     if (dots == R_UnboundValue)                                \
         error("could not find the ... list; should never happen, please report!");\
                                                                \
@@ -77,7 +77,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                     SEXP call2 = lang2(                        \
                         findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),\
                         lang2(                                 \
-                            findVarInFrame(R_BaseEnv, install("quote")),\
+                            findVarInFrame(R_BaseEnv, R_QuoteSymbol),\
                             xi                                 \
                         )                                      \
                     );                                         \
@@ -706,9 +706,6 @@ SEXP do_pathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 
 
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
     if (windows)
         return do_windowspathjoin(call, op, args, rho);
     else return do_unixpathjoin(call, op, args, rho);

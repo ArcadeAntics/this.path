@@ -5,14 +5,14 @@
 #define debug 0
 
 
-extern int get_drive_width(const char *s, int nchar);
-extern int get_drive_width_unix(const char *s, int nchar);
+#include "drivewidth.h"
+#include "symbols.h"
 
 
 
 
 
-const char * validate_ext(const char *s)
+const char *validate_ext(const char *s)
 {
     if (!strlen(s)) return s;
     const char *p = s;
@@ -70,7 +70,7 @@ const char * validate_ext(const char *s)
 }
 
 
-const char * validate_ext_unix(const char *s)
+const char *validate_ext_unix(const char *s)
 {
     if (!strlen(s)) return s;
     const char *p = s;
@@ -128,7 +128,7 @@ const char * validate_ext_unix(const char *s)
 }
 
 
-const char * maybe_add_dot(const char *s)
+const char *maybe_add_dot(const char *s)
 {
     if (!strlen(s) || *s == '.') return s;
     char _buf[strlen(s) + 2];
@@ -147,7 +147,7 @@ const char * maybe_add_dot(const char *s)
 #define REMOVEEXT 1
 #define EXT 2
 #define EXTGETS 3
-#define ext(windows, op)\
+#define ext(windows, op)                                       \
 {                                                              \
     if (debug) {                                               \
         if (op == SPLITEXT) {                                  \
@@ -710,9 +710,6 @@ SEXP do_splitext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_splitext\n\n");
     }
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
     if (windows)
         return do_windowssplitext(call, op, args, rho);
     else return do_unixsplitext(call, op, args, rho);
@@ -733,9 +730,6 @@ SEXP do_removeext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_removeext\n\n");
     }
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
     if (windows)
         return do_windowsremoveext(call, op, args, rho);
     else return do_unixremoveext(call, op, args, rho);
@@ -756,9 +750,6 @@ SEXP do_ext(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_ext\n\n");
     }
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
     if (windows)
         return do_windowsext(call, op, args, rho);
     else return do_unixext(call, op, args, rho);
@@ -779,9 +770,6 @@ SEXP do_extgets(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (debug) {
         Rprintf("in do_extgets\n\n");
     }
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
     if (windows)
         return do_windowsextgets(call, op, args, rho);
     else return do_unixextgets(call, op, args, rho);

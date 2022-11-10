@@ -7,6 +7,19 @@ essentials:::check.this(  # this.path
 )
 
 
+# evalq({
+#     names(which(c(
+#         os.unix = os.unix, os.windows = os.windows,
+#         gui.aqua = gui.aqua, gui.rgui = gui.rgui, gui.rstudio = gui.rstudio,
+#             gui.tk = gui.tk, gui.vscode = gui.vscode,
+#         os.unix.in.shell = os.unix.in.shell, os.windows.in.shell = os.windows.in.shell,
+#             in.shell = in.shell,
+#         unrecognized.manner = unrecognized.manner,
+#         ucrt = ucrt, utf8 = utf8
+#     )))
+# }, getNamespace("this.path"))
+
+
 
 
 

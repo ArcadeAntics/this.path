@@ -40,11 +40,6 @@ main <- function ()
     })
 
 
-    envir <- new.env(parent = baseenv())
-    source(this.path::here("select_screen_res.R"), envir)
-    py <- envir$select.screen.res()$file
-
-
     FILES <- tempfile(fileext = c(".RData", ".rds", ".py", ".R"))
     on.exit(unlink(FILES))
     tmpRData   <- FILES[[1L]]
@@ -52,9 +47,17 @@ main <- function ()
     tmppy      <- FILES[[3L]]
     tmpR       <- FILES[[4L]]
     file.create(tmpR)
+    writeLines(c(
+        "import pyautogui",
 
 
-    file.copy(py, tmppy)
+        # ensure RGui is the active window before typing anything
+        "if not pyautogui.getActiveWindow().title.startswith('RGui'):",
+        "    raise ValueError('RGui is not the active window')\n",
+
+
+        "pyautogui.write('e\\n')"
+    ), tmppy)
 
 
     x <- character()
@@ -63,28 +66,38 @@ main <- function ()
     saveRDS(x, tmpRobject)
 
 
-    fun <- function() NULL
-    body(fun) <- bquote({
-        text <- names(utils::getWindowsHandles())[[2L]]
+    eval(call("delayedAssign", "e", bquote({
+        utils::file.edit(.(tmpR))
+        text <- names(utils::getWindowsHandles())[[1L]]
         if (Encoding(text) == "unknown") {
             loc <- utils::localeToCharset()[1L]
             Encoding(text) <- switch(loc, `UTF-8` = "UTF-8",
                 `ISO8859-1` = "latin1", "unknown")
         }
         saveRDS(c(readRDS(.(tmpRobject)), enc2utf8(text)), .(tmpRobject))
-    })
-    FUN <- fun
-    Q <- function(...) q(...)
-    # we want to save fun, but save FUN in case caps lock is on
-    # same with q, but save Q in case caps lock is on
-    save(fun, FUN, Q, file = tmpRData)
+        utils::file.edit("")
+        text <- names(utils::getWindowsHandles())[[1L]]
+        if (Encoding(text) == "unknown") {
+            loc <- utils::localeToCharset()[1L]
+            Encoding(text) <- switch(loc, `UTF-8` = "UTF-8",
+                `ISO8859-1` = "latin1", "unknown")
+        }
+        saveRDS(c(readRDS(.(tmpRobject)), enc2utf8(text)), .(tmpRobject))
+        quit(save = "no")
+    })))
+    delayedAssign("E", e)
+
+
+    # we want to save 'e', but save 'E' in case caps lock is on
+    save(e, E, file = tmpRData, eval.promises = FALSE)
+    rm(e, E)
 
 
     options <- c("--vanilla", paste0("--workspace=", tmpRData), "R_DEFAULT_PACKAGES=NULL")
     suffix <- {
         if (identical(R.version[["crt"]], "ucrt"))
             "ucrt"
-        else "not_ucrt"
+        else "not-ucrt"
     }
     apk <- file.path(R.home("bin"), "Rgui.exe")
     quiet <- !getOption("verbose")
@@ -95,7 +108,7 @@ main <- function ()
                 options,
                 switch(suffix, ucrt = {
                     paste0(c("LANG=", "LANGUAGE="), language)
-                }, not_ucrt = {
+                }, `not-ucrt` = {
                     this.path:::languageEnvvars(language)
                 }, stop("invalid 'suffix'; should never happen, please report!"))
             ),
@@ -103,7 +116,8 @@ main <- function ()
             name = apk
         )
         Sys.sleep(0.2)
-        essentials::python(file = tmppy, args = tmpR, mustWork = TRUE, quiet = quiet)
+        essentials::python(file = tmppy, mustWork = TRUE, quiet = quiet)
+        Sys.sleep(0.2)
         stopifnot(length(readRDS(tmpRobject)) == n + 2L)
     }
     x <- readRDS(tmpRobject)
@@ -112,28 +126,28 @@ main <- function ()
 
 
 
-    open.script <- x[c(TRUE, FALSE)]
-    untitled.script <- x[c(FALSE, TRUE)]
+    r.editor <- x[c(TRUE, FALSE)]
+    untitled <- x[c(FALSE, TRUE)]
 
 
-    if (any(i <- !startsWith(open.script, paste0(tmpR, " - "))))
+    useBytes <- !identical(utils::localeToCharset()[1L], "UTF-8")
+
+
+    if (any(i <- !startsWith(r.editor, paste0(tmpR, " - "))))
         stop(ngettext(sum(i),
             "incorrect prefix: ",
             "incorrect prefixes:\n  "),
-            paste(open.script[i], collapse = "\n  "))
-    open.script <- substring(open.script, 1L + nchar(tmpR) + 3L)
-    open.script <- unique(open.script)
-    open.script <- essentials::regexencode(open.script)
-    open.script <- paste(open.script, collapse = "|")
-    open.script <- paste0("(.+) - (", open.script, ")")
-    writeLines(open.script, this.path::here(paste0("r_editor_regexp_", suffix, ".txt")), useBytes = TRUE)
+            paste(r.editor[i], collapse = "\n  "))
+    r.editor <- substring(r.editor, 1L + nchar(tmpR))
+    r.editor <- unique(r.editor)
+    writeLines(r.editor, this.path::here(paste0("r-editor_", suffix, ".txt")), useBytes = useBytes)
 
 
-    untitled.script <- unique(untitled.script)
-    writeLines(untitled.script, this.path::here(paste0("untitled_", suffix, ".txt")), useBytes = TRUE)
+    untitled <- unique(untitled)
+    writeLines(untitled, this.path::here(paste0("untitled_", suffix, ".txt")), useBytes = useBytes)
 
 
-    invisible()
+    invisible(list(r.editor = r.editor, untitled = untitled))
 }
 
 

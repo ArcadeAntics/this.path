@@ -55,6 +55,14 @@ extern SEXP do_extgets       (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
+/* isabspath.c */
+
+
+extern SEXP do_windowsisabspath(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_unixisabspath   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_isabspath       (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
 /* pathjoin.c */
 
 

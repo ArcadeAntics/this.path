@@ -71,7 +71,6 @@ cat.file <- function (file, show.all = FALSE, number.nonblank = FALSE, show.ends
         invisible(Lines)
     }
 }
-environment(cat.file) <- getNamespace("this.path")
 
 
 if (FALSE) {

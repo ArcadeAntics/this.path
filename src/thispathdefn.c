@@ -230,9 +230,6 @@ void stop(SEXP cond)
 }
 
 
-int gui_rstudio = -1;
-
-
 SEXP _assign(SEXP file, SEXP frame)
 {
     INCREMENT_NAMED(file);

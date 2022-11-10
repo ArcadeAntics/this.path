@@ -5,8 +5,8 @@
 #define debug 0
 
 
-extern int get_drive_width(const char *s, int nchar);
-extern int get_drive_width_unix(const char *s, int nchar);
+#include "drivewidth.h"
+#include "translations.h"
 
 
 
@@ -29,7 +29,7 @@ extern int get_drive_width_unix(const char *s, int nchar);
                                                                \
                                                                \
     if (TYPEOF(path) != STRSXP)                                \
-        error("a character vector argument expected");         \
+        error(_("a character vector argument expected"));      \
     SEXP value = PROTECT(allocVector(STRSXP, n = LENGTH(path))); nprotect++;\
     for (i = 0; i < n; i++) {                                  \
         if (debug) {                                           \
@@ -197,13 +197,13 @@ extern int get_drive_width_unix(const char *s, int nchar);
     if (nargs == 1) {                                          \
         path = CADR(args);                                     \
         if (TYPEOF(path) != STRSXP)                            \
-            error("a character vector argument expected");     \
+            error(_("a character vector argument expected"));  \
         times = 0;                                             \
     }                                                          \
     else if (nargs == 2) {                                     \
         path = CADR(args);                                     \
         if (TYPEOF(path) != STRSXP)                            \
-            error("a character vector argument expected");     \
+            error(_("a character vector argument expected"));  \
         times = asInteger(CADDR(args));                        \
         if (times == NA_INTEGER || times < 0)                  \
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");\
@@ -474,14 +474,14 @@ SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho) dirname2(1)
 SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho) dirname2(0)
 
 
+#include "symbols.h"
+
+
 SEXP do_dirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     if (debug) {
         Rprintf("in do_dirname2\n\n");
     }
-    int windows = asLogical(eval(install("os.windows"), rho));
-    if (windows == NA_LOGICAL)
-        error("invalid 'os.windows'; should never happen, please report!");
     if (windows)
         return do_windowsdirname2(call, op, args, rho);
     else return do_unixdirname2(call, op, args, rho);

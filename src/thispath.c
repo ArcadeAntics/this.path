@@ -103,6 +103,9 @@ SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
+int gui_rstudio = -1;
+
+
 SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP returnthis = NULL;
@@ -153,10 +156,10 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-    SEXP thispathofile,
-         thispathfile,
+    SEXP thispathofile ,
+         thispathfile  ,
          thispathformsg,
-         thispatherror;
+         thispatherror ;
 
 
     int nprotect = 0;
@@ -165,39 +168,20 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     int testthat_loaded, knitr_loaded;
 
 
-    SEXP source = PRVALUE(findVarInFrame(R_BaseEnv, sourceSymbol));
-    SEXP sys_source = PRVALUE(findVarInFrame(R_BaseEnv, sys_sourceSymbol));
-    SEXP tools_rstudio;
-    SEXP debugSource, source_file, knit, wrap_source;
+    SEXP source     = getInFrame(sourceSymbol    , R_BaseEnv, FALSE),
+         sys_source = getInFrame(sys_sourceSymbol, R_BaseEnv, FALSE),
+         debugSource,
+         source_file,
+         knit       ,
+         wrap_source;
 
 
-    if (gui_rstudio == -1) {
-        SEXP tmp = findVarInFrame(ENCLOS(rho), gui_rstudioSymbol);
-        if (tmp == R_UnboundValue)
-            error(_("object '%s' not found"), "gui.rstudio");
-        if (TYPEOF(tmp) != PROMSXP)
-            error("invalid '%s', is not a promise", "gui.rstudio");
-        if (PRVALUE(tmp) == R_UnboundValue)
-            tmp = eval(tmp, R_EmptyEnv);
-        else
-            tmp = PRVALUE(tmp);
-        gui_rstudio = LOGICAL_ELT(tmp, 0);
-    }
-    if (gui_rstudio) {
-        tools_rstudio = as_environment_char("tools:rstudio");
-        debugSource = findVarInFrame(tools_rstudio, debugSourceSymbol);
-        if (debugSource == R_UnboundValue)
-            error(_("object '%s' not found"), "debugSource");
-        if (TYPEOF(debugSource) == PROMSXP) {
-            if (PRVALUE(debugSource) == R_UnboundValue)
-                debugSource = eval(debugSource, rho);
-            else
-                debugSource = PRVALUE(debugSource);
-        }
-        if (TYPEOF(debugSource) != CLOSXP)
-            error(_("object '%s' of mode '%s' was not found"), "debugSource", "function");
-    }
-    else debugSource = R_NilValue;
+    if (gui_rstudio < 0)
+        gui_rstudio = asLogical(getInFrame(gui_rstudioSymbol, ENCLOS(rho), FALSE));
+    if (gui_rstudio)
+        debugSource = getInFrame(debugSourceSymbol, ENCLOS(rho), FALSE);
+    else
+        debugSource = R_NilValue;
 
 
     testthat_loaded = (findVarInFrame(R_NamespaceRegistry, testthatSymbol) != R_UnboundValue);

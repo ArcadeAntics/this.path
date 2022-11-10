@@ -6,11 +6,6 @@ main <- function ()
     stopifnot(.Platform$OS.type == "windows")
 
 
-    envir <- new.env(parent = baseenv())
-    source(this.path::here("select_screen_res.R"), envir)
-    screen.res <- envir$select.screen.res()$name
-
-
     path <- dirname(R.home())
     pattern <- sprintf("^R-(%s)$", .standard_regexps()$valid_R_system_version)
     paths <- list.files(path, pattern)
@@ -67,8 +62,7 @@ main <- function ()
     for (name in paths[i]) {
         essentials::Rscript(
             options = c("--default-packages=NULL", "--vanilla"),
-            file = this.path::here("write_r_editor_regexp.R"), chdir = TRUE,
-            args = screen.res,
+            file = this.path::here("write-r-editor.R"), chdir = TRUE,
             name = name, mustWork = TRUE
         )
     }
