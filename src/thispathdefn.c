@@ -1,18 +1,6 @@
 #include "thispathdefn.h"
 
 
-#ifndef _WIN32
-SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
-{
-    SEXP expr = lang3(exported ? R_DoubleColonSymbol : R_TripleColonSymbol, ns, name);
-    PROTECT(expr);
-    expr = eval(expr, R_BaseEnv);
-    UNPROTECT(1);
-    return expr;
-}
-#endif
-
-
 const char *EncodeChar(SEXP x)
 {
     /* accepts a CHARSXP and escapes the special / / non-printing characters */
@@ -23,6 +11,49 @@ const char *EncodeChar(SEXP x)
     UNPROTECT(1);
     return CHAR(STRING_ELT(value, 0));
 }
+
+
+#ifndef _WIN32
+SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
+{
+    SEXP expr = lang3(exported ? R_DoubleColonSymbol : R_TripleColonSymbol, ns, name);
+    PROTECT(expr);
+    expr = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return expr;
+}
+
+
+SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
+{
+    SEXP vl;
+    for (; rho != R_EmptyEnv; rho = ENCLOS(rho)) {
+        vl = findVarInFrame(rho, symbol);
+        if (vl != R_UnboundValue) {
+            if (TYPEOF(vl) == PROMSXP) {
+                if (PRVALUE(vl) == R_UnboundValue)
+                    vl = eval(vl, R_EmptyEnv);
+                else
+                    vl = PRVALUE(vl);
+            }
+            if (TYPEOF(vl) == CLOSXP ||
+                TYPEOF(vl) == BUILTINSXP ||
+                TYPEOF(vl) == SPECIALSXP)
+            {
+                return vl;
+            }
+            if (vl == R_MissingArg)
+                errorcall(call,
+		            _("argument \"%s\" is missing, with no default"),
+		            EncodeChar(PRINTNAME(symbol)));
+        }
+    }
+    errorcall(call,
+	    _("could not find function \"%s\""),
+        EncodeChar(PRINTNAME(symbol)));
+    return R_UnboundValue;
+}
+#endif
 
 
 /* this is a dirty trick: for a gzcon(), we need access to the original
