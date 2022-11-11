@@ -95,22 +95,16 @@ extern SEXP thisPathInAQUAError                     (SEXP call);
 extern void stop(SEXP cond);
 
 
-#include <zlib.h>
-
-
-#define Z_BUFSIZE 16384
-
-
 typedef struct gzconn {
     Rconnection con;
-    int cp; /* compression level */
-    z_stream s;
-    int z_err, z_eof;
-    uLong crc;
-    Byte buffer[Z_BUFSIZE];
-    int nsaved;
-    char saved[2];
-    Rboolean allow;
+    // int cp; /* compression level */
+    // z_stream s;
+    // int z_err, z_eof;
+    // uLong crc;
+    // Byte buffer[Z_BUFSIZE];
+    // int nsaved;
+    // char saved[2];
+    // Rboolean allow;
 } *Rgzconn;
 
 
