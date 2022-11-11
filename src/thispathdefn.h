@@ -95,6 +95,9 @@ extern SEXP thisPathInAQUAError                     (SEXP call);
 extern void stop(SEXP cond);
 
 
+#include <zlib.h>
+
+
 #define Z_BUFSIZE 16384
 
 
