@@ -257,7 +257,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
     /* UNIX-style OS. ------------------------------------------- */
     SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
-#include <unistd.h>
+// #include <unistd.h>
 #if defined(_POSIX_VERSION)
     /* POSIX compliant */
     SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
