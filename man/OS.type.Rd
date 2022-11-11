@@ -1,6 +1,5 @@
 \name{OS.type}
 \alias{OS.type}
-\docType{data}
 \title{
 Detect the Operating System Type
 }
