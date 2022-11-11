@@ -1,7 +1,7 @@
 essentials:::check.this(  # this.path
     special = TRUE,
 
-    check = TRUE, as.cran = TRUE,
+    check = FALSE, as.cran = TRUE,
 
     chdir = TRUE
 )
@@ -29,6 +29,7 @@ sink(SINKCON)
 sink(SINKCON, type = "message")
 local({
     .this.path <- this.path:::.this.path
+    debugSource <- this.path:::debugSource
 
 
     FILE <- tempfile(fileext = ".R")
@@ -117,7 +118,7 @@ local({
     fun(sys.source(file, envir = new.env(), chdir = TRUE))
 
 
-    if (.Platform$GUI == "RStudio") {
+    if (is.function(debugSource)) {
         FILE2 <- tempfile("fil\u{00E9}", fileext = ".R")
         on.exit(unlink(FILE2, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
         file.copy(FILE, FILE2, copy.date = TRUE)
