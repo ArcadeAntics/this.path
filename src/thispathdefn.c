@@ -1,6 +1,18 @@
 #include "thispathdefn.h"
 
 
+#ifndef _WIN32
+SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
+{
+    SEXP expr = lang3(exported ? R_DoubleColonSymbol : R_TripleColonSymbol, ns, name);
+    PROTECT(expr);
+    expr = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return expr;
+}
+#endif
+
+
 const char *EncodeChar(SEXP x)
 {
     /* accepts a CHARSXP and escapes the special / / non-printing characters */
