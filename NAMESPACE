@@ -37,6 +37,12 @@ export(splitext, removeext, ext, "ext<-")
 export(from.shell, is.main)
 
 
+# hooks-for-namespace-events ----
+
+
+export(OS.type)
+
+
 # path.join.R            ----
 
 

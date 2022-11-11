@@ -126,5 +126,154 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     invisibleSymbol           = install("invisible");
     getConnectionSymbol       = install("getConnection");
     as_environmentSymbol      = install("as.environment");
+
+
+    SEXP value = allocVector(VECSXP, 15);
+    PROTECT(value);
+    SEXP names = allocVector(STRSXP, 15);
+    setAttrib(value, R_NamesSymbol, names);
+
+
+    int i = 0;
+
+
+    SET_STRING_ELT(names, i, mkChar("AIX"));
+#if defined(_AIX)
+    /* IBM AIX. ------------------------------------------------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i, mkChar("BSD"));
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#include <sys/param.h>
+#if defined(BSD)
+    /* BSD (DragonFly BSD, FreeBSD, OpenBSD, NetBSD). ----------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i, mkChar("HPUX"));
+#if defined(__hpux)
+    /* Hewlett-Packard HP-UX. ----------------------------------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i, mkChar("linux"));
+#if defined(__linux__)
+    /* Linux. --------------------------------------------------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i + 0, mkChar("darwin"));
+    SET_STRING_ELT(names, i + 1, mkChar("iOS.simulator"));
+    SET_STRING_ELT(names, i + 2, mkChar("iOS"));
+    SET_STRING_ELT(names, i + 3, mkChar("macOS"));
+#if defined(__APPLE__) && defined(__MACH__)
+    /* Apple OSX and iOS (Darwin). ------------------------------ */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#include <TargetConditionals.h>
+#if TARGET_IPHONE_SIMULATOR == 1
+    /* iOS in Xcode simulator */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#elif TARGET_OS_IPHONE == 1
+    /* iOS on iPhone, iPad, etc. */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#elif TARGET_OS_MAC == 1
+    /* OSX */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i, mkChar("solaris"));
+#if defined(__sun) && defined(__SVR4)
+    /* Solaris. ------------------------------------------------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i, mkChar("cygwin"));
+#if defined(__CYGWIN__) && !defined(_WIN32)
+    /* Cygwin POSIX under Microsoft Windows. -------------------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i + 0, mkChar("windows"));
+    SET_STRING_ELT(names, i + 1, mkChar("win64"));
+    SET_STRING_ELT(names, i + 2, mkChar("win32"));
+#if defined(_WIN64)
+    /* Microsoft Windows (64-bit). ------------------------------ */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#elif defined(_WIN32)
+    /* Microsoft Windows (32-bit). ------------------------------ */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    SET_STRING_ELT(names, i + 0, mkChar("UNIX"));
+    SET_STRING_ELT(names, i + 1, mkChar("POSIX"));
+#if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
+    /* UNIX-style OS. ------------------------------------------- */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#include <unistd.h>
+#if defined(_POSIX_VERSION)
+    /* POSIX compliant */
+    SET_VECTOR_ELT(value, i++, ScalarLogical(TRUE));
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+#else
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(value, i++, ScalarLogical(FALSE));
+#endif
+
+
+    MARK_NOT_MUTABLE(value);
+    defineVar(install("OS.type"), value, ENCLOS(rho));
+    UNPROTECT(1);
+
+
     return R_NilValue;
 }
