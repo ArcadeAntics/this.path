@@ -32,6 +32,59 @@ local({
     debugSource <- this.path:::debugSource
 
 
+    bsubstitute <- function (expr, envir = parent.frame(),
+                enclos = if (is.list(envir) || is.pairlist(envir))
+                             parent.frame() else baseenv(),
+    splice = TRUE, evaluated = FALSE)
+{
+    if (evaluated)
+        expr
+    else expr <- substitute(expr)
+    envir <- essentials:::as.env(envir, enclos)
+    splice <- if (splice) TRUE else FALSE
+    dot <- as.symbol(".")
+    dotdot <- as.symbol("..")
+    bracket <- as.symbol("{")
+    unquote <- function(e) {
+        if (is.pairlist(e))
+            as.pairlist(lapply(e, unquote))
+        else if (is.call(e)) {
+            if (identical(e[[1L]], dot))
+                eval(e[[2L]], envir)
+            else if (splice) {
+                if (identical(e[[1L]], dotdot))
+                    stop("can only splice inside a call", call. = FALSE)
+                else as.call(unquote.list(e))
+            }
+            else as.call(lapply(e, unquote))
+        }
+        else e
+    }
+    is.splice.macro <- function(e) is.call(e) && identical(e[[1L]], dotdot)
+    unquote.list <- function(e) {
+        p <- Position(is.splice.macro, e, nomatch = 0L)
+        if (p) {
+            n <- length(e)
+            head <- if (p == 1L)
+                NULL
+            else e[1:(p - 1L)]
+            tail <- if (p == n)
+                NULL
+            else e[(p + 1L):n]
+            mexp <- eval(e[[p]][[2L]], envir)
+            if (is.vector(mexp) || is.expression(mexp)) {
+            }
+            else if (is.call(mexp) && identical(e[[1L]], bracket))
+                mexp <- as.list(mexp)[-1L]
+            else stop("can only splice vectors")
+            c(lapply(head, unquote), mexp, as.list(unquote.list(tail)))
+        }
+        else lapply(e, unquote)
+    }
+    unquote(expr)
+}
+
+
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
 
@@ -81,58 +134,57 @@ local({
     setwd(owd)
 
 
-    file <- as.rel.path(FILE, ".")
+    file <- this.path::as.rel.path(FILE, ".")
     if (.Platform$OS.type == "windows")
         file <- chartr("/", "\\", file)
 
 
-    fun <- function(expr, as.is = FALSE) {
+    fun <- function(expr) {
         sexpr <- substitute(expr)
-        if (!as.is)
-            sexpr[[2L]] <- eval(sexpr[[2L]], parent.frame())
+        sexpr <- bsubstitute(sexpr, parent.frame(), evaluated = TRUE)
         dep <- deparse1(sexpr, "\n", 60L)
         dep <- gsub("\n", "\n+ ", dep, fixed = TRUE, useBytes = TRUE)
         dep <- paste0("> ", dep)
         cat("\n\n\n\n\n\n\n\n\n\n", dep, "\n", sep = "")
-        expr
+        eval(sexpr, parent.frame())
     }
 
 
-    fun(source(file, local = new.env(), chdir = FALSE))
-    fun(source(file, local = new.env(), chdir = TRUE))
+    fun(source(.(file), local = new.env(), chdir = FALSE))
+    fun(source(.(file), local = new.env(), chdir = TRUE))
 
 
     con <- unz(ZIPFILE, basename(FILE))
     on.exit(close(con), add = TRUE, after = FALSE)
 
 
-    fun(try(source(print(con), local = new.env())), as.is = TRUE)
+    fun(try(source(print(con), local = new.env())))
 
 
     con2 <- gzcon(file(file, "rb"))
     on.exit(close(con2), add = TRUE, after = FALSE)
-    fun(source(print(con2), local = new.env()), as.is = TRUE)
+    fun(source(print(con2), local = new.env()))
 
 
-    fun(sys.source(file, envir = new.env(), chdir = FALSE))
-    fun(sys.source(file, envir = new.env(), chdir = TRUE))
+    fun(sys.source(.(file), envir = new.env(), chdir = FALSE))
+    fun(sys.source(.(file), envir = new.env(), chdir = TRUE))
 
 
     if (is.function(debugSource)) {
         FILE2 <- tempfile("fil\u{00E9}", fileext = ".R")
         on.exit(unlink(FILE2, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
         file.copy(FILE, FILE2, copy.date = TRUE)
-        file2 <- as.rel.path(FILE2, ".")
+        file2 <- this.path::as.rel.path(FILE2, ".")
         if (.Platform$OS.type == "windows")
             file2 <- chartr("/", "\\", file2)
         file2 <- iconv(file2, "UTF-8", "latin1")
-        fun(debugSource(file, local = new.env()))
-        fun(debugSource(file2, local = new.env()))
+        fun(debugSource(.(file), local = new.env()))
+        fun(debugSource(.(file2), local = new.env()))
     }
 
 
-    fun(testthat::source_file(file, env = new.env(), chdir = FALSE, wrap = FALSE))
-    fun(testthat::source_file(file, env = new.env(), chdir = TRUE, wrap = FALSE))
+    fun(testthat::source_file(.(file), env = new.env(), chdir = FALSE, wrap = FALSE))
+    fun(testthat::source_file(.(file), env = new.env(), chdir = TRUE, wrap = FALSE))
 
 
     FILE3 <- tempfile(fileext = ".Rmd")
@@ -148,10 +200,10 @@ local({
     on.exit(unlink(FILE4, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
 
 
-    file3 <- as.rel.path(FILE3, ".")
+    file3 <- this.path::as.rel.path(FILE3, ".")
     if (.Platform$OS.type == "windows")
         file3 <- chartr("/", "\\", file3)
-    fun(knitr::knit(file3, FILE4, quiet = TRUE))
+    fun(knitr::knit(.(file3), FILE4, quiet = TRUE))
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
@@ -167,14 +219,14 @@ local({
     on.exit(close(con3), add = TRUE, after = FALSE)
 
 
-    fun(try(knitr::knit(print(con3), FILE4, quiet = TRUE)), as.is = TRUE)
+    fun(try(knitr::knit(print(con3), FILE4, quiet = TRUE)))
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
 
     con4 <- gzcon(file(file3, "rb"))
     on.exit(close(con4), add = TRUE, after = FALSE)
-    fun(knitr::knit(print(con4), FILE4, quiet = TRUE), as.is = TRUE)
+    fun(knitr::knit(print(con4), FILE4, quiet = TRUE))
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
@@ -187,7 +239,7 @@ local({
     }
 
 
-    fun(wrap.source(sourcelike(FILE), character.only = TRUE, file.only = TRUE), as.is = TRUE)
+    fun(wrap.source(sourcelike(.(FILE)), character.only = TRUE, file.only = TRUE))
 
 
     sourcelike2 <- function(file, envir = parent.frame()) {
@@ -197,13 +249,13 @@ local({
     }
 
 
-    fun(sourcelike2(file))
+    fun(sourcelike2(.(file)))
 })
 sink(type = "message")
 sink()
 close(SINKCON)
 # this.path:::cat.file(SINKFILE)
-file.open(SINKFILE)
+essentials::file.open(SINKFILE)
 
 
 
