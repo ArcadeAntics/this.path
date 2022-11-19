@@ -113,6 +113,7 @@ typedef struct gzconn {
                               strcmp ((url), "clipboard"     ) == 0 || \
                               strncmp((url), "clipboard-", 10) == 0    \
                          )
+#define mustnotbeclipboardmessage "must not be \"clipboard\" nor start with \"clipboard-\""
 #else
 #define isclipboard(url) (                                           \
                               strcmp((url), "clipboard"    ) == 0 || \
@@ -120,6 +121,7 @@ typedef struct gzconn {
                               strcmp((url), "X11_secondary") == 0 || \
                               strcmp((url), "X11_clipboard") == 0    \
                          )
+#define mustnotbeclipboardmessage "must not be \"clipboard\", \"X11_primary\", \"X11_secondary\", nor \"X11_clipboard\""
 #endif
 
 
@@ -127,8 +129,8 @@ extern SEXP _assign(SEXP file, SEXP frame);
 extern void assign_default(SEXP file, SEXP frame, SEXP rho);
 extern void assign_null(SEXP frame);
 extern void assign_chdir(SEXP file, SEXP owd, SEXP frame, SEXP rho);
-extern void assign_fileurl(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
-extern void assign_fileurl2(SEXP description, SEXP frame, SEXP rho);
+extern void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
+extern void assign_file_uri2(SEXP description, SEXP frame, SEXP rho);
 extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
 
 
@@ -138,9 +140,24 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
 } while (0)
 
 
-#define checkfile(sym, ofile, frame, character_only, file_only,\
-    rho, forcepromise, call, maybe_chdir, getowd, hasowd,      \
-    do_enc2utf8, normalize)                                    \
+#define isurl(url) (                                           \
+                        strncmp((url), "http://" , 7) == 0 ||  \
+                        strncmp((url), "https://", 8) == 0 ||  \
+                        strncmp((url), "ftp://"  , 6) == 0 ||  \
+                        strncmp((url), "ftps://" , 7) == 0     \
+                   )
+
+
+#define checkfile(call, rho, sym, ofile, frame, forcepromise,  \
+    assign_returnvalue,                                        \
+    maybe_chdir, getowd, hasowd,                               \
+    character_only, conv2utf8, allow_blank_string,             \
+    allow_clipboard, allow_stdin, allow_url, allow_file_uri,   \
+    allow_unz, allow_pipe, allow_terminal,                     \
+    allow_textConnection, allow_rawConnection, allow_sockconn, \
+    allow_servsockconn, allow_customConnection,                \
+    ignore_blank_string, ignore_clipboard, ignore_stdin,       \
+    ignore_url, ignore_file_uri)                               \
 {                                                              \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
@@ -149,7 +166,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
         if (file == NA_STRING)                                 \
             errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
         const char *url;                                       \
-        if (do_enc2utf8) {                                     \
+        if (conv2utf8) {                                       \
             if (IS_UTF8(file) || IS_ASCII(file) || IS_BYTES(file))\
                 url = CHAR(file);                              \
             else {                                             \
@@ -158,7 +175,56 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
             }                                                  \
         }                                                      \
         else url = CHAR(file);                                 \
-        if (normalize) {                                       \
+        if (!ignore_blank_string && !(LENGTH(file) > 0)) {     \
+            if (allow_blank_string) {                          \
+                assign_null(frame);                            \
+                if (assign_returnvalue)                        \
+                    returnvalue = PROTECT(ofile);              \
+            }                                                  \
+            else                                               \
+                errorcall(call, "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(sym)));\
+        }                                                      \
+        else if (!ignore_clipboard && isclipboard(url)) {      \
+            if (allow_clipboard) {                             \
+                assign_null(frame);                            \
+                if (assign_returnvalue)                        \
+                    returnvalue = PROTECT(ofile);              \
+            }                                                  \
+            else                                               \
+                errorcall(call, "invalid '%s', %s", EncodeChar(PRINTNAME(sym)), mustnotbeclipboardmessage);\
+        }                                                      \
+        else if (!ignore_stdin && streql(url, "stdin")) {      \
+            if (allow_stdin) {                                 \
+                assign_null(frame);                            \
+                if (assign_returnvalue)                        \
+                    returnvalue = PROTECT(ofile);              \
+            }                                                  \
+            else                                               \
+                errorcall(call, "invalid '%s', must not be \"stdin\"", EncodeChar(PRINTNAME(sym)));\
+        }                                                      \
+        else if (!ignore_url && isurl(url)) {                  \
+            if (allow_url) {                                   \
+                assign_url(ofile, file, frame, rho);           \
+                if (assign_returnvalue)                        \
+                    returnvalue = PROTECT(ofile);              \
+            }                                                  \
+            else                                               \
+                errorcall(call, "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(sym)));\
+        }                                                      \
+        else if (!ignore_file_uri && strncmp(url, "file://", 7) == 0) {\
+            if (allow_file_uri) {                              \
+                assign_file_uri(ofile, file, frame, rho);      \
+                if (assign_returnvalue) {                      \
+                    returnvalue = PROTECT(shallow_duplicate(ofile));\
+                    SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(thispathfileSymbol, frame, FALSE), 0));\
+                }                                              \
+                else if (forcepromise)                         \
+                    getInFrame(thispathfileSymbol, frame, FALSE);\
+            }                                                  \
+            else                                               \
+                errorcall(call, "invalid '%s', cannot be a file URI", EncodeChar(PRINTNAME(sym)));\
+        }                                                      \
+        else {                                                 \
             if (maybe_chdir) {                                 \
                 SEXP owd = getowd;                             \
                 if (hasowd)                                    \
@@ -167,44 +233,13 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                     assign_default(ofile, frame, rho);         \
             }                                                  \
             else assign_default(ofile, frame, rho);            \
+            if (assign_returnvalue) {                          \
+                returnvalue = PROTECT(shallow_duplicate(ofile));\
+                SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(thispathfileSymbol, frame, FALSE), 0));\
+            }                                                  \
+            else if (forcepromise)                             \
+                getInFrame(thispathfileSymbol, frame, FALSE);  \
         }                                                      \
-        else if (!(LENGTH(file) > 0)) {                        \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(sym)));\
-            else                                               \
-                assign_null(frame);                            \
-        }                                                      \
-        else if (isclipboard(url) || strcmp(url, "stdin") == 0) {\
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', must not be \"clipboard\" nor \"stdin\"", EncodeChar(PRINTNAME(sym)));\
-            else                                               \
-                assign_null(frame);                            \
-        }                                                      \
-        else if (strncmp(url, "http://" , 7) == 0 ||           \
-                 strncmp(url, "https://", 8) == 0 ||           \
-                 strncmp(url, "ftp://"  , 6) == 0 ||           \
-                 strncmp(url, "ftps://" , 7) == 0)             \
-        {                                                      \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(sym)));\
-            else                                               \
-                assign_url(ofile, file, frame, rho);           \
-        }                                                      \
-        else if (strncmp(url, "file://", 7) == 0) {            \
-            if (file_only)                                     \
-                errorcall(call, "invalid '%s', cannot be a file URL", EncodeChar(PRINTNAME(sym)));\
-            else                                               \
-                assign_fileurl(ofile, file, frame, rho);       \
-        }                                                      \
-        else if (maybe_chdir) {                                \
-            SEXP owd = getowd;                                 \
-            if (hasowd)                                        \
-                assign_chdir(ofile, owd, frame, rho);          \
-            else                                               \
-                assign_default(ofile, frame, rho);             \
-        }                                                      \
-        else assign_default(ofile, frame, rho);                \
-        if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
     }                                                          \
     else {                                                     \
         if (character_only)                                    \
@@ -232,27 +267,18 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                 streql(klass, "xzfile") ||                     \
                 streql(klass, "fifo"  ))                       \
             {                                                  \
-                assign_fileurl2(description, frame, rho);      \
-                if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
+                assign_file_uri2(description, frame, rho);     \
+                if (forcepromise) getInFrame(thispathfileSymbol, frame, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
                      streql(klass, "url-wininet"))             \
             {                                                  \
-                if (file_only)                                 \
-                    errorcall(call, "invalid '%s', cannot be a URL connection", EncodeChar(PRINTNAME(sym)));\
-                else {                                         \
+                if (allow_url) {                               \
                     assign_url(ScalarString(description), description, frame, rho);\
-                    if (forcepromise) eval(findVarInFrame(frame, thispathfileSymbol), rho);\
+                    if (forcepromise) getInFrame(thispathfileSymbol, frame, FALSE);\
                 }                                              \
-            }                                                  \
-            else if (isclipboard(klass)        ||              \
-                     streql(klass, "pipe"    ) ||              \
-                     streql(klass, "terminal"))                \
-            {                                                  \
-                if (file_only)                                 \
-                    errorcall(call, "invalid '%s', cannot be a clipboard / / pipe / / terminal connection", EncodeChar(PRINTNAME(sym)));\
                 else                                           \
-                    assign_null(frame);                        \
+                    errorcall(call, "invalid '%s', cannot be a URL connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "unz")) {                   \
                 /* we save this error to throw later because   \
@@ -270,35 +296,68 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                    (well it has a path, but it cannot be       \
                     represented by a single string)            \
                  */                                            \
-                SEXP tmp = thisPathInZipFileError(R_NilValue, description);\
-                INCREMENT_NAMED(tmp);                          \
-                defineVar(thispatherrorSymbol, tmp, frame);    \
-                R_LockBinding(thispatherrorSymbol, frame);     \
-                tmp = ScalarString(description);               \
-                INCREMENT_NAMED(tmp);                          \
-                defineVar(thispathformsgSymbol, tmp, frame);   \
-                R_LockBinding(thispathformsgSymbol, frame);    \
-                defineVar(thispathassocwfileSymbol, R_NilValue, frame);\
-                R_LockBinding(thispathassocwfileSymbol, frame);\
-            }                                                  \
-            else if (streql(klass, "textConnection") ||        \
-                     streql(klass, "rawConnection" ) ||        \
-                     streql(klass, "sockconn"      ) ||        \
-                     streql(klass, "servsockconn"  ))          \
-            {                                                  \
-                if (file_only)                                 \
-                    errorcall(call, "invalid '%s', cannot be a textConnection / / rawConnection / / sockconn / / servsockconn", EncodeChar(PRINTNAME(sym)));\
+                if (allow_unz) {                               \
+                    SEXP tmp = thisPathInZipFileError(R_NilValue, description);\
+                    INCREMENT_NAMED(tmp);                      \
+                    defineVar(thispatherrorSymbol, tmp, frame);\
+                    R_LockBinding(thispatherrorSymbol, frame); \
+                    tmp = ScalarString(description);           \
+                    INCREMENT_NAMED(tmp);                      \
+                    defineVar(thispathformsgSymbol, tmp, frame);\
+                    R_LockBinding(thispathformsgSymbol, frame);\
+                    defineVar(thispathassocwfileSymbol, R_NilValue, frame);\
+                    R_LockBinding(thispathassocwfileSymbol, frame);\
+                }                                              \
                 else                                           \
+                    errorcall(call, "invalid '%s', cannot be a unz connection", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (isclipboard(klass)) {                     \
+                if (allow_clipboard)                           \
                     assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a clipboard connection", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (streql(klass, "pipe")) {                  \
+                if (allow_pipe)                                \
+                    assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a pipe connection", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (streql(klass, "terminal")) {              \
+                if (allow_terminal)                            \
+                    assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a terminal connection", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (streql(klass, "textConnection")) {        \
+                if (allow_textConnection)                      \
+                    assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a textConnection", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (streql(klass, "rawConnection")) {         \
+                if (allow_rawConnection)                       \
+                    assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a rawConnection", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (streql(klass, "sockconn")) {              \
+                if (allow_sockconn)                            \
+                    assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a sockconn", EncodeChar(PRINTNAME(sym)));\
+            }                                                  \
+            else if (streql(klass, "servsockconn")) {          \
+                if (allow_servsockconn)                        \
+                    assign_null(frame);                        \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a servsockconn", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (Rcon->isGzcon && streql(klass, "gzcon")) {\
                 error("invalid connection; should never happen, please report!");\
             }                                                  \
             else {                                             \
-                if (file_only)                                 \
-                    errorcall(call, "invalid '%s' (a connection of class '%s'), expected a file connection",\
-                              EncodeChar(PRINTNAME(sym)), EncodeChar(mkChar(klass)));\
-                else {                                         \
+                if (allow_customConnection) {                  \
                     /* same as "unz", we save the error and    \
                        the description for                     \
                        this.path(for.msg = TRUE)               \
@@ -317,8 +376,12 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                     defineVar(thispathformsgSymbol, tmp, frame);\
                     R_LockBinding(thispathformsgSymbol, frame);\
                 }                                              \
+                else                                           \
+                    errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\
+                              EncodeChar(PRINTNAME(sym)), EncodeChar(mkChar(klass)));\
             }                                                  \
         }                                                      \
+        if (assign_returnvalue) returnvalue = PROTECT(ofile);  \
     }                                                          \
     assign_done(frame);                                        \
     set_R_Visible(1);                                          \

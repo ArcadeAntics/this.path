@@ -5,6 +5,15 @@
 #include "thispathdefn.h"
 
 
+static R_INLINE int asFlag(SEXP x, const char *name)
+{
+    int val = asLogical(x);
+    if (val == NA_LOGICAL)
+        error(_("invalid '%s' value"), name);
+    return val;
+}
+
+
 SEXP do_makepromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int nprotect = 0;
@@ -105,22 +114,52 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
-    int character_only, file_only;
+#define flag_declarations                                      \
+    int character_only, conv2utf8, allow_blank_string,         \
+        allow_clipboard, allow_stdin, allow_url,               \
+        allow_file_uri, allow_unz, allow_pipe, allow_terminal, \
+        allow_textConnection, allow_rawConnection,             \
+        allow_sockconn, allow_servsockconn,                    \
+        allow_customConnection, ignore_blank_string,           \
+        ignore_clipboard, ignore_stdin, ignore_url,            \
+        ignore_file_uri
 
 
-    character_only = asLogical(CADR(args));
-    if (character_only == NA_LOGICAL)
-        error(_("invalid '%s' argument"), "character.only");
-    file_only = asLogical(CADDR(args));
-    if (file_only == NA_LOGICAL)
-        error(_("invalid '%s' argument"), "file.only");
+#define flag_definitions                                       \
+    character_only         = asFlag(CAR(args), "character.only"        ); args = CDR(args);\
+    conv2utf8              = asFlag(CAR(args), "conv2utf8"             ); args = CDR(args);\
+    allow_blank_string     = asFlag(CAR(args), "allow.blank.string"    ); args = CDR(args);\
+    allow_clipboard        = asFlag(CAR(args), "allow.clipboard"       ); args = CDR(args);\
+    allow_stdin            = asFlag(CAR(args), "allow.stdin"           ); args = CDR(args);\
+    allow_url              = asFlag(CAR(args), "allow.url"             ); args = CDR(args);\
+    allow_file_uri         = asFlag(CAR(args), "allow.file.uri"        ); args = CDR(args);\
+    allow_unz              = asFlag(CAR(args), "allow.unz"             ); args = CDR(args);\
+    allow_pipe             = asFlag(CAR(args), "allow.pipe"            ); args = CDR(args);\
+    allow_terminal         = asFlag(CAR(args), "allow.terminal"        ); args = CDR(args);\
+    allow_textConnection   = asFlag(CAR(args), "allow.textConnection"  ); args = CDR(args);\
+    allow_rawConnection    = asFlag(CAR(args), "allow.rawConnection"   ); args = CDR(args);\
+    allow_sockconn         = asFlag(CAR(args), "allow.sockconn"        ); args = CDR(args);\
+    allow_servsockconn     = asFlag(CAR(args), "allow.servsockconn"    ); args = CDR(args);\
+    allow_customConnection = asFlag(CAR(args), "allow.customConnection"); args = CDR(args);\
+    ignore_blank_string    = asFlag(CAR(args), "ignore.blank.string"   ); args = CDR(args);\
+    ignore_clipboard       = asFlag(CAR(args), "ignore.clipboard"      ); args = CDR(args);\
+    ignore_stdin           = asFlag(CAR(args), "ignore.stdin"          ); args = CDR(args);\
+    ignore_url             = asFlag(CAR(args), "ignore.url"            ); args = CDR(args);\
+    ignore_file_uri        = asFlag(CAR(args), "ignore.file.uri"       ); args = CDR(args)
 
 
+    flag_declarations;
+    args = CDR(args);
+    flag_definitions;
+
+
+    SEXP frame = rho;
     SEXP promise = findVarInFrame(rho, exprSymbol);
     if (promise == R_UnboundValue)
         error(_("object '%s' not found"), EncodeChar(PRINTNAME(exprSymbol)));
     if (TYPEOF(promise) != PROMSXP)
-        error("invalid '%s', must be a promise; should never happen, please report!", EncodeChar(PRINTNAME(exprSymbol)));
+        error("invalid '%s', must be a promise; should never happen, please report!",
+              EncodeChar(PRINTNAME(exprSymbol)));
 
 
     SEXP ptr = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue);
@@ -137,7 +176,7 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
      * save the root promise, the original code of the promise,
      * and make an on.exit() call that will restore said promise
      */
-    ENSURE_NAMEDMAX(ptr);
+    MARK_NOT_MUTABLE(ptr);
     eval(lang2(on_exitSymbol, lang3(External2Symbol, C_setprseen2Symbol, ptr)), rho);
 
 
@@ -370,8 +409,9 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
     }
     if (s == NULL) {
-        if (character_only || file_only)
-            errorcall(oexpr, "argument '%s' is missing", CHAR(PRINTNAME(tag)));
+        assign_null(frame);
+        assign_done(frame);
+        set_R_Visible(1);
         SEXP tmp = eval(expr, env);
         set_prvalues_then_return(tmp);
     }
@@ -421,23 +461,46 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-    SEXP ofile = TYPEOF(e) == PROMSXP ? PRVALUE(e) : e;
+    SEXP ofile = ((TYPEOF(e) == PROMSXP) ? PRVALUE(e) : e);
+
+
+    SEXP returnvalue;  /* this is never used */
+
+
     checkfile(
-        /* SEXP sym           = */ fileSymbol,
-        /* SEXP ofile         = */ ofile,
-        /* SEXP frame         = */ rho  ,
-        /* int character_only = */ character_only,
-        /* int file_only      = */ file_only,
-        /* SEXP rho           = */ rho  ,
-        /* int forcepromise   = */ TRUE ,
-        /* SEXP call          = */ R_CurrentExpression,
-        /* int maybe_chdir    = */ FALSE,
-        /* SEXP getowd        = */ NULL ,
-        /* int hasowd         = */ FALSE,
-        /* int do_enc2utf8    = */ FALSE,
-        /* int normalize      = */ FALSE
+        /* SEXP call                  = */ R_CurrentExpression,
+        /* SEXP rho                   = */ rho,
+        /* SEXP sym                   = */ fileSymbol,
+        /* SEXP ofile                 = */ ofile,
+        /* SEXP frame                 = */ frame,
+        /* int forcepromise           = */ TRUE,
+        /* int assign_returnvalue     = */ FALSE,
+        /* int maybe_chdir            = */ FALSE,
+        /* SEXP getowd                = */ NULL,
+        /* int hasowd                 = */ FALSE,
+        /* int character_only         = */ character_only,
+        /* int conv2utf8              = */ conv2utf8,
+        /* int allow_blank_string     = */ allow_blank_string,
+        /* int allow_clipboard        = */ allow_clipboard,
+        /* int allow_stdin            = */ allow_stdin,
+        /* int allow_url              = */ allow_url,
+        /* int allow_file_uri         = */ allow_file_uri,
+        /* int allow_unz              = */ allow_unz,
+        /* int allow_pipe             = */ allow_pipe,
+        /* int allow_terminal         = */ allow_terminal,
+        /* int allow_textConnection   = */ allow_textConnection,
+        /* int allow_rawConnection    = */ allow_rawConnection,
+        /* int allow_sockconn         = */ allow_sockconn,
+        /* int allow_servsockconn     = */ allow_servsockconn,
+        /* int allow_customConnection = */ allow_customConnection,
+        /* int ignore_blank_string    = */ ignore_blank_string,
+        /* int ignore_clipboard       = */ ignore_clipboard,
+        /* int ignore_stdin           = */ ignore_stdin,
+        /* int ignore_url             = */ ignore_url,
+        /* int ignore_file_uri        = */ ignore_file_uri
     )
-    set_R_Visible(1);
+
+
     SEXP tmp = eval(expr, env);
     set_prvalues_then_return(tmp);
 
@@ -453,55 +516,16 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
         error(_("object '%s' not found"), EncodeChar(PRINTNAME(exprSymbol)));
     if (expr == R_MissingArg)
         error(_("argument \"%s\" is missing, with no default"), EncodeChar(PRINTNAME(exprSymbol)));
-
-
-    SEXP ofile;
-    int character_only, file_only;
-
-
-    int nargs = length(args) - 1;
-    switch (nargs) {
-    case 2:
-        return findfiletheneval(call, op, args, rho);
-    case 3:
-        ofile = CADR(args);
-        character_only = asLogical(CADDR(args));
-        if (character_only == NA_LOGICAL)
-            error(_("invalid '%s' argument"), "character.only");
-        file_only = asLogical(CADDDR(args));
-        if (file_only == NA_LOGICAL)
-            error(_("invalid '%s' argument"), "file.only");
-        checkfile(
-            /* SEXP sym           = */ fileSymbol,
-            /* SEXP ofile         = */ ofile,
-            /* SEXP frame         = */ rho  ,
-            /* int character_only = */ character_only,
-            /* int file_only      = */ file_only,
-            /* SEXP rho           = */ rho  ,
-            /* int forcepromise   = */ TRUE ,
-            /* SEXP call          = */ R_CurrentExpression,
-            /* int maybe_chdir    = */ FALSE,
-            /* SEXP getowd        = */ NULL ,
-            /* int hasowd         = */ FALSE,
-            /* int do_enc2utf8    = */ FALSE,
-            /* int normalize      = */ FALSE
-        )
-        return eval(exprSymbol, rho);
-    default:
-        error(
-            nargs == 1 ? "%d argument passed to .External(%s) which requires %s" :
-                         "%d arguments passed to .External(%s) which requires %s",
-            nargs, "C_wrapsource", "2 or 3"
-        );
-    }
-
-
-    return R_NilValue;
+    // FIXME: move all from findfiletheneval into this function
+    return findfiletheneval(call, op, args, rho);
 }
 
 
 SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
+    int nprotect = 0;
+
+
     int n = asInteger(eval(lang1(sys_nframeSymbol), rho));
     if (n < 2)
         error("inside.source() must be called within another function");
@@ -516,40 +540,74 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     SEXP ofile, frame;
-    int character_only, file_only;
-
-
-    ofile = CADR(args);
-    character_only = asLogical(CADDR(args));
-    if (character_only == NA_LOGICAL)
-        error(_("invalid '%s' argument"), "character.only");
-    file_only = asLogical(CADDDR(args));
-    if (file_only == NA_LOGICAL)
-        error(_("invalid '%s' argument"), "file.only");
 
 
     frame = eval(lang1(parent_frameSymbol), rho);
-    PROTECT(frame);
+    PROTECT(frame); nprotect++;
 
 
+    args = CDR(args);
+    int missing_file;
+    /* why would this be NA?? idk but might as well test for it anyway */
+    missing_file = asFlag(CAR(args), "missing(file)"); args = CDR(args);
+    if (missing_file) {
+        assign_null(frame);
+        assign_done(frame);
+        set_R_Visible(1);
+        UNPROTECT(nprotect);
+        return R_MissingArg;
+    }
+
+
+    flag_declarations;
+    flag_definitions;
+
+
+    ofile = getInFrame(fileSymbol, rho, FALSE);
+    PROTECT(ofile); nprotect++;
+
+
+    SEXP returnvalue = R_NilValue;
     checkfile(
-        /* SEXP sym           = */ fileSymbol,
-        /* SEXP ofile         = */ ofile,
-        /* SEXP frame         = */ frame,
-        /* int character_only = */ character_only,
-        /* int file_only      = */ file_only,
-        /* SEXP rho           = */ rho  ,
-        /* int forcepromise   = */ TRUE ,
-        /* SEXP call          = */ R_CurrentExpression,
-        /* int maybe_chdir    = */ FALSE,
-        /* SEXP getowd        = */ NULL ,
-        /* int hasowd         = */ FALSE,
-        /* int do_enc2utf8    = */ FALSE,
-        /* int normalize      = */ FALSE
+        /* SEXP call                  = */ R_CurrentExpression,
+        /* SEXP rho                   = */ rho,
+        /* SEXP sym                   = */ fileSymbol,
+        /* SEXP ofile                 = */ ofile,
+        /* SEXP frame                 = */ frame,
+        /* int forcepromise           = */ TRUE,
+        /* int assign_returnvalue     = */ TRUE,
+        /* int maybe_chdir            = */ FALSE,
+        /* SEXP getowd                = */ NULL,
+        /* int hasowd                 = */ FALSE,
+        /* int character_only         = */ character_only,
+        /* int conv2utf8              = */ conv2utf8,
+        /* int allow_blank_string     = */ allow_blank_string,
+        /* int allow_clipboard        = */ allow_clipboard,
+        /* int allow_stdin            = */ allow_stdin,
+        /* int allow_url              = */ allow_url,
+        /* int allow_file_uri         = */ allow_file_uri,
+        /* int allow_unz              = */ allow_unz,
+        /* int allow_pipe             = */ allow_pipe,
+        /* int allow_terminal         = */ allow_terminal,
+        /* int allow_textConnection   = */ allow_textConnection,
+        /* int allow_rawConnection    = */ allow_rawConnection,
+        /* int allow_sockconn         = */ allow_sockconn,
+        /* int allow_servsockconn     = */ allow_servsockconn,
+        /* int allow_customConnection = */ allow_customConnection,
+        /* int ignore_blank_string    = */ ignore_blank_string,
+        /* int ignore_clipboard       = */ ignore_clipboard,
+        /* int ignore_stdin           = */ ignore_stdin,
+        /* int ignore_url             = */ ignore_url,
+        /* int ignore_file_uri        = */ ignore_file_uri
     )
+
+
     defineVar(insidesourcewashereSymbol, R_NilValue, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
-    set_R_Visible(0);
-    UNPROTECT(1);  /* frame */
-    return R_NilValue;
+    UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
+    return returnvalue;
 }
+
+
+#undef flag_definitions
+#undef flag_declarations

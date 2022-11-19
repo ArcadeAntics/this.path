@@ -61,19 +61,19 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 /* code is written this way on purpose, do not reformat */
 #define thispathofileChar                                      \
-    "__this.path::ofile__"
+    "._this.path::ofile_."
 #define thispathfileChar                                       \
-    "__this.path::file__"
+    "._this.path::file_."
 #define thispathformsgChar                                     \
-    "__this.path::for msg__"
+    "._this.path::for msg_."
 #define thispatherrorChar                                      \
-    "__this.path::error__"
+    "._this.path::error_."
 #define thispathassocwfileChar                                 \
-    "__this.path::associated with file__"
+    "._this.path::associated with file_."
 #define thispathdoneChar                                       \
-    "__this.path::done__"
+    "._this.path::done_."
 #define insidesourcewashereChar                                \
-    "__this.path::inside.source() was here__"
+    "._this.path::inside.source() was here_."
     thispathofileSymbol       = install(thispathofileChar);
     thispathfileSymbol        = install(thispathfileChar);
     thispathformsgSymbol      = install(thispathformsgChar);
@@ -121,7 +121,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     on_exitSymbol             = install("on.exit");
     External2Symbol           = install(".External2");
     C_setprseen2Symbol        = install("C_setprseen2");
-    thispathtempSymbol        = install("__this.path::temp__");
+    thispathtempSymbol        = install("._this.path::temp_.");
     parent_frameSymbol        = install("parent.frame");
     invisibleSymbol           = install("invisible");
     getConnectionSymbol       = install("getConnection");

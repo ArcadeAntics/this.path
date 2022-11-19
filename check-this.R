@@ -1,7 +1,7 @@
 essentials:::check.this(  # this.path
     special = TRUE,
 
-    check = FALSE, as.cran = TRUE,
+    check = TRUE, as.cran = TRUE,
 
     chdir = TRUE
 )
@@ -104,10 +104,10 @@ local({
                 n <- n + 1L
             }
 
-            bindings <- grep("^__this\\.path::.+__$", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
+            bindings <- grep("^\\._this\\.path::.+_\\.$", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
             stopifnot(vapply(bindings, bindingIsLocked, frame, FUN.VALUE = NA))
             getwd()
-            try(this.path:::PRINFO("__this.path::file__", frame, inherits = FALSE))
+            try(this.path:::PRINFO("._this.path::file_.", frame, inherits = FALSE))
             # don't use as.list yet, will force the promises
             .this.path(for.msg = TRUE)
             .this.path(original = TRUE, for.msg = TRUE)
@@ -116,7 +116,7 @@ local({
             .this.path(original = TRUE, for.msg = TRUE)
             try(Encoding(.this.path(original = TRUE)))
             try(Encoding(.this.path(original = FALSE)))
-            try(this.path:::PRINFO("__this.path::file__", frame, inherits = FALSE))
+            try(this.path:::PRINFO("._this.path::file_.", frame, inherits = FALSE))
             sapply(bindings, get, envir = frame, inherits = FALSE, simplify = FALSE)
             try(this.path::this.path())
         }, spaced = TRUE)

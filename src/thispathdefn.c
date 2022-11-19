@@ -314,7 +314,7 @@ void assign_chdir(SEXP file, SEXP owd, SEXP frame, SEXP rho)
 }
 
 
-void assign_fileurl(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
+void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 {
     SEXP e = _assign(ofile, frame);
 
@@ -351,7 +351,7 @@ void assign_fileurl(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 }
 
 
-void assign_fileurl2(SEXP description, SEXP frame, SEXP rho)
+void assign_file_uri2(SEXP description, SEXP frame, SEXP rho)
 {
     char _buf[7 + strlen(CHAR(description)) + 1];
     char *buf = _buf;

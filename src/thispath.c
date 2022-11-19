@@ -109,6 +109,7 @@ int gui_rstudio = -1;
 SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP returnthis = NULL;
+    SEXP returnvalue;  /* this is never used */
 
 
     args = CDR(args);
@@ -256,19 +257,36 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP sym           = */ ofileSymbol,
-                    /* SEXP ofile         = */ ofile,
-                    /* SEXP frame         = */ frame,
-                    /* int character_only = */ FALSE,
-                    /* int file_only      = */ FALSE,
-                    /* SEXP rho           = */ rho  ,
-                    /* int forcepromise   = */ FALSE,
-                    /* SEXP call          = */ sys_call(which, rho),
-                    /* int maybe_chdir    = */ TRUE ,
-                    /* SEXP getowd        = */ findVarInFrame(frame, owdSymbol),
-                    /* int hasowd         = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                    /* int do_enc2utf8    = */ FALSE,
-                    /* int normalize      = */ FALSE
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP rho                   = */ rho,
+                    /* SEXP sym                   = */ ofileSymbol,
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ FALSE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ TRUE,
+                    /* SEXP getowd                = */ findVarInFrame(frame, owdSymbol),
+                    /* int hasowd                 = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* int character_only         = */ FALSE,
+                    /* int conv2utf8              = */ FALSE,
+                    /* int allow_blank_string     = */ FALSE,
+                    /* int allow_clipboard        = */ TRUE,
+                    /* int allow_stdin            = */ TRUE,
+                    /* int allow_url              = */ TRUE,
+                    /* int allow_file_uri         = */ TRUE,
+                    /* int allow_unz              = */ TRUE,
+                    /* int allow_pipe             = */ TRUE,
+                    /* int allow_terminal         = */ TRUE,
+                    /* int allow_textConnection   = */ TRUE,
+                    /* int allow_rawConnection    = */ TRUE,
+                    /* int allow_sockconn         = */ TRUE,
+                    /* int allow_servsockconn     = */ TRUE,
+                    /* int allow_customConnection = */ TRUE,
+                    /* int ignore_blank_string    = */ FALSE,
+                    /* int ignore_clipboard       = */ FALSE,
+                    /* int ignore_stdin           = */ FALSE,
+                    /* int ignore_url             = */ FALSE,
+                    /* int ignore_file_uri        = */ FALSE
                 )
             }
 
@@ -410,19 +428,36 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP sym           = */ fileSymbol,
-                    /* SEXP ofile         = */ ofile,
-                    /* SEXP frame         = */ frame,
-                    /* int character_only = */ TRUE ,
-                    /* int file_only      = */ TRUE ,
-                    /* SEXP rho           = */ rho  ,
-                    /* int forcepromise   = */ FALSE,
-                    /* SEXP call          = */ sys_call(which, rho),
-                    /* int maybe_chdir    = */ TRUE ,
-                    /* SEXP getowd        = */ findVarInFrame(frame, owdSymbol),
-                    /* int hasowd         = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                    /* int do_enc2utf8    = */ FALSE,
-                    /* int normalize      = */ FALSE
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP rho                   = */ rho,
+                    /* SEXP sym                   = */ fileSymbol,
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ FALSE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ TRUE,
+                    /* SEXP getowd                = */ findVarInFrame(frame, owdSymbol),
+                    /* int hasowd                 = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* int character_only         = */ TRUE,
+                    /* int conv2utf8              = */ FALSE,
+                    /* int allow_blank_string     = */ FALSE,
+                    /* int allow_clipboard        = */ FALSE,
+                    /* int allow_stdin            = */ FALSE,
+                    /* int allow_url              = */ FALSE,
+                    /* int allow_file_uri         = */ FALSE,
+                    /* int allow_unz              = */ FALSE,
+                    /* int allow_pipe             = */ FALSE,
+                    /* int allow_terminal         = */ FALSE,
+                    /* int allow_textConnection   = */ FALSE,
+                    /* int allow_rawConnection    = */ FALSE,
+                    /* int allow_sockconn         = */ FALSE,
+                    /* int allow_servsockconn     = */ FALSE,
+                    /* int allow_customConnection = */ FALSE,
+                    /* int ignore_blank_string    = */ FALSE,
+                    /* int ignore_clipboard       = */ FALSE,
+                    /* int ignore_stdin           = */ FALSE,
+                    /* int ignore_url             = */ FALSE,
+                    /* int ignore_file_uri        = */ FALSE
                 )
             }
             returnfile(
@@ -453,19 +488,36 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP sym           = */ fileNameSymbol,
-                    /* SEXP ofile         = */ ofile,
-                    /* SEXP frame         = */ frame,
-                    /* int character_only = */ TRUE ,
-                    /* int file_only      = */ FALSE,
-                    /* SEXP rho           = */ rho  ,
-                    /* int forcepromise   = */ FALSE,
-                    /* SEXP call          = */ sys_call(which, rho),
-                    /* int maybe_chdir    = */ FALSE,
-                    /* SEXP getowd        = */ NULL ,
-                    /* int hasowd         = */ FALSE,
-                    /* int do_enc2utf8    = */ TRUE,
-                    /* int normalize      = */ FALSE
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP rho                   = */ rho,
+                    /* SEXP sym                   = */ fileNameSymbol,
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ FALSE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ FALSE,
+                    /* SEXP getowd                = */ NULL,
+                    /* int hasowd                 = */ FALSE,
+                    /* int character_only         = */ TRUE,
+                    /* int conv2utf8              = */ TRUE,
+                    /* int allow_blank_string     = */ TRUE,
+                    /* int allow_clipboard        = */ TRUE,
+                    /* int allow_stdin            = */ TRUE,
+                    /* int allow_url              = */ TRUE,
+                    /* int allow_file_uri         = */ TRUE,
+                    /* int allow_unz              = */ FALSE,
+                    /* int allow_pipe             = */ FALSE,
+                    /* int allow_terminal         = */ FALSE,
+                    /* int allow_textConnection   = */ FALSE,
+                    /* int allow_rawConnection    = */ FALSE,
+                    /* int allow_sockconn         = */ FALSE,
+                    /* int allow_servsockconn     = */ FALSE,
+                    /* int allow_customConnection = */ FALSE,
+                    /* int ignore_blank_string    = */ FALSE,
+                    /* int ignore_clipboard       = */ FALSE,
+                    /* int ignore_stdin           = */ FALSE,
+                    /* int ignore_url             = */ FALSE,
+                    /* int ignore_file_uri        = */ FALSE
                 )
             }
             returnfile(
@@ -495,20 +547,38 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     else
                         ofile = PRVALUE(ofile);
                 }
+                int ignore_all = asLogical(eval(lang1(testthat_uses_brioSymbol), rho));
                 checkfile(
-                    /* SEXP sym           = */ pathSymbol,
-                    /* SEXP ofile         = */ ofile,
-                    /* SEXP frame         = */ frame,
-                    /* int character_only = */ TRUE ,
-                    /* int file_only      = */ TRUE ,
-                    /* SEXP rho           = */ rho  ,
-                    /* int forcepromise   = */ FALSE,
-                    /* SEXP call          = */ sys_call(which, rho),
-                    /* int maybe_chdir    = */ TRUE ,
-                    /* SEXP getowd        = */ findVarInFrame(frame, old_dirSymbol),
-                    /* int hasowd         = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                    /* int do_enc2utf8    = */ FALSE,
-                    /* int normalize      = */ asLogical(eval(lang1(testthat_uses_brioSymbol), rho))
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP rho                   = */ rho,
+                    /* SEXP sym                   = */ pathSymbol,
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ FALSE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ TRUE,
+                    /* SEXP getowd                = */ findVarInFrame(frame, old_dirSymbol),
+                    /* int hasowd                 = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* int character_only         = */ TRUE,
+                    /* int conv2utf8              = */ FALSE,
+                    /* int allow_blank_string     = */ FALSE,
+                    /* int allow_clipboard        = */ FALSE,
+                    /* int allow_stdin            = */ FALSE,
+                    /* int allow_url              = */ FALSE,
+                    /* int allow_file_uri         = */ FALSE,
+                    /* int allow_unz              = */ FALSE,
+                    /* int allow_pipe             = */ FALSE,
+                    /* int allow_terminal         = */ FALSE,
+                    /* int allow_textConnection   = */ FALSE,
+                    /* int allow_rawConnection    = */ FALSE,
+                    /* int allow_sockconn         = */ FALSE,
+                    /* int allow_servsockconn     = */ FALSE,
+                    /* int allow_customConnection = */ FALSE,
+                    /* int ignore_blank_string    = */ ignore_all,
+                    /* int ignore_clipboard       = */ ignore_all,
+                    /* int ignore_stdin           = */ ignore_all,
+                    /* int ignore_url             = */ ignore_all,
+                    /* int ignore_file_uri        = */ ignore_all
                 )
             }
             returnfile(
@@ -540,19 +610,36 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 }
                 ofile = getInFrame(inputSymbol, frame, FALSE);
                 checkfile(
-                    /* SEXP sym           = */ inputSymbol,
-                    /* SEXP ofile         = */ ofile,
-                    /* SEXP frame         = */ frame,
-                    /* int character_only = */ FALSE,
-                    /* int file_only      = */ FALSE,
-                    /* SEXP rho           = */ rho  ,
-                    /* int forcepromise   = */ FALSE,
-                    /* SEXP call          = */ sys_call(which, rho),
-                    /* int maybe_chdir    = */ TRUE ,
-                    /* SEXP getowd        = */ eval(lang1(knitr_output_dirSymbol), rho),
-                    /* int hasowd         = */ ((owd) != R_NilValue),
-                    /* int do_enc2utf8    = */ FALSE,
-                    /* int normalize      = */ FALSE
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP rho                   = */ rho,
+                    /* SEXP sym                   = */ inputSymbol,
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ FALSE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ TRUE,
+                    /* SEXP getowd                = */ eval(lang1(knitr_output_dirSymbol), rho),
+                    /* int hasowd                 = */ ((owd) != R_NilValue),
+                    /* int character_only         = */ FALSE,
+                    /* int conv2utf8              = */ FALSE,
+                    /* int allow_blank_string     = */ FALSE,
+                    /* int allow_clipboard        = */ TRUE,
+                    /* int allow_stdin            = */ TRUE,
+                    /* int allow_url              = */ TRUE,
+                    /* int allow_file_uri         = */ TRUE,
+                    /* int allow_unz              = */ TRUE,
+                    /* int allow_pipe             = */ TRUE,
+                    /* int allow_terminal         = */ TRUE,
+                    /* int allow_textConnection   = */ TRUE,
+                    /* int allow_rawConnection    = */ TRUE,
+                    /* int allow_sockconn         = */ TRUE,
+                    /* int allow_servsockconn     = */ TRUE,
+                    /* int allow_customConnection = */ TRUE,
+                    /* int ignore_blank_string    = */ FALSE,
+                    /* int ignore_clipboard       = */ FALSE,
+                    /* int ignore_stdin           = */ FALSE,
+                    /* int ignore_url             = */ FALSE,
+                    /* int ignore_file_uri        = */ FALSE
                 )
             }
             returnfile(

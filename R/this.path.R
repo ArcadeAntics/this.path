@@ -356,7 +356,7 @@ getCurrentCall <- function (n = 3L)
     skip.stop <- TRUE
     for (n in seq.int(to = 1L, by = -1L, length.out = n)) {
         if (typeof(fun <- sys.function(n)) == "closure") {
-            if (skip.stop && identical2(fun, stop)) {
+            if (skip.stop && (identical2)(fun, stop)) {
                 skip.stop <- FALSE
                 next
             }
@@ -398,6 +398,7 @@ is.unevaluated.promise <- function (sym, env)
 .External2(C_isunevaluatedpromise, sym, env)
 
 
+rm.list <- c(rm.list, "this_path_used_in_an_inappropriate_fashion")
 this_path_used_in_an_inappropriate_fashion <- local({
     tmp <- readLines("src/thispathdefn.h", warn = FALSE)
     tmp <- tmp[[grep("#define this_path_used_in_an_inappropriate_fashion", tmp, fixed = TRUE) + 1L]]
@@ -407,7 +408,7 @@ this_path_used_in_an_inappropriate_fashion <- local({
     {
         stop("could not determine error message")
     }
-    tmp
+    strsplit(tmp, "(?<=\\n)", perl = TRUE)[[1L]]
 })
 
 
@@ -438,8 +439,8 @@ body(assign.URL) <- bquote({
 })
 
 
-assign.fileURL <- function(path, frame) NULL
-body(assign.fileURL) <- bquote({
+assign.file.URI <- function(path, frame) NULL
+body(assign.file.URI) <- bquote({
     assign(.(thispathofile), path, frame)
     lockBinding(.(thispathofile), frame)
     eval(call("delayedAssign", .(thispathfile), call(".normalizePath", file.URL.path.1(path)), thispathnamespace, frame))
@@ -447,8 +448,8 @@ body(assign.fileURL) <- bquote({
 })
 
 
-assign.fileURL2 <- function(path, frame) NULL
-body(assign.fileURL2) <- bquote({
+assign.file.URI2 <- function(path, frame) NULL
+body(assign.file.URI2) <- bquote({
     assign(.(thispathofile), paste0("file://", path), frame)
     lockBinding(.(thispathofile), frame)
     eval(call("delayedAssign", .(thispathfile), call(".normalizePath", path), thispathnamespace, frame))
@@ -495,7 +496,7 @@ checkfile <- function(name, call = quote(sys.call(n)), character.only = FALSE,
     file.only = FALSE, exists.owd = FALSE, get.owd = NULL, do.enc2utf8 = FALSE,
     normalize = FALSE) NULL
 body(checkfile) <- bquote({
-    simplify(substitute({
+    as.list(simplify(substitute({
         file <- getInFrame(name, frame)
         if (is.character(file)) {
 
@@ -590,7 +591,7 @@ body(checkfile) <- bquote({
                             sprintf("invalid '%s', cannot be a file URL", EncodeChar(name)),
                             call
                         ))
-                    else assign.fileURL(file, frame)
+                    else assign.file.URI(file, frame)
                 }
 
 
@@ -655,7 +656,7 @@ body(checkfile) <- bquote({
                 klass <- summary[["class"]]
                 if (klass %in% c("file", "gzfile", "bzfile", "xzfile", "fifo")) {
                     # the file:// in a file URL will already be removed
-                    assign.fileURL2(description, frame)
+                    assign.file.URI2(description, frame)
                 }
                 else if (klass %in% c("url-libcurl", "url-wininet")) {
                     if (file.only)
@@ -716,7 +717,7 @@ body(checkfile) <- bquote({
         exists.owd = exists.owd, get.owd = get.owd,
         do.enc2utf8 = do.enc2utf8,
         normalize = normalize
-    )))
+    ))))[-1L]
 })
 
 
@@ -733,6 +734,14 @@ encodeString(x, na.encode = FALSE)
 
 .is.simple <- function (x)
 !is.object(x) && !(typeof(x) %in% c("symbol", "language"))
+
+
+.is.true <- function (x)
+.is.simple(x) && isTRUE(x && TRUE)
+
+
+.is.false <- function (x)
+.is.simple(x) && isFALSE(x && TRUE)
 
 
 .simplify <- function (expr, condition = FALSE)
@@ -760,7 +769,7 @@ encodeString(x, na.encode = FALSE)
                     }
                     else x <- c(x, list(.simplify(e[[i]])))
                 }
-                # remove any NULL of "semi-NULL" elements
+                # remove any NULL or "semi-NULL" elements
                 x <- x[!vapply(x, function(xx) {
                     is.null(xx) || identical(xx, quote(if (FALSE) NULL))
                 }, NA)]
@@ -770,6 +779,7 @@ encodeString(x, na.encode = FALSE)
                 else if (length(x) == 2L)
                     x[[2L]]
                 else as.call(x)
+                # as.call(x)
             }
             else if (identical(e[[1L]], quote(`!`))) {
                 if (length(e) != 2L)
@@ -790,37 +800,45 @@ encodeString(x, na.encode = FALSE)
                 if (length(e) != 3L)
                     stop("incorrect number of argument to '&&'")
                 e[2L] <- list(fun(e[[2L]]))
-                e[3L] <- list(fun(e[[3L]]))
-                if (.is.simple(e[[2L]]) &&
-                    .is.simple(e[[3L]]))
-                {
-                    val <- e[[2L]] && e[[3L]]
-                    if (condition) {
-                        if (val)
-                            TRUE
-                        else FALSE
+                if (.is.false(e[[2L]]))
+                    FALSE
+                else {
+                    e[3L] <- list(fun(e[[3L]]))
+                    if (.is.simple(e[[2L]]) &&
+                        .is.simple(e[[3L]]))
+                    {
+                        val <- e[[2L]] && e[[3L]]
+                        if (condition) {
+                            if (val)
+                                TRUE
+                            else FALSE
+                        }
+                        else val
                     }
-                    else val
+                    else e
                 }
-                else e
             }
             else if (identical(e[[1L]], quote(`||`))) {
                 if (length(e) != 3L)
                     stop("incorrect number of argument to '||'")
                 e[2L] <- list(fun(e[[2L]]))
-                e[3L] <- list(fun(e[[3L]]))
-                if (.is.simple(e[[2L]]) &&
-                    .is.simple(e[[3L]]))
-                {
-                    val <- e[[2L]] || e[[3L]]
-                    if (condition) {
-                        if (val)
-                            TRUE
-                        else FALSE
+                if (.is.true(e[[2L]]))
+                    TRUE
+                else {
+                    e[3L] <- list(fun(e[[3L]]))
+                    if (.is.simple(e[[2L]]) &&
+                        .is.simple(e[[3L]]))
+                    {
+                        val <- e[[2L]] || e[[3L]]
+                        if (condition) {
+                            if (val)
+                                TRUE
+                            else FALSE
+                        }
+                        else val
                     }
-                    else val
+                    else e
                 }
-                else e
             }
             else if (identical(e[[1L]], quote(xor))) {
                 if (length(e) != 3L)
@@ -981,14 +999,14 @@ simplify <- function (expr)
 # this.path(), this.dir(), and here() ----
 
 
-.this.path.toplevel <- function (verbose = FALSE, original = FALSE, for.msg = FALSE)
-{
+.this.path.toplevel <- function (verbose = FALSE, original = FALSE, for.msg = FALSE) NULL
+body(.this.path.toplevel) <- bquote({
     if (in.shell) {
 
 
         value <- shFILE(original, for.msg, default = {
             stop(thisPathNotExistsError(
-                this_path_used_in_an_inappropriate_fashion,
+                ..(this_path_used_in_an_inappropriate_fashion),
                 "* R is being run from a shell and argument 'FILE' is missing",
                 call = sys.call(sys.nframe())))
         })
@@ -1021,7 +1039,7 @@ simplify <- function (expr)
                 if (for.msg)
                     return(NA_character_)
                 else stop(thisPathNotExistsError(
-                    this_path_used_in_an_inappropriate_fashion,
+                    ..(this_path_used_in_an_inappropriate_fashion),
                     "* R is being run from RStudio with no documents open\n",
                     "  (or source document has no path)"))
             }
@@ -1047,7 +1065,7 @@ simplify <- function (expr)
         else if (for.msg)
             return(NA_character_)
         else stop(
-            this_path_used_in_an_inappropriate_fashion,
+            ..(this_path_used_in_an_inappropriate_fashion),
             if (active)
                 "* active document in RStudio does not exist"
             else "* source document in RStudio does not exist")
@@ -1062,7 +1080,7 @@ simplify <- function (expr)
             if (for.msg)
                 return(NA_character_)
             else stop(thisPathNotExistsError(
-                this_path_used_in_an_inappropriate_fashion,
+                ..(this_path_used_in_an_inappropriate_fashion),
                 "* R is being run from VSCode with no documents open\n",
                 "  (or document has no path)"
             ))
@@ -1073,7 +1091,7 @@ simplify <- function (expr)
             if (for.msg)
                 return(NA_character_)
             else stop(
-                this_path_used_in_an_inappropriate_fashion,
+                ..(this_path_used_in_an_inappropriate_fashion),
                 "* document in VSCode does not exist")
         }
 
@@ -1089,7 +1107,7 @@ simplify <- function (expr)
         else if (for.msg)
             return(NA_character_)
         else stop(
-            this_path_used_in_an_inappropriate_fashion,
+            ..(this_path_used_in_an_inappropriate_fashion),
             "* document in VSCode does not exist")
     }
 
@@ -1146,13 +1164,13 @@ simplify <- function (expr)
         else if (for.msg)
             return(NA_character_)
         else stop(thisPathNotExistsError(
-            this_path_used_in_an_inappropriate_fashion,
+            ..(this_path_used_in_an_inappropriate_fashion),
             "* R is being run from Rgui with no documents open"))
         if (x %in% untitled) {
             if (for.msg)
                 return(NA_character_)
             else stop(
-                this_path_used_in_an_inappropriate_fashion,
+                ..(this_path_used_in_an_inappropriate_fashion),
                 if (active)
                     "* active document in Rgui does not exist"
                 else "* source document in Rgui does not exist")
@@ -1190,7 +1208,7 @@ simplify <- function (expr)
         if (for.msg)
             NA_character_
         else stop(thisPathNotExistsError(
-            this_path_used_in_an_inappropriate_fashion,
+            ..(this_path_used_in_an_inappropriate_fashion),
             "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
 
@@ -1203,20 +1221,57 @@ simplify <- function (expr)
             NA_character_
         else stop(thisPathUnrecognizedMannerError())
     }
-}
+}, splice = TRUE)
 
 
 delayedAssign("identical2", {
     if (getRversion() >= "4.2.0") {
+
+
 function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE,
     extptr.as.ref = TRUE)
-    }
-    else {
+
+
+    } else if (getRversion() >= "3.4.0") {
+
+
 function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE)
+
+
+    } else if (getRversion() >= "3.0.0") {
+
+
+function (x, y)
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+    ignore.bytecode = FALSE, ignore.environment = FALSE)
+
+
+    } else if (getRversion() >= "2.14.0") {
+
+
+function (x, y)
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+    ignore.bytecode = FALSE)
+
+
+    } else if (getRversion() >= "2.10.0") {
+
+
+function (x, y)
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE)
+
+
+    } else {
+
+
+function (x, y)
+identical(x, y)
+
+
     }
 })
 
@@ -1224,7 +1279,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
 rm.list <- c(rm.list, "returnfile")
 returnfile <- function(fun.name, character.only = FALSE, file.only = FALSE, maybe.decrement = FALSE) NULL
 body(returnfile) <- bquote({
-    simplify(substitute({
+    as.list(simplify(substitute({
         path <- getInFrame(.(thispathofile), frame)
         if (!file.only) {
             if (is.null(path))
@@ -1281,7 +1336,7 @@ body(returnfile) <- bquote({
         file.only = file.only,
         maybe.decrement = maybe.decrement,
         fun.name = fun.name
-    )))
+    ))))[-1L]
 })
 
 
@@ -1361,7 +1416,7 @@ body(.this.path.old) <- bquote({
         fun <- sys.function(n)
 
 
-        if (identical2(fun, source)) {
+        if ((identical2)(fun, source)) {
 
 
             # if the path has yet to be saved
@@ -1375,17 +1430,17 @@ body(.this.path.old) <- bquote({
                     next
 
 
-                .(checkfile(
+                ..(checkfile(
                     name       = "ofile",
                     exists.owd = quote(existsInFrame("owd", frame)),
                     get.owd    = quote(getInFrame("owd", frame)),
                 ))
             }
-            .(returnfile("source"))
+            ..(returnfile("source"))
         }
 
 
-        else if (identical2(fun, sys.source)) {
+        else if ((identical2)(fun, sys.source)) {
 
 
             # much the same as 'source' except simpler, we don't have to
@@ -1403,7 +1458,7 @@ body(.this.path.old) <- bquote({
                     next
 
 
-                .(checkfile(
+                ..(checkfile(
                     name           = "file",
                     character.only = TRUE,
                     file.only      = TRUE,
@@ -1411,12 +1466,12 @@ body(.this.path.old) <- bquote({
                     get.owd        = quote(getInFrame("owd", frame))
                 ))
             }
-            .(returnfile("sys.source", character.only = TRUE, file.only = TRUE))
+            ..(returnfile("sys.source", character.only = TRUE, file.only = TRUE))
         }
 
 
         # in 0.2.0, compatibility with 'debugSource' in 'RStudio' was added
-        else if (gui.rstudio && identical2(fun, debugSource)) {
+        else if (gui.rstudio && (identical2)(fun, debugSource)) {
 
 
             if (!existsInFrame(.(thispathdone), frame)) {
@@ -1426,17 +1481,17 @@ body(.this.path.old) <- bquote({
                     next
 
 
-                .(checkfile(
+                ..(checkfile(
                     name           = "fileName",
                     character.only = TRUE,
                     do.enc2utf8    = TRUE
                 ))
             }
-            .(returnfile("debugSource in RStudio", character.only = TRUE))
+            ..(returnfile("debugSource in RStudio", character.only = TRUE))
         }
 
 
-        else if (testthat_loaded && identical2(fun, source_file)) {
+        else if (testthat_loaded && (identical2)(fun, source_file)) {
 
 
             if (!existsInFrame(.(thispathdone), frame)) {
@@ -1449,7 +1504,7 @@ body(.this.path.old) <- bquote({
                     next
 
 
-                .(checkfile(
+                ..(checkfile(
                     name           = "path",
                     character.only = TRUE,
                     file.only      = TRUE,
@@ -1458,11 +1513,11 @@ body(.this.path.old) <- bquote({
                     normalize      = quote(testthat.uses.brio())
                 ))
             }
-            .(returnfile("source_file in package testthat", character.only = TRUE, file.only = TRUE))
+            ..(returnfile("source_file in package testthat", character.only = TRUE, file.only = TRUE))
         }
 
 
-        else if (knitr_loaded && identical2(fun, knit)) {
+        else if (knitr_loaded && (identical2)(fun, knit)) {
 
 
             # if the path has yet to be saved
@@ -1483,25 +1538,25 @@ body(.this.path.old) <- bquote({
                 }
 
 
-                .(checkfile(
+                ..(checkfile(
                     name           = "input",
                     exists.owd     = TRUE,
                     get.owd        = quote(knitr.output.dir())
                 ))
             }
-            .(returnfile("knit in package knitr"))
+            ..(returnfile("knit in package knitr"))
         }
 
 
-        else if (identical2(fun, wrap.source)) {
+        else if ((identical2)(fun, wrap.source)) {
             if (!existsInFrame(.(thispathdone), frame))
                 next
-            .(returnfile("wrap.source in package this.path", maybe.decrement = TRUE))
+            ..(returnfile("wrap.source in package this.path", maybe.decrement = TRUE))
         }
 
 
         else if (existsInFrame(.(insidesourcewashere), frame)) {
-            .(returnfile("inside.source in package this.path", maybe.decrement = TRUE))
+            ..(returnfile("inside.source in package this.path", maybe.decrement = TRUE))
         }
     }
 
@@ -1527,7 +1582,7 @@ body(.this.path.old) <- bquote({
 
 
     .this.path.toplevel(verbose, original, for.msg)
-})
+}, splice = TRUE)
 
 
 

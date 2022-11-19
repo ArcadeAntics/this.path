@@ -1,10 +1,13 @@
-.Rscript <- function (options = NULL, ...)
+.Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, ...)
 {
     command <- path.join(R.home("bin"), if (os.windows)
         "Rscript.exe"
     else "Rscript")
     args <- c(command, options)
-    command <- paste(shQuote(args), collapse = " ")
+    args <- c(shQuote(args), trailing)
+    command <- paste(args, collapse = " ")
+    if (dry.run)
+        return(command)
     cat(command, "\n", sep = "")
     invisible(system(command = command, ...))
 }
