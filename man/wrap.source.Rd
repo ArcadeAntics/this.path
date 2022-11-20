@@ -141,8 +141,9 @@ when the option is available. I can think of exactly one scenario in which
 function \code{sourcelike()} in a foreign package (a package for which you do
 not have write permission). Suppose that you write your own function to wrap
 \code{sourcelike()} in which you do not have the name of the file
-argument:\verb{
-wrapper <- function (...)
+argument:
+
+\verb{wrapper <- function (...)
 {
     # possibly more args to wrap.source()
     wrap.source(sourcelike(...))
@@ -151,8 +152,8 @@ wrapper <- function (...)
 This is the only scenario in which \code{wrap.source()} is preferable, since
 extracting the file from the \code{\dots} list would be a pain. Then again,
 you could simply change the formals of \code{wrapper()} from \code{(\dots)} to
-\code{(file, \dots)}. If this does not describe the exact scenario you face,
-use \code{inside.source()} instead.
+\verb{(file, ...)}. If this does not describe your exact scenario, use
+\code{inside.source()} instead.
 }
 \value{
 for \code{wrap.source}, the result of evaluating \code{expr}.
@@ -162,6 +163,50 @@ with the same attributes, otherwise \code{file} itself.
 }
 \note{
 Both functions should only be called within another function.
+
+Suppose that the functions \sourceandlist{} were not implemented with
+\code{this.path()}. You could use \code{inside.source()} to implement each of
+them as follows:
+
+\describe{
+  \item{\code{\link[base]{source}}}{
+\verb{wrapper <- function(file, ...) {
+    file <- inside.source(file)
+    source(file = file, ...)
+}}
+  }
+  \item{\code{\link[base]{sys.source}}}{
+\verb{wrapper <- function(file, ...) {
+    file <- inside.source(file, path.only = TRUE)
+    sys.source(file = file, ...)
+}}
+  }
+  \item{\debugSource{} in \sQuote{RStudio}}{
+\verb{wrapper <- function(fileName, ...) {
+    fileName <- inside.source(fileName, character.only = TRUE,
+        conv2utf8 = TRUE, allow.blank.string = TRUE)
+    debugSource(fileName = fileName, ...)
+}}
+  }
+  \item{\code{\link[testthat:source_file]{testthat::source_file}}}{
+\verb{wrapper <- function(path, ...) {
+    # before testthat_3.1.2, source_file() used base::readLines() to
+    # read the input lines. changed in 3.1.2, source_file() uses
+    # brio::read_lines() which normalizes 'path' before reading,
+    # disregarding the special meaning of the strings listed above
+    path <- inside.source(path, path.only = TRUE,
+        ignore.all = as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
+    testthat::source_file(path = path, ...)
+}}
+  }
+  \item{\code{\link[knitr:knit]{knitr::knit}}}{
+\verb{wrapper <- function(input, ...) {
+    # this works for the most part, but won't work in child mode
+    input <- inside.source(input)
+    knitr::knit(input = input, ...)
+}}
+  }
+}
 }
 \examples{
 FILE <- tempfile(fileext = ".R")
