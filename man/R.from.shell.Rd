@@ -9,10 +9,12 @@ terminal).
 For the purpose of running \R scripts, there are four ways to do it. Suppose
 our \R script has filename \option{script1.R}, we could write any of:
 
-\verb{R -f script1.R
-R --file=script1.R
-R CMD BATCH script1.R
-Rscript script1.R}
+\itemize{
+  \item \verb{R -f script1.R}
+  \item \verb{R --file=script1.R}
+  \item \verb{R CMD BATCH script1.R}
+  \item \verb{Rscript script1.R}
+}
 
 The first two are different ways of writing equivalent statements. The third
 statement is the first statement plus options \option{--restore}
@@ -22,9 +24,11 @@ also saves the \code{\link[base:showConnections]{stdout}} and
 fourth statement is the second statement plus options \option{--no-echo}
 \option{--no-restore}. You can try:
 
-\verb{R --help
-R CMD BATCH --help
-Rscript --help}
+\itemize{
+  \item \verb{R --help}
+  \item \verb{R CMD BATCH --help}
+  \item \verb{Rscript --help}
+}
 
 for a help message that describes what these options mean. In general,
 \command{Rscript} is the one you want to use. It should be noted that
@@ -35,16 +39,16 @@ executables) that will make its behaviour different from \command{R}.
 For the purpose of making packages, \command{R CMD} is what you'll need to use.
 Most commonly, you'll use:
 
-\verb{R CMD build
-R CMD INSTALL
-R CMD check}
+\itemize{
+  \item \verb{R CMD build}
+  \item \verb{R CMD INSTALL}
+  \item \verb{R CMD check}
+}
 
 \command{R CMD build} will turn an \R package (specified by a directory) into
 tarball. This allows for easy sharing of \R packages with other people,
-including
-\href{https://cran.r-project.org/submit.html}{
-submitting a package to CRAN
-}. \command{R CMD INSTALL} will install an \R package (specified by a directory
+including \href{https://cran.r-project.org/submit.html}{submitting a package to CRAN}.
+\command{R CMD INSTALL} will install an \R package (specified by a directory
 or tarball), and is used by
 \code{\link[utils:install.packages]{utils::install.packages}}.
 \command{R CMD check} will check an \R package (specified by a tarball) for
@@ -110,8 +114,10 @@ admin permissions):
 To check that this worked correctly, open a shell and execute the following
 commands:
 
-\verb{R --help
-R --version}
+\itemize{
+  \item \verb{R --help}
+  \item \verb{R --version}
+}
 
 You should see that the first prints the usage message for the \R executable
 while the second prints information about the version of \R currently being run.
