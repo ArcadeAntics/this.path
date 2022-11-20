@@ -121,11 +121,12 @@ following command:
 
 \verb{cat(sQuote(normalizePath(R.home("bin"))), "\n")}
 
-On Windows, for me, this is:
+For me, this is:
 
-\file{\verb{C:\Program Files\R\R-}\Sexpr{getRversion()}\verb{\bin\x64}}
-
-On Linux, for me, this is:
-
+#ifdef unix
 \file{\verb{/usr/lib/R/bin}}
+#endif
+#ifdef windows
+\file{\verb{C:\Program Files\R\R-}\Sexpr{getRversion()}\verb{\bin\x64}}
+#endif
 }

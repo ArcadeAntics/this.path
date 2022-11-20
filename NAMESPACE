@@ -4,7 +4,7 @@ useDynLib(this.path, .registration = TRUE, .fixes = "C_")
 # as.relative.path.R     ----
 
 
-export(as.relative.path, as.rel.path)
+export(as.relative.path, as.rel.path, relpath)
 
 
 # Args.R                 ----

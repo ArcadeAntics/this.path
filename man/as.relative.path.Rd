@@ -1,6 +1,7 @@
 \name{as.relative.path}
 \alias{as.relative.path}
 \alias{as.rel.path}
+\alias{relpath}
 \title{
 Make a Path Relative to Another Path
 }
@@ -12,6 +13,7 @@ paths. These paths are no good for saving within files, so you'll need to use
 \usage{
 as.relative.path(path, relative.to = this.dir(verbose = FALSE))
 as.rel.path     (path, relative.to = this.dir(verbose = FALSE))
+relpath         (path, relative.to = getwd())
 }
 \arguments{
   \item{path}{
@@ -32,48 +34,52 @@ returned. If \code{path} and \code{relative.to} have no base in common, the
 \value{
 character vector of the same length as \code{path}.
 }
+\note{
+\code{relpath} and \code{as.rel.path} are the same function with different
+default arguments.
+}
 \examples{
-# Windows example
+#ifdef unix
+\dontrun{
+relpath(
+    c(
+        # paths which are equivalent will return "."
+        "/home/effective_user/Documents/this.path/man",
 
 
-# as.relative.path(
-#     c(
-#         # paths which are equivalent will return "."
-#         "C:/Users/effective_user/Documents/this.path/man",
-#
-#
-#         # paths which have no base in common return as themselves
-#         "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
-#         "D:/",
-#         "//host-name/share-name/path/to/file",
-#
-#
-#         "C:/Users/effective_user/Documents/testing",
-#         "C:\\\\Users\\\\effective_user",
-#         "C:/Users/effective_user/Documents/R/this.path.R"
-#     ),
-#     relative.to = "C:/Users/effective_user/Documents/this.path/man"
-# )
+        # paths which have no base in common return as themselves
+        "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
+        "//host-name/share-name/path/to/file",
 
 
-# Unix-alikes example
+        "/home/effective_user/Documents/testing",
+        "/home/effective_user",
+        "/home/effective_user/Documents/R/this.path.R"
+    ),
+    relative.to = "/home/effective_user/Documents/this.path/man"
+)
+}
+#endif
+#ifdef windows
+\dontrun{
+relpath(
+    c(
+        # paths which are equivalent will return "."
+        "C:/Users/effective_user/Documents/this.path/man",
 
 
-# as.relative.path(
-#     c(
-#         # paths which are equivalent will return "."
-#         "/home/effective_user/Documents/this.path/man",
-#
-#
-#         # paths which have no base in common return as themselves
-#         "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
-#         "//host-name/share-name/path/to/file",
-#
-#
-#         "/home/effective_user/Documents/testing",
-#         "/home/effective_user",
-#         "/home/effective_user/Documents/R/this.path.R"
-#     ),
-#     relative.to = "/home/effective_user/Documents/this.path/man"
-# )
+        # paths which have no base in common return as themselves
+        "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
+        "D:/",
+        "//host-name/share-name/path/to/file",
+
+
+        "C:/Users/effective_user/Documents/testing",
+        "C:\\\\Users\\\\effective_user",
+        "C:/Users/effective_user/Documents/R/this.path.R"
+    ),
+    relative.to = "C:/Users/effective_user/Documents/this.path/man"
+)
+}
+#endif
 }

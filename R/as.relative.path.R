@@ -100,7 +100,8 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
     x <- path.split(path)
     vapply(seq_along(x), function(i) {
         xx <- x[[i]]
-        n <- min(len2 <- length(xx), len)
+        len2 <- length(xx)
+        n <- min(len2, len)
 
 
         # this will give us the location of the first FALSE value, but what we
@@ -116,13 +117,18 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
 
 
         # otherwise, return the appropriate number of .. and the tail of the path
-        value <- c(rep("..", len - n), xx[seq.int(n + 1L, length.out = len2 - n)])
+        # if there are no .. to add, add . instead
+        value <- c(
+            if (len - n <= 0L) ".",
+            rep("..", len - n),
+            xx[seq.int(n + 1L, length.out = len2 - n)]
+        )
 
 
-        # this happens when the 'path', and 'relative.to' and equal
-        # simply return "."
-        if (length(value) <= 0L)
-            "."
-        else paste(value, collapse = "/")
+        paste(value, collapse = "/")
     }, FUN.VALUE = "")
 }
+
+
+relpath <- as.rel.path
+formals(relpath)["relative.to"] <- alist(getwd())
