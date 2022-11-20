@@ -50,11 +50,14 @@ or tarball), and is used by
 \command{R CMD check} will check an \R package (specified by a tarball) for
 possible errors in code, documentation, tests, and much more.
 
+#ifdef windows
 If, when you execute one of the previous commands, you see the following error
 message: \dQuote{\sQuote{R} is not recognized as an internal or external
 command, operable program or batch file.}, see section \strong{Ease of Use on
 Windows}.
+#endif
 }
+#ifdef windows
 \section{Ease of Use on Windows}{
 Under Unix-alikes, it is easy to invoke an \R session from a shell by typing
 the name of the \R executable you wish to run. On Windows, you should see
@@ -115,6 +118,7 @@ while the second prints information about the version of \R currently being run.
 If you have multiple versions of \R installed, make sure this is the version of
 \R you wish to run.
 }
+#endif
 \section{Where are my R executable files located?}{
 In an \R session, you can find the location of your \R executable files with the
 following command:
