@@ -124,15 +124,18 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
         )
 
 
-        # this happens when the 'path', and 'relative.to' and equal
+        # this happens when 'path' and 'relative.to' are equal
         # simply return "."
         if (length(value) <= 0L)
             "."
 
 
         # the path should always start with ./ or ../
-        # this avoids confusion for paths beginning with hyphen in command line
-        # applications and for paths beginning with space (unix only)
+        #
+        # in command line applications, this avoids confusion for paths which
+        # beginning with hyphen
+        #
+        # for unix only, it avoids confusion for paths beginning with space
         else if (!(value[[1L]] %in% c(".", "..")))
             paste(c(".", value), collapse = "/")
         else paste(value, collapse = "/")

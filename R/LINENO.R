@@ -130,4 +130,3 @@ source2 <- function (file, envir = parent.frame())
     }
     invisible(yy)
 }
-environment(source2) <- getNamespace("this.path")
