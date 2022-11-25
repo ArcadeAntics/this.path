@@ -11,6 +11,7 @@ extern SEXP
     thispathassocwfileSymbol ,
     thispathdoneSymbol       ,
     insidesourcewashereSymbol,
+    thispathnSymbol          ,
     _normalizePathSymbol     ,
     _normalizeAgainstSymbol  ,
     stopSymbol               ,
@@ -35,6 +36,8 @@ extern SEXP
     sys_frameSymbol          ,
     sys_functionSymbol       ,
     sys_nframeSymbol         ,
+    sys_parentSymbol         ,
+    sys_parentsSymbol        ,
     ofileSymbol              ,
     owdSymbol                ,
     old_dirSymbol            ,
@@ -55,7 +58,9 @@ extern SEXP
     parent_frameSymbol       ,
     invisibleSymbol          ,
     getConnectionSymbol      ,
-    as_environmentSymbol     ;
+    as_environmentSymbol     ,
+    oenvirSymbol             ,
+    withArgsSymbol           ;
 
 
 #endif

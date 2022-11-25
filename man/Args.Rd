@@ -101,17 +101,14 @@ this.path::asArgs(
 )
 
 
-this.path:::write.code(file = FILE <- tempfile(), {
+FILE <- tempfile(fileext = ".R")
+this.path:::write.code({
     withAutoprint({
-
-
         this.path::this.path()
         this.path::fileArgs()
         this.path::progArgs()
-
-
-    }, verbose = FALSE)
-})
+    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
+}, FILE)
 
 
 # wrap your source call with a call to 'withArgs'
@@ -135,4 +132,30 @@ this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE,
 # sys.source(FILE, environment()) |> this.path::withArgs(
 #     letters, pi + 1i * exp(1)
 # )
+
+
+# withArgs() also works with inside.source() and wrap.source()
+sourcelike <- function (file, envir = parent.frame())
+{
+    file <- inside.source(file)
+    envir <- as.environment(envir)
+    exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
+    for (i in seq_along(exprs)) eval(exprs[i], envir)
+}
+this.path::withArgs(sourcelike(FILE), letters)
+
+
+sourcelike2 <- function (file, envir = parent.frame())
+{
+    envir <- as.environment(envir)
+    exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
+    for (i in seq_along(exprs)) eval(exprs[i], envir)
+}
+sourcelike3 <- function (file, envir = parent.frame())
+{
+    envir <- as.environment(envir)
+    wrap.source(sourcelike2(file = file, envir = envir))
+}
+this.path::withArgs(sourcelike3(FILE), letters)
+this.path::withArgs(wrap.source(sourcelike2(FILE)), letters)
 \dontshow{unlink(FILE)}}

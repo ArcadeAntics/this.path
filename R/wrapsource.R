@@ -18,4 +18,4 @@ wrap.source <- function (expr, path.only = FALSE, character.only = path.only,
 inside.source <- wrap.source
 names(formals(inside.source))[[1L]] <- "file"
 body(inside.source)[2L] <- alist(C_insidesource)
-body(inside.source) <- as.call(append(as.list(body(inside.source)), alist(missing(file)), 2L))
+# body(inside.source) <- as.call(append(as.list(body(inside.source)), alist(missing(file)), 2L))

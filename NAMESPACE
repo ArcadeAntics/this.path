@@ -43,6 +43,12 @@ export(from.shell, is.main)
 export(OS.type)
 
 
+# LINENO.R               ----
+
+
+export(LINENO)
+
+
 # path.join.R            ----
 
 

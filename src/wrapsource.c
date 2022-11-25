@@ -93,7 +93,7 @@ SEXP do_setprseen2(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(promises) != LISTSXP)
         errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist");
     SEXP x;
-    for (x = promises ; x != R_NilValue ; x = CDR(x)) {
+    for (x = promises; x != R_NilValue; x = CDR(x)) {
         if (TYPEOF(CAR(x)) != PROMSXP)
             errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist of promises, not type '%s'", type2char(TYPEOF(CAR(x))));
         if (PRSEEN(CAR(x)) != 1)
@@ -109,9 +109,57 @@ SEXP do_setprseen2(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
+    SEXP expr = findVarInFrame(rho, exprSymbol);
+    if (expr == R_UnboundValue)
+        error(_("object '%s' not found"), EncodeChar(PRINTNAME(exprSymbol)));
+    if (expr == R_MissingArg)
+        error(_("argument \"%s\" is missing, with no default"), EncodeChar(PRINTNAME(exprSymbol)));
+
+
     int nprotect = 0;
+    args = CDR(args);  /* skip C_wrapsource */
+
+
+    /* determine context number for .this.path(get.frame.number = TRUE) */
+    int context_number;
+    int nframe = asInteger(eval(lang1(sys_nframeSymbol), rho));
+    // Rprintf("sys.nframe() = %d\n", nframe);
+
+
+    if (nframe < 2)
+        context_number = 1;
+    else {
+        int sys_parent = asInteger(eval(lang1(sys_parentSymbol), rho));
+        // Rprintf("sys.parent() = %d\n", sys_parent);
+        /* this will happen for something like:
+           wrapper <- function(...) {
+               force(wrap.source(sourcelike(...)))
+           }
+
+           but won't for something like this:
+           wrapper <- function(...) {
+               wrap.source(sourcelike(...))
+           }
+         */
+        if (nframe - 1 != sys_parent)
+            context_number = nframe;
+        else {
+            SEXP tmp = lang2(sys_functionSymbol, ScalarInteger(sys_parent));
+            PROTECT(tmp);
+            SEXP function = eval(tmp, rho);
+            PROTECT(function);
+            if (TYPEOF(function) != CLOSXP)
+                context_number = nframe;
+            else if (identical(function, R_getNSValue(R_NilValue, this_pathSymbol, withArgsSymbol, FALSE)))
+                context_number = nframe;
+            else
+                context_number = sys_parent;
+            UNPROTECT(2);
+        }
+    }
+    // Rprintf("context_number = %d\n", context_number);
 
 
 #define flag_declarations                                      \
@@ -149,7 +197,6 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     flag_declarations;
-    args = CDR(args);
     flag_definitions;
 
 
@@ -164,6 +211,7 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP ptr = R_MakeExternalPtr(NULL, R_NilValue, R_NilValue);
     PROTECT(ptr); nprotect++;
+    MARK_NOT_MUTABLE(ptr);
 
 
     SEXP promises = R_NilValue;
@@ -171,12 +219,11 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* we will be modifying the PRSEEN values of the promises,
      * but we need to change them to 0 or 2 depending upon whether
-     * this returns a value as normal or the promises get interupted
+     * this returns a value as normal or the promises get interrupted
      *
      * save the root promise, the original code of the promise,
      * and make an on.exit() call that will restore said promise
      */
-    MARK_NOT_MUTABLE(ptr);
     eval(lang2(on_exitSymbol, lang3(External2Symbol, C_setprseen2Symbol, ptr)), rho);
 
 
@@ -197,18 +244,30 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
     } while (0)
 
 
+#define set_thispathn(n, frame)                                \
+    do {                                                       \
+        SEXP thispathn = ScalarInteger((n));                   \
+        INCREMENT_NAMED(thispathn);                            \
+        defineVar(thispathnSymbol, thispathn, (frame));        \
+        R_LockBinding(thispathnSymbol, (frame));               \
+    } while (0)
+
+
 #define set_prvalues_then_return(val)                          \
     do {                                                       \
-        for (SEXP x = promises ; x != R_NilValue ; x = CDR(x)) {\
+        set_thispathn(context_number, frame);                  \
+        SEXP tmp = (val);                                      \
+        PROTECT(tmp); nprotect++;                              \
+        ENSURE_NAMEDMAX(tmp);                                  \
+        for (SEXP x = promises; x != R_NilValue; x = CDR(x)) { \
             SEXP p = CAR(x);                                   \
             SET_PRSEEN (p, 0);                                 \
-            SET_PRVALUE(p, (val));                             \
-            ENSURE_NAMEDMAX((val));                            \
+            SET_PRVALUE(p, tmp);                               \
             SET_PRENV  (p, R_NilValue);                        \
         }                                                      \
         R_SetExternalPtrProtected(ptr, R_NilValue);            \
         UNPROTECT(nprotect);                                   \
-        return (val);                                          \
+        return tmp;                                            \
     } while (0)
 
 
@@ -222,8 +281,8 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-    SEXP expr = PREXPR(promise),
-         env  = PRENV (promise);
+         expr = PREXPR(promise);
+    SEXP env  = PRENV (promise);
 
 
     if (expr == R_MissingArg)
@@ -233,8 +292,10 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     if (length(expr) < 2) {
-        SEXP val = eval(PRCODE(promise), env);
-        set_prvalues_then_return(val);
+        assign_null(frame);
+        assign_done(frame);
+        set_R_Visible(1);
+        set_prvalues_then_return(eval(PRCODE(promise), env));
     }
 
 
@@ -412,8 +473,7 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
         assign_null(frame);
         assign_done(frame);
         set_R_Visible(1);
-        SEXP tmp = eval(expr, env);
-        set_prvalues_then_return(tmp);
+        set_prvalues_then_return(eval(expr, env));
     }
 
 
@@ -501,42 +561,61 @@ SEXP findfiletheneval(SEXP call, SEXP op, SEXP args, SEXP rho)
     )
 
 
-    SEXP tmp = eval(expr, env);
-    set_prvalues_then_return(tmp);
+    set_prvalues_then_return(eval(expr, env));
 
 
 #undef set_prvalues_then_return
 }
 
 
-SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
-{
-    SEXP expr = findVarInFrame(rho, exprSymbol);
-    if (expr == R_UnboundValue)
-        error(_("object '%s' not found"), EncodeChar(PRINTNAME(exprSymbol)));
-    if (expr == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), EncodeChar(PRINTNAME(exprSymbol)));
-    // FIXME: move all from findfiletheneval into this function
-    return findfiletheneval(call, op, args, rho);
-}
-
-
 SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int nprotect = 0;
+    args = CDR(args);  /* skip C_insidesource */
 
 
-    int n = asInteger(eval(lang1(sys_nframeSymbol), rho));
-    if (n < 2)
-        error("inside.source() must be called within another function");
+    int sys_parent = asInteger(eval(lang1(sys_parentSymbol), rho));
+    if (sys_parent < 1)
+        error("inside.source() cannot be used within the global environment");
 
 
-    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(n - 1));
+    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(sys_parent));
     PROTECT(expr);
     SEXP function = eval(expr, rho);
-    UNPROTECT(1);
+    PROTECT(function);
     if (TYPEOF(function) != CLOSXP)
         error("inside.source() cannot be used within a '%s', possible errors with eval?", type2char(TYPEOF(function)));
+
+
+    /* ensure 'inside.source()' is not called from one of the source-like functions */
+    if (identical(function, getInFrame(sourceSymbol, R_BaseEnv, FALSE)))
+        error("inside.source() cannot be called within source()");
+    else if (identical(function, getInFrame(sys_sourceSymbol, R_BaseEnv, FALSE)))
+        error("inside.source() cannot be called within sys.source()");
+
+
+    SEXP debugSource = get_debugSource;
+    if (gui_rstudio && identical(function, debugSource))
+        error("inside.source() cannot be called within debugSource() in RStudio");
+
+
+    int testthat_loaded;
+    SEXP source_file = get_source_file(testthat_loaded);
+    if (testthat_loaded && identical(function, source_file))
+        error("inside.source() cannot be called within source_file() in package testthat");
+
+
+    int knitr_loaded;
+    SEXP knit = get_knit(knitr_loaded);
+    if (knitr_loaded && identical(function, knit))
+        error("inside.source() cannot be called within knit() in package knitr");
+
+
+    if (identical(function, get_wrap_source))
+        error("inside.source() cannot be called within wrap.source() in package this.path");
+
+
+    UNPROTECT(2);  /* expr & function */
 
 
     SEXP ofile, frame;
@@ -546,13 +625,33 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(frame); nprotect++;
 
 
-    args = CDR(args);
-    int missing_file;
+    /* ensure 'inside.source()' isn't evaluated in an invalid environment */
+    if (frame == R_GlobalEnv)
+        error("inside.source() cannot be used within the global environment");
+    else if (frame == R_BaseEnv)
+        error("inside.source() cannot be used within the base environment");
+    else if (frame == R_EmptyEnv)
+        error("inside.source() cannot be used within the empty environment");
+    else if (R_IsPackageEnv(frame))
+        error("inside.source() cannot be used within a package environment");
+    else if (R_IsNamespaceEnv(frame))
+        error("inside.source() cannot be used within a namespace environment");
+    else if (R_EnvironmentIsLocked(frame))
+        error("inside.source() cannot be used within a locked environment");
+
+
+    if (R_existsVarInFrame(frame, insidesourcewashereSymbol))
+        error("inside.source() cannot be called more than once within an environment");
+    if (R_existsVarInFrame(frame, thispathdoneSymbol))
+        error("inside.source() cannot be called within this environment");
+
+
     /* why would this be NA?? idk but might as well test for it anyway */
-    missing_file = asFlag(CAR(args), "missing(file)"); args = CDR(args);
+    int missing_file = asFlag(eval(lang2(missingSymbol, fileSymbol), rho), "missing(file)");
     if (missing_file) {
         assign_null(frame);
         assign_done(frame);
+        set_thispathn(sys_parent, frame);
         set_R_Visible(1);
         UNPROTECT(nprotect);
         return R_MissingArg;
@@ -604,6 +703,7 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     defineVar(insidesourcewashereSymbol, R_NilValue, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
+    set_thispathn(sys_parent, frame);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
     return returnvalue;
 }
@@ -611,3 +711,4 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #undef flag_definitions
 #undef flag_declarations
+#undef set_thispathn

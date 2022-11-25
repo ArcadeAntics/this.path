@@ -109,7 +109,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"makepromise" , (DL_FUNC) &do_makepromise , -1},
     {"setprseen2"  , (DL_FUNC) &do_setprseen2  ,  1},
     {"wrapsource"  , (DL_FUNC) &do_wrapsource  , 20},
-    {"insidesource", (DL_FUNC) &do_insidesource, 21},
+    {"insidesource", (DL_FUNC) &do_insidesource, 20},
 
 
     {NULL, NULL, 0}

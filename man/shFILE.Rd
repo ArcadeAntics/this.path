@@ -43,10 +43,9 @@ In Windows, the normalized path will use / as the file separator.
 \code{\link{this.path}}, \code{\link{here}}
 }
 \examples{
-this.path:::write.code(file = FILE <- tempfile(), {
-
+FILE <- tempfile(fileext = ".R")
+this.path:::write.code({
     withAutoprint({
-
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {
@@ -56,11 +55,8 @@ this.path:::write.code(file = FILE <- tempfile(), {
                 "  use this to your advantage in a similar manner, doing\\n",
                 "  arbitrary things only if 'FILE' isn't found")
         })
-
-
-    }, width.cutoff = 60L, verbose = FALSE)
-
-})
+    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
+}, FILE)
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE))
 
 
@@ -69,7 +65,7 @@ for (expr in c("shFILE(original = TRUE)",
                "shFILE()",
                "shFILE(default = NULL)"))
 {
+    cat("\\n\\n")
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
-    cat("\\n")
 }
 \dontshow{unlink(FILE)}}

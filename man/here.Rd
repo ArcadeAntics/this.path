@@ -56,7 +56,8 @@ the executing script's directory.
 % this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), file = FILE)
 % \dontshow{unlink(FILE)}}
 \examples{
-this.path:::write.code(file = FILE <- tempfile(), {
+FILE <- tempfile(fileext = ".R")
+this.path:::write.code({
 
 
     this.path::here()
@@ -72,7 +73,7 @@ this.path:::write.code(file = FILE <- tempfile(), {
     this.path::here("script2.R")
 
 
-})
+}, FILE)
 
 
 source(FILE, echo = TRUE, verbose = FALSE)

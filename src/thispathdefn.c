@@ -387,3 +387,6 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
     /* force the promise */
     eval(e, R_EmptyEnv);
 }
+
+
+int gui_rstudio = -1;

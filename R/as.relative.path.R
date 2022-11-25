@@ -119,13 +119,23 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
         # otherwise, return the appropriate number of .. and the tail of the path
         # if there are no .. to add, add . instead
         value <- c(
-            if (len - n <= 0L) ".",
             rep("..", len - n),
             xx[seq.int(n + 1L, length.out = len2 - n)]
         )
 
 
-        paste(value, collapse = "/")
+        # this happens when the 'path', and 'relative.to' and equal
+        # simply return "."
+        if (length(value) <= 0L)
+            "."
+
+
+        # the path should always start with ./ or ../
+        # this avoids confusion for paths beginning with hyphen in command line
+        # applications and for paths beginning with space (unix only)
+        else if (!(value[[1L]] %in% c(".", "..")))
+            paste(c(".", value), collapse = "/")
+        else paste(value, collapse = "/")
     }, FUN.VALUE = "")
 }
 

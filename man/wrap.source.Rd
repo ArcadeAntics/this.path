@@ -139,11 +139,10 @@ determine the file. As such, it is less desirable than \code{inside.source()}
 when the option is available. I can think of exactly one scenario in which
 \code{wrap.source()} might be preferable: suppose there is a \code{source}-like
 function \code{sourcelike()} in a foreign package (a package for which you do
-not have write permission). Suppose that you write your own function to wrap
-\code{sourcelike()} in which you do not have the name of the file
-argument:
+not have write permission). Suppose that you write your own function in which
+the formals are \code{(\dots)} to wrap \code{sourcelike()}:
 
-\verb{wrapper <- function (...)
+\preformatted{wrapper <- function (...)
 {
     # possibly more args to wrap.source()
     wrap.source(sourcelike(...))
@@ -152,14 +151,23 @@ argument:
 This is the only scenario in which \code{wrap.source()} is preferable, since
 extracting the file from the \code{\dots} list would be a pain. Then again,
 you could simply change the formals of \code{wrapper()} from \code{(\dots)} to
-\verb{(file, ...)}. If this does not describe your exact scenario, use
+\code{(file, \dots)}. If this does not describe your exact scenario, use
 \code{inside.source()} instead.
 }
 \value{
 for \code{wrap.source}, the result of evaluating \code{expr}.
 
 for \code{inside.source}, if \code{file} is a path, then the normalized path
-with the same attributes, otherwise \code{file} itself.
+with the same attributes, otherwise \code{file} itself. The return value of
+\code{inside.source()} should be assigned to a variable before use, something
+like:
+
+\preformatted{
+{
+    file <- inside.source(file, ...)
+    sourcelike(file)
+}
+}
 }
 \note{
 Both functions should only be called within another function.
@@ -170,26 +178,33 @@ them as follows:
 
 \describe{
   \item{\code{\link[base]{source}}}{
-\verb{wrapper <- function(file, ...) {
+\preformatted{
+wrapper <- function(file, ...) {
     file <- inside.source(file)
     source(file = file, ...)
-}}
+}
+}
   }
   \item{\code{\link[base]{sys.source}}}{
-\verb{wrapper <- function(file, ...) {
+\preformatted{
+wrapper <- function(file, ...) {
     file <- inside.source(file, path.only = TRUE)
     sys.source(file = file, ...)
-}}
+}
+}
   }
   \item{\debugSource{} in \sQuote{RStudio}}{
-\verb{wrapper <- function(fileName, ...) {
+\preformatted{
+wrapper <- function(fileName, ...) {
     fileName <- inside.source(fileName, character.only = TRUE,
         conv2utf8 = TRUE, allow.blank.string = TRUE)
     debugSource(fileName = fileName, ...)
-}}
+}
+}
   }
   \item{\code{\link[testthat:source_file]{testthat::source_file}}}{
-\verb{wrapper <- function(path, ...) {
+\preformatted{
+wrapper <- function(path, ...) {
     # before testthat_3.1.2, source_file() used base::readLines() to
     # read the input lines. changed in 3.1.2, source_file() uses
     # brio::read_lines() which normalizes 'path' before reading,
@@ -197,22 +212,24 @@ them as follows:
     path <- inside.source(path, path.only = TRUE,
         ignore.all = as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
     testthat::source_file(path = path, ...)
-}}
+}
+}
   }
   \item{\code{\link[knitr:knit]{knitr::knit}}}{
-\verb{wrapper <- function(input, ...) {
+\preformatted{
+wrapper <- function(input, ...) {
     # this works for the most part, but won't work in child mode
     input <- inside.source(input)
     knitr::knit(input = input, ...)
-}}
+}
+}
   }
 }
 }
 \examples{
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
-    cat("> this.path::this.path(verbose = TRUE)\\n")
-    print(this.path::this.path(verbose = TRUE))
+    this.path::this.path(verbose = TRUE)
 }, FILE)
 
 
@@ -223,7 +240,12 @@ sourcelike <- function (file, envir = parent.frame())
     file <- inside.source(file)
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
-    for (i in seq_along(exprs)) eval(exprs[i], envir)
+    # this prints nicely
+    source(local = envir, echo = TRUE, exprs = exprs,
+        spaced = TRUE, verbose = FALSE, max.deparse.length = Inf)
+    # you could alternatively do:
+    # 'for (i in seq_along(exprs)) eval(exprs[i], envir)'
+    # which does no pretty printing
 }
 
 
@@ -239,9 +261,9 @@ sourcelike2 <- function (pathname, envir = globalenv())
         stop(gettextf("'\%s' is not an existing file",
              pathname, domain = "R-base"))
     envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = normalizePath(pathname),
-                   srcfile = NULL, keep.source = FALSE)
-    for (i in seq_along(exprs)) eval(exprs[i], envir)
+    exprs <- parse(n = -1, file = pathname, srcfile = NULL, keep.source = FALSE)
+    source(local = envir, echo = TRUE, exprs = exprs,
+        spaced = TRUE, verbose = FALSE, max.deparse.length = Inf)
 }
 
 

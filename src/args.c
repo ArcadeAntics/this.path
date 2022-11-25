@@ -2,6 +2,9 @@
 #include <Rinternals.h>
 
 
+#include "translations.h"
+
+
 
 
 
@@ -20,12 +23,12 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
     else if (nargs == 1) {
         n = asInteger(CADR(args));
         if (n == NA_INTEGER || n < 0)
-            errorcall(call, "invalid first argument, must be coercible to non-negative integer");
+            errorcall(call, _("argument must be coercible to non-negative integer"));
     }
     else errorcall(call, "%d arguments passed to .External(%s) which requires 0 or 1", nargs, "C_asargs");
 
 
-    SEXP dots = findVarInFrame(rho, install("..."));
+    SEXP dots = findVarInFrame(rho, R_DotsSymbol);
     if (dots == R_UnboundValue)
         error("could not find the ... list; should never happen, please report!");
 
@@ -36,10 +39,11 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (dots_length <= 0) return allocVector(STRSXP, 0);
 
 
-    dots = nthcdr(dots, n);
+    if (n) dots = nthcdr(dots, n);
 
 
-    SEXP x = PROTECT(allocVector(VECSXP, dots_length)); nprotect++;
+    SEXP x = allocVector(VECSXP, dots_length);
+    PROTECT(x); nprotect++;
     int i;
     SEXP d, xi;
 
@@ -54,10 +58,8 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-    SEXP expr = PROTECT(lang2(
-        install(".asArgs"),
-        x
-    )); nprotect++;
+    SEXP expr = lang2(install(".asArgs"), x);
+    PROTECT(expr); nprotect++;
     SEXP value = eval(expr, rho);
     UNPROTECT(nprotect);
     return value;

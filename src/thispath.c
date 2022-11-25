@@ -103,9 +103,6 @@ SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-int gui_rstudio = -1;
-
-
 SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP returnthis = NULL;
@@ -177,55 +174,10 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
          wrap_source;
 
 
-    if (gui_rstudio < 0)
-        gui_rstudio = asLogical(getInFrame(gui_rstudioSymbol, ENCLOS(rho), FALSE));
-    if (gui_rstudio)
-        debugSource = getInFrame(debugSourceSymbol, ENCLOS(rho), FALSE);
-    else
-        debugSource = R_NilValue;
-
-
-    testthat_loaded = (findVarInFrame(R_NamespaceRegistry, testthatSymbol) != R_UnboundValue);
-    if (testthat_loaded)
-        source_file = R_getNSValue(R_NilValue, testthatSymbol, source_fileSymbol, TRUE);
-    else
-        source_file = R_NilValue;
-
-
-    knitr_loaded = (findVarInFrame(R_NamespaceRegistry, knitrSymbol) != R_UnboundValue);
-    if (knitr_loaded)
-        knit = R_getNSValue(R_NilValue, knitrSymbol, knitSymbol, TRUE);
-    else
-        knit = R_NilValue;
-
-
-    wrap_source = R_getNSValue(R_NilValue, this_pathSymbol, wrap_sourceSymbol, FALSE);
-
-
-/* doesn't work because sys.function() duplicates its return value */
-// #define identical(x, y) ((x) == (y))
-
-
-/* num.eq = TRUE                 num_as_bits = FALSE      0
-   single.NA = TRUE              NA_as_bits = FALSE       0
-   attrib.as.set = TRUE          attr_by_order = FALSE    0
-   ignore.bytecode = TRUE        use_bytecode = FALSE     0
-   ignore.environment = FALSE    use_cloenv = TRUE        16
-   ignore.srcref = TRUE          use_srcref = FALSE       0
-   extptr.as.ref = FALSE         extptr_as_ref = FALSE    0
- */
-// #define identical(x, y) R_compute_identical((x), (y), 16)
-
-
-/* num.eq = FALSE                num_as_bits = TRUE       1
-   single.NA = FALSE             NA_as_bits = TRUE        2
-   attrib.as.set = FALSE         attr_by_order = TRUE     4
-   ignore.bytecode = FALSE       use_bytecode = TRUE      8
-   ignore.environment = FALSE    use_cloenv = TRUE        16
-   ignore.srcref = FALSE         use_srcref = TRUE        32
-   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
- */
-#define identical(x, y) R_compute_identical((x), (y), 127)
+    debugSource = get_debugSource;
+    source_file = get_source_file(testthat_loaded);
+    knit        = get_knit(knitr_loaded);
+    wrap_source = get_wrap_source;
 
 
     SEXP which = allocVector(INTSXP, 1);
@@ -291,7 +243,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
             }
 
 
-#define returnfile(character_only, file_only, maybe_decrement, \
+#define returnfile(character_only, file_only, which,           \
     promise_must_be_forced, fun_name)                          \
             thispathofile = findVarInFrame(frame, thispathofileSymbol);\
             /* don't check right away that this is missing, in case another */\
@@ -319,12 +271,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                         UNPROTECT(nprotect + 1);               \
                         if (findVarInFrame(frame, thispathassocwfileSymbol) == R_UnboundValue)\
                             return ScalarInteger(NA_INTEGER);  \
-                        if (maybe_decrement) {                 \
-                            if (iwhich[0] >= 2) {              \
-                                iwhich[0]--;                   \
-                            }                                  \
-                        }                                      \
-                        return which;                          \
+                        return (which);                        \
                     }                                          \
                     else {                                     \
                         thispatherror = duplicate(thispatherror);\
@@ -340,12 +287,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
             }                                                  \
             if (get_frame_number) {                            \
                 UNPROTECT(nprotect + 1);                       \
-                if (maybe_decrement) {                         \
-                    if (iwhich[0] >= 2) {                      \
-                        iwhich[0]--;                           \
-                    }                                          \
-                }                                              \
-                return which;                                  \
+                return (which);                                \
             }                                                  \
             if (thispathofile == R_UnboundValue)               \
                 error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));\
@@ -403,7 +345,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
             returnfile(
                 /* int character_only         = */ FALSE,
                 /* int file_only              = */ FALSE,
-                /* int maybe_decrement        = */ FALSE,
+                /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
                 "source"
@@ -461,9 +403,9 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 )
             }
             returnfile(
-                /* int character_only         = */ TRUE ,
-                /* int file_only              = */ TRUE ,
-                /* int maybe_decrement        = */ FALSE,
+                /* int character_only         = */ TRUE,
+                /* int file_only              = */ TRUE,
+                /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
                 "sys.source"
@@ -521,9 +463,9 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 )
             }
             returnfile(
-                /* int character_only         = */ TRUE ,
+                /* int character_only         = */ TRUE,
                 /* int file_only              = */ FALSE,
-                /* int maybe_decrement        = */ FALSE,
+                /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
                 "debugSource in RStudio"
@@ -582,9 +524,9 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 )
             }
             returnfile(
-                /* int character_only         = */ TRUE ,
-                /* int file_only              = */ TRUE ,
-                /* int maybe_decrement        = */ FALSE,
+                /* int character_only         = */ TRUE,
+                /* int file_only              = */ TRUE,
+                /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
                 "source_file in package testthat"
@@ -594,10 +536,11 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
         else if (knitr_loaded && identical(function, knit)) {
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
-                if (findVarInFrame(frame, install("oenvir")) == R_UnboundValue) {
+                if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
                     UNPROTECT(1);
                     continue;
                 }
+                /* missing(input) */
                 SEXP expr = lang2(missingSymbol, inputSymbol);
                 PROTECT(expr);
                 int missing_input = asLogical(eval(expr, frame));
@@ -645,7 +588,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
             returnfile(
                 /* int character_only         = */ FALSE,
                 /* int file_only              = */ FALSE,
-                /* int maybe_decrement        = */ FALSE,
+                /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
                 "knit in package knitr"
@@ -661,8 +604,8 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
             returnfile(
                 /* int character_only         = */ FALSE,
                 /* int file_only              = */ FALSE,
-                /* int maybe_decrement        = */ TRUE ,
-                /* int promise_must_be_forced = */ TRUE ,
+                /* SEXP which                 = */ getInFrame(thispathnSymbol, frame, FALSE),
+                /* int promise_must_be_forced = */ TRUE,
                 /* const char *fun_name       = */
                 "wrap.source in package this.path"
             );
@@ -670,11 +613,17 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
         else if (findVarInFrame(frame, insidesourcewashereSymbol) != R_UnboundValue) {
+            SEXP thispathn = getInFrame(thispathnSymbol, frame, FALSE);
+            /* this could happen with eval() or similar */
+            if (iwhich[0] != asInteger(thispathn)) {
+                UNPROTECT(1);
+                continue;
+            }
             returnfile(
                 /* int character_only         = */ FALSE,
                 /* int file_only              = */ FALSE,
-                /* int maybe_decrement        = */ TRUE ,
-                /* int promise_must_be_forced = */ TRUE ,
+                /* SEXP which                 = */ thispathn,
+                /* int promise_must_be_forced = */ TRUE,
                 /* const char *fun_name       = */
                 "inside.source in package this.path"
             );
@@ -690,6 +639,5 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 #undef toplevel
-#undef identical
 #undef returnfile
 }

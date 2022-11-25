@@ -10,6 +10,7 @@ SEXP
     thispathassocwfileSymbol  = NULL,
     thispathdoneSymbol        = NULL,
     insidesourcewashereSymbol = NULL,
+    thispathnSymbol           = NULL,
     _normalizePathSymbol      = NULL,
     _normalizeAgainstSymbol   = NULL,
     stopSymbol                = NULL,
@@ -34,6 +35,8 @@ SEXP
     sys_frameSymbol           = NULL,
     sys_functionSymbol        = NULL,
     sys_nframeSymbol          = NULL,
+    sys_parentSymbol          = NULL,
+    sys_parentsSymbol         = NULL,
     ofileSymbol               = NULL,
     owdSymbol                 = NULL,
     old_dirSymbol             = NULL,
@@ -54,7 +57,9 @@ SEXP
     parent_frameSymbol        = NULL,
     invisibleSymbol           = NULL,
     getConnectionSymbol       = NULL,
-    as_environmentSymbol      = NULL;
+    as_environmentSymbol      = NULL,
+    oenvirSymbol              = NULL,
+    withArgsSymbol            = NULL;
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -74,6 +79,8 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     "._this.path::done_."
 #define insidesourcewashereChar                                \
     "._this.path::inside.source() was here_."
+#define thispathnChar                                          \
+    "._this.path::n_."
     thispathofileSymbol       = install(thispathofileChar);
     thispathfileSymbol        = install(thispathfileChar);
     thispathformsgSymbol      = install(thispathformsgChar);
@@ -81,6 +88,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     thispathassocwfileSymbol  = install(thispathassocwfileChar);
     thispathdoneSymbol        = install(thispathdoneChar);
     insidesourcewashereSymbol = install(insidesourcewashereChar);
+    thispathnSymbol           = install(thispathnChar);
     _normalizePathSymbol      = install(".normalizePath");
     _normalizeAgainstSymbol   = install(".normalizeAgainst");
     stopSymbol                = install("stop");
@@ -105,6 +113,8 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     sys_frameSymbol           = install("sys.frame");
     sys_functionSymbol        = install("sys.function");
     sys_nframeSymbol          = install("sys.nframe");
+    sys_parentSymbol          = install("sys.parent");
+    sys_parentsSymbol         = install("sys.parents");
     ofileSymbol               = install("ofile");
     owdSymbol                 = install("owd");
     old_dirSymbol             = install("old_dir");
@@ -126,6 +136,8 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     invisibleSymbol           = install("invisible");
     getConnectionSymbol       = install("getConnection");
     as_environmentSymbol      = install("as.environment");
+    oenvirSymbol              = install("oenvir");
+    withArgsSymbol            = install("withArgs");
 
 
     SEXP value = allocVector(VECSXP, 15);

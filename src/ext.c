@@ -194,7 +194,7 @@ const char *maybe_add_dot(const char *s)
                 SEXP expr = lang2(                             \
                     findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),\
                     lang2(                                     \
-                        findVarInFrame(R_BaseEnv, install("quote")),\
+                        findVarInFrame(R_BaseEnv, R_QuoteSymbol),\
                         CADDR(args)                            \
                     )                                          \
                 );                                             \

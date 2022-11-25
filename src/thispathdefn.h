@@ -97,14 +97,6 @@ extern void stop(SEXP cond);
 
 typedef struct gzconn {
     Rconnection con;
-    // int cp; /* compression level */
-    // z_stream s;
-    // int z_err, z_eof;
-    // uLong crc;
-    // Byte buffer[Z_BUFSIZE];
-    // int nsaved;
-    // char saved[2];
-    // Rboolean allow;
 } *Rgzconn;
 
 
@@ -390,6 +382,59 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
 
 #define sys_call(which, rho) eval(lang2(sys_callSymbol, (which)), (rho))
 #define getCurrentCall(rho) sys_call(lang1(sys_nframeSymbol), (rho))
+
+
+/* doesn't work in general, for example sys.function() duplicates its return value */
+// #define identical(x, y) ((x) == (y))
+
+
+/* this is the default implementation of identical() */
+/* num.eq = TRUE                 num_as_bits = FALSE      0
+   single.NA = TRUE              NA_as_bits = FALSE       0
+   attrib.as.set = TRUE          attr_by_order = FALSE    0
+   ignore.bytecode = TRUE        use_bytecode = FALSE     0
+   ignore.environment = FALSE    use_cloenv = TRUE        16
+   ignore.srcref = TRUE          use_srcref = FALSE       0
+   extptr.as.ref = FALSE         extptr_as_ref = FALSE    0
+ */
+// #define identical(x, y) R_compute_identical((x), (y), 16)
+
+
+/* num.eq = FALSE                num_as_bits = TRUE       1
+   single.NA = FALSE             NA_as_bits = TRUE        2
+   attrib.as.set = FALSE         attr_by_order = TRUE     4
+   ignore.bytecode = FALSE       use_bytecode = TRUE      8
+   ignore.environment = FALSE    use_cloenv = TRUE        16
+   ignore.srcref = FALSE         use_srcref = TRUE        32
+   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
+ */
+#define identical(x, y) R_compute_identical((x), (y), 127)
+
+
+extern int gui_rstudio;
+
+
+#define in_rstudio                                             \
+    ((gui_rstudio == -1) ? (gui_rstudio = asLogical(R_getNSValue(R_NilValue, this_pathSymbol, gui_rstudioSymbol, FALSE))) : (gui_rstudio))
+
+
+#define get_debugSource                                        \
+    ((in_rstudio) ? R_getNSValue(R_NilValue, this_pathSymbol, debugSourceSymbol, FALSE) : R_NilValue)
+
+
+#define get_source_file(name)                                  \
+    (((name) = (findVarInFrame(R_NamespaceRegistry, testthatSymbol) != R_UnboundValue)) ?\
+        (R_getNSValue(R_NilValue, testthatSymbol, source_fileSymbol, TRUE)) :\
+        (R_NilValue))
+
+
+#define get_knit(name)                                         \
+    (((name) = (findVarInFrame(R_NamespaceRegistry, knitrSymbol) != R_UnboundValue)) ?\
+        (R_getNSValue(R_NilValue, knitrSymbol, knitSymbol, TRUE)) :\
+        (R_NilValue))
+
+
+#define get_wrap_source (R_getNSValue(R_NilValue, this_pathSymbol, wrap_sourceSymbol, FALSE))
 
 
 #endif /* #ifndef THISPATHDEFN_H */

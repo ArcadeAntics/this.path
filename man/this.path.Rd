@@ -612,10 +612,9 @@ before calling \code{this.path} at least once.
 %
 %
 \examples{\dontshow{.unload.testthat <- !isNamespaceLoaded("testthat") ; .unload.knitr <- !isNamespaceLoaded("knitr")}
-this.path:::write.code(file = FILE <- tempfile(), {
-
+FILE <- tempfile(fileext = ".R")
+this.path:::write.code({
     withAutoprint({
-
         cat(sQuote(this.path::this.path(verbose = TRUE, default = {
             stop("interestingly enough, because the executing script's\\n",
                 "  path will be found, argument 'default' won't be evaluated,\\n",
@@ -624,10 +623,8 @@ this.path:::write.code(file = FILE <- tempfile(), {
                 "  manner, doing arbitrary things only if the executing\\n",
                 "  script does not exist")
         })), "\\n\\n")
-
-    }, width.cutoff = 60L, verbose = FALSE)
-
-})
+    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
+}, FILE)
 
 
 source(FILE, verbose = FALSE)
@@ -672,8 +669,8 @@ for (expr in c("this.path()",
                "this.dir(default = NULL)",
                "this.dir(default = getwd())"))
 {
+    cat("\\n\\n")
     this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
-    cat("\\n")
 }
 
 
