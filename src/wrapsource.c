@@ -640,9 +640,9 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
         error("inside.source() cannot be used within a locked environment");
 
 
-    if (R_existsVarInFrame(frame, insidesourcewashereSymbol))
+    if (findVarInFrame(frame, insidesourcewashereSymbol) != R_UnboundValue)
         error("inside.source() cannot be called more than once within an environment");
-    if (R_existsVarInFrame(frame, thispathdoneSymbol))
+    if (findVarInFrame(frame, thispathdoneSymbol) != R_UnboundValue)
         error("inside.source() cannot be called within this environment");
 
 
