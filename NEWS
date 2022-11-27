@@ -26,6 +26,18 @@ CHANGES IN this.path 1.1.0:
     * Added is.main() for determining if an expression is run in a
       top-level code environment.
 
+    * Added wrap.source() and inside.source() for implementing this.path()
+      with any source-like function.
+
+    * Added LINENO() for determining the line number of the executing
+      expression in the executing script.
+
+    * Added relpath(), a version of as.rel.path() with different default
+      argument values.
+
+    * Added OS.type, a list of TRUE/FALSE values giving more details about
+      the operating system.
+
   DEPRECATED AND DEFUNCT:
 
     * normalized.shFILE(), this.path2(), this.dir2(), and this.dir3() are

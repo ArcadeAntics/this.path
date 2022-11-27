@@ -40,10 +40,13 @@ writeLines(c(
     "#line 1218",
     "LINENO()"
 ), FILE)
-# source(FILE, echo = TRUE, keep.source = TRUE)
+# source(FILE, echo = TRUE, verbose = FALSE,
+#     max.deparse.length = Inf, keep.source = TRUE)
 #
-# 'source(echo = TRUE, keep.source = TRUE)' does
-# not respect #line directives when echoing
-# 'source2' does
-this.path:::source2(FILE)
+# 'source(echo = TRUE, keep.source = TRUE)'
+# echoes incorrectly with #line directives
+#
+# 'source2()' echoes correctly!
+this.path:::source2(FILE, echo = TRUE, verbose = FALSE,
+    max.deparse.length = Inf, keep.source = TRUE)
 \dontshow{unlink(FILE)}}

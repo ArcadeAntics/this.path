@@ -22,6 +22,14 @@
             might remove \code{fileArgs()} later.
       \item Added \code{is.main()} for determining if an expression is run in a
             top-level code environment.
+      \item Added \code{wrap.source()} and \code{inside.source()} for
+            implementing \code{this.path()} with any source-like function.
+      \item Added \code{LINENO()} for determining the line number of the
+            executing expression in the executing script.
+      \item Added \code{relpath()}, a version of \code{as.rel.path()} with
+            different default argument values.
+      \item Added \code{OS.type}, a list of \code{TRUE}/\code{FALSE} values
+            giving more details about the operating system.
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{
