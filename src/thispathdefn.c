@@ -13,7 +13,7 @@ const char *EncodeChar(SEXP x)
 }
 
 
-#ifndef _WIN32
+#if !defined(_WIN32) || R_VERSION < R_Version(4, 1, 0)
 SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
 {
     SEXP expr = lang3(exported ? R_DoubleColonSymbol : R_TripleColonSymbol, ns, name);
@@ -22,8 +22,10 @@ SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
     UNPROTECT(1);
     return expr;
 }
+#endif
 
 
+#if !defined(_WIN32)
 SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
 {
     SEXP vl;
@@ -56,18 +58,39 @@ SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
 #endif
 
 
-/* this is a dirty trick: for a gzcon(), we need access to the original
-   connection, which means we need access to the struct Rgzconn. unfortunately,
-   we cannot access this directly, so we have to define it here the same as it
-   appears in
-   https://github.com/wch/r-source/blob/50ff41b742a1ac655314be5e25897a12d3096661/src/main/connections.c#L1667
+#if R_VERSION < R_Version(4, 1, 0)
+int IS_ASCII(SEXP x)
+{
+    for (const char *s = CHAR(x); *s; s++) {
+        if (*s > 127) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+#endif
 
-   also, we need Z_BUFSIZE which appears in
-   https://github.com/wch/r-source/blob/79298c499218846d14500255efd622b5021c10ec/src/main/gzio.h#L56
 
-   hopefully R Core Team is willing to let this slide since I'm only doing this
-   for read access
- */
+Rconnection R_GetConnection2(SEXP sConn)
+{
+    if (!inherits(sConn, "connection")) error(_("invalid connection"));
+    SEXP expr = lang2(R_getNSValue(R_NilValue, thispathhelperSymbol, GetConnectionSymbol, FALSE), sConn);
+    PROTECT(expr);
+    SEXP ptr = eval(expr, R_EmptyEnv);
+    UNPROTECT(1);
+    return (Rconnection) R_ExternalPtrAddr(ptr);
+}
+
+
+Rconnection GetUnderlyingConnection(SEXP sConn)
+{
+    if (!inherits(sConn, "connection")) error(_("invalid connection"));
+    SEXP expr = lang2(R_getNSValue(R_NilValue, thispathhelperSymbol, GetUnderlyingConnectionSymbol, FALSE), sConn);
+    PROTECT(expr);
+    SEXP ptr = eval(expr, R_EmptyEnv);
+    UNPROTECT(1);
+    return (Rconnection) R_ExternalPtrAddr(ptr);
+}
 
 
 SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
@@ -125,6 +148,17 @@ SEXP summaryconnection(Rconnection Rcon)
     SET_VECTOR_ELT(value, 5, mkString(Rcon->canread ? "yes" : "no"));
     SET_STRING_ELT(names, 6, mkChar("can write"));
     SET_VECTOR_ELT(value, 6, mkString(Rcon->canwrite ? "yes" : "no"));
+    UNPROTECT(1);
+    return value;
+}
+
+
+SEXP summaryconnection2(SEXP sConn)
+{
+    if (!inherits(sConn, "connection")) error(_("invalid connection"));
+    SEXP expr = lang2(summary_connectionSymbol, sConn);
+    PROTECT(expr);
+    SEXP value = eval(expr, R_BaseEnv);
     UNPROTECT(1);
     return value;
 }
@@ -193,13 +227,28 @@ SEXP simpleError(const char *msg, SEXP call)
 
 SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
 {
-    const char *klass = EncodeChar(mkChar(Rcon->class));
+    const char *klass = EncodeChar(mkChar(get_class_from_Rconnection(Rcon)));
     const char *format = "'this.path' not implemented when source-ing a connection of class '%s'";
     char msg[strlen(format) - 2 + strlen(klass) + 1];
     sprintf(msg, format, klass);
     SEXP cond = errorCondition1(msg, call, "this.path::thisPathUnrecognizedConnectionClassError", 1);
     PROTECT(cond);
     SET_VECTOR_ELT(cond, 2, summaryconnection(Rcon));
+    SET_STRING_ELT(getAttrib(cond, R_NamesSymbol), 2, mkChar("summary"));
+    UNPROTECT(1);
+    return cond;
+}
+
+
+SEXP thisPathUnrecognizedConnectionClassError2(SEXP call, SEXP summary)
+{
+    const char *klass = EncodeChar(STRING_ELT(VECTOR_ELT(summary, 1), 0));
+    const char *format = "'this.path' not implemented when source-ing a connection of class '%s'";
+    char msg[strlen(format) - 2 + strlen(klass) + 1];
+    sprintf(msg, format, klass);
+    SEXP cond = errorCondition1(msg, call, "this.path::thisPathUnrecognizedConnectionClassError", 1);
+    PROTECT(cond);
+    SET_VECTOR_ELT(cond, 2, summary);
     SET_STRING_ELT(getAttrib(cond, R_NamesSymbol), 2, mkChar("summary"));
     UNPROTECT(1);
     return cond;

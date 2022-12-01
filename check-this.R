@@ -7,6 +7,32 @@ essentials:::check.this(  # this.path
 )
 
 
+local({
+    unloadNamespace("this.path.helper")
+    FILE <- tempfile(fileext = ".R")
+    on.exit(unlink(FILE))
+    writeLines("this.path::this.path()", FILE)
+    conn1 <- file(FILE)
+    on.exit(close(conn1), add = TRUE, after = FALSE)
+    source(conn1, echo = TRUE)
+    conn2 <- gzcon(file(FILE, "rb"))
+    on.exit(close(conn2), add = TRUE, after = FALSE)
+    cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
+    source(conn2, echo = TRUE)
+    cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
+})
+
+
+# R_INCLUDE_DIR           C:/PROGRA~1/R/R-4.2.2/include
+# R_INSTALL_PKG           this.path
+# R_LIBRARY_DIR           C:/Users/andre/AppData/Local/R/win-library/4.2
+# R_LIBS_SITE             C:/PROGRA~1/R/R-4.2.2/site-library
+# R_LIBS_USER             C:\Users\andre\AppData\Local/R/win-library/4.2
+# R_OSTYPE                windows
+# R_PACKAGE_DIR           C:/Users/andre/AppData/Local/R/win-library/4.2/this.path
+# R_PACKAGE_NAME          this.path
+
+
 # evalq({
 #     names(which(c(
 #         os.unix = os.unix, os.windows = os.windows,

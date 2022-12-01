@@ -2,19 +2,19 @@
 #include <Rinternals.h>
 
 
-#define ready 0
-
-
-#if HAVEAQUA && ready
-    #include <Cocoa/Cocoa.h>
-    extern const char *getRootScript();
-    [ [object activePane] document ]
-#else
-    const char *getRootScript()
-    {
-        return NULL;
-    }
-#endif
+// #define ready 0
+//
+//
+// #if HAVEAQUA && ready
+//     #include <Cocoa/Cocoa.h>
+//     extern const char *getRootScript(void);
+//     [ [object activePane] document ]
+// #else
+//     const char *getRootScript(void)
+//     {
+//         return NULL;
+//     }
+// #endif
 
 
 

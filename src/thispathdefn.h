@@ -5,12 +5,14 @@
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Connections.h>
+#include <Rversion.h>
 
 
 #if !defined(R_CONNECTIONS_VERSION)
     #error why is R_CONNECTIONS_VERSION not defined????
 #elif R_CONNECTIONS_VERSION == 1
-    extern Rconnection R_GetConnection(SEXP sConn);
+    extern Rconnection R_GetConnection2(SEXP sConn);
+    extern Rconnection GetUnderlyingConnection(SEXP sConn);
 #else
     #error this.path is only implemented for R_CONNECTIONS_VERSION 1
 #endif
@@ -37,7 +39,15 @@ extern void SET_PRVALUE(SEXP x, SEXP v);
 #define IS_BYTES(x) (getCharCE((x)) == CE_BYTES)
 extern int IS_LATIN1(SEXP x);
 extern int IS_ASCII(SEXP x);
+
+
+#if R_VERSION >= R_Version(4, 1, 0)
 extern int IS_UTF8(SEXP x);
+#else
+#define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
+#endif
+
+
 extern int ENC_KNOWN(SEXP x);
 extern int SET_CACHED(SEXP x);
 extern int IS_CACHED(SEXP x);
@@ -56,6 +66,7 @@ extern void R_LockBinding(SEXP sym, SEXP env);
 
 
 #include "symbols.h"
+#include "requirethispathhelper.h"
 
 
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
@@ -65,6 +76,7 @@ extern SEXP as_environment_char(const char *what);
 
 
 extern SEXP summaryconnection(Rconnection Rcon);
+extern SEXP summaryconnection2(SEXP sConn);
 
 
 extern SEXP errorCondition (const char *msg, SEXP call, const char **cls, int n, int nfields);
@@ -85,6 +97,7 @@ extern SEXP simpleError(const char *msg, SEXP call);
 
 
 extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
+extern SEXP thisPathUnrecognizedConnectionClassError2(SEXP call, SEXP summary);
 extern SEXP thisPathUnrecognizedMannerError         (SEXP call);
 extern SEXP thisPathNotImplementedError             (const char *msg, SEXP call);
 extern SEXP thisPathNotExistsError                  (const char *msg, SEXP call);
@@ -93,11 +106,6 @@ extern SEXP thisPathInAQUAError                     (SEXP call);
 
 
 extern void stop(SEXP cond);
-
-
-typedef struct gzconn {
-    Rconnection con;
-} *Rgzconn;
 
 
 #ifdef _WIN32
@@ -138,6 +146,22 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                         strncmp((url), "ftp://"  , 6) == 0 ||  \
                         strncmp((url), "ftps://" , 7) == 0     \
                    )
+
+
+#define get_description_from_Rconnection(Rcon)                 \
+    (((Rcon)->enc == CE_UTF8) ? mkCharCE((Rcon)->description, CE_UTF8) : mkChar((Rcon)->description))
+#define get_description_from_summary(summary)                  \
+    STRING_ELT(VECTOR_ELT((summary), 0), 0)
+#define get_class_from_Rconnection(Rcon) ((Rcon)->class)
+#define get_class_from_summary(summary)                        \
+    CHAR(STRING_ELT(VECTOR_ELT((summary), 1), 0))
+
+
+#if defined(R_VERSION) && R_VERSION >= R_Version(3, 3, 0)
+#define notimplementedforgzcon "this.path() not implemented for a gzcon()\n try installing 'this.path.helper':\n utils::install.packages(\"this.path.helper\", repos =\n     \"https://raw.githubusercontent.com/ArcadeAntics/PACKAGES\")"
+#else
+#define notimplementedforgzcon "this.path() not implemented for a gzcon()"
+#endif
 
 
 #define checkfile(call, rho, sym, ofile, frame, forcepromise,  \
@@ -239,20 +263,27 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
         else if (!inherits(ofile, "connection"))               \
             errorcall(call, "invalid '%s', must be a string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \
-            Rconnection Rcon = R_GetConnection(ofile);         \
-            if (Rcon->isGzcon) {                               \
-                /* copied from https://github.com/wch/r-source/blob/50ff41b742a1ac655314be5e25897a12d3096661/src/main/connections.c#L6018 */\
-                /* this gives us access to the original connection that the gzcon was derived from */\
-                Rcon = ((Rgzconn)(Rcon->private))->con;        \
+            SEXP summary = NULL;                               \
+            Rconnection Rcon = NULL;                           \
+            SEXP description = NULL;                           \
+            const char *klass = NULL;                          \
+            int thispathhelper_loaded = (findVarInFrame(R_NamespaceRegistry, thispathhelperSymbol) != R_UnboundValue);\
+            if (!thispathhelper_loaded) {                      \
+                SEXP summary = summaryconnection2(ofile);      \
+                description = get_description_from_summary(summary);\
+                klass = get_class_from_summary(summary);       \
+                if (streql(klass, "gzcon")) {                  \
+                    requirethispathhelper;                     \
+                    thispathhelper_loaded = (findVarInFrame(R_NamespaceRegistry, thispathhelperSymbol) != R_UnboundValue);\
+                    if (!thispathhelper_loaded) error(notimplementedforgzcon);\
+                }                                              \
             }                                                  \
-            SEXP description;                                  \
-            if (Rcon->enc == CE_UTF8)                          \
-                description = mkCharCE(Rcon->description, CE_UTF8);\
-            else                                               \
-                description = mkChar(Rcon->description);       \
-            const char *klass = Rcon->class;                   \
-                                                               \
-                                                               \
+            if (thispathhelper_loaded) {                       \
+                Rcon = GetUnderlyingConnection(ofile);         \
+                if (Rcon->isGzcon) error("invalid connection; should never happen, please report!");\
+                description = get_description_from_Rconnection(Rcon);\
+                klass = get_class_from_Rconnection(Rcon);      \
+            }                                                  \
             if (streql(klass, "file"  ) ||                     \
                 streql(klass, "gzfile") ||                     \
                 streql(klass, "bzfile") ||                     \
@@ -345,9 +376,6 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a servsockconn", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
-            else if (Rcon->isGzcon && streql(klass, "gzcon")) {\
-                error("invalid connection; should never happen, please report!");\
-            }                                                  \
             else {                                             \
                 if (allow_customConnection) {                  \
                     /* same as "unz", we save the error and    \
@@ -359,7 +387,11 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                        know if this connection has an          \
                        associated file                         \
                      */                                        \
-                    SEXP tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon);\
+                    SEXP tmp;                                  \
+                    if (thispathhelper_loaded)                 \
+                        tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon);\
+                    else                                       \
+                        tmp = thisPathUnrecognizedConnectionClassError2(R_NilValue, summary);\
                     INCREMENT_NAMED(tmp);                      \
                     defineVar(thispatherrorSymbol, tmp, frame);\
                     R_LockBinding(thispatherrorSymbol, frame); \

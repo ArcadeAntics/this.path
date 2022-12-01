@@ -177,7 +177,7 @@ Suppose that the functions \sourceandlist{} were not implemented with
 them as follows:
 
 \describe{
-  \item{\code{\link[base]{source}}}{
+  \item{\sourcelink{}}{
 \preformatted{
 wrapper <- function(file, ...) {
     file <- inside.source(file)
@@ -185,7 +185,7 @@ wrapper <- function(file, ...) {
 }
 }
   }
-  \item{\code{\link[base]{sys.source}}}{
+  \item{\syssourcelink{}}{
 \preformatted{
 wrapper <- function(file, ...) {
     file <- inside.source(file, path.only = TRUE)
@@ -193,7 +193,7 @@ wrapper <- function(file, ...) {
 }
 }
   }
-  \item{\debugSource{} in \sQuote{RStudio}}{
+  \item{\debugSource{}}{
 \preformatted{
 wrapper <- function(fileName, ...) {
     fileName <- inside.source(fileName, character.only = TRUE,
@@ -202,7 +202,7 @@ wrapper <- function(fileName, ...) {
 }
 }
   }
-  \item{\code{\link[testthat:source_file]{testthat::source_file}}}{
+  \item{\sourcefilelink{}}{
 \preformatted{
 wrapper <- function(path, ...) {
     # before testthat_3.1.2, source_file() used base::readLines() to
@@ -215,7 +215,7 @@ wrapper <- function(path, ...) {
 }
 }
   }
-  \item{\code{\link[knitr:knit]{knitr::knit}}}{
+  \item{\knitlink{}}{
 \preformatted{
 wrapper <- function(input, ...) {
     # this works for the most part, but won't work in child mode
@@ -250,7 +250,7 @@ sourcelike <- function (file, envir = parent.frame())
 
 
 sourcelike(FILE)
-sourcelike(con <- gzcon(file(FILE, "rb"))); close(con)
+sourcelike(con <- file(FILE)); close(con)
 
 
 # here we have another source-like function, suppose this function

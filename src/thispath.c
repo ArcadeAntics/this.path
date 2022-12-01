@@ -33,8 +33,10 @@ SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, 
     SEXP call2 = CAR(args);
     ENSURE_NAMEDMAX(call2);
     args = CDR(args);
-    Rconnection Rcon = R_GetConnection(CAR(args));
-    return thisPathUnrecognizedConnectionClassError(call2, Rcon);
+    if (findVarInFrame(R_NamespaceRegistry, thispathhelperSymbol) != R_UnboundValue)
+        return thisPathUnrecognizedConnectionClassError(call2, R_GetConnection2(CAR(args)));
+    else
+        return thisPathUnrecognizedConnectionClassError2(call2, summaryconnection2(CAR(args)));
 }
 
 

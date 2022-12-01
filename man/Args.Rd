@@ -8,10 +8,9 @@
 Providing Arguments to a Script
 }
 \description{
-\code{withArgs} allows you \code{\link[base]{source}} an \R script while
-providing arguments. As opposed to running with \code{\link[utils]{Rscript}},
-the code will be evaluated in the same session, in an environment of your
-choosing.
+\code{withArgs} allows you to \sourcelink{} an \R script while providing
+arguments. As opposed to running with \code{\link[utils]{Rscript}}, the code
+will be evaluated in the same session, in an environment of your choosing.
 
 \code{fileArgs()} / / \code{progArgs()} are generalized versions of
 \code{\link[base]{commandArgs}(trailingOnly = TRUE)}, allowing you to access

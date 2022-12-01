@@ -2,6 +2,5 @@
 ^\.gitignore$
 \.Rproj$
 ^check-this\.R$
-^inst/extdata/.*\.csv$
-^inst/extdata/.*\.py$
-^inst/extdata/.*\.R$
+^inst/extdata/.+\.R$
+^inst/extdata/README$

@@ -57,7 +57,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* hooks-for-namespace-events.c */
 
 
-    {"onload", (DL_FUNC) &do_onload, 0},
+    {"onload", (DL_FUNC) &do_onload, 2},
 
 
     /* isabspath.c */
@@ -106,7 +106,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* wrapsource.c */
 
 
-    {"makepromise" , (DL_FUNC) &do_makepromise , -1},
     {"setprseen2"  , (DL_FUNC) &do_setprseen2  ,  1},
     {"wrapsource"  , (DL_FUNC) &do_wrapsource  , 20},
     {"insidesource", (DL_FUNC) &do_insidesource, 20},

@@ -16,10 +16,10 @@ A list with at least the following components:
 \item{AIX}{
 Built under IBM AIX.
 }
-
-\item{BSD}{
-Built under BSD (DragonFly BSD, FreeBSD, OpenBSD, NetBSD).
-}
+%
+%\item{BSD}{
+%Built under BSD (DragonFly BSD, FreeBSD, OpenBSD, NetBSD).
+%}
 
 \item{HPUX}{
 Built under Hewlett-Packard HP-UX.
@@ -68,10 +68,10 @@ Built under Microsoft Windows (32-bit).
 \item{UNIX}{
 Built under a UNIX-style OS.
 }
-
-\item{POSIX}{
-Built under a POSIX compliant OS.
-}
+%
+%\item{POSIX}{
+%Built under a POSIX compliant OS.
+%}
 }
 \source{
 \href{http://web.archive.org/web/20191012035921/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system}{http://web.archive.org/web/20191012035921/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system}

@@ -33,8 +33,9 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;                                          \
                                                                \
                                                                \
-    /* we don't pass the ... list directly because we want to avoid an */\
-    /* accidental argument name match to PACKAGE                       */\
+    /* we don't pass the ... list directly because we want to  \
+       avoid an accidental argument name match to PACKAGE      \
+     */                                                        \
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);             \
     if (dots == R_UnboundValue)                                \
         error("could not find the ... list; should never happen, please report!");\
@@ -124,10 +125,11 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                                                                \
                                                                \
     SEXP value = allocVector(STRSXP, commonLength);            \
-    PROTECT(value); nprotect++;
+    PROTECT(value); nprotect++
+/* omit ; on purpose */
 
 
-    pathjoin_start
+    pathjoin_start;
 
 
     int drive_indx,                /*  largest index of the string vector which contains a drivespec */
@@ -377,8 +379,8 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                  * otherwise, we are done
                  */
                 if (maybe_drivewidth) {
-                    abs_path_indx = maybe_abs_path_indx;
-                    non_empty_path_spec_indx = maybe_non_empty_path_spec_indx;
+                    if (maybe_non_empty_path_spec_indx != -1)
+                        non_empty_path_spec_indx = maybe_non_empty_path_spec_indx;
 
 
                     pwidth += maybe_pwidth; maybe_pwidth = 0;
@@ -389,8 +391,10 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
                     /* if we found an absolute path, then we are done */
-                    if (abs_path_indx != -1)
+                    if (maybe_abs_path_indx != -1) {
+                        abs_path_indx = maybe_abs_path_indx;
                         break;
+                    }
                 }
             }
         }
@@ -406,6 +410,9 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 #if debug
         Rprintf("pwidth = %d\n", pwidth);
         int check_width = 0;
+        Rprintf("drive_indx               = %d\n", drive_indx);
+        Rprintf("abs_path_indx            = %d\n", abs_path_indx);
+        Rprintf("non_empty_path_spec_indx = %d\n", non_empty_path_spec_indx);
 #endif
 
 
@@ -556,7 +563,7 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 
 
-    pathjoin_start
+    pathjoin_start;
 
 
     /* width of the path */

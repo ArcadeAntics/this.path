@@ -154,9 +154,8 @@ character string; the executing script's filename.
 % filename
 %   }
 %   \item{
-% using \code{\link[base]{sys.source}} or
-% \code{\link[testthat:source_file]{testthat::source_file}} on a file named
-% \dQuote{clipboard}, \dQuote{clipboard-128}, or \dQuote{stdin}
+% using \syssourcelink{} or \sourcefilelink{} on a file named
+% \dQuote{clipboard} or \dQuote{stdin}
 %   }
 %   \item{
 % active / / source document in \sQuote{RStudio} / / \sQuote{Rgui} does not exist

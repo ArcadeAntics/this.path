@@ -11,137 +11,6 @@
 
 
 
-const char *validate_ext(const char *s)
-{
-    if (!strlen(s)) return s;
-    const char *p = s;
-    int add_dot = 1;
-    if (*s == '.') {
-        add_dot = 0;
-        p++;
-        if (!strlen(p)) {
-            error("extension \".\" is invalid");
-            return NULL;
-        }
-        if (*p == '.') {
-            error("extension starting with \"..\" is invalid");
-            return NULL;
-        }
-    }
-    for (; *p; p++) {
-        if (*p == '/' || *p == '\\') {
-            error("extension containing / is invalid");
-            return NULL;
-        }
-        if (*p == '.') {
-            if (strlen(p) == 3 &&
-                *(p + 1) == 'g' &&
-                *(p + 2) == 'z')
-            {
-                break;
-            }
-            if (strlen(p) == 4 &&
-                *(p + 1) == 'b' &&
-                *(p + 2) == 'z' &&
-                *(p + 3) == '2')
-            {
-                break;
-            }
-            if (strlen(p) == 3 &&
-                *(p + 1) == 'x' &&
-                *(p + 2) == 'z')
-            {
-                break;
-            }
-            error("extension containing \".\" but is not a compression extension");
-            return NULL;
-        }
-    }
-    if (add_dot) {
-        char _buf[strlen(s) + 2];
-        char *buf = _buf;
-        const char *cbuf = _buf;
-        *buf = '.';
-        strcpy(buf + 1, s);
-        return cbuf;
-    }
-    return s;
-}
-
-
-const char *validate_ext_unix(const char *s)
-{
-    if (!strlen(s)) return s;
-    const char *p = s;
-    int add_dot = 1;
-    if (*s == '.') {
-        add_dot = 0;
-        p++;
-        if (!strlen(p)) {
-            error("extension \".\" is invalid");
-            return NULL;
-        }
-        if (*p == '.') {
-            error("extension starting with \"..\" is invalid");
-            return NULL;
-        }
-    }
-    for (; *p; p++) {
-        if (*p == '/') {
-            error("extension containing / is invalid");
-            return NULL;
-        }
-        if (*p == '.') {
-            if (strlen(p) == 3 &&
-                *(p + 1) == 'g' &&
-                *(p + 2) == 'z')
-            {
-                break;
-            }
-            if (strlen(p) == 4 &&
-                *(p + 1) == 'b' &&
-                *(p + 2) == 'z' &&
-                *(p + 3) == '2')
-            {
-                break;
-            }
-            if (strlen(p) == 3 &&
-                *(p + 1) == 'x' &&
-                *(p + 2) == 'z')
-            {
-                break;
-            }
-            error("extension containing \".\" but is not a compression extension");
-            return NULL;
-        }
-    }
-    if (add_dot) {
-        char _buf[strlen(s) + 2];
-        char *buf = _buf;
-        const char *cbuf = _buf;
-        *buf = '.';
-        strcpy(buf + 1, s);
-        return cbuf;
-    }
-    return s;
-}
-
-
-const char *maybe_add_dot(const char *s)
-{
-    if (!strlen(s) || *s == '.') return s;
-    char _buf[strlen(s) + 2];
-    char *buf = _buf;
-    const char *cbuf = _buf;
-    *buf = '.';
-    strcpy(buf + 1, s);
-    return cbuf;
-}
-
-
-
-
-
 #define SPLITEXT 0
 #define REMOVEEXT 1
 #define EXT 2
@@ -346,10 +215,110 @@ const char *maybe_add_dot(const char *s)
         if (op == EXTGETS) {                                   \
             if (i < length_newext) {                           \
                 ptr_ext = translateCharUTF8(STRING_ELT(newext, i));\
-                cext = (windows) ? validate_ext(ptr_ext) : validate_ext_unix(ptr_ext);\
+                if (windows) {                                 \
+                    if (!strlen(ptr_ext))                      \
+                        cext = ptr_ext;                        \
+                    else {                                     \
+                        const char *p = ptr_ext;               \
+                        int add_dot = 1;                       \
+                        if (*p == '.') {                       \
+                            add_dot = 0;                       \
+                            p++;                               \
+                            if (!strlen(p)) error("extension \".\" is invalid");\
+                            if (*p == '.')  error("extension starting with \"..\" is invalid");\
+                        }                                      \
+                        for (; *p; p++) {                      \
+                            if (*p == '/' || *p == '\\') error("extension containing / is invalid");\
+                            if (*p == '.') {                   \
+                                if (strlen(p) == 3 &&          \
+                                    *(p + 1) == 'g' &&         \
+                                    *(p + 2) == 'z')           \
+                                {                              \
+                                    break;                     \
+                                }                              \
+                                if (strlen(p) == 4 &&          \
+                                    *(p + 1) == 'b' &&         \
+                                    *(p + 2) == 'z' &&         \
+                                    *(p + 3) == '2')           \
+                                {                              \
+                                    break;                     \
+                                }                              \
+                                if (strlen(p) == 3 &&          \
+                                    *(p + 1) == 'x' &&         \
+                                    *(p + 2) == 'z')           \
+                                {                              \
+                                    break;                     \
+                                }                              \
+                                error("extension containing \".\" but is not a compression extension");\
+                            }                                  \
+                        }                                      \
+                        if (add_dot) {                         \
+                            char _buf[strlen(ptr_ext) + 2];    \
+                            buf = _buf;                        \
+                            cext = _buf;                       \
+                            *buf = '.';                        \
+                            strcpy(buf + 1, ptr_ext);          \
+                        }                                      \
+                        else cext = ptr_ext;                   \
+                    }                                          \
+                } else {                                       \
+                    if (!strlen(ptr_ext))                      \
+                        cext = ptr_ext;                        \
+                    else {                                     \
+                        const char *p = ptr_ext;               \
+                        int add_dot = 1;                       \
+                        if (*p == '.') {                       \
+                            add_dot = 0;                       \
+                            p++;                               \
+                            if (!strlen(p)) error("extension \".\" is invalid");\
+                            if (*p == '.')  error("extension starting with \"..\" is invalid");\
+                        }                                      \
+                        for (; *p; p++) {                      \
+                            if (*p == '/') error("extension containing / is invalid");\
+                            if (*p == '.') {                   \
+                                if (strlen(p) == 3 &&          \
+                                    *(p + 1) == 'g' &&         \
+                                    *(p + 2) == 'z')           \
+                                {                              \
+                                    break;                     \
+                                }                              \
+                                if (strlen(p) == 4 &&          \
+                                    *(p + 1) == 'b' &&         \
+                                    *(p + 2) == 'z' &&         \
+                                    *(p + 3) == '2')           \
+                                {                              \
+                                    break;                     \
+                                }                              \
+                                if (strlen(p) == 3 &&          \
+                                    *(p + 1) == 'x' &&         \
+                                    *(p + 2) == 'z')           \
+                                {                              \
+                                    break;                     \
+                                }                              \
+                                error("extension containing \".\" but is not a compression extension");\
+                            }                                  \
+                        }                                      \
+                        if (add_dot) {                         \
+                            char _buf[strlen(ptr_ext) + 2];    \
+                            buf = _buf;                        \
+                            cext = _buf;                       \
+                            *buf = '.';                        \
+                            strcpy(buf + 1, ptr_ext);          \
+                        }                                      \
+                        else cext = ptr_ext;                   \
+                    }                                          \
+                }                                              \
             } else {                                           \
                 ptr_ext = translateCharUTF8(STRING_ELT(newext, i % length_newext));\
-                cext = maybe_add_dot(ptr_ext);                 \
+                if (!strlen(ptr_ext) || *ptr_ext == '.')       \
+                    cext = ptr_ext;                            \
+                else {                                         \
+                    char _buf[strlen(ptr_ext) + 2];            \
+                    buf = _buf;                                \
+                    cext = _buf;                               \
+                    *buf = '.';                                \
+                    strcpy(buf + 1, ptr_ext);                  \
+                }                                              \
             }                                                  \
             if (debug) Rprintf("ext %d: \"%s\"\n", i + 1, cext);\
         }                                                      \

@@ -101,7 +101,6 @@ extern SEXP do_thispath   (SEXP call, SEXP op, SEXP args, SEXP rho);
 /* wrapsource.c */
 
 
-extern SEXP do_makepromise (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_setprseen2  (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_wrapsource  (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho);

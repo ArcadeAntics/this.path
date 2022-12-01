@@ -49,6 +49,10 @@ path.join("c:p1", "p2", "p3", "C:") %check% "C:p1/p2/p3"
 path.join("//host/share") %check% "//host/share"
 
 
+# in 1.1.0 fixed mistake where the non empty path spec was ignored
+# because preceding path specs were empty
+path.join("C:", "c:test") %check% "c:test"
+
 
 
 
