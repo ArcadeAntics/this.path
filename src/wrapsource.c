@@ -424,14 +424,13 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
         e = eval(s, env);
 
 
-        SEXP tmp = lang5(
-            findVarInFrame(R_BaseEnv, delayedAssignSymbol),
-            ScalarString(PRINTNAME(thispathtempSymbol)),
-            R_NilValue,
-            R_EmptyEnv,
-            rho
-        );
+        SEXP tmp = allocList(5);
         PROTECT(tmp); nprotect++;
+        SET_TYPEOF(tmp, LANGSXP);
+        SETCAR   (tmp, findVarInFrame(R_BaseEnv, delayedAssignSymbol));
+        SETCADR  (tmp, /* x          */ ScalarString(PRINTNAME(thispathtempSymbol)));
+        SETCADDDR(tmp, /* eval.env   */ R_EmptyEnv);
+        SETCAD4R (tmp, /* assign.env */ rho);
 
 
         eval(tmp, R_EmptyEnv);

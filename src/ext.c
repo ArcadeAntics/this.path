@@ -60,16 +60,18 @@
     if (op == EXTGETS) {                                       \
         if (!isString(CADDR(args))) {                          \
             if (OBJECT(CADDR(args))) {                         \
-                SEXP expr = lang2(                             \
-                    findVarInFrame(R_BaseEnv, R_AsCharacterSymbol),\
-                    lang2(                                     \
-                        findVarInFrame(R_BaseEnv, R_QuoteSymbol),\
-                        CADDR(args)                            \
-                    )                                          \
-                );                                             \
+                SEXP expr = allocList(2);                      \
                 PROTECT(expr);                                 \
+                SET_TYPEOF(expr, LANGSXP);                     \
+                SETCAR(expr, findVarInFrame(R_BaseEnv, R_AsCharacterSymbol));\
+                SEXP expr2 = allocList(2);                     \
+                PROTECT(expr2);                                \
+                SET_TYPEOF(expr2, LANGSXP);                    \
+                SETCAR(expr2, findVarInFrame(R_BaseEnv, R_QuoteSymbol));\
+                SETCADR(expr2, CADDR(args));                   \
+                SETCADR(expr, expr2);                          \
                 SETCADDR(args, eval(expr, rho));               \
-                UNPROTECT(1);                                  \
+                UNPROTECT(2);                                  \
             }                                                  \
             else if (isSymbol(CADDR(args)))                    \
                 SETCADDR(args, ScalarString(PRINTNAME(CADDR(args))));\

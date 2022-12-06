@@ -8,52 +8,51 @@ essentials:::check.this(  # this.path
 
 
 local({
-    unloadNamespace("this.path.helper")
-    FILE <- tempfile(fileext = ".R")
-    on.exit(unlink(FILE))
-    writeLines("this.path::this.path()", FILE)
-    conn1 <- file(FILE)
-    on.exit(close(conn1), add = TRUE, after = FALSE)
-    source(conn1, echo = TRUE)
-    conn2 <- gzcon(file(FILE, "rb"))
-    on.exit(close(conn2), add = TRUE, after = FALSE)
-    cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
-    source(conn2, echo = TRUE)
-    cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
+    # read the text from this URL
+    args1 <- c("curl", "--silent", "https://raw.githubusercontent.com/r-lib/vroom/master/inst/extdata/mtcars.csv")
+    # filter out the first row (the column names of the table)
+    # and rows containing "merc" case insensitive
+    args2 <- c("perl", "-ne", "use English; print if $INPUT_LINE_NUMBER == 1 || /merc/i")
+    command1 <- paste(shQuote(args1), collapse = " ")
+    command2 <- paste(shQuote(args2), collapse = " ")
+    if (.Platform$OS.type == "windows") {
+        command1 <- shQuote(command1, "cmd2")
+        command2 <- shQuote(command2, "cmd2")
+    }
+    command <- paste(command1, "|", command2)
+    writeLines(command)
+    utils::read.csv(pipe(command))
 })
 
 
-# R_INCLUDE_DIR           C:/PROGRA~1/R/R-4.2.2/include
-# R_INSTALL_PKG           this.path
-# R_LIBRARY_DIR           C:/Users/andre/AppData/Local/R/win-library/4.2
-# R_LIBS_SITE             C:/PROGRA~1/R/R-4.2.2/site-library
-# R_LIBS_USER             C:\Users\andre\AppData\Local/R/win-library/4.2
-# R_OSTYPE                windows
-# R_PACKAGE_DIR           C:/Users/andre/AppData/Local/R/win-library/4.2/this.path
-# R_PACKAGE_NAME          this.path
+# local({
+#     unloadNamespace("this.path.helper")
+#     FILE <- tempfile(fileext = ".R")
+#     on.exit(unlink(FILE))
+#     writeLines("this.path::this.path()", FILE)
+#     conn1 <- file(FILE)
+#     on.exit(close(conn1), add = TRUE, after = FALSE)
+#     source(conn1, echo = TRUE)
+#     conn2 <- gzcon(file(FILE, "rb"))
+#     on.exit(close(conn2), add = TRUE, after = FALSE)
+#     cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
+#     source(conn2, echo = TRUE)
+#     cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
+# })
 
 
-# evalq({
-#     names(which(c(
-#         os.unix = os.unix, os.windows = os.windows,
-#         gui.aqua = gui.aqua, gui.rgui = gui.rgui, gui.rstudio = gui.rstudio,
-#             gui.tk = gui.tk, gui.vscode = gui.vscode,
-#         os.unix.in.shell = os.unix.in.shell, os.windows.in.shell = os.windows.in.shell,
-#             in.shell = in.shell,
-#         unrecognized.manner = unrecognized.manner,
-#         ucrt = ucrt, utf8 = utf8
-#     )))
-# }, getNamespace("this.path"))
-
-
-
-
-
-SINKFILE <- tempfile(fileext = ".txt")
-SINKCON <- file(SINKFILE, "w")
-sink(SINKCON)
-sink(SINKCON, type = "message")
 local({
+
+
+    SINKFILE <- tempfile(fileext = ".txt")
+    SINKCONN <- file(SINKFILE, "w")
+    on.exit(close(SINKCONN), add = TRUE, after = FALSE)
+    sink(SINKCONN)
+    on.exit(sink(), add = TRUE, after = FALSE)
+    sink(SINKCONN, type = "message")
+    on.exit(sink(type = "message"), add = TRUE, after = FALSE)
+
+
     .this.path <- this.path:::.this.path
     debugSource <- this.path:::debugSource
 
@@ -180,16 +179,16 @@ local({
     fun(source(.(file), local = new.env(), chdir = TRUE))
 
 
-    con <- unz(ZIPFILE, basename(FILE))
-    on.exit(close(con), add = TRUE, after = FALSE)
+    conn <- unz(ZIPFILE, basename(FILE))
+    on.exit(close(conn), add = TRUE, after = FALSE)
 
 
-    fun(try(source(print(con), local = new.env())))
+    fun(try(source(print(conn), local = new.env())))
 
 
-    con2 <- gzcon(file(file, "rb"))
-    on.exit(close(con2), add = TRUE, after = FALSE)
-    fun(source(print(con2), local = new.env()))
+    conn2 <- gzcon(file(file, "rb"))
+    on.exit(close(conn2), add = TRUE, after = FALSE)
+    fun(source(print(conn2), local = new.env()))
 
 
     fun(sys.source(.(file), envir = new.env(), chdir = FALSE))
@@ -234,25 +233,25 @@ local({
         squeeze.blank = TRUE, show.tabs = TRUE)
 
 
-    owd <- getwd()
-    on.exit(setwd(owd), add = TRUE, after = FALSE)
+    owd2 <- getwd()
+    on.exit(setwd(owd2), add = TRUE, after = FALSE)
     setwd(dirname(FILE3))
     utils::zip(ZIPFILE, basename(FILE3), flags = "-r9Xq")
-    setwd(owd)
+    setwd(owd2)
 
 
-    con3 <- unz(ZIPFILE, basename(FILE3))
-    on.exit(close(con3), add = TRUE, after = FALSE)
+    conn3 <- unz(ZIPFILE, basename(FILE3))
+    on.exit(close(conn3), add = TRUE, after = FALSE)
 
 
-    fun(try(knitr::knit(print(con3), FILE4, quiet = TRUE)))
+    fun(try(knitr::knit(print(conn3), FILE4, quiet = TRUE)))
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
 
-    con4 <- gzcon(file(file3, "rb"))
-    on.exit(close(con4), add = TRUE, after = FALSE)
-    fun(knitr::knit(print(con4), FILE4, quiet = TRUE))
+    conn4 <- gzcon(file(file3, "rb"))
+    on.exit(close(conn4), add = TRUE, after = FALSE)
+    fun(knitr::knit(print(conn4), FILE4, quiet = TRUE))
     this.path:::cat.file(FILE4, number = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE)
 
@@ -276,15 +275,11 @@ local({
 
 
     fun(sourcelike2(.(file)))
+
+
+    file.edit <- get0("file.edit", globalenv(), mode = "function", ifnotfound = utils::file.edit)
+    file.edit(SINKFILE)
 })
-sink(type = "message")
-sink()
-close(SINKCON)
-# this.path:::cat.file(SINKFILE)
-essentials::file.open(SINKFILE)
-
-
-
 
 
 # enumerate <- function (x, from = 1L)

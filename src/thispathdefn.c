@@ -164,11 +164,11 @@ SEXP summaryconnection2(SEXP sConn)
 }
 
 
-SEXP errorCondition(const char *msg, SEXP call, const char **cls, int n, int nfields)
+SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numCls, int numFields)
 {
-    SEXP value = allocVector(VECSXP, 2 + nfields);
+    SEXP value = allocVector(VECSXP, 2 + numFields);
     PROTECT(value);
-    SEXP names = allocVector(STRSXP, 2 + nfields);
+    SEXP names = allocVector(STRSXP, 2 + numFields);
     setAttrib(value, R_NamesSymbol, names);
 
 
@@ -178,14 +178,12 @@ SEXP errorCondition(const char *msg, SEXP call, const char **cls, int n, int nfi
     SET_VECTOR_ELT(value, 1, call);
 
 
-    SEXP klass = allocVector(STRSXP, n + 2);
+    SEXP klass = allocVector(STRSXP, numCls + 2);
     setAttrib(value, R_ClassSymbol, klass);
-    int i;
-    for (i = 0; i < n; i++) {
-        SET_STRING_ELT(klass, i    , mkChar(cls[i]));
-    }
-    SET_STRING_ELT(    klass, n    , mkChar("error"));
-    SET_STRING_ELT(    klass, n + 1, mkChar("condition"));
+    for (int i = 0; i < numCls; i++)
+        SET_STRING_ELT(klass, i         , mkChar(cls[i]));
+    SET_STRING_ELT(    klass, numCls    , mkChar("error"));
+    SET_STRING_ELT(    klass, numCls + 1, mkChar("condition"));
 
 
     UNPROTECT(1);
@@ -193,11 +191,11 @@ SEXP errorCondition(const char *msg, SEXP call, const char **cls, int n, int nfi
 }
 
 
-SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int nfields)
+SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int numFields)
 {
-    SEXP value = allocVector(VECSXP, 2 + nfields);
+    SEXP value = allocVector(VECSXP, 2 + numFields);
     PROTECT(value);
-    SEXP names = allocVector(STRSXP, 2 + nfields);
+    SEXP names = allocVector(STRSXP, 2 + numFields);
     setAttrib(value, R_NamesSymbol, names);
 
 
@@ -227,31 +225,30 @@ SEXP simpleError(const char *msg, SEXP call)
 
 SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
 {
-    const char *klass = EncodeChar(mkChar(get_class_from_Rconnection(Rcon)));
-    const char *format = "'this.path' not implemented when source-ing a connection of class '%s'";
-    char msg[strlen(format) - 2 + strlen(klass) + 1];
-    sprintf(msg, format, klass);
-    SEXP cond = errorCondition1(msg, call, "this.path::thisPathUnrecognizedConnectionClassError", 1);
-    PROTECT(cond);
-    SET_VECTOR_ELT(cond, 2, summaryconnection(Rcon));
-    SET_STRING_ELT(getAttrib(cond, R_NamesSymbol), 2, mkChar("summary"));
-    UNPROTECT(1);
-    return cond;
+#define funbody(class_as_CHARSXP, summConn)                    \
+    const char *klass = EncodeChar((class_as_CHARSXP));        \
+    const char *format = "'this.path' not implemented when source-ing a connection of class '%s'";\
+    const int n = strlen(format) + strlen(klass) + 1;          \
+    char msg[n];                                               \
+    snprintf(msg, n, format, klass);                           \
+    SEXP cond = errorCondition1(msg, call, "this.path::thisPathUnrecognizedConnectionClassError", 1);\
+    PROTECT(cond);                                             \
+    SEXP names = getAttrib(cond, R_NamesSymbol);               \
+    PROTECT(names);                                            \
+    SET_STRING_ELT(names, 2, mkChar("summary"));               \
+    SET_VECTOR_ELT(cond , 2, (summConn));                      \
+    UNPROTECT(2);                                              \
+    return cond
+
+
+    funbody(mkChar(get_class_from_Rconnection(Rcon)), summaryconnection(Rcon));
 }
 
 
 SEXP thisPathUnrecognizedConnectionClassError2(SEXP call, SEXP summary)
 {
-    const char *klass = EncodeChar(STRING_ELT(VECTOR_ELT(summary, 1), 0));
-    const char *format = "'this.path' not implemented when source-ing a connection of class '%s'";
-    char msg[strlen(format) - 2 + strlen(klass) + 1];
-    sprintf(msg, format, klass);
-    SEXP cond = errorCondition1(msg, call, "this.path::thisPathUnrecognizedConnectionClassError", 1);
-    PROTECT(cond);
-    SET_VECTOR_ELT(cond, 2, summary);
-    SET_STRING_ELT(getAttrib(cond, R_NamesSymbol), 2, mkChar("summary"));
-    UNPROTECT(1);
-    return cond;
+    funbody(STRING_ELT(VECTOR_ELT(summary, 1), 0), summary);
+#undef funbody
 }
 
 
@@ -293,9 +290,11 @@ SEXP thisPathInZipFileError(SEXP call, SEXP description)
     const char *msg = "'this.path' cannot be used within a zip file";
     SEXP cond = errorCondition1(msg, call, "this.path::thisPathInZipFileError", 1);
     PROTECT(cond);
-    SET_VECTOR_ELT(cond, 2, ScalarString(description));
-    SET_STRING_ELT(getAttrib(cond, R_NamesSymbol), 2, mkChar("description"));
-    UNPROTECT(1);
+    SEXP names = getAttrib(cond, R_NamesSymbol);
+    PROTECT(names);
+    SET_STRING_ELT(names, 2, mkChar("description"));
+    SET_VECTOR_ELT(cond , 2, ScalarString(description));
+    UNPROTECT(2);
     return cond;
 }
 
@@ -322,26 +321,28 @@ void stop(SEXP cond)
 }
 
 
-SEXP _assign(SEXP file, SEXP frame)
-{
-    INCREMENT_NAMED(file);
-    defineVar(thispathofileSymbol, file, frame);
-    R_LockBinding(thispathofileSymbol, frame);
-    /* this would be so much easier if we were given access to mkPROMISE */
-    eval(lang5(findVarInFrame(R_BaseEnv, delayedAssignSymbol),
-/* x          */    ScalarString(PRINTNAME(thispathfileSymbol)),
-/* value      */    R_NilValue,
-/* eval.env   */    R_EmptyEnv,
-/* assign.env */    frame
-    ), R_EmptyEnv);
-    R_LockBinding(thispathfileSymbol, frame);
-    return findVarInFrame(frame, thispathfileSymbol);
-}
+#define _assign(file, frame)                                   \
+    INCREMENT_NAMED((file));                                   \
+    defineVar(thispathofileSymbol, (file), (frame));           \
+    R_LockBinding(thispathofileSymbol, (frame));               \
+    /* this would be so much easier if we were given access to mkPROMISE */\
+    SEXP expr = allocList(5);                                  \
+    PROTECT(expr);                                             \
+    SET_TYPEOF(expr, LANGSXP);                                 \
+    SETCAR   (expr, findVarInFrame(R_BaseEnv, delayedAssignSymbol));\
+    SETCADR  (expr, /* x          */ ScalarString(PRINTNAME(thispathfileSymbol)));\
+    SETCADDDR(expr, /* eval.env   */ R_EmptyEnv);              \
+    SETCAD4R (expr, /* assign.env */ (frame));                 \
+    eval(expr, R_EmptyEnv);                                    \
+    UNPROTECT(1);                                              \
+    R_LockBinding(thispathfileSymbol, (frame));                \
+    SEXP e = findVarInFrame((frame), thispathfileSymbol)
+
 
 
 void assign_default(SEXP file, SEXP frame, SEXP rho)
 {
-    SEXP e = _assign(file, frame);
+    _assign(file, frame);
     SET_PRCODE(e, lang2(_normalizePathSymbol, file));
     SET_PRENV(e, ENCLOS(rho));
 }
@@ -350,13 +351,14 @@ void assign_default(SEXP file, SEXP frame, SEXP rho)
 void assign_null(SEXP frame)
 {
     /* make and force the promise */
-    eval(_assign(R_NilValue, frame), R_EmptyEnv);
+    _assign(R_NilValue, frame);
+    eval(e, R_EmptyEnv);
 }
 
 
 void assign_chdir(SEXP file, SEXP owd, SEXP frame, SEXP rho)
 {
-    SEXP e = _assign(file, frame);
+    _assign(file, frame);
     SET_PRCODE(e, lang3(_normalizeAgainstSymbol, file, owd));
     SET_PRENV(e, ENCLOS(rho));
     return;
@@ -365,7 +367,7 @@ void assign_chdir(SEXP file, SEXP owd, SEXP frame, SEXP rho)
 
 void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 {
-    SEXP e = _assign(ofile, frame);
+    _assign(ofile, frame);
 
 
     /* translate the string, then extract the string after file://
@@ -412,7 +414,7 @@ void assign_file_uri2(SEXP description, SEXP frame, SEXP rho)
     SEXP ofile = ScalarString(mkCharCE(buf, getCharCE(description)));
 
 
-    SEXP e = _assign(ofile, frame);
+    _assign(ofile, frame);
     SET_PRCODE(e, lang2(_normalizePathSymbol, ScalarString(description)));
     SET_PRENV(e, ENCLOS(rho));
 }
@@ -420,7 +422,7 @@ void assign_file_uri2(SEXP description, SEXP frame, SEXP rho)
 
 void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 {
-    SEXP e = _assign(ofile, frame);
+    _assign(ofile, frame);
 
 
 #ifdef _WIN32

@@ -364,21 +364,115 @@ do_with_wd <- function (expr, wd)
 }
 
 
-write.code <- function (x, file = stdout(), evaluated, simplify = TRUE,
+R_BraceSymbol <- as.symbol("{")
+
+
+maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
+{
+    # possibly quote an expression
+    #
+    # when 'evaluated' is missing, 'expr' is quoted only if it is an
+    # (unevaluated) call to `{`
+    #
+    # when 'evaluated' is FALSE, 'expr' is always quoted
+    #
+    # when 'evaluated' is TRUE, 'expr' is evaluated as normal
+    #
+    # this is intended to be called inside another function, like match.fun()
+
+
+    if (missing(expr))
+        expr
+
+
+    if (missing(evaluated)) {
+        if (is.call(e <- eval(substitute(substitute(expr)), parent.frame())) &&
+            identical(e[[1L]], R_BraceSymbol))
+        {
+            expr <- e
+        }
+    }
+    else if (!evaluated)
+        expr <- eval(substitute(substitute(expr)), parent.frame())
+
+
+    # force the evaluated of 'expr'
+    else expr
+
+
+    if (is.call(expr)) {
+        # always turn a call into an expression so that it
+        # cannot be misinterpreted later
+        if (simplify.brace) {
+            if (identical(expr[[1L]], R_BraceSymbol))
+                as.expression(as.list(expr[-1L]))
+            else as.expression(list(expr))
+        }
+        else as.expression(list(expr))
+    }
+    else expr
+}
+
+
+code2character <- function (x, width.cutoff = 60L,
     deparseCtrl = c("keepInteger", "showAttributes", "useSource", "keepNA", "digits17"))
 {
-    if (missing(evaluated)) {
-        if (is.call(e <- substitute(x)) && is.name(e[[1L]]) && e[[1L]] == "{")
-            x <- e
-    } else if (!evaluated)
-        x <- substitute(x)
+    # if 'x' is an (unevaluated) call to `{`
+    # deparse each sub-expression
+    #
+    # if 'x' is an expression() vector
+    # make a list of deparsed expressions
+    #
+    # if 'x' is a language object
+    # deparse the expression
+    #
+    # if 'x' is a character vector
+    # leave as is
+
+
     fun <- function(xx) {
-        deparse1(xx, collapse = "\n", width.cutoff = 60L, backtick = TRUE,
-            control = deparseCtrl)
+        deparse1(xx, collapse = "\n", width.cutoff = width.cutoff,
+            backtick = TRUE, control = deparseCtrl)
     }
-    x <- if (simplify && is.call(x) && is.name(x[[1L]]) && x[[1L]] == "{")
-        vapply(as.list(x[-1]), fun, "")
-    else fun(x)
+
+
+    if (is.call(x))
+        fun(x)
+    else if (is.expression(x)) {
+        if ("useSource" %in% deparseCtrl) {
+            wholeSrcref <- attr(x, "wholeSrcref", exact = TRUE)
+            if (!is.null(wholeSrcref))
+                paste(as.character(wholeSrcref), collapse = "\n")
+            else {
+                srcrefs <- attr(x, "srcref", exact = TRUE)
+                if (!is.null(srcrefs)) {
+                    y <- character(length(srcrefs))
+                    for (i in seq_along(y)) {
+                        srcref <- srcrefs[[i]]
+                        y[[i]] <- if (!is.null(srcref))
+                            paste(as.character(srcref), collapse = "\n")
+                        else fun(x[[i]])
+                    }
+                    y
+                }
+                else vapply(x, fun, "")
+            }
+        }
+        else vapply(x, fun, "")
+    }
+    else if (is.symbol(x))
+        fun(x)
+    else if (is.character(x))
+        x
+    else stop("invalid 'x', expected a language object or character vector")
+}
+
+
+write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
+    width.cutoff = 60L, deparseCtrl = c("keepInteger", "showAttributes", "useSource", "keepNA", "digits17"))
+{
+    x <- maybeQuote(x, evaluated, simplify.brace)
+    x <- code2character(x, width.cutoff, deparseCtrl)
     if (is.null(file))
         x
     else {
