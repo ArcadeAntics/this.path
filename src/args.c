@@ -2,6 +2,7 @@
 #include <Rinternals.h>
 
 
+#include "symbols.h"
 #include "translations.h"
 
 
@@ -58,7 +59,7 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-    SEXP expr = lang2(install(".asArgs"), x);
+    SEXP expr = lang2(_asArgsSymbol, x);
     PROTECT(expr); nprotect++;
     SEXP value = eval(expr, rho);
     UNPROTECT(nprotect);

@@ -436,31 +436,56 @@ code2character <- function (x, width.cutoff = 60L,
     }
 
 
-    if (is.call(x))
-        fun(x)
-    else if (is.expression(x)) {
+    if (is.expression(x)) {
         if ("useSource" %in% deparseCtrl) {
-            wholeSrcref <- attr(x, "wholeSrcref", exact = TRUE)
-            if (!is.null(wholeSrcref))
-                paste(as.character(wholeSrcref), collapse = "\n")
-            else {
-                srcrefs <- attr(x, "srcref", exact = TRUE)
-                if (!is.null(srcrefs)) {
-                    y <- character(length(srcrefs))
-                    for (i in seq_along(y)) {
-                        srcref <- srcrefs[[i]]
-                        y[[i]] <- if (!is.null(srcref))
-                            paste(as.character(srcref), collapse = "\n")
-                        else fun(x[[i]])
-                    }
-                    y
-                }
-                else vapply(x, fun, "")
+            getLines <- function(srcref) {
+                srcfile <- attr(srcref, "srcfile", exact = TRUE)
+                getSrcLines(srcfile, srcref[7L], srcref[8L])
             }
+            trimLines <- function(lines, srcref) {
+                if (length(lines)) {
+                    enc <- Encoding(lines)
+                    Encoding(lines) <- "bytes"
+                    if (length(lines) > srcref[8L] - srcref[7L])
+                        lines[length(lines)] <- substring(lines[length(lines)], 1L, srcref[4L])
+                    lines[1L] <- substring(lines[1L], srcref[2L])
+                    Encoding(lines) <- enc
+                }
+                lines
+            }
+            # x <- parse(text = "  5 +\n 6\t; 7 +8  ;  ", keep.source = TRUE)
+            srcref <- attr(x, "wholeSrcref", exact = TRUE)
+            if (!is.null(srcref))
+                tryCatch2({
+                    lines <- getLines(srcref)
+                }, error = function(e) {
+                }, else. = {
+                    lines <- trimLines(lines, srcref)
+                    return(paste(lines, collapse = "\n"))
+                })
+            srcrefs <- attr(x, "srcref", exact = TRUE)
+            if (!is.null(srcrefs)) {
+                y <- character(length(srcrefs))
+                for (i in seq_along(y)) {
+                    srcref <- srcrefs[[i]]
+                    y[[i]] <- if (!is.null(srcref))
+                        tryCatch2({
+                            lines <- getLines(srcref)
+                        }, error = function(e) {
+                            fun(x[[i]])
+                        }, else. = {
+                            lines <- trimLines(lines, srcref)
+                            paste(lines, collapse = "\n")
+                        })
+                    else fun(x[[i]])
+                }
+                y
+            }
+            else vapply(x, fun, "")
         }
         else vapply(x, fun, "")
     }
-    else if (is.symbol(x))
+    else if (is.language(x))
         fun(x)
     else if (is.character(x))
         x

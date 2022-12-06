@@ -68,7 +68,8 @@ SEXP
     quietlySymbol                 = NULL,
     cSymbol                       = NULL,
     libnameSymbol                 = NULL,
-    _libPathsSymbol               = NULL;
+    _libPathsSymbol               = NULL,
+    _asArgsSymbol                 = NULL;
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -160,6 +161,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     cSymbol                       = install("c");
     libnameSymbol                 = install("libname");
     _libPathsSymbol               = install(".libPaths");
+    _asArgsSymbol                 = install(".asArgs");
 
 
 #include "requirethispathhelper.h"

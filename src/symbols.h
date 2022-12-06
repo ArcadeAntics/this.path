@@ -69,7 +69,8 @@ extern SEXP
     quietlySymbol                ,
     cSymbol                      ,
     libnameSymbol                ,
-    _libPathsSymbol              ;
+    _libPathsSymbol              ,
+    _asArgsSymbol                 ;
 
 
 #endif
