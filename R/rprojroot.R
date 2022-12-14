@@ -1,4 +1,4 @@
-find_root <- function (criterion, path = getwd(), verbose = getOption("verbose"))
+find_root <- function (criterion, path = getwd(), verbose = FALSE)
 {
     criterion <- rprojroot::as_root_criterion(criterion)
     opath <- path
@@ -35,7 +35,7 @@ find_root <- function (criterion, path = getwd(), verbose = getOption("verbose")
 
 
 .this.proj <- evalq(envir = new.env(),
-function (path, verbose = getOption("verbose"))
+function (path, verbose = FALSE)
 {
     if (path %in% names(table))
         table[[path]]
@@ -56,6 +56,6 @@ lockEnvironment(environment(.this.proj))
 
 this.proj <- function (...)
 {
-    base <- .this.proj(.this.dir(verbose = FALSE), FALSE)
+    base <- .this.proj(.this.dir())
     path.join(base, ...)
 }

@@ -8,6 +8,25 @@ essentials:::check.this(  # this.path
 
 
 local({
+    x <- c("os.unix", "os.windows", "gui.aqua", "gui.rgui", "gui.rstudio", "gui.tk",
+      "gui.vscode", "tools.rstudio", ".rs.api.getActiveDocumentContext",
+      ".rs.api.getSourceEditorContext", "debugSource", "os.unix.in.shell",
+      "os.windows.in.shell", "in.shell", "unrecognized.manner", "initwd",
+      "ucrt", "utf8")
+    sapply(x, getFromNamespace, getNamespace("this.path"), simplify = FALSE)
+})
+
+
+local({
+    files <- list.files(all.files = TRUE, full.names = TRUE, recursive = TRUE, include.dirs = FALSE, no.. = TRUE)
+    files <- files[!startsWith(files, "./.git/")]
+    files <- files[!startsWith(files, "./.Rproj.user/")]
+    files <- files[!startsWith(files, "./this.path.Rcheck/")]
+    files
+})
+
+
+local({
     # read the text from this URL
     args1 <- c("curl", "--silent", "https://raw.githubusercontent.com/r-lib/vroom/master/inst/extdata/mtcars.csv")
     # filter out the first row (the column names of the table)
