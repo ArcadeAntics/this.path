@@ -142,5 +142,5 @@ local({
 })
 
 
-cat("\n> HAVE_AQUA\n"); print(this.path:::HAVE_AQUA)
-cat("\n> PATH_MAX\n"); print(this.path:::PATH_MAX)
+# print(this.path:::HAVE_AQUA)
+# print(this.path:::PATH_MAX)
