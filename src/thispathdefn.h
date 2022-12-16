@@ -450,6 +450,13 @@ extern int gui_rstudio;
     ((gui_rstudio == -1) ? (gui_rstudio = asLogical(R_getNSValue(R_NilValue, this_pathSymbol, gui_rstudioSymbol, FALSE))) : (gui_rstudio))
 
 
+extern int in_shell;
+
+
+#define is_in_shell                                            \
+    ((in_shell == -1) ? (in_shell = asLogical(R_getNSValue(R_NilValue, this_pathSymbol, in_shellSymbol, FALSE))) : (in_shell))
+
+
 #define get_debugSource                                        \
     ((in_rstudio) ? R_getNSValue(R_NilValue, this_pathSymbol, debugSourceSymbol, FALSE) : R_NilValue)
 

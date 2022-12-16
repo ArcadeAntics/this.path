@@ -69,7 +69,9 @@ SEXP
     cSymbol                       = NULL,
     libnameSymbol                 = NULL,
     _libPathsSymbol               = NULL,
-    _asArgsSymbol                 = NULL;
+    _asArgsSymbol                 = NULL,
+    commandArgsSymbol             = NULL,
+    in_shellSymbol                = NULL;
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -162,12 +164,38 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     libnameSymbol                 = install("libname");
     _libPathsSymbol               = install(".libPaths");
     _asArgsSymbol                 = install(".asArgs");
+    commandArgsSymbol             = install("commandArgs");
+    in_shellSymbol                = install("in.shell");
+
 
 
 #include "requirethispathhelper.h"
 
 
     requirethispathhelper;
+
+
+    /* define a variable and increase its reference counter */
+#define defineVarInc(symbol, value, rho)                       \
+    do {                                                       \
+        SEXP val = (value);                                    \
+        PROTECT(val);                                          \
+        defineVar((symbol), val, (rho));                       \
+        INCREMENT_NAMED(val);                                  \
+        UNPROTECT(1);                                          \
+    } while (0)
+
+
+    defineVarInc(install("HAVE_AQUA"), ScalarLogical(
+#if defined(HAVE_AQUA)
+        TRUE
+#else
+        FALSE
+#endif
+    ), ENCLOS(rho));
+
+
+    defineVarInc(install("PATH_MAX"), ScalarInteger(PATH_MAX), ENCLOS(rho));
 
 
     SEXP value = allocVector(VECSXP, 13);

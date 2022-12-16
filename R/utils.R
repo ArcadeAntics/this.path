@@ -13,6 +13,21 @@
 }
 
 
+.Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, ...)
+{
+    command <- path.join(R.home("bin"), if (os.windows)
+        "Rterm.exe"
+    else "R")
+    args <- c(command, options)
+    args <- c(shQuote(args), trailing)
+    command <- paste(args, collapse = " ")
+    if (dry.run)
+        return(command)
+    cat(command, "\n", sep = "")
+    invisible(system(command = command, ...))
+}
+
+
 build_this <- function (chdir = FALSE, file = here(), which = "tar")
 {
     # build_this {this.path}                                     R Documentation

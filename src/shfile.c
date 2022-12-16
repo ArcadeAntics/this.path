@@ -8,6 +8,14 @@
 
 
 
+/* it's unfortunate that I didn't plan this better, now I have two C functions
+ * for getting the shell argument FILE
+ *
+ * do_getshfile() returns the command line argument FILE
+ *
+ * do_shfile() returns the normalized / / original FILE
+ * depending on the arguments 'original' and 'for.msg'
+ */
 SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int original = asLogical(CADR(args));
@@ -62,4 +70,411 @@ SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #undef get_and_return
 #undef get_and_check
+}
+
+
+
+
+
+// https://github.com/wch/r-source/blob/173e7142252170d2525b5da854ca24cb8a4f9fc9/src/gnuwin32/system.c#L955
+static void env_command_line(int *pac, const char **argv)
+{
+    int ac = *pac, newac = 1;
+    const char **av = argv;
+    Rboolean hadE = FALSE;
+
+
+    while (--ac) {
+        ++av;
+        if (strcmp(*av, "-e") == 0) {
+            hadE = TRUE;
+            argv[newac++] = *av;
+            continue;
+        }
+        if (!hadE && **av != '-' && strchr(*av, '=')) {
+        }
+        else argv[newac++] = *av;
+        hadE = FALSE;
+    }
+    *pac = newac;
+}
+
+
+// https://github.com/wch/r-source/blob/d29fd8b7f3221aaef97f0980108a230623274442/src/main/CommandLineArgs.c#L94
+void R_common_command_line(int *pac, const char **argv)
+{
+    int ac = *pac, newac = 1;
+    const char **av = argv;
+    Rboolean processing = TRUE;
+
+
+    while (--ac) {
+        if (processing && **++av == '-') {
+            if (!strcmp(*av, "--version")) {
+            }
+            else if (!strcmp(*av, "--args")) {
+                argv[newac++] = *av;
+                processing = FALSE;
+            }
+            else if (!strcmp(*av, "--save")) {
+            }
+            else if (!strcmp(*av, "--no-save")) {
+            }
+            else if (!strcmp(*av, "--restore")) {
+            }
+            else if (!strcmp(*av, "--no-restore")) {
+            }
+            else if (!strcmp(*av, "--no-restore-data")) {
+            }
+            else if (!strcmp(*av, "--no-restore-history")) {
+            }
+            else if (!strcmp(*av, "--silent") ||
+                     !strcmp(*av, "--quiet") ||
+                     !strcmp(*av, "-q"))
+            {
+            }
+            else if (!strcmp(*av, "--vanilla")) {
+            }
+            else if (!strcmp(*av, "--no-environ")) {
+            }
+            else if (!strcmp(*av, "--verbose")) {
+            }
+            else if (!strcmp(*av, "--no-echo") ||
+                     !strcmp(*av, "--slave") ||
+                     !strcmp(*av, "-s"))
+            {
+            }
+            else if (!strcmp(*av, "--no-site-file")) {
+            }
+            else if (!strcmp(*av, "--no-init-file")) {
+            }
+            else if (!strcmp(*av, "--debug-init")) {
+            }
+            else if (!strncmp(*av, "--encoding", 10)) {
+                if (strlen(*av) < 12) {
+                    if (ac > 1) {
+                        ac--;
+                        av++;
+                    }
+                }
+            }
+#ifdef _WIN32
+            else if (!strcmp(*av, "--no-Rconsole")) {
+            }
+#endif
+            else if (!strcmp(*av, "-save") ||
+                     !strcmp(*av, "-nosave") ||
+                     !strcmp(*av, "-restore") ||
+                     !strcmp(*av, "-norestore") ||
+                     !strcmp(*av, "-noreadline") ||
+                     !strcmp(*av, "-quiet") ||
+                     !strcmp(*av, "-nsize") ||
+                     !strcmp(*av, "-vsize") ||
+                     !strncmp(*av, "--max-nsize", 11) ||
+                     !strncmp(*av, "--max-vsize", 11) ||
+                     !strcmp(*av, "-V") ||
+                     !strcmp(*av, "-n") ||
+                     !strcmp(*av, "-v"))
+            {
+            }
+            else if (!strncmp(*av, "--min-nsize", 11) ||
+                     !strncmp(*av, "--min-vsize", 11))
+            {
+                if (strlen(*av) < 13) {
+                    if (ac > 1) {
+                        ac--;
+                        av++;
+                    }
+                }
+            }
+            else if (strncmp(*av, "--max-ppsize", 12) == 0) {
+                if (strlen(*av) < 14) {
+                    if (ac > 1) {
+                        ac--;
+                        av++;
+                    }
+                }
+            }
+            else { /* unknown -option */
+                argv[newac++] = *av;
+            }
+        }
+        else {
+            argv[newac++] = *av;
+        }
+    }
+    *pac = newac;
+    return;
+}
+
+
+#define print_char_array(ac, av)                               \
+    do {                                                       \
+        SEXP tmp10 = allocVector(STRSXP, ac);                  \
+        PROTECT(tmp10);                                        \
+        for (int indx = 0; indx < ac; indx++) {                \
+            SET_STRING_ELT(tmp10, indx, mkChar(av[indx]));     \
+        }                                                      \
+        Rprint(tmp10, R_BaseEnv);                              \
+        UNPROTECT(1);                                          \
+    } while (0)
+
+
+SEXP windowsgetshfile(int ac, const char **av)
+{
+    Rboolean processing = TRUE;
+
+
+    env_command_line(&ac, av);
+
+
+#ifdef debug
+    Rprintf("\nafter removing environment variables:\n");
+    print_char_array(ac, av);
+#endif
+
+
+    R_common_command_line(&ac, av);
+
+
+#ifdef debug
+    Rprintf("\nafter removing common arguments:\n");
+    print_char_array(ac, av);
+#endif
+
+
+    const char *FILE = NULL;
+    // https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1179
+    while (--ac) {
+        if (processing && **++av == '-') {
+            // if (!strcmp(*av, "--help") || !strcmp(*av, "-h")) {
+            // } else if (!strcmp(*av, "--cd-to-userdocs")) {
+            // } else if (!strcmp(*av, "--no-environ")) {
+            // } else if (!strcmp(*av, "--ess")) {
+            // } else if (!strcmp(*av, "--internet2")) {
+            // } else if (!strcmp(*av, "--mdi")) {
+            // } else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi")) {
+            // } else if (!strcmp(*av, "--debug")) {
+            // } else
+            if (!strcmp(*av, "--args")) {
+                break;
+            } else if (!strcmp(*av, "-f")) {
+                ac--;
+                av++;
+                if (!ac) {
+                    error("internal error, this should have been caught earlier");
+                }
+                /* if (av != "-") */
+                if (strcmp(*av, "-")) {
+                    FILE = *av;
+                }
+            } else if (!strncmp(*av, "--file=", 7)) {
+                /* if (av != "-") */
+                if (strcmp((*av)+7, "-")) {
+                    FILE = (*av)+7;
+                }
+            // } else if (!strncmp(*av, "--workspace=", 12)) {
+            } else if (!strcmp(*av, "-e")) {
+                ac--;
+                av++;
+                if (!ac) {
+                    error("internal error, this should have been caught earlier");
+                }
+            }
+        }
+    }
+
+
+#ifdef debug
+    set_R_Visible(1);
+    Rprintf("\n");
+#endif
+
+
+    return ScalarString(FILE ? mkChar(FILE) : NA_STRING);
+}
+
+
+// https://github.com/wch/r-source/blob/031c225f8e928f7259eed5704218edc83b7c88b0/src/unix/system.c#L163
+static char *unescape_arg(char *p, const char *avp)
+{
+    /* Undo the escaping done in the front end */
+    const char *q;
+    for (q = avp; *q; q++) {
+        if (*q == '~' && *(q+1) == '+' && *(q+2) == '~') {
+            q += 2;
+            *p++ = ' ';
+        } else if (*q == '~' && *(q+1) == 'n' && *(q+2) == '~') {
+            q += 2;
+            *p++ = '\n';
+        } else if (*q == '~' && *(q+1) == 't' && *(q+2) == '~') {
+            q += 2;
+            *p++ = '\t';
+        } else *p++ = *q;
+    }
+    return p;
+}
+
+
+SEXP unixgetshfile(int ac, const char **av)
+{
+    int i, ioff = 1, j;
+    const char **avv;
+
+
+    // https://github.com/wch/r-source/blob/031c225f8e928f7259eed5704218edc83b7c88b0/src/unix/system.c#L346
+    /* first task is to select the GUI.
+       If run from the shell script, only Tk|tk|X11|x11 are allowed.
+     */
+    for (i = 0, avv = av; i < ac; i++, avv++) {
+        if (!strcmp(*avv, "--args"))
+            break;
+        if (!strncmp(*avv, "--gui", 5) || !strncmp(*avv, "-g", 2)) {
+            if (!strncmp(*avv, "--gui", 5) && strlen(*avv) >= 7) {
+            }
+            else {
+                if (i + 1 < ac) {
+                    avv++;
+                    ioff++;
+                }
+            }
+            /* now remove it/them */
+            for (j = i; j < ac - ioff; j++)
+                av[j] = av[j + ioff];
+            ac -= ioff;
+            break;
+        }
+    }
+
+
+#ifdef debug
+    Rprintf("\nafter removing --gui/-g argument:\n");
+    print_char_array(ac, av);
+#endif
+
+
+    R_common_command_line(&ac, av);
+
+
+#ifdef debug
+    Rprintf("\nafter removing common arguments:\n");
+    print_char_array(ac, av);
+#endif
+
+
+    const char *FILE = NULL;
+    // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
+    while (--ac) {
+        if (**++av == '-') {
+            // if (!strcmp(*av, "--no-readline")) {
+            // } else
+            if (!strcmp(*av, "-f")) {
+                ac--;
+                av++;
+#define R_INIT_TREAT_F(_AV_)                                   \
+                if (strcmp(_AV_, "-")) {                       \
+                    if (strlen(_AV_) >= PATH_MAX) {            \
+                        errorcall(R_NilValue, _("path given in -f/--file is too long"));\
+                    }                                          \
+                    char path[PATH_MAX], *p = path;            \
+                    p = unescape_arg(p, _AV_);                 \
+                    *p = '\0';                                 \
+                    FILE = path;                               \
+                }
+                R_INIT_TREAT_F(*av);
+
+            } else if (!strncmp(*av, "--file=", 7)) {
+
+                R_INIT_TREAT_F((*av)+7);
+
+            } else if (!strcmp(*av, "-e")) {
+                ac--;
+                av++;
+            } else if (!strcmp(*av, "--args")) {
+                break;
+            } else if (!strcmp(*av, "--interactive")) {
+                break;
+            } else {
+#ifdef HAVE_AQUA
+                // r27492: in 2003 launching from 'Finder OSX' passed this
+                if (!strncmp(*av, "-psn", 4)) break;
+#endif
+            }
+        }
+    }
+
+
+#ifdef debug
+    set_R_Visible(1);
+    Rprintf("\n");
+#endif
+
+
+    return ScalarString(FILE ? mkChar(FILE) : NA_STRING);
+}
+
+
+SEXP do_getshfile(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    if (!is_in_shell) {
+        return ScalarString(NA_STRING);
+    }
+
+
+    int ARGC; SEXP ARGV;
+
+
+    SEXP expr = lang1(commandArgsSymbol);
+    PROTECT(expr);
+    ARGV = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    PROTECT(ARGV);
+    ARGC = LENGTH(ARGV);
+
+
+#ifdef debug
+    Rprintf("\noriginal arguments:\n");
+    Rprint(ARGV, R_BaseEnv);
+#endif
+
+
+    if (ARGC <= 1) {
+        UNPROTECT(1);
+        return ScalarString(NA_STRING);
+    }
+
+
+    /* determine the number of leading arguments:
+     * the arguments up to and including --args
+     */
+    SEXP argsChar = mkChar("--args");
+    int ac = ARGC;
+    for (int i = 0; i < ARGC; i++) {
+        if (STRING_ELT(ARGV, i) == argsChar) {
+            ac = i + 1;
+            break;
+        }
+    }
+
+
+    /* copy the arguments from the STRSXP to a *char[] */
+    const char *argv[ac];
+    for (int i = 0; i < ac; i++) {
+        argv[i] = CHAR(STRING_ELT(ARGV, i));
+    }
+    UNPROTECT(1);  /* ARGV */
+    const char **av = argv;
+
+
+#ifdef debug
+    Rprintf("\nleading arguments:\n");
+    print_char_array(ac, av);
+#endif
+
+
+#ifdef _WIN32
+    return windowsgetshfile(ac, av);
+#else
+    return unixgetshfile(ac, av);
+#endif
 }

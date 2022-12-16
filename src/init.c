@@ -87,7 +87,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* shfile.c */
 
 
-    {"shfile", (DL_FUNC) &do_shfile, 2},
+    {"shfile"   , (DL_FUNC) &do_shfile   , 2},
+    {"getshfile", (DL_FUNC) &do_getshfile, 0},
 
 
     /* thispath.c */

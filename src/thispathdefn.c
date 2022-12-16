@@ -441,3 +441,4 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 
 
 int gui_rstudio = -1;
+int in_shell = -1;

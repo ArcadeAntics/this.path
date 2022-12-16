@@ -1,5 +1,11 @@
 # a character vector of symbols to remove (including itself)
 rm.list <- "rm.list"
+rm.list.append <- function (...)
+{
+    rm.list <<- c(rm.list, ...)
+}
+rm.list.append("rm.list.append")
+
 
 
 
@@ -18,9 +24,9 @@ tmp <- list(
 if (!all(vapply(tmp, function(x) is.character(x) && length(x) == 1 && !is.na(x), NA)))
     stop("could not determine variable names")
 for (i in seq_along(tmp)) assign(names(tmp)[[i]], tmp[[i]])
-rm.list <- c(rm.list, names(tmp))
+rm.list.append(names(tmp))
 thispathChars <- tmp
-rm.list <- c(rm.list, "thispathChars")
+rm.list.append("thispathChars")
 rm(i, tmp)
 
 
@@ -40,202 +46,336 @@ rm(i, tmp)
 
 
 
-GETSHFILE <- function ()
-{
-    # the details between how the shell arguments are handled is
-    # different on Windows and under Unix-alikes, see the comments below.
+# strlen <- function (x)
+# nchar(x, "bytes", keepNA = FALSE)
+#
+#
+# env_command_line <- function (argv)
+# {
+#     # remove command line arguments which look like environment variables
+#     #
+#     # any environment variable argument is an argument which
+#     # * does not start with a hyphen
+#     # * contains an equal sign
+#     # * the previous argument is not -e
+#     is.envvar <- !startsWith(argv, "-")
+#     if (any(is.envvar)) {
+#         is.envvar <- is.envvar & grepl("=", argv, fixed = TRUE, useBytes = TRUE)
+#         if (any(is.envvar)) {
+#             is.envvar <- is.envvar & c(FALSE, argv[-length(argv)] != "-e")
+#             if (any(is.envvar)) {
+#                 argv <- argv[!is.envvar]
+#             }
+#         }
+#     }
+#     argv
+# }
+#
+#
+# R_common_command_line <- function (argv)
+# {
+#     argc <- length(argv)
+#     av <- argv[[1L]]
+#     indx <- 1L
+#     while (indx < argc) {
+#         indx <- indx + 1L
+#         if (startsWith(argv[[indx]], "-")) {
+#             if (argv[[indx]] == "--version") {
+#             }
+#             else if (argv[[indx]] == "--args") {
+#                 av <- c(av, argv[indx:argc])
+#                 break
+#             }
+#             else if (argv[[indx]] %in% c("--save",
+#                                          "--no-save",
+#                                          "--restore",
+#                                          "--no-restore",
+#                                          "--no-restore-data",
+#                                          "--no-restore-history",
+#                                          "--silent",
+#                                          "--quiet",
+#                                          "-q",
+#                                          "--vanilla",
+#                                          "--no-environ",
+#                                          "--verbose",
+#                                          "--no-echo",
+#                                          "--slave",
+#                                          "-s",
+#                                          "--no-site-file",
+#                                          "--no-init-file",
+#                                          "--debug-init"))
+#             {
+#             }
+#             else if (startsWith(argv[[indx]], "--encoding")) {
+#                 if (strlen(argv[[indx]]) < 12L) {
+#                     if (indx < argc) {
+#                         indx <- indx + 1L
+#                     }
+#                 }
+#             }
+#             else if (os.windows && argv[[indx]] == "--no-Rconsole") {
+#             }
+#             else if (argv[[indx]] %in% c("-save",
+#                                          "-nosave",
+#                                          "-restore",
+#                                          "-norestore",
+#                                          "-noreadline",
+#                                          "-quiet",
+#                                          "-nsize",
+#                                          "-vsize") ||
+#                      any(startsWith(argv[[indx]], c("--max-nsize",
+#                                                     "--max-vsize"))) ||
+#                      argv[[indx]] %in% c("-V",
+#                                          "-n",
+#                                          "-v"))
+#             {
+#             }
+#             else if (any(startsWith(argv[[indx]], c("--min-nsize",
+#                                                     "--min-vsize"))))
+#             {
+#                 if (strlen(argv[[indx]]) < 13L) {
+#                     if (indx < argc) {
+#                         indx <- indx + 1L
+#                     }
+#                 }
+#             }
+#             else if (startsWith(argv[[indx]], "--max-ppsize")) {
+#                 if (strlen(argv[[indx]]) < 14L) {
+#                     if (indx < argc) {
+#                         indx <- indx + 1L
+#                     }
+#                 }
+#             }
+#             else {
+#                 av <- c(av, argv[[indx]])
+#             }
+#         }
+#         else {
+#             av <- c(av, argv[[indx]])
+#         }
+#     }
+#     av
+# }
+#
+#
+# unescape_arg <- function (av)
+# {
+#     av <- gsub("~+~", " " , av, fixed = TRUE, useBytes = TRUE)
+#     av <- gsub("~n~", "\n", av, fixed = TRUE, useBytes = TRUE)
+#     av <- gsub("~t~", "\t", av, fixed = TRUE, useBytes = TRUE)
+#     av
+# }
+#
+#
+# GETSHFILE <- function ()
+# {
+#     # the details between how the shell arguments are handled is
+#     # different on Windows and under Unix-alikes, see the comments below.
+#
+#
+#     # when running R from a shell, there are a few things to keep in mind when
+#     # trying to select the correct 'FILE' to return. First, there are a few
+#     # shell arguments where the name and value are separate. This means that
+#     # the name of the argument is the n-th argument and the value of the
+#     # argument is the (n+1)-th argument. Second, the --args shell argument
+#     # means that all arguments after are for the R script to use while the
+#     # arguments before are for the 'R' executable. Finally, to take input from
+#     # a file, the two accepted methods are -f FILE and --file=FILE where the
+#     # input is taken from 'FILE'. If multiple of these arguments are supplied,
+#     # (it seems as though) 'R' takes input from the last 'FILE' argument.
+#
+#
+#     # running R from a shell on Windows
+#     if (os.windows.in.shell) {
+#
+#
+#         argv <- commandArgs()
+#
+#
+#         # cat("\noriginal arguments:\n"); print(argv)
+#
+#
+#         if (length(argv) <= 1L)
+#             return(NA_character_)
+#
+#
+#         # select the shell arguments intended for the R executable
+#         m <- match("--args", argv, 0L)
+#         if (m)
+#             argv <- argv[seq_len(m)]
+#
+#
+#         # cat("\nleading arguments:\n"); print(argv)
+#
+#
+#         argv <- env_command_line(argv)
+#
+#
+#         # cat("\nafter removing environment variables:\n"); print(argv)
+#
+#
+#         argv <- R_common_command_line(argv)
+#
+#
+#         # cat("\nafter removing common arguments:\n"); print(argv)
+#
+#
+#         FILE <- NA_character_
+#         argc <- length(argv)
+#         indx <- 1L
+#         while (indx < argc) {
+#             indx <- indx + 1L
+#             if (startsWith(argv[[indx]], "-")) {
+#                 # if (!strcmp(*av, "--help") || !strcmp(*av, "-h")) {
+#                 # } else if (!strcmp(*av, "--cd-to-userdocs")) {
+#                 # } else if (!strcmp(*av, "--no-environ")) {
+#                 # } else if (!strcmp(*av, "--ess")) {
+#                 # } else if (!strcmp(*av, "--internet2")) {
+#                 # } else if (!strcmp(*av, "--mdi")) {
+#                 # } else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi")) {
+#                 # } else if (!strcmp(*av, "--debug")) {
+#                 # } else
+#                 if (argv[[indx]] == "--args") {
+#                     break
+#                 } else if (argv[[indx]] == "-f") {
+#                     indx <- indx + 1L
+#                     if (indx > argc) {
+#                         stop("internal error, this should have been caught earlier")
+#                     }
+#                     if (argv[[indx]] != "-") {
+#                         FILE <- argv[[indx]]
+#                     }
+#                 } else if (startsWith(argv[[indx]], "--file=")) {
+#                     av <- substring(argv[[indx]], 8L)
+#                     if (av != "-") {
+#                         FILE <- av
+#                     }
+#                 # } else if (!strncmp(*av, "--workspace=", 12)) {
+#                 } else if (argv[[indx]] == "-e") {
+#                     indx <- indx + 1L
+#                     if (indx > argc) {
+#                         stop("internal error, this should have been caught earlier");
+#                     }
+#                 }
+#             }
+#         }
+#
+#
+#         # cat("\n")
+#
+#
+#         FILE
+#     }
+#
+#
+#     # running R from a shell under Unix-alikes with the default GUI (or similar)
+#     else if (os.unix.in.shell) {
+#
+#
+#         # when running R from a shell under Unix-alikes, the shell arguments
+#         # are parsed in a different manner (of course they are, smh)
+#
+#
+#         argv <- commandArgs()
+#
+#
+#         # cat("\noriginal arguments:\n"); print(argv)
+#
+#
+#         if (length(argv) <= 1L)
+#             return(NA_character_)
+#
+#
+#         # select the shell arguments intended for the R executable
+#         m <- match("--args", argv, 0L)
+#         if (m)
+#             argv <- argv[seq_len(m)]
+#
+#
+#         # cat("\nleading arguments:\n"); print(argv)
+#
+#
+#         for (indx in seq_along(argv)) {
+#             if (argv[[indx]] == "--args")
+#                 break
+#             if (startsWith(argv[[indx]], "--gui")) {
+#                 if (strlen(argv[[indx]]) >= 7L) {
+#                 }
+#                 else {
+#                     argv <- argv[-indx]
+#                 }
+#                 argv <- argv[-indx]
+#                 break
+#             }
+#             if (startsWith(argv[[indx]], "-g")) {
+#                 argv <- argv[-indx]
+#                 argv <- argv[-indx]
+#                 break
+#             }
+#         }
+#
+#
+#         # cat("\nafter removing --gui/-g argument:\n"); print(argv)
+#
+#
+#         argv <- R_common_command_line(argv)
+#
+#
+#         # cat("\nafter removing common arguments:\n"); print(argv)
+#
+#
+#         R_INIT_TREAT_F <- function(.AV.) {
+#             if (.AV. != "-") {
+#                 if (strlen(.AV.) >= PATH_MAX) {
+#                     stop("path given in -f/--file is too long", domain = "R")
+#                 }
+#                 FILE <<- unescape_arg(.AV.)
+#             }
+#         }
+#
+#
+#         FILE <- NA_character_
+#         argc <- length(argv)
+#         indx <- 1L
+#         while (indx < argc) {
+#             indx <- indx + 1L
+#             if (startsWith(argv[[indx]], "-")) {
+#                 # if (argv[[indx]] == "--no-readline") {
+#                 # } else
+#                 if (argv[[indx]] == "-f") {
+#                     indx <- indx + 1L
+#                     R_INIT_TREAT_F(argv[[indx]])
+#
+#                 } else if (startsWith(argv[[indx]], "--file=")) {
+#
+#                     R_INIT_TREAT_F(substring(argv[[indx]], 8L))
+#
+#                 } else if (argv[[indx]] == "-e") {
+#                     indx <- indx + 1L
+#                 } else if (argv[[indx]] == "--args") {
+#                     break
+#                 } else if (argv[[indx]] == "--interactive") {
+#                     break
+#                 } else {
+#                     if (HAVE_AQUA) {
+#                         # r27492: in 2003 launching from 'Finder OSX' passed this
+#                         if (startsWith(argv[[indx]], "-psn")) break
+#                     }
+#                 }
+#             }
+#         }
+#
+#
+#         # cat("\n")
+#
+#
+#         FILE
+#     }
+#
+#
+#     else NA_character_
+# }
 
-
-    # when running R from a shell, there are a few things to keep in mind when
-    # trying to select the correct 'FILE' to return. First, there are a few
-    # shell arguments where the name and value are separate. This means that
-    # the name of the argument is the n-th argument and the value of the
-    # argument is the (n+1)-th argument. Second, the --args shell argument
-    # means that all arguments after are for the R script to use while the
-    # arguments before are for the 'R' executable. Finally, to take input from
-    # a file, the two accepted methods are -f FILE and --file=FILE where the
-    # input is taken from 'FILE'. If multiple of these arguments are supplied,
-    # (it seems as though) 'R' takes input from the last 'FILE' argument.
-
-
-    # running R from a shell on Windows
-    if (os.windows.in.shell) {
-
-
-        ca <- commandArgs()
-
-
-        # select the shell arguments intended for the R executable. also remove
-        # the first argument, this is the name of the executable by which this
-        # R process was invoked (not useful here)
-        ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
-        ca <- ca[-1L]
-        if (length(ca) <= 0L)
-            return(NA_character_)
-
-
-        # remove the --encoding enc shell arguments. these arguments have the
-        # highest priority (ALWAYS handled first), regardless of the preceding
-        # argument.
-        #
-        # Example:
-        #
-        # R -f --encoding UTF-8 FILE
-        #
-        # you might think the value for -f would be --encoding but it's
-        # actually FILE because --encoding enc is processed first
-        enc <- ca == "--encoding"
-        if (any(enc)) {
-            for (n in seq_len(length(enc) - 1L)) {
-                if (enc[[n]])
-                    enc[[n + 1L]] <- FALSE
-            }
-            enc <- which(enc)
-            ca <- ca[-c(enc, enc + 1L)]
-            if (length(ca) <= 0L)
-                return(NA_character_)
-        }
-
-
-        # there are 17 more arguments that are evaluated before -f is
-        # grouped with its corresponding value. Some of them are constant (the
-        # first fifteen) while the others are variable (same beginning,
-        # different values after)
-        #
-        # Example:
-        #
-        # R -f --silent --max-ppsize=10000 FILE
-        #
-        # you might think the value of -f would be --silent but it's
-        # actually FILE because --silent and --max-ppsize=N are processed
-        # before -f is processed
-        pre <- ca %in% c(
-            "--save"              , "--no-save"           ,
-            "--no-environ"        , "--no-site-file"      , "--no-init-file"      ,
-            "--restore"           , "--no-restore-data"   ,
-            "--no-restore-history", "--no-restore"        ,
-            "--vanilla"           ,
-            "-q"                  , "--quiet"             , "--silent"            ,
-            "--no-echo"           , "--verbose"
-        ) | grepl("^--(encoding|max-ppsize)=", ca, useBytes = TRUE)
-        if (any(pre)) {
-            ca <- ca[!pre]
-            if (length(ca) <= 0L)
-                return(NA_character_)
-        }
-
-
-        # next, we group the shell arguments where the name and value are
-        # separate. there are two left being -f FILE and -e EXPR. find the
-        # locations of these special arguments
-        special <- ca %in% c("-f", "-e")
-
-
-        # next, we figure out which of these special arguments are ACTUALLY
-        # special.
-        #
-        # Example:
-        #
-        # R -f -f -f -e
-        # R -e -e -e -f
-        #
-        # the first and third arguments are special
-        # while the second and fourth are not
-        if (any(special)) {
-            for (n in seq_len(length(special) - 1L)) {
-                if (special[[n]])
-                    special[[n + 1L]] <- FALSE
-            }
-        }
-        special <- which(special)
-
-
-        # with the locations of the special arguments,
-        #     figure out which of those are -f FILE arguments
-        f <- special[ca[special] == "-f"]
-
-
-        # use the locations of the special arguments to
-        #     find the non-special argument locations
-        not.special <- setdiff(seq_along(ca), c(special, special + 1L))
-
-
-        # in these non-special shell arguments,
-        #     figure out which arguments start with --file=
-        file <- not.special[grep("^--file=", ca[not.special], useBytes = TRUE)]
-
-
-        # given the number of -f FILE and --file=FILE arguments,
-        #     signal a possible error or warning
-        n <- length(f) + length(file)
-        if (n < 1L)
-            return(NA_character_)
-        else if (n > 1L)
-            stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
-
-
-        # since 'R' uses the last -f FILE or --file=FILE argument,
-        #     use max to find the index of the last one of these arguments
-        n <- max(f, file)
-        if (n %in% file)
-            sub("^--file=", "", ca[[n]], useBytes = TRUE)
-        else ca[[n + 1L]]
-    }
-
-
-    # running R from a shell under Unix-alikes with the default GUI (or similar)
-    else if (os.unix.in.shell) {
-
-
-        # when running R from a shell under Unix-alikes, the shell arguments
-        # are parsed in a different manner (of course they are, smh). luckily,
-        # it is far less confusing to grab argument 'FILE' than above
-
-
-        ca <- commandArgs()
-
-
-        ca <- ca[seq_len(length(ca) - length(commandArgs(trailingOnly = TRUE)))]
-        ca <- ca[-1L]
-        if (length(ca) <= 0L)
-            return(NA_character_)
-
-
-        enc <- ca == "--encoding"
-        if (any(enc)) {
-            for (n in seq_len(length(enc) - 1L)) {
-                if (enc[[n]])
-                    enc[[n + 1L]] <- FALSE
-            }
-            enc <- which(enc)
-            ca <- ca[-c(enc, enc + 1L)]
-            if (length(ca) <= 0L)
-                return(NA_character_)
-        }
-
-
-        f <- which(ca == "-f")
-        file <- grep("^--file=", ca, useBytes = TRUE)
-
-
-        n <- length(f) + length(file)
-        if (n < 1L)
-            return(NA_character_)
-        else if (n > 1L)
-            stop("R is being run from a shell and formal argument 'FILE' matched by multiple actual arguments")
-
-
-        n <- max(f, file)
-        gsub("~+~", " ", {
-            if (n %in% file)
-                sub("^--file=", "", ca[[n]], useBytes = TRUE)
-            else ca[[n + 1L]]
-        }, fixed = TRUE, useBytes = TRUE)
-    }
-
-
-    else NA_character_
-}
 
 
 
@@ -244,16 +384,15 @@ GETSHFILE <- function ()
 .External2(C_shfile, original, for.msg)
 
 
-tmp <- new.env()
-environment(.shFILE) <- tmp
-evalq(envir = tmp, {
-    GETSHFILE <- GETSHFILE
-    delayedAssign(thispathofile, GETSHFILE())
+evalq({
+    # GETSHFILE <- GETSHFILE
+    # delayedAssign(thispathofile, GETSHFILE())
+
+
+    delayedAssign(thispathofile, .External2(C_getshfile))
     eval(call("delayedAssign", thispathfile, call(".normalizePath", as.symbol(thispathofile))))
-})
-rm(GETSHFILE)
-lockEnvironment(tmp, bindings = TRUE)
-rm(tmp)
+}, envir = environment(.shFILE) <- new.env())
+# rm(GETSHFILE)
 
 
 shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
@@ -398,7 +537,7 @@ is.unevaluated.promise <- function (sym, env)
 .External2(C_isunevaluatedpromise, sym, env)
 
 
-rm.list <- c(rm.list, "this_path_used_in_an_inappropriate_fashion")
+rm.list.append("this_path_used_in_an_inappropriate_fashion")
 this_path_used_in_an_inappropriate_fashion <- local({
     tmp <- readLines("src/thispathdefn.h", warn = FALSE)
     tmp <- tmp[[grep("#define this_path_used_in_an_inappropriate_fashion", tmp, fixed = TRUE) + 1L]]
@@ -491,7 +630,7 @@ existsInFrame <- function (x, frame)
 exists(x, envir = frame, inherits = FALSE)
 
 
-rm.list <- c(rm.list, "checkfile")
+rm.list.append("checkfile")
 checkfile <- function(name, call = quote(sys.call(n)), character.only = FALSE,
     file.only = FALSE, exists.owd = FALSE, get.owd = NULL, do.enc2utf8 = FALSE,
     normalize = FALSE) NULL
@@ -1276,7 +1415,7 @@ identical(x, y)
 })
 
 
-rm.list <- c(rm.list, "returnfile")
+rm.list.append("returnfile")
 returnfile <- function(fun.name, character.only = FALSE, file.only = FALSE, maybe.decrement = FALSE) NULL
 body(returnfile) <- bquote({
     as.list(simplify(substitute({

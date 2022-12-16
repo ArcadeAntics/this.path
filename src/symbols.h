@@ -70,7 +70,9 @@ extern SEXP
     cSymbol                      ,
     libnameSymbol                ,
     _libPathsSymbol              ,
-    _asArgsSymbol                 ;
+    _asArgsSymbol                ,
+    commandArgsSymbol            ,
+    in_shellSymbol               ;
 
 
 #endif
