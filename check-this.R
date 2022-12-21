@@ -8,11 +8,18 @@ essentials:::check.this(  # this.path
 
 
 local({
-    x <- c("os.unix", "os.windows", "gui.aqua", "gui.rgui", "gui.rstudio", "gui.tk",
-      "gui.vscode", "tools.rstudio", ".rs.api.getActiveDocumentContext",
-      ".rs.api.getSourceEditorContext", "debugSource", "os.unix.in.shell",
-      "os.windows.in.shell", "in.shell", "unrecognized.manner", "initwd",
-      "ucrt", "utf8")
+    x <- c(
+        "shINFO",
+        "os.unix", "os.windows",
+        "gui.aqua", "gui.rgui", "gui.tk",
+        "gui.rstudio", "gui.vscode",
+        "maybe.os.unix.in.shell", "maybe.os.windows.in.shell", "maybe.in.shell",
+        "os.unix.in.shell", "os.windows.in.shell", "in.shell",
+        "unrecognized.manner", "initwd", "ucrt", "utf8",
+
+        "has.shFILE",
+        "r.editor", "untitled", "nchar_r.editor", "identical2"
+    )
     sapply(x, getFromNamespace, getNamespace("this.path"), simplify = FALSE)
 })
 
