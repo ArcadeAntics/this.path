@@ -1,6 +1,26 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION devel}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item \code{shFILE()} now parses the command line arguments in the exact
+            same manner as \R itself, more accurately selecting the
+            \option{FILE} argument.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item C code no longer uses \code{lang1()} through \code{lang6()} with
+            multiple unprotected arguments, uses \code{allocList()} and
+            \code{SETCAR()} instead.
+      \item C code no longer uses \code{sprintf()}, uses \code{snprintf()}
+            instead.
+      \item \pkg{this.path} does a much better job of determining if the \R
+            session is from \sQuote{VSCode}.
+    }
+  }
+}
 \section{CHANGES IN VERSION 1.1.0}{
   \subsection{NEW FEATURES}{
     \itemize{

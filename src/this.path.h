@@ -83,7 +83,7 @@ extern SEXP do_prinfo                  (SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 extern SEXP do_shfile   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_getshfile(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 /* thispath.c */

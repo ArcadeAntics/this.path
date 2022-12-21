@@ -2,10 +2,14 @@
 \alias{this.path-package}
 \docType{package}
 \title{
-\packageTitle{this.path}
+Get Executing Script's Path, from \sQuote{RStudio}, \sQuote{VSCode},
+\sQuote{Rgui}, \code{source()}, and \command{Rscript} (Shells Including
+Windows Command Line / / Unix Terminal)
 }
 \description{
-\packageDescription{this.path}
+Determine the path of the executing script. Works when running a line
+or selection in \sQuote{RStudio}, \sQuote{VSCode}, and \sQuote{Rgui},
+when using \sourceandlist{}, and when running from a shell.
 }
 \details{
 \code{\link{this.path}()} returns the
@@ -42,8 +46,7 @@ arguments in the same session, as opposed to a new one with
 \code{\link{is.main}()} and \code{\link{from.shell}()} determine if an \R
 script is the main executing script or is run from a shell.
 
-\code{\link{shFILE}()} and \code{\link{normalized.shFILE}()} extract
-\option{FILE} from the command line arguments.
+\code{\link{shFILE}()} extracts \option{FILE} from the command line arguments.
 
 \code{\link{tryCatch2}()} adds argument \code{else.} that runs if no error is
 thrown. This helps to run extra code that is not intended to be protected by

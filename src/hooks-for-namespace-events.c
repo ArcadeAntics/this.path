@@ -22,6 +22,7 @@ SEXP
     sourceSymbol                  = NULL,
     sys_sourceSymbol              = NULL,
     gui_rstudioSymbol             = NULL,
+    init_tools_rstudioSymbol      = NULL,
     debugSourceSymbol             = NULL,
     testthatSymbol                = NULL,
     source_fileSymbol             = NULL,
@@ -71,7 +72,7 @@ SEXP
     _libPathsSymbol               = NULL,
     _asArgsSymbol                 = NULL,
     commandArgsSymbol             = NULL,
-    in_shellSymbol                = NULL;
+    maybe_in_shellSymbol          = NULL;
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -116,6 +117,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     sourceSymbol                  = install("source");
     sys_sourceSymbol              = install("sys.source");
     gui_rstudioSymbol             = install("gui.rstudio");
+    init_tools_rstudioSymbol      = install("init.tools:rstudio");
     debugSourceSymbol             = install("debugSource");
     testthatSymbol                = install("testthat");
     source_fileSymbol             = install("source_file");
@@ -165,7 +167,7 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     _libPathsSymbol               = install(".libPaths");
     _asArgsSymbol                 = install(".asArgs");
     commandArgsSymbol             = install("commandArgs");
-    in_shellSymbol                = install("in.shell");
+    maybe_in_shellSymbol          = install("maybe.in.shell");
 
 
 

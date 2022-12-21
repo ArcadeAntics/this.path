@@ -50,6 +50,7 @@
     getinitwd()  # force the promise for the initial working directory
     assign("libname", libname, getNamespace(pkgname))
     .External2(C_onload, libname, pkgname)
+    # cat("\n> .Platform\n"); print(.Platform);
     # warning("this version is only for debugging purposes\n go to the archive and install the previous version")
     # print(list(libname = libname, pkgname = pkgname))
 }

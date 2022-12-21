@@ -23,6 +23,7 @@ extern SEXP
     sourceSymbol                 ,
     sys_sourceSymbol             ,
     gui_rstudioSymbol            ,
+    init_tools_rstudioSymbol     ,
     debugSourceSymbol            ,
     testthatSymbol               ,
     source_fileSymbol            ,
@@ -72,7 +73,7 @@ extern SEXP
     _libPathsSymbol              ,
     _asArgsSymbol                ,
     commandArgsSymbol            ,
-    in_shellSymbol               ;
+    maybe_in_shellSymbol         ;
 
 
 #endif

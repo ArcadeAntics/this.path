@@ -165,6 +165,9 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
+    init_tools_rstudio(rho);
+
+
     int testthat_loaded, knitr_loaded;
 
 
@@ -415,7 +418,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
-        else if (gui_rstudio && identical(function, debugSource)) {
+        else if (has_tools_rstudio && identical(function, debugSource)) {
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)

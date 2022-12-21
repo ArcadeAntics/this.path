@@ -389,7 +389,7 @@ evalq({
     # delayedAssign(thispathofile, GETSHFILE())
 
 
-    delayedAssign(thispathofile, .External2(C_getshfile))
+    delayedAssign(thispathofile, shINFO[["FILE"]])
     eval(call("delayedAssign", thispathfile, call(".normalizePath", as.symbol(thispathofile))))
 }, envir = environment(.shFILE) <- new.env())
 # rm(GETSHFILE)
@@ -1156,6 +1156,13 @@ body(.this.path.toplevel) <- bquote({
 
     # running from 'RStudio'
     else if (gui.rstudio) {
+
+
+        if (!`init.tools:rstudio`()) {
+            if (for.msg) {
+                return(NA_character_)
+            }
+        }
 
 
         # ".rs.api.getActiveDocumentContext" from "tools:rstudio" returns a

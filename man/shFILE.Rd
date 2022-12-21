@@ -5,7 +5,7 @@ Get Argument \option{FILE} Provided to R by a Shell
 }
 \description{
 Look through the command line arguments, extracting \option{FILE} from either
-of the following: \option{--file=FILE} or \option{-f} \option{FILE}
+of the following: \option{-f} \option{FILE} or \option{--file=FILE}
 }
 \usage{
 shFILE(original = FALSE, for.msg = FALSE, default, else.)

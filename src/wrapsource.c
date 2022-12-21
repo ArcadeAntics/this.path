@@ -526,9 +526,14 @@ SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
         error("inside.source() cannot be called within sys.source()");
 
 
-    SEXP debugSource = get_debugSource;
-    if (gui_rstudio && identical(function, debugSource))
-        error("inside.source() cannot be called within debugSource() in RStudio");
+    init_tools_rstudio(rho);
+
+
+    if (has_tools_rstudio) {
+        if (identical(function, get_debugSource)) {
+            error("inside.source() cannot be called within debugSource() in RStudio");
+        }
+    }
 
 
     int testthat_loaded;

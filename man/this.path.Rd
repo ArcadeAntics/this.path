@@ -62,9 +62,6 @@ There are three ways in which \R code is typically run:
   \item from a shell, such as the Windows command-line / / Unix terminal
 }
 
-If you are using \code{this.path} in \sQuote{VSCode}, see
-\code{\link{this.path.in.VSCode}}
-
 To retrieve the executing script's filename, first an attempt is made to find a
 source call. The calls are searched in reverse order so as to grab the most
 recent source call in the case of nested source calls. If a source call was
@@ -194,6 +191,93 @@ The following is \emph{NOT} an example of bad practice:
 \code{this.path()} will be evaluated first. It is not the written order that is
 bad practice, but the order of evaluation. Do not change the working directory
 before calling \code{this.path} at least once.
+
+Please \strong{DO NOT} use \code{this.path()} and others inside the site-wide
+startup profile file, the user profile, nor the function \code{.First} (see
+\code{?\link[base]{Startup}}). This has inconsistent results dependent on the
+GUI, and often incorrect as well. For example:
+
+\describe{
+  \item{in \sQuote{RStudio}}{
+in all three cases, it throws an error:
+\preformatted{
+> this.path(original = TRUE)
+Error in (.rs.api.getActiveDocumentContext)() :
+  RStudio has not finished loading
+}
+  }
+  \item{in \sQuote{VSCode}}{
+in the site-wide startup profile file and the function \code{.First}, it throws
+an error:
+\preformatted{
+> this.path(original = TRUE)
+Error : RStudio not running
+}
+but in the user profile, it returns:
+#ifdef windows
+\preformatted{
+> this.path(original = TRUE)
+Source: call to function source
+[1] "~/.Rprofile"
+
+> this.path()
+[1] "C:/Users/iris/Documents/.Rprofile"
+}
+#endif
+#ifdef unix
+\preformatted{
+> this.path(original = TRUE)
+Source: call to function source
+[1] "~/.Rprofile"
+
+> this.path()
+[1] "/home/iris/.Rprofile"
+}
+#endif
+  }
+#ifdef windows
+  \item{in \sQuote{Rgui}}{
+in all three cases, it throws an error:
+\preformatted{
+> this.path(original = TRUE)
+Error in .this.path(verbose, original, for.msg) :
+  'this.path' used in an inappropriate fashion
+* no appropriate source call was found up the calling stack
+* R is being run from Rgui with no documents open
+}
+  }
+  \item{in \sQuote{Rterm}}{
+in all three cases, it returns the command line argument \option{FILE}:
+\preformatted{
+> this.path(original = TRUE)
+Source: shell argument 'FILE'
+[1] "./file569c63d647ba.R"
+
+> this.path()
+[1] "C:/Users/iris/AppData/Local/Temp/RtmpGMmR3A/file569c63d647ba.R"
+}
+}
+#endif
+#ifdef unix
+  \item{in \sQuote{X11}}{
+in all three cases, it returns the command line argument \option{FILE}:
+\preformatted{
+> this.path(original = TRUE)
+Source: shell argument 'FILE'
+[1] "./file569c63d647ba.R"
+
+> this.path()
+[1] "/tmp/RtmpGMmR3A/file569c63d647ba.R"
+}
+  }
+#endif
+}
+
+Sometimes it returns the command line argument \option{FILE}, sometimes it
+returns the path of the user profile, and other times it throws an error.
+Alternatively, you could use \code{\link{shFILE}()}, supplying a \code{default}
+argument when no \option{FILE} is specificed, and supplying an \code{else.}
+function for when one is specified.
 }
 \seealso{
 \code{\link{here}}

@@ -8,14 +8,6 @@
 
 
 
-/* it's unfortunate that I didn't plan this better, now I have two C functions
- * for getting the shell argument FILE
- *
- * do_getshfile() returns the command line argument FILE
- *
- * do_shfile() returns the normalized / / original FILE
- * depending on the arguments 'original' and 'for.msg'
- */
 SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int original = asLogical(CADR(args));
@@ -220,7 +212,7 @@ void R_common_command_line(int *pac, const char **argv)
     } while (0)
 
 
-SEXP windowsgetshfile(int ac, const char **av)
+const char *windowsshinfo(int ac, const char **av, int *no_input)
 {
     Rboolean processing = TRUE;
 
@@ -259,6 +251,7 @@ SEXP windowsgetshfile(int ac, const char **av)
             if (!strcmp(*av, "--args")) {
                 break;
             } else if (!strcmp(*av, "-f")) {
+                *no_input = FALSE;
                 ac--;
                 av++;
                 if (!ac) {
@@ -269,12 +262,14 @@ SEXP windowsgetshfile(int ac, const char **av)
                     FILE = *av;
                 }
             } else if (!strncmp(*av, "--file=", 7)) {
+                *no_input = FALSE;
                 /* if (av != "-") */
                 if (strcmp((*av)+7, "-")) {
                     FILE = (*av)+7;
                 }
             // } else if (!strncmp(*av, "--workspace=", 12)) {
             } else if (!strcmp(*av, "-e")) {
+                *no_input = FALSE;
                 ac--;
                 av++;
                 if (!ac) {
@@ -291,7 +286,7 @@ SEXP windowsgetshfile(int ac, const char **av)
 #endif
 
 
-    return ScalarString(FILE ? mkChar(FILE) : NA_STRING);
+    return FILE;
 }
 
 
@@ -316,7 +311,7 @@ static char *unescape_arg(char *p, const char *avp)
 }
 
 
-SEXP unixgetshfile(int ac, const char **av)
+const char *unixshinfo(int ac, const char **av, int *no_input)
 {
     int i, ioff = 1, j;
     const char **avv;
@@ -369,6 +364,7 @@ SEXP unixgetshfile(int ac, const char **av)
             // if (!strcmp(*av, "--no-readline")) {
             // } else
             if (!strcmp(*av, "-f")) {
+                *no_input = FALSE;
                 ac--;
                 av++;
 #define R_INIT_TREAT_F(_AV_)                                   \
@@ -384,10 +380,12 @@ SEXP unixgetshfile(int ac, const char **av)
                 R_INIT_TREAT_F(*av);
 
             } else if (!strncmp(*av, "--file=", 7)) {
+                *no_input = FALSE;
 
                 R_INIT_TREAT_F((*av)+7);
 
             } else if (!strcmp(*av, "-e")) {
+                *no_input = FALSE;
                 ac--;
                 av++;
             } else if (!strcmp(*av, "--args")) {
@@ -410,14 +408,29 @@ SEXP unixgetshfile(int ac, const char **av)
 #endif
 
 
-    return ScalarString(FILE ? mkChar(FILE) : NA_STRING);
+    return FILE;
 }
 
 
-SEXP do_getshfile(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    if (!is_in_shell) {
-        return ScalarString(NA_STRING);
+    if (!is_maybe_in_shell) {
+#define return_shinfo(FILE, no_input)                          \
+        do {                                                   \
+            SEXP value = allocVector(VECSXP, 2);               \
+            PROTECT(value);                                    \
+            SEXP names = allocVector(STRSXP, 2);               \
+            setAttrib(value, R_NamesSymbol, names);            \
+            SET_STRING_ELT(names, 0, mkChar("FILE"));          \
+            SET_VECTOR_ELT(value, 0, (FILE));                  \
+            SET_STRING_ELT(names, 1, mkChar("no.input"));      \
+            SET_VECTOR_ELT(value, 1, (no_input));              \
+            UNPROTECT(1);                                      \
+            return value;                                      \
+        } while (0)
+
+
+        return_shinfo(ScalarString(NA_STRING), ScalarLogical(NA_LOGICAL));
     }
 
 
@@ -438,9 +451,13 @@ SEXP do_getshfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 
 
+    const char *FILE = NULL;
+    int no_input = TRUE;
+
+
     if (ARGC <= 1) {
         UNPROTECT(1);
-        return ScalarString(NA_STRING);
+        return_shinfo(ScalarString(FILE ? mkChar(FILE) : NA_STRING), ScalarLogical(no_input));
     }
 
 
@@ -473,8 +490,11 @@ SEXP do_getshfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 #ifdef _WIN32
-    return windowsgetshfile(ac, av);
+    FILE = windowsshinfo(ac, av, &no_input);
 #else
-    return unixgetshfile(ac, av);
+    FILE = unixshinfo(ac, av, &no_input);
 #endif
+
+
+    return_shinfo(ScalarString(FILE ? mkChar(FILE) : NA_STRING), ScalarLogical(no_input));
 }

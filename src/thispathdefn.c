@@ -441,4 +441,21 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 
 
 int gui_rstudio = -1;
-int in_shell = -1;
+Rboolean has_tools_rstudio = FALSE;
+
+
+Rboolean init_tools_rstudio(SEXP rho)
+{
+    if (in_rstudio) {
+        if (!has_tools_rstudio) {
+            SEXP expr = lang1(init_tools_rstudioSymbol);
+            PROTECT(expr);
+            has_tools_rstudio = asLogical(eval(expr, rho));
+            UNPROTECT(1);
+        }
+    }
+    return has_tools_rstudio;
+}
+
+
+int maybe_in_shell = -1;

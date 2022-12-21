@@ -1,5 +1,22 @@
 this.path News
 
+CHANGES IN this.path devel:
+
+  SIGNIFICANT USER-VISIBLE CHANGES
+
+    * shFILE() now parses the command line arguments in the exact same
+      manner as R itself, more accurately selecting the 'FILE' argument.
+
+  BUG FIXES
+
+    * C code no longer uses lang1() through lang6() with multiple
+      unprotected arguments, uses allocList() and SETCAR() instead.
+
+    * C code no longer uses sprintf(), uses snprintf() instead.
+
+    * 'this.path' does a much better job of determining if the R
+      session is from 'VSCode'.
+
 CHANGES IN this.path 1.1.0:
 
   NEW FEATURES
