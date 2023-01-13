@@ -59,7 +59,7 @@ asArgs <- function (...)
 
 fileArgs <- function ()
 {
-    n <- .this.path(get.frame.number = TRUE)
+    n <- get.frame.number()
     if (n) {
         if (n == 1L) {
             if (has.shFILE)
@@ -78,7 +78,7 @@ fileArgs <- function ()
 
 progArgs <- function ()
 {
-    n <- .this.path(get.frame.number = TRUE)
+    n <- get.frame.number()
     if (n) {
         if (n == 1L) {
             if (has.shFILE)

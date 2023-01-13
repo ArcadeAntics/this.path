@@ -177,7 +177,7 @@
         }                                                      \
                                                                \
                                                                \
-        drivewidth = (windows) ? get_drive_width(ptr, nchar) : get_drive_width_unix(ptr, nchar);\
+        drivewidth = (windows) ? get_drive_width_windows(ptr, nchar) : get_drive_width_unix(ptr, nchar);\
         if (debug) {                                           \
             Rprintf("drivespec is %d bytes long\n", drivewidth);\
         }                                                      \

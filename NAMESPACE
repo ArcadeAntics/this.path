@@ -1,6 +1,12 @@
 useDynLib(this.path, .registration = TRUE, .fixes = "C_")
 
 
+# all.char.R             ----
+
+
+export(Sys.putenv)
+
+
 # as.relative.path.R     ----
 
 
@@ -86,4 +92,4 @@ export(tryCatch2)
 # wrapsource.R           ----
 
 
-export(wrap.source, inside.source)
+export(wrap.source, inside.source, set.this.path)

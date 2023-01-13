@@ -122,7 +122,8 @@ CHANGES IN this.path 0.10.0:
     * Added from.shell() to determine if a script was run from a shell.
 
     * Added this.proj(...), similar to here::here(...), except that
-      this.proj() supports multiple projects in one R session.
+      this.proj() supports multiple projects in one R session and is
+      independent of working directory.
 
   BUG FIXES
 
@@ -132,7 +133,7 @@ CHANGES IN this.path 0.9.0:
 
   NEW FEATURES:
 
-    * this.path() and all its associated functions now work in VSCode.
+    * this.path() and others now work in VSCode.
 
   BUG FIXES:
 

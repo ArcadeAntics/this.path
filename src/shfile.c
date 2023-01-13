@@ -10,10 +10,28 @@
 
 SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
+    /*
+    do_shfile {this.path}                                        C Documentation
+
+    Get Argument FILE Provided to R by a Shell
+
+
+
+    Description:
+
+    This function chooses whether to return `thispathofile` or `thispathfile`.
+    It examines the promises, determining which to return based on whether
+    they're evaluated.
+
+    This is not the workhorse behind extracting FILE from a shell.
+     */
+
+
+    /* see ?shFILE */
     int original = asLogical(CADR(args));
     int for_msg  = asLogical(CADDR(args));
     if (for_msg == NA_LOGICAL)
-        error("invalid '%s' argument", "for.msg");
+        error(_("invalid '%s' argument"), "for.msg");
 
 
     /* if 'for.msg = TRUE', we treat 'original = FALSE' as 'original = NA' */
@@ -21,13 +39,14 @@ SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     if (original == NA_LOGICAL) {
+
+
 #define get_and_check(var, sym)                                \
-        SEXP var = findVarInFrame(ENCLOS(rho), sym);           \
+        SEXP var = findVarInFrame(ENCLOS(rho), (sym));         \
         if (var == R_UnboundValue)                             \
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));\
+            error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
         if (TYPEOF(var) != PROMSXP)                            \
-            error("invalid '%s', must be a promise", EncodeChar(PRINTNAME(sym)))
-        /* do not end with ; on purpose so can be used below */
+            error("invalid '%s', must be a promise", EncodeChar(PRINTNAME((sym))))
 
 
         get_and_check(thispathfile, thispathfileSymbol);
@@ -214,9 +233,22 @@ void R_common_command_line(int *pac, const char **argv)
 
 const char *windowsshinfo(int ac, const char **av, int *no_input)
 {
+    /*
+    windowsshinfo {this.path}                                    C Documentation
+
+    Get Information About The Command Line Arguments
+
+
+
+    Description:
+
+    Extract the command line argument FILE and determine if any input was
+    provided (from -e expr, -f FILE, or --file=FILE).
+     */
     Rboolean processing = TRUE;
 
 
+// https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1174
     env_command_line(&ac, av);
 
 
@@ -226,6 +258,7 @@ const char *windowsshinfo(int ac, const char **av, int *no_input)
 #endif
 
 
+// https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1176
     R_common_command_line(&ac, av);
 
 
@@ -236,7 +269,7 @@ const char *windowsshinfo(int ac, const char **av, int *no_input)
 
 
     const char *FILE = NULL;
-    // https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1179
+// https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1179
     while (--ac) {
         if (processing && **++av == '-') {
             // if (!strcmp(*av, "--help") || !strcmp(*av, "-h")) {
@@ -313,13 +346,21 @@ static char *unescape_arg(char *p, const char *avp)
 
 const char *unixshinfo(int ac, const char **av, int *no_input)
 {
+    /*
+    same idea as windowsshinfo, to extract FILE and determine if any input was
+    provided, but there is a different manner in which unix command line
+    arguments are processed.
+     */
+
+
     int i, ioff = 1, j;
     const char **avv;
 
 
-    // https://github.com/wch/r-source/blob/031c225f8e928f7259eed5704218edc83b7c88b0/src/unix/system.c#L346
-    /* first task is to select the GUI.
-       If run from the shell script, only Tk|tk|X11|x11 are allowed.
+// https://github.com/wch/r-source/blob/031c225f8e928f7259eed5704218edc83b7c88b0/src/unix/system.c#L346
+    /*
+    first task is to select the GUI.
+    If run from the shell script, only Tk|tk|X11|x11 are allowed.
      */
     for (i = 0, avv = av; i < ac; i++, avv++) {
         if (!strcmp(*avv, "--args"))
@@ -348,6 +389,7 @@ const char *unixshinfo(int ac, const char **av, int *no_input)
 #endif
 
 
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
     R_common_command_line(&ac, av);
 
 
@@ -358,7 +400,7 @@ const char *unixshinfo(int ac, const char **av, int *no_input)
 
 
     const char *FILE = NULL;
-    // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
     while (--ac) {
         if (**++av == '-') {
             // if (!strcmp(*av, "--no-readline")) {
@@ -414,7 +456,46 @@ const char *unixshinfo(int ac, const char **av, int *no_input)
 
 SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
+    /*
+    do_shinfo {this.path}                                        C Documentation
+
+    Get Information About The Command Line Arguments
+
+
+
+    Description:
+
+    Get the command line argument FILE from -f FILE, --file=FILE and whether
+    any input was provided from -e expr, -f FILE, --file=FILE.
+
+
+
+    Details:
+
+    The command line arguments are not processed here if we cannot be
+    reasonably certain that the session was invoked without being embedded.
+    This means that the GUI should be one of the standard options and the
+    basename of the first command line argument must be R or Rterm.exe
+
+
+
+    Value:
+
+    A list with at least the following components:
+
+    FILE
+
+        character string; command line argument FILE or NA_character_
+
+    no.input
+
+        length-one logical vector
+     */
+
+
     if (!is_maybe_in_shell) {
+
+
 #define return_shinfo(FILE, no_input)                          \
         do {                                                   \
             SEXP value = allocVector(VECSXP, 2);               \

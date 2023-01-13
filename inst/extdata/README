@@ -2,23 +2,18 @@ In Rgui for Windows, this.path() works by looking at the windows
 handles belonging to that R process.
 
 For an open script, the windows handle will end with " - R Editor" OR
-ANY SUPPORTED TRANSLATION INTO ANOTHER LANGUAGE . For a new script, the
+ANY SUPPORTED TRANSLATION INTO ANOTHER LANGUAGE. For a new script, the
 windows handle will be "Untitled - R Editor", again possibly translated
 into another language.
 
-What we do in "write-r-editor.R" is:
+What we do in "main.R" is:
 
-  * launch a new Rgui process in each supported language
+  * launch a new Rgui process in each supported language and each C
+    Runtime (Microsoft Visual C++ Runtime and Universal C Runtime)
 
-  * open an existing script and grab the translations of " - R Editor"
-    in that language
+  * open an existing script and grab the translation of " - R Editor"
 
-  * open a new script and grab the whole windows handle
+  * open a new script and grab the translation of "Untitled - R Editor"
 
-This process is automated by a python script that types automatically for us.
-
-We will then save that information into files "r-editor.txt" and
-"untitled.txt".
-
-In "main.R", we run "write-r-editor.R" for both ucrt and non-ucrt
-R sessions (since the translations are different between the two).
+We will then save that information into files "r-editor_msvcrt.txt",
+"r-editor_ucrt.txt", "untitled_msvcrt.txt", and "untitled_ucrt.txt".

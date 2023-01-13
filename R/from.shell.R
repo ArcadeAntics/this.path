@@ -1,6 +1,9 @@
 from.shell <- function ()
 {
-    if (.this.path(get.frame.number = TRUE))
+    n <- get.frame.number()
+    if (is.na(n))
+        NA
+    else if (n)
         FALSE
     else has.shFILE
 }
@@ -8,8 +11,10 @@ from.shell <- function ()
 
 is.main <- function ()
 {
-    n <- .this.path(get.frame.number = TRUE)
-    if (n) {
+    n <- get.frame.number()
+    if (is.na(n))
+        NA
+    else if (n) {
         if (n == 1L || (n == 2L && identical(sys.function(1L), withArgs))) {
             if (unrecognized.manner)
                 NA

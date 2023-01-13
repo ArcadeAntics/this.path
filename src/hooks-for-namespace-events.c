@@ -1,5 +1,6 @@
 #include <R.h>
 #include <Rinternals.h>
+#include "translations.h"
 
 
 SEXP
@@ -23,6 +24,9 @@ SEXP
     sys_sourceSymbol              = NULL,
     gui_rstudioSymbol             = NULL,
     init_tools_rstudioSymbol      = NULL,
+    tools_rstudioSymbol           = NULL,
+    _rs_api_getActiveDocumentContextSymbol = NULL,
+    _rs_api_getSourceEditorContextSymbol = NULL,
     debugSourceSymbol             = NULL,
     testthatSymbol                = NULL,
     source_fileSymbol             = NULL,
@@ -30,7 +34,6 @@ SEXP
     knitr_output_dirSymbol        = NULL,
     knitrSymbol                   = NULL,
     knitSymbol                    = NULL,
-    this_pathSymbol               = NULL,
     wrap_sourceSymbol             = NULL,
     sys_callSymbol                = NULL,
     sys_frameSymbol               = NULL,
@@ -65,23 +68,81 @@ SEXP
     GetConnectionSymbol           = NULL,
     GetUnderlyingConnectionSymbol = NULL,
     summary_connectionSymbol      = NULL,
-    requireNamespaceSymbol        = NULL,
-    quietlySymbol                 = NULL,
-    cSymbol                       = NULL,
-    libnameSymbol                 = NULL,
-    _libPathsSymbol               = NULL,
+    require_this_path_helperSymbol= NULL,
     _asArgsSymbol                 = NULL,
     commandArgsSymbol             = NULL,
-    maybe_in_shellSymbol          = NULL;
+    maybe_in_shellSymbol          = NULL,
+    _packageName                  = NULL;
+
+
+SEXP mynamespace = NULL;
+
+
+extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    // SEXP libname = CADR(args);
-    // SEXP pkgname = CADDR(args);
+    /* these arguments are passed from .onLoad() */
+    SEXP libname = CADR(args),
+         pkgname = CADDR(args);
 
 
-/* code is written this way on purpose, do not reformat */
+    _packageName = installChar(STRING_ELT(pkgname, 0));
+
+
+    /* get my namespace from the namespace registry */
+    mynamespace = findVarInFrame(R_NamespaceRegistry, _packageName);
+    R_PreserveObject(mynamespace);
+
+
+    /* get the function .shFILE and lock its environment and bindings */
+    SEXP _shFILE = getInFrame(install(".shFILE"), mynamespace, FALSE);
+    if (TYPEOF(_shFILE) != CLOSXP)
+        error(_("object '%s' of mode '%s' was not found"), ".shFILE", "function");
+    R_LockEnvironment(CLOENV(_shFILE), TRUE);
+
+
+    /* get the function .this.proj and lock its environment */
+    SEXP _this_proj = getInFrame(install(".this.proj"), mynamespace, FALSE);
+    if (TYPEOF(_this_proj) != CLOSXP)
+        error(_("object '%s' of mode '%s' was not found"), ".this.proj", "function");
+    R_LockEnvironment(CLOENV(_this_proj), FALSE);
+
+
+    /* force the promise initwd */
+    getInFrame(install("initwd"), mynamespace, FALSE);
+
+
+    /* define a variable and increase its reference counter */
+#define defineVarInc(symbol, value, rho)                       \
+    do {                                                       \
+        SEXP val = (value);                                    \
+        PROTECT(val);                                          \
+        defineVar((symbol), val, (rho));                       \
+        INCREMENT_NAMED(val);                                  \
+        UNPROTECT(1);  /* val */                               \
+    } while (0)
+
+
+    /* save libname and pkgname in the namespace */
+    defineVarInc(install("libname"), libname, mynamespace);
+    defineVarInc(install("pkgname"), pkgname, mynamespace);
+
+
+    /* find and save libpath in the namespace */
+    /* building the call getNamespaceInfo(pkgname, "path") and evaluating in the base environment */
+    SEXP expr = allocList(3);
+    PROTECT(expr);
+    SET_TYPEOF(expr, LANGSXP);
+    SETCAR  (expr, install("getNamespaceInfo"));
+    SETCADR (expr, pkgname);
+    SETCADDR(expr, mkString("path"));
+    defineVarInc(install("libpath"), eval(expr, R_BaseEnv), mynamespace);
+    UNPROTECT(1);  /* expr */
+
+
+    /* code is written this way on purpose, do not reformat */
 #define thispathofileChar                                      \
     "._this.path::ofile_."
 #define thispathfileChar                                       \
@@ -118,6 +179,9 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     sys_sourceSymbol              = install("sys.source");
     gui_rstudioSymbol             = install("gui.rstudio");
     init_tools_rstudioSymbol      = install("init.tools:rstudio");
+    tools_rstudioSymbol           = install("tools:rstudio");
+    _rs_api_getActiveDocumentContextSymbol = install(".rs.api.getActiveDocumentContext");
+    _rs_api_getSourceEditorContextSymbol = install(".rs.api.getSourceEditorContext");
     debugSourceSymbol             = install("debugSource");
     testthatSymbol                = install("testthat");
     source_fileSymbol             = install("source_file");
@@ -125,7 +189,6 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     knitr_output_dirSymbol        = install("knitr.output.dir");
     knitrSymbol                   = install("knitr");
     knitSymbol                    = install("knit");
-    this_pathSymbol               = install("this.path");
     wrap_sourceSymbol             = install("wrap.source");
     sys_callSymbol                = install("sys.call");
     sys_frameSymbol               = install("sys.frame");
@@ -160,15 +223,10 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     GetConnectionSymbol           = install("GetConnection");
     GetUnderlyingConnectionSymbol = install("GetUnderlyingConnection");
     summary_connectionSymbol      = install("summary.connection");
-    requireNamespaceSymbol        = install("requireNamespace");
-    quietlySymbol                 = install("quietly");
-    cSymbol                       = install("c");
-    libnameSymbol                 = install("libname");
-    _libPathsSymbol               = install(".libPaths");
+    require_this_path_helperSymbol= install("require.this.path.helper");
     _asArgsSymbol                 = install(".asArgs");
     commandArgsSymbol             = install("commandArgs");
     maybe_in_shellSymbol          = install("maybe.in.shell");
-
 
 
 #include "requirethispathhelper.h"
@@ -177,27 +235,15 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     requirethispathhelper;
 
 
-    /* define a variable and increase its reference counter */
-#define defineVarInc(symbol, value, rho)                       \
-    do {                                                       \
-        SEXP val = (value);                                    \
-        PROTECT(val);                                          \
-        defineVar((symbol), val, (rho));                       \
-        INCREMENT_NAMED(val);                                  \
-        UNPROTECT(1);                                          \
-    } while (0)
-
-
-    defineVarInc(install("HAVE_AQUA"), ScalarLogical(
+    /* save HAVE_AQUA and PATH_MAX in my namespace */
 #if defined(HAVE_AQUA)
-        TRUE
+    defineVarInc(install("HAVE_AQUA"), ScalarLogical(TRUE ), mynamespace);
 #else
-        FALSE
+    defineVarInc(install("HAVE_AQUA"), ScalarLogical(FALSE), mynamespace);
 #endif
-    ), ENCLOS(rho));
 
 
-    defineVarInc(install("PATH_MAX"), ScalarInteger(PATH_MAX), ENCLOS(rho));
+    defineVarInc(install("PATH_MAX"), ScalarInteger(PATH_MAX), mynamespace);
 
 
     SEXP value = allocVector(VECSXP, 13);
@@ -352,8 +398,20 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     MARK_NOT_MUTABLE(value);
-    defineVar(install("OS.type"), value, ENCLOS(rho));
-    UNPROTECT(1);
+    defineVar(install("OS.type"), value, mynamespace);
+    UNPROTECT(1);  /* value */
+
+
+    return R_NilValue;
+}
+
+
+SEXP do_onunload(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    // SEXP libpath = CADR(args);
+
+
+    R_ReleaseObject(mynamespace);
 
 
     return R_NilValue;

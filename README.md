@@ -10,10 +10,10 @@ working directory).
 
 ## Installation
 
-Install it from CRAN
+Install it from CRAN:
 >   `install.packages("this.path")`
 
-Install the development version from GitHub
+Install the development version from GitHub:
 >   `install.packages("this.path", repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES")`
 
 ## Details

@@ -1,13 +1,7 @@
 #include <R.h>
 #include <Rinternals.h>
-
-
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("R", String)
-#else
-#define _(String) (String)
-#endif
+#include "translations.h"
+#include "thispathdefn.h"
 
 
 extern void (SET_PRSEEN)(SEXP x, int v);
@@ -27,23 +21,23 @@ extern void (SET_PRSEEN)(SEXP x, int v);
     else elsecode
 
 
-#define get_sym _get_sym(errorcall(call, "invalid first argument");)
+#define get_sym _get_sym(errorcall(call, "invalid first argument"))
 
 
 #define handles_nargs(one_arg_env, name)                       \
     switch (length(args) - 1) {                                \
     case 1:                                                    \
-        get_sym                                                \
+        get_sym;                                               \
         env = (one_arg_env);                                   \
         break;                                                 \
     case 2:                                                    \
-        get_sym                                                \
+        get_sym;                                               \
         env = CADDR(args);                                     \
         if (TYPEOF(env) != ENVSXP)                             \
             errorcall(call, "invalid second argument");        \
         break;                                                 \
     default:                                                   \
-        errorcall(call, "%d arguments passed to .External(%s) which requires 1 or 2", length(args) - 1, (name));\
+        errorcall(call, wrong_nargs_to_External(length(args) - 1, (name), "1 or 2"));\
     }
 
 
@@ -52,8 +46,9 @@ extern void (SET_PRSEEN)(SEXP x, int v);
 
 SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    /* return TRUE if get(sym, env, inherits = FALSE) will force a promise,
-     * return FALSE otherwise
+    /*
+    return TRUE if get(sym, env, inherits = FALSE) will force a promise
+    return FALSE otherwise
      */
 
 
@@ -63,11 +58,33 @@ SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP value = findVarInFrame(env, sym);
     if (value == R_UnboundValue)
-        errorcall(call, "object '%s' not found", CHAR(PRINTNAME(sym)));
+        errorcall(call, _("object '%s' not found"), CHAR(PRINTNAME(sym)));
 
 
     return ScalarLogical(TYPEOF(value) == PROMSXP &&
                          PRVALUE(value) == R_UnboundValue);
+}
+
+
+SEXP do_promiseisunevaluated(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    /* similar to do_isunevaluatedpromise, but the binding MUST be a promise */
+
+
+    SEXP sym, env;
+    handles_nargs(rho, "C_promiseisunevaluated");
+
+
+    SEXP value = findVarInFrame(env, sym);
+    if (value == R_UnboundValue)
+        errorcall(call, _("object '%s' not found"), CHAR(PRINTNAME(sym)));
+
+
+    if (TYPEOF(value) != PROMSXP)
+        errorcall(call, "'%s' is not a promise", CHAR(PRINTNAME(sym)));
+
+
+    return ScalarLogical(PRVALUE(value) == R_UnboundValue);
 }
 
 
@@ -86,7 +103,7 @@ SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP value = findVarInFrame(env, sym);
     if (value == R_UnboundValue)
-        errorcall(call, "object '%s' not found", CHAR(PRINTNAME(sym)));
+        errorcall(call, _("object '%s' not found"), CHAR(PRINTNAME(sym)));
 
 
     if (TYPEOF(value) != PROMSXP)
@@ -216,7 +233,7 @@ SEXP do_prinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
         })
         break;
     default:
-        errorcall(call, "%d arguments passed to .External(%s) which requires 1, 2, or 3", nargs, "C_prinfo");
+        errorcall(call, wrong_nargs_to_External(nargs, "C_prinfo", "1, 2, or 3"));
     }
 
 

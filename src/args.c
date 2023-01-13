@@ -4,6 +4,7 @@
 
 #include "symbols.h"
 #include "translations.h"
+#include "thispathdefn.h"
 
 
 
@@ -11,6 +12,24 @@
 
 SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
+    /*
+    do_asargs {this.path}                                        C Documentation
+
+    Providing Arguments to a Script
+
+
+
+    Description
+
+    do_asargs() coerces R objects into a character vector, primarily for use
+    with command line applications. It accepts one optional argument, the
+    number of arguments to skip in the ... list.
+
+    This is used primarily for withArgs(), used to skip the first argument
+    which is the expression to be evaluated.
+     */
+
+
     int nprotect = 0;
 
 
@@ -26,7 +45,7 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
         if (n == NA_INTEGER || n < 0)
             errorcall(call, _("argument must be coercible to non-negative integer"));
     }
-    else errorcall(call, "%d arguments passed to .External(%s) which requires 0 or 1", nargs, "C_asargs");
+    else errorcall(call, wrong_nargs_to_External(nargs, "C_asargs", "0 or 1"));
 
 
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);

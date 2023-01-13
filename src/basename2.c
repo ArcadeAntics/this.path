@@ -7,6 +7,7 @@
 
 #include "drivewidth.h"
 #include "translations.h"
+#include "thispathdefn.h"
 
 
 
@@ -57,7 +58,7 @@
             }                                                  \
             continue;                                          \
         }                                                      \
-        drivewidth = (windows) ? get_drive_width(ptr, nchar) : get_drive_width_unix(ptr, nchar);\
+        drivewidth = (windows) ? get_drive_width_windows(ptr, nchar) : get_drive_width_unix(ptr, nchar);\
         if (debug) {                                           \
             Rprintf("drivespec is %d bytes long\n", drivewidth);\
         }                                                      \
@@ -208,7 +209,7 @@
         if (times == NA_INTEGER || times < 0)                  \
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");\
     }                                                          \
-    else errorcall(call, "%d arguments passed to .External(%s) which requires 1 or 2", nargs, (windows) ? "C_windowsdirname2" : "C_unixdirname2");\
+    else errorcall(call, wrong_nargs_to_External(nargs, (windows) ? "C_windowsdirname2" : "C_unixdirname2", "1 or 2"));\
                                                                \
                                                                \
     const char *ptr;                                           \
@@ -245,7 +246,7 @@
         }                                                      \
                                                                \
                                                                \
-        drivewidth = (windows) ? get_drive_width(ptr, nchar) : get_drive_width_unix(ptr, nchar);\
+        drivewidth = (windows) ? get_drive_width_windows(ptr, nchar) : get_drive_width_unix(ptr, nchar);\
         if (debug) {                                           \
             Rprintf("drivespec is %d bytes long\n", drivewidth);\
         }                                                      \

@@ -1,6 +1,7 @@
 \name{wrap.source}
 \alias{wrap.source}
 \alias{inside.source}
+\alias{set.this.path}
 \title{
 Implement \code{this.path()} For Arbitrary \code{source}-Like Functions
 }
@@ -12,6 +13,8 @@ Currently, \code{\link{this.path}()} is implemented to work with
 
 \code{wrap.source()} and \code{inside.source()} can be used to implement
 \code{this.path()} for any other \code{source}-like functions.
+
+\code{set.this.path()} is just an alias for \code{inside.source()}.
 }
 \usage{
 wrap.source(expr,
@@ -40,6 +43,31 @@ wrap.source(expr,
     ignore.file.uri = ignore.all)
 
 inside.source(file,
+    path.only = FALSE,
+    character.only = path.only,
+    file.only = path.only,
+    conv2utf8 = FALSE,
+    allow.blank.string = FALSE,
+    allow.clipboard = !file.only,
+    allow.stdin = !file.only,
+    allow.url = !file.only,
+    allow.file.uri = !path.only,
+    allow.unz = !path.only,
+    allow.pipe = !file.only,
+    allow.terminal = !file.only,
+    allow.textConnection = !file.only,
+    allow.rawConnection = !file.only,
+    allow.sockconn = !file.only,
+    allow.servsockconn = !file.only,
+    allow.customConnection = !file.only,
+    ignore.all = FALSE,
+    ignore.blank.string = ignore.all,
+    ignore.clipboard = ignore.all,
+    ignore.stdin = ignore.all,
+    ignore.url = ignore.all,
+    ignore.file.uri = ignore.all)
+
+set.this.path(file,
     path.only = FALSE,
     character.only = path.only,
     file.only = path.only,
@@ -218,7 +246,7 @@ wrapper <- function(path, ...) {
   \item{\knitlink{}}{
 \preformatted{
 wrapper <- function(input, ...) {
-    # this works for the most part, but won't work in child mode
+    # this works for the most part, but will not work in child mode
     input <- inside.source(input)
     knitr::knit(input = input, ...)
 }

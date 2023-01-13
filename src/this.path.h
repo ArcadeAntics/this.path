@@ -1,3 +1,25 @@
+/*
+My C code is stylized much the same as R's C code. See
+
+https://github.com/wch/r-source/blob/b2acf5ace952cb58bc702675f882003bbc48ac0c/src/main/names.c#L51
+
+Each function must:
+  * be called from R by .External2(.)
+  * have a name that starts with "do_"
+  * return a SEXP
+  * have an argument list (SEXP call, SEXP op, SEXP args, SEXP rho)
+
+call is the LANGSXP that called the C code, like .External2(C_funname, ...)
+
+op is the operator that called the C code, always .External2
+
+args is the argument list provided to .External2(.), including C_funname
+
+rho is the environment in which .External2(.) was evaluated, useful for
+accessing and assigning variables
+ */
+
+
 #ifndef THIS_PATH_H
 #define THIS_PATH_H
 
@@ -52,7 +74,8 @@ extern SEXP do_extgets       (SEXP call, SEXP op, SEXP args, SEXP rho);
 /* hooks-for-namespace-events.c */
 
 
-extern SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_onload  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_onunload(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 /* isabspath.c */
@@ -75,6 +98,7 @@ extern SEXP do_pathjoin       (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 extern SEXP do_isunevaluatedpromise    (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_promiseisunevaluated    (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_prinfo                  (SEXP call, SEXP op, SEXP args, SEXP rho);
 
@@ -82,7 +106,7 @@ extern SEXP do_prinfo                  (SEXP call, SEXP op, SEXP args, SEXP rho)
 /* shfile.c */
 
 
-extern SEXP do_shfile   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
@@ -97,6 +121,7 @@ extern SEXP do_thispathinzipfileerror                  (SEXP call, SEXP op, SEXP
 extern SEXP do_thispathinaquaerror                     (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_thispath   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 /* wrapsource.c */
@@ -105,6 +130,7 @@ extern SEXP do_thispath   (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_setprseen2  (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_wrapsource  (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_setthispath (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 #endif  /* #ifndef THIS_PATH_H */

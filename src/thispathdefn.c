@@ -440,18 +440,77 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 }
 
 
+static Rboolean _init_tools_rstudio(void)
+{
+    SEXP tools_rstudio = getInFrame(tools_rstudioSymbol, mynamespace, FALSE);
+    if (tools_rstudio != R_EmptyEnv)
+        return TRUE;
+
+
+    const char *what = CHAR(PRINTNAME(tools_rstudioSymbol));
+
+
+    SEXP name;
+    for (SEXP t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
+        name = getAttrib(t, R_NameSymbol);
+        if (isString(name) &&
+            length(name) > 0 &&
+            !strcmp(translateChar(STRING_ELT(name, 0)), what))
+        {
+
+
+#define check4closure(var, sym)                                \
+            SEXP var = getInFrame((sym), t, FALSE);            \
+            PROTECT((var));                                    \
+            if (TYPEOF((var)) != CLOSXP)                       \
+                error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME((sym))), "closure")
+
+
+            check4closure(_rs_api_getActiveDocumentContext, _rs_api_getActiveDocumentContextSymbol);
+            check4closure(_rs_api_getSourceEditorContext  , _rs_api_getSourceEditorContextSymbol  );
+            check4closure(debugSource                     , debugSourceSymbol                     );
+
+
+#undef check4closure
+
+
+#define assigninmynamespace(sym, val)                          \
+            if (R_BindingIsLocked((sym), mynamespace)) {       \
+                R_unLockBinding((sym), mynamespace);           \
+                defineVar((sym), (val), mynamespace);          \
+                R_LockBinding((sym), mynamespace);             \
+            }                                                  \
+            else defineVar((sym), (val), mynamespace)
+
+
+            assigninmynamespace(_rs_api_getActiveDocumentContextSymbol, _rs_api_getActiveDocumentContext);
+            assigninmynamespace(_rs_api_getSourceEditorContextSymbol  , _rs_api_getSourceEditorContext  );
+            assigninmynamespace(debugSourceSymbol                     , debugSource                     );
+            assigninmynamespace(tools_rstudioSymbol                   , t                               );
+
+
+#undef assigninmynamespace
+
+
+            UNPROTECT(3);
+            return TRUE;
+        }
+    }
+
+
+    return FALSE;
+}
+
+
 int gui_rstudio = -1;
 Rboolean has_tools_rstudio = FALSE;
 
 
-Rboolean init_tools_rstudio(SEXP rho)
+Rboolean init_tools_rstudio(Rboolean skipCheck)
 {
-    if (in_rstudio) {
+    if (skipCheck || in_rstudio) {
         if (!has_tools_rstudio) {
-            SEXP expr = lang1(init_tools_rstudioSymbol);
-            PROTECT(expr);
-            has_tools_rstudio = asLogical(eval(expr, rho));
-            UNPROTECT(1);
+            has_tools_rstudio = _init_tools_rstudio();
         }
     }
     return has_tools_rstudio;

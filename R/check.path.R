@@ -112,34 +112,50 @@ path.split.default.1 <- function (path)
 strsplit(path, "/+")[[1L]]
 
 
-.check.path <- function (path, x, name)
+tmp <- function (x, varname, name)
 {
-    if (!is.character(path) || length(path) != 1L)
-        stop("invalid 'path' argument")
-    x <- path.split(x)[[1L]]
-    path <- path.split(path)[[1L]]
-    if (length(x) < length(path) || {
-        x <- x[seq.int(to = length(x), along.with = path)]
-        any(x != path)
-    })
-        stop(simpleError(.makeMessage(
-            sQuote(name), " and expected path do not match\n",
-            paste0("* ", format(c(name, "expected")), ": ",
-            encodeString(c(
-                paste(x, collapse = "/"),
-                paste(path, collapse = "/")
-            ), quote = "\""), collapse = "\n")
-        ), call = sys.call(sys.parent())))
-    invisible(TRUE)
+    k <- name
+    substitute({
+        expected <- path.join(...)
+        if (!is.character(expected) || length(expected) != 1L)
+            stop(gettextf("'%s' must be a character string", "expected", domain = "R"))
+        expected <- path.split.1(expected)
+        varname <- .
+        varname <- path.split.1(varname)
+        if (length(varname) < length(expected) || {
+            varname <- varname[seq.int(to = length(varname), along.with = expected)]
+            any(varname != expected)
+        })
+        {
+            expected <- paste(expected, collapse = "/")
+            varname <- paste(varname, collapse = "/")
+            stop(msg1,
+                paste0(msg2, {
+                    encodeString(c(varname, expected), quote = "\"")
+                }, collapse = "\n"))
+        }
+        invisible(TRUE)
+    }, list(
+        . = x,
+        varname = as.symbol(varname),
+        msg1 = sprintf("'%s' and expected path do not match\n", name),
+        msg2 = as.call(c(as.symbol("c"), as.list(
+                   paste0("* ", format(c(name, "expected")), ": ")
+               ))),
+        name = name
+    ))
 }
 
 
-check.path <- function (...)
-.check.path(path = path.join(...), .this.path(), "this.path()")
+check.path <- function(...) NULL
+body(check.path) <- tmp(quote(.this.path()), "thispath", "this.path()")
 
 
-check.dir <- function (...)
-.check.path(path = path.join(...), .this.dir(), "this.dir()")
+check.dir <- function(...) NULL
+body(check.dir) <- tmp(quote(.this.dir()), "thisdir", "this.dir()")
+
+
+rm(tmp)
 
 
 # this.path:::path.split(c(

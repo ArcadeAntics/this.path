@@ -5,7 +5,7 @@
 
 
 
-int get_drive_width(const char *s, int nchar)
+int get_drive_width_windows(const char *s, int nchar)
 {
     /* there are three types of absolute paths in windows
      *
@@ -169,7 +169,7 @@ normalizePath("/path/to/file")
 
 int get_drive_width_unix(const char *s, int nchar)
 {
-    /* similar to the above get_drive_width() but specifically for unix,
+    /* similar to the above get_drive_width_windows() but specifically for unix,
      * where a drivespec only really makes sense in terms of a network share
      */
 
@@ -224,7 +224,7 @@ int get_drive_width_unix(const char *s, int nchar)
 }
 
 
-int is_abs_path(const char *s)
+int is_abs_path_windows(const char *s)
 {
     int nchar = strlen(s);
     if (nchar <= 0) return 0;

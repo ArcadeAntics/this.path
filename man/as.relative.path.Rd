@@ -7,7 +7,7 @@ Make a Path Relative to Another Path
 }
 \description{
 When working with \pkg{this.path}, you will be dealing with a lot of absolute
-paths. These paths are no good for saving within files, so you'll need to use
+paths. These paths are no good for saving within files, so you will need to use
 \code{as.relative.path()} to turn your absolute paths into relative paths.
 }
 \usage{

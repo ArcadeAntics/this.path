@@ -45,20 +45,21 @@
 
 
 .onLoad <- function (libname, pkgname)
-{
-    lockEnvironment(environment(.shFILE), bindings = TRUE)
-    getinitwd()  # force the promise for the initial working directory
-    assign("libname", libname, getNamespace(pkgname))
-    .External2(C_onload, libname, pkgname)
-    # cat("\n> .Platform\n"); print(.Platform);
-    # warning("this version is only for debugging purposes\n go to the archive and install the previous version")
-    # print(list(libname = libname, pkgname = pkgname))
-}
+.External2(C_onload, libname, pkgname)
+# {
+#     lockEnvironment(environment(.shFILE), bindings = TRUE)
+#     getinitwd()  # force the promise for the initial working directory
+#     assign("libname", libname, getNamespace(pkgname))
+#     .External2(C_onload, libname, pkgname)
+#     # cat("\n> .Platform\n"); print(.Platform);
+#     # warning("this version is only for debugging purposes\n go to the archive and install the previous version")
+#     # print(list(libname = libname, pkgname = pkgname))
+# }
 
 
 .onUnload <- function (libpath)
 {
-    unloadNamespace("this.path.helper")
-    library.dynam.unload(.packageName, libpath)
-    # print(list(libpath = libpath))
+    .External2(C_onunload, libpath)
+    try(unloadNamespace("this.path.helper"), silent = TRUE)
+    library.dynam.unload(pkgname, libpath)
 }

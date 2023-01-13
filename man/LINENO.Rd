@@ -29,7 +29,7 @@ For \sourcefilelink{}, the \code{srcref} is always stored, so you do not need
 to do anything special before calling.
 
 For \knitlink{}, there is nothing that can be done, the \code{srcref} is never
-stored. I'm looking into a fix for such a thing.
+stored. I am looking into a fix for such a thing.
 }
 \examples{
 FILE <- tempfile(fileext = ".R")
@@ -40,13 +40,17 @@ writeLines(c(
     "#line 1218",
     "LINENO()"
 ), FILE)
+
+
+# previously used:
+#
+# ```
 # source(FILE, echo = TRUE, verbose = FALSE,
 #     max.deparse.length = Inf, keep.source = TRUE)
+# ```
 #
-# 'source(echo = TRUE, keep.source = TRUE)'
-# echoes incorrectly with #line directives
-#
-# 'source2()' echoes correctly!
+# but it echoes incorrectly with #line directives.
+# `source2()` echoes correctly!
 this.path:::source2(FILE, echo = TRUE, verbose = FALSE,
     max.deparse.length = Inf, keep.source = TRUE)
 \dontshow{unlink(FILE)}}

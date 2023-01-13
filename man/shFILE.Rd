@@ -1,7 +1,7 @@
 \name{shFILE}
 \alias{shFILE}
 \title{
-Get Argument \option{FILE} Provided to R by a Shell
+Get Argument \option{FILE} Provided to \R by a Shell
 }
 \description{
 Look through the command line arguments, extracting \option{FILE} from either
@@ -14,7 +14,7 @@ shFILE(original = FALSE, for.msg = FALSE, default, else.)
   \item{original}{
 \code{TRUE}, \code{FALSE}, or \code{NA}; should the original or the normalized
 path be returned? \code{NA} means the normalized path will be returned if it
-has already been forced, and the original path if not.
+has already been forced, and the original path otherwise.
   }
   \item{for.msg}{
 \code{TRUE} or \code{FALSE}; do you want the path for the purpose of printing a
@@ -49,11 +49,10 @@ this.path:::write.code({
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {
-            stop("interestingly enough, because 'FILE' will be found,\\n",
-                "  argument 'default' won't be evaluated, and so this\\n",
-                "  error won't actually print, isn't that neat? you can\\n",
-                "  use this to your advantage in a similar manner, doing\\n",
-                "  arbitrary things only if 'FILE' isn't found")
+            stop("since 'FILE' will be found, argument 'default' will not\\n",
+                " be evaluated, so this error will not be thrown! you can\\n",
+                " use this to your advantage in a similar manner, doing\\n",
+                " arbitrary things only if 'FILE' is not found")
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE)

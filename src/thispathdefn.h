@@ -445,24 +445,22 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
 
 extern int gui_rstudio;
 extern Rboolean has_tools_rstudio;
+extern Rboolean init_tools_rstudio(Rboolean skipCheck);
 
 
 #define in_rstudio                                             \
-    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(R_getNSValue(R_NilValue, this_pathSymbol, gui_rstudioSymbol, FALSE))))
-
-
-extern Rboolean init_tools_rstudio(SEXP rho);
+    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getInFrame(gui_rstudioSymbol, mynamespace, FALSE))))
 
 
 extern int maybe_in_shell;
 
 
 #define is_maybe_in_shell                                      \
-    ((maybe_in_shell == -1) ? (maybe_in_shell = asLogical(R_getNSValue(R_NilValue, this_pathSymbol, maybe_in_shellSymbol, FALSE))) : (maybe_in_shell))
+    ((maybe_in_shell == -1) ? (maybe_in_shell = asLogical(getInFrame(maybe_in_shellSymbol, mynamespace, FALSE))) : (maybe_in_shell))
 
 
 #define get_debugSource                                        \
-    ((has_tools_rstudio) ? R_getNSValue(R_NilValue, this_pathSymbol, debugSourceSymbol, FALSE) : R_NilValue)
+    ((has_tools_rstudio) ? getInFrame(debugSourceSymbol, mynamespace, FALSE) : R_NilValue)
 
 
 #define get_source_file(name)                                  \
@@ -477,7 +475,16 @@ extern int maybe_in_shell;
         (R_NilValue))
 
 
-#define get_wrap_source (R_getNSValue(R_NilValue, this_pathSymbol, wrap_sourceSymbol, FALSE))
+#define get_wrap_source (getInFrame(wrap_sourceSymbol, mynamespace, FALSE))
+
+
+extern SEXP mynamespace;
+
+
+#define wrong_nargs_to_External(nargs, name, expected_nargs)   \
+    (((nargs) == 1) ? "%d argument passed to .External(%s) which requires %s" :\
+                      "%d arguments passed to .External(%s) which requires %s"),\
+                     (nargs), (name), (expected_nargs)
 
 
 #endif /* #ifndef THISPATHDEFN_H */

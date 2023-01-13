@@ -36,8 +36,8 @@ for a help message that describes what these options mean. In general,
 \code{\link[base:EnvVar]{environment variables}} (not used by the other
 executables) that will make its behaviour different from \command{R}.
 
-For the purpose of making packages, \command{R CMD} is what you'll need to use.
-Most commonly, you'll use:
+For the purpose of making packages, \command{R CMD} is what you will need. Most
+commonly, you will use:
 
 \itemize{
   \item \verb{R CMD build}

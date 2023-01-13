@@ -178,7 +178,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
             /* look for a drivespec in ptr */
-            drivewidth = get_drive_width(ptr, nchar);
+            drivewidth = get_drive_width_windows(ptr, nchar);
 
 
             /* if we have no already found an absolute pathspec,
@@ -299,7 +299,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
                 /* look for a drivespec in ptr */
-                maybe_drivewidth = get_drive_width(maybe_ptr, maybe_nchar);
+                maybe_drivewidth = get_drive_width_windows(maybe_ptr, maybe_nchar);
 
 
                 if (maybe_drivewidth) {
@@ -511,7 +511,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
                  * be sure to chop off the drive before pasting
                  */
                 if (i <= drive_indx) {
-                    drivewidth = get_drive_width(ptr, nchar);
+                    drivewidth = get_drive_width_windows(ptr, nchar);
                     ptr += drivewidth;
                     nchar -= drivewidth;
 

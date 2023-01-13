@@ -34,12 +34,13 @@ be printed?
   \item{original}{
 \code{TRUE}, \code{FALSE}, or \code{NA}; should the original or the normalized
 path be returned? \code{NA} means the normalized path will be returned if it
-has already been forced, and the original path if not.
+has already been forced, and the original path otherwise.
   }
   \item{for.msg}{
 \code{TRUE} or \code{FALSE}; do you want the path for the purpose of printing a
-diagnostic message / / warning / / error? This will return \code{NA_character_}
-in most cases where an error would've be thrown.
+diagnostic message / / warning / / error? This will return
+\code{\link[base:NA]{NA_character_}} in most cases where an error would have
+been thrown.
 
 \code{for.msg = TRUE} will ignore \code{original = FALSE}, and will
 use \code{original = NA} instead.
@@ -55,36 +56,38 @@ missing or a function to apply if there is an executing script. See
 \details{
 There are three ways in which \R code is typically run:
 \enumerate{
-  \item in \sQuote{RStudio} / / \sQuote{Rgui} / / \sQuote{VSCode} by running
-        the current line / / selection with the \strong{Run} button / /
-        appropriate keyboard shortcut
-  \item through a source call: a call to function \sourceorlist{}
-  \item from a shell, such as the Windows command-line / / Unix terminal
+  \item
+    in \sQuote{RStudio} / / \sQuote{Rgui} / / \sQuote{VSCode} by running the
+    current line / / selection with the \strong{Run} button / / appropriate
+    keyboard shortcut
+  \item
+    through a source call: a call to function \sourceorlist{}
+  \item
+    from a shell, such as the Windows command-line / / Unix terminal
 }
 
 To retrieve the executing script's filename, first an attempt is made to find a
 source call. The calls are searched in reverse order so as to grab the most
 recent source call in the case of nested source calls. If a source call was
-found, the argument \var{file} (\var{fileName} in the case of
-\code{debugSource}, \var{path} in the case of \code{testthat::source_file},
-\var{input} in the case of \code{knitr::knit}) is returned from the function's
-evaluation environment. If you have your own source-like function that you'd
-like to be recognized by \code{this.path}, please contact the package
-maintainer so that it can be implemented.
+found, the file argument is returned from the function's evaluation
+environment. If you have your own source-like function that you would like to
+be recognized by \code{this.path}, please contact the package maintainer so
+that it can be implemented or use \code{\link{inside.source}()}.
 
 If no source call is found up the calling stack, then an attempt is made to
 figure out how \R is currently being used.
 
 If \R is being run from a shell, the shell arguments are searched for
 \option{-f} \option{FILE} or \option{--file=FILE} (the two methods of taking
-input from \option{FILE}). If exactly one of either type of argument is
-supplied, the text \option{FILE} is returned. It is an error to use
-\code{this.path} when none or multiple arguments of either type are supplied.
+input from \option{FILE}). \code{this.path()} used to insist that exactly one
+of either type of argument must be supplied, but this has since been changed.
+Now, the last \option{FILE} argument is extracted (ignoring \option{-f}
+\option{-} and \option{--file=-}) and returned. It is an error to use
+\code{this.path()} if no arguments of either type are supplied.
 
 If \R is being run from a shell under Unix-alikes with \option{-g} \option{Tk}
-or \option{--gui=Tk}, \code{this.path()} will signal an error. This is because
-\sQuote{Tk} does not make use of its \option{-f} \option{FILE},
-\option{--file=FILE} argument.
+or \option{--gui=Tk}, \code{this.path()} will signal an error. \sQuote{Tk} does
+not make use of its \option{-f} \option{FILE}, \option{--file=FILE} arguments.
 
 If \R is being run from \sQuote{RStudio}, the active document's filename (the
 document in which the cursor is active) is returned (at the time of evaluation).
@@ -93,30 +96,30 @@ document open in the current tab) is returned (at the time of evaluation).
 Please note that the source document will \emph{NEVER} be a document open in
 another window (with the \strong{Show in new window} button). It is important to
 not leave the current tab (either by closing or switching tabs) while any calls
-to \code{this.path} have yet to be evaluated in the run selection. It is an
+to \code{this.path()} have yet to be evaluated in the run selection. It is an
 error for no documents to be open or for a document to not exist (not saved
 anywhere).
 
-If \R is being run \sQuote{VSCode}, the source document's filename is returned
-(at the time of evaluation). It is important to not leave the current tab
-(either by closing or switching tabs) while any calls to \code{this.path} have
-yet to be evaluated in the run selection. It is an error for a document to not
-exist (not saved anywhere).
-
 If \R is being run from \sQuote{Rgui}, the source document's filename (the
 document most recently interacted with besides the \R Console) is returned (at
-the time of evaluation). Please note that minimized documents will be
-\emph{INCLUDED} when looking for the most recently used document. It is
-important to not leave the current document (either by closing the document or
-interacting with another document) while any calls to \code{this.path} have yet
-to be evaluated in the run selection. It is an error for no documents to be
+the time of evaluation). Please note that minimized documents \emph{WILL} be
+included when looking for the most recently used document. It is important to
+not leave the current document (either by closing the document or
+interacting with another document) while any calls to \code{this.path()} have
+yet to be evaluated in the run selection. It is an error for no documents to be
 open or for a document to not exist (not saved anywhere).
 
+If \R is being run \sQuote{VSCode}, the source document's filename is returned
+(at the time of evaluation). It is important to not leave the current tab
+(either by closing or switching tabs) while any calls to \code{this.path()}
+have yet to be evaluated in the run selection. It is an error for a document to
+not exist (not saved anywhere).
+
 If \R is being run from \sQuote{AQUA}, the executing script's path cannot be
-determined. Unlike \sQuote{RStudio} and \sQuote{Rgui}, there is currently no
-way to request the path of an open document. Until such a time that there is a
-method for requesting the path of an open document, consider using
-\sQuote{RStudio} or \sQuote{VSCode}.
+determined. Unlike \sQuote{RStudio}, \sQuote{Rgui}, and \sQuote{VSCode}, there
+is currently no way to request the path of an open document. Until such a time
+that there is a method for requesting the path of an open document, consider
+using \sQuote{RStudio} or \sQuote{VSCode}.
 
 If \R is being run in another manner, it is an error to use \code{this.path}.
 
@@ -164,10 +167,10 @@ character string; the executing script's filename.
 %   }
 % }
 \note{
-The first time \code{this.path} is called within a script, it will
-\code{\link[base:normalizePath]{normalize}} the script's path, check that the
-script exists (throwing an error if it does not), and save it in the
-appropriate environment. When \code{this.path} is called subsequent times
+The first time \code{this.path()} is called within a script, it will
+\code{\link[base:normalizePath]{normalize}} the script's path, checking that
+the script exists (throwing an error if it does not), and save it in the
+appropriate environment. When \code{this.path()} is called subsequent times
 within the same script, it returns the saved path. This will be faster than the
 first time, will not check for file existence, and will be independent of the
 working directory.
@@ -176,26 +179,26 @@ As a side effect, this means that a script can delete itself using
 \code{\link[base:files]{file.remove}} or \code{\link[base]{unlink}} but still
 know its own path for the remainder of the script.
 
-Within a script that contains calls to both \code{this.path} and
-\code{\link[base:getwd]{setwd}}, \code{this.path} \emph{MUST} be used
-\emph{AT LEAST} once before the first call to \code{setwd}. This isn't always
-necessary; for instance if you ran a script using its absolute path as opposed
-to its relative path, changing the working directory has no effect. However, it
-is still advised against.
+Within a script that contains calls to both \code{this.path()} and
+\code{\link[base:getwd]{setwd}()}, \code{this.path()} \emph{MUST} be used
+\emph{AT LEAST} once before the first call to \code{setwd()}. This is not
+always necessary; if you ran a script using its absolute path as opposed to its
+relative path, changing the working directory has no effect. However, it is
+still advised against.
 
 The following is \emph{NOT} an example of bad practice:
 
 \code{setwd(this.path::this.dir())}
 
-\code{setwd} is most certainly written before \code{this.path()}, but
+\code{setwd()} is most certainly written before \code{this.path()}, but
 \code{this.path()} will be evaluated first. It is not the written order that is
 bad practice, but the order of evaluation. Do not change the working directory
-before calling \code{this.path} at least once.
+before calling \code{this.path()} at least once.
 
-Please \strong{DO NOT} use \code{this.path()} and others inside the site-wide
-startup profile file, the user profile, nor the function \code{.First} (see
+Please \strong{DO NOT} use \code{this.path()} inside the site-wide startup
+profile file, the user profile, nor the function \code{.First} (see
 \code{?\link[base]{Startup}}). This has inconsistent results dependent on the
-GUI, and often incorrect as well. For example:
+GUI, and often incorrect. For example:
 
 \describe{
   \item{in \sQuote{RStudio}}{
@@ -442,7 +445,7 @@ function for when one is specified.
 %            else if (basename(dirname(x)) == basename(dirname(y)) &&
 %                basename(x) == basename(y)) {
 %                cat2(paste0(
-%                    "Hmm ... looks like these paths are equivalent, it's ",
+%                    "Hmm ... looks like these paths are equivalent, it is ",
 %                    "likely that they refer to the same file but have ",
 %                    "different paths because of a hard link or multiple mounts",
 %                    " (see ?normalizePath)"
@@ -699,12 +702,11 @@ FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
     withAutoprint({
         cat(sQuote(this.path::this.path(verbose = TRUE, default = {
-            stop("interestingly enough, because the executing script's\\n",
-                "  path will be found, argument 'default' won't be evaluated,\\n",
-                "  and so this error won't actually print, isn't that\\n",
-                "  neat? you can use this to your advantage in a similar\\n",
-                "  manner, doing arbitrary things only if the executing\\n",
-                "  script does not exist")
+            stop("since the executing script's path will be found, argument\\n",
+                " 'default' will not be evaluated, so this error will not\\n",
+                " be thrown! you can use this to your advantage in a\\n",
+                " similar manner, doing arbitrary things only if the\\n",
+                " executing script does not exist")
         })), "\\n\\n")
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE)
@@ -765,4 +767,4 @@ this.path::this.path(verbose = FALSE, default = "script.log",
         path
         # or you could use paste0(this.path::removeext(path), ".log")
     })
-\dontshow{unlink(FILE) ; if (.unload.testthat) unloadNamespace("testthat") ; if (.unload.knitr) unloadNamespace("knitr")}}
+\dontshow{unlink(FILE); if (.unload.testthat) unloadNamespace("testthat"); if (.unload.knitr) unloadNamespace("knitr")}}

@@ -27,7 +27,7 @@ expression to be evaluated before returning or exiting.
 }
 \details{
 The use of the \code{else.} argument is better than adding additional code to
-\code{expr} because it avoids accidentally catching a condition that wasn't
+\code{expr} because it avoids accidentally catching a condition that was not
 being protected by the \code{tryCatch} call.
 }
 \examples{

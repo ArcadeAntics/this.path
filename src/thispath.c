@@ -134,6 +134,8 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     if (N <= 0) {
+
+
 #define toplevel                                               \
         if (get_frame_number) return ScalarInteger(0);         \
         SEXP expr;                                             \
@@ -149,7 +151,6 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
         returnthis = eval(expr, rho);                          \
         UNPROTECT(1);                                          \
         return returnthis
-        /* exclude the ; on purpose */
 
 
         toplevel;
@@ -165,7 +166,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
-    init_tools_rstudio(rho);
+    init_tools_rstudio(FALSE);
 
 
     int testthat_loaded, knitr_loaded;
@@ -645,4 +646,26 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #undef toplevel
 #undef returnfile
+}
+
+
+SEXP do_thispathtoplevelrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    // SEXP x = CADR(args);
+    // SEXP r_editor = CADDR(args);
+    return R_NilValue;
+}
+
+
+SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    Rboolean skipCheck = FALSE;
+    int nargs = length(args) - 1;
+    if (nargs == 0) {
+    }
+    else if (nargs == 1) {
+        skipCheck = asLogical(CADR(args));
+    }
+    else errorcall(call, wrong_nargs_to_External(nargs, "C_inittoolsrstudio", "0 or 1"));
+    return ScalarLogical(init_tools_rstudio(skipCheck));
 }

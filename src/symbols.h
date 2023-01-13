@@ -24,6 +24,9 @@ extern SEXP
     sys_sourceSymbol             ,
     gui_rstudioSymbol            ,
     init_tools_rstudioSymbol     ,
+    tools_rstudioSymbol          ,
+    _rs_api_getActiveDocumentContextSymbol,
+    _rs_api_getSourceEditorContextSymbol,
     debugSourceSymbol            ,
     testthatSymbol               ,
     source_fileSymbol            ,
@@ -31,7 +34,6 @@ extern SEXP
     knitr_output_dirSymbol       ,
     knitrSymbol                  ,
     knitSymbol                   ,
-    this_pathSymbol              ,
     wrap_sourceSymbol            ,
     sys_callSymbol               ,
     sys_frameSymbol              ,
@@ -66,14 +68,11 @@ extern SEXP
     GetConnectionSymbol          ,
     GetUnderlyingConnectionSymbol,
     summary_connectionSymbol     ,
-    requireNamespaceSymbol       ,
-    quietlySymbol                ,
-    cSymbol                      ,
-    libnameSymbol                ,
-    _libPathsSymbol              ,
+    require_this_path_helperSymbol,
     _asArgsSymbol                ,
     commandArgsSymbol            ,
-    maybe_in_shellSymbol         ;
+    maybe_in_shellSymbol         ,
+    _packageName                 ;
 
 
 #endif

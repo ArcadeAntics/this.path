@@ -88,11 +88,11 @@ normalizePath.and.URL.1 <- function (path, ...)
 as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbose = FALSE))
 {
     if (!is.character(path))
-        stop("invalid 'path' argument")
+        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
     path <- normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
     if (!missing(relative.to)) {
         if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop("invalid 'relative.to' argument")
+            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
         relative.to <- normalizePath.and.URL.1(relative.to, winslash = "/", mustWork = FALSE)
     }
     relative.to <- path.split.1(relative.to)
@@ -141,6 +141,9 @@ as.relative.path <- as.rel.path <- function (path, relative.to = this.dir(verbos
         else paste(value, collapse = "/")
     }, FUN.VALUE = "")
 }
+
+
+rel2here <- as.rel.path
 
 
 relpath <- as.rel.path
