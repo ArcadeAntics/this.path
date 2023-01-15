@@ -119,9 +119,11 @@ extern SEXP do_thispathnotimplementederror             (SEXP call, SEXP op, SEXP
 extern SEXP do_thispathnotexistserror                  (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_thispathinzipfileerror                  (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_thispathinaquaerror                     (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispath   (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+extern SEXP do_isclipboard     (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispath        (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathrgui    (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 /* wrapsource.c */

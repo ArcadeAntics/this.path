@@ -7,6 +7,54 @@ essentials:::check.this(  # this.path
 )
 
 
+.External2(this.path:::C_thispathrgui,
+    c("~/δ.R - Редактор R", "R Console (64-bit)"),
+    this.path:::untitled_ucrt,
+    this.path:::r.editor_ucrt,
+    verbose = FALSE, for.msg = FALSE
+)
+
+
+.External2(this.path:::C_thispathrgui,
+    c("~/δ.R", "R Console (64-bit)"),
+    this.path:::untitled_ucrt,
+    this.path:::r.editor_ucrt,
+    verbose = FALSE, for.msg = FALSE
+)
+
+
+.External2(this.path:::C_thispathrgui,
+    c("R Console (64-bit)", "İsimsiz  - R Düzenleyici"),
+    this.path:::untitled_ucrt,
+    this.path:::r.editor_ucrt,
+    verbose = FALSE, for.msg = FALSE
+)
+
+
+.External2(this.path:::C_thispathrgui,
+    "İsimsiz  - R Düzenleyici",
+    this.path:::untitled_ucrt,
+    this.path:::r.editor_ucrt,
+    verbose = FALSE, for.msg = FALSE
+)
+
+
+.External2(this.path:::C_thispathrgui,
+    "R Console",
+    this.path:::untitled_ucrt,
+    this.path:::r.editor_ucrt,
+    verbose = FALSE, for.msg = FALSE
+)
+
+
+.External2(this.path:::C_thispathrgui,
+    NULL,
+    this.path:::untitled_ucrt,
+    this.path:::r.editor_ucrt,
+    verbose = FALSE, for.msg = FALSE
+)
+
+
 local({
     x <- c(
         "shINFO",

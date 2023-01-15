@@ -649,14 +649,6 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_thispathtoplevelrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
-{
-    // SEXP x = CADR(args);
-    // SEXP r_editor = CADDR(args);
-    return R_NilValue;
-}
-
-
 SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rboolean skipCheck = FALSE;
@@ -668,4 +660,131 @@ SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     else errorcall(call, wrong_nargs_to_External(nargs, "C_inittoolsrstudio", "0 or 1"));
     return ScalarLogical(init_tools_rstudio(skipCheck));
+}
+
+
+#include "drivewidth.h"
+
+
+SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    args = CDR(args);
+
+
+    SEXP wintitle = CAR(args); args = CDR(args);
+    if (!(TYPEOF(wintitle) == STRSXP || wintitle == R_NilValue))
+        errorcall(call, _("invalid first argument, must be %s"), "'character' / / NULL");
+
+
+    SEXP untitled = CAR(args); args = CDR(args);
+    if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
+        errorcall(call, _("invalid second argument, must be %s"), "'character' / / NULL");
+
+
+    SEXP r_editor = CAR(args); args = CDR(args);
+    if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
+        errorcall(call, _("invalid third argument, must be %s"), "'character' / / NULL");
+
+
+    Rboolean verbose = asLogical(CAR(args)); args = CDR(args);
+    if (verbose == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "verbose");
+
+
+    Rboolean for_msg = asLogical(CAR(args)); args = CDR(args);
+    if (for_msg == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "for.msg");
+
+
+    Rboolean active = TRUE;
+    int n = LENGTH(wintitle);
+    int length_untitled = LENGTH(untitled);
+    int length_r_editor = LENGTH(r_editor);
+    for (int i = 0; i < n; i++) {
+        SEXP wintitle0 = STRING_ELT(wintitle, i);
+        if (wintitle0 == NA_STRING || wintitle0 == R_BlankString) continue;
+        const char *title = CHAR(wintitle0);
+        int nchar_title = (int) strlen(title);
+
+
+        for (int j = 0; j < length_untitled; j++) {
+            SEXP untitled0 = STRING_ELT(untitled, j);
+            if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
+            // if (wintitle0 == untitled0) {
+            if (!strcmp(title, CHAR(untitled0))) {
+                if (for_msg) return ScalarString(NA_STRING);
+                error("%s%s",
+                    this_path_used_in_an_inappropriate_fashion,
+                    (active) ? "* active document in Rgui does not exist" :
+                               "* source document in Rgui does not exist");
+            }
+        }
+
+
+        for (int j = 0; j < length_r_editor; j++) {
+            SEXP r_editor0 = STRING_ELT(r_editor, j);
+            if (r_editor0 == NA_STRING || r_editor0 == R_BlankString) continue;
+            const char *suffix = CHAR(r_editor0);
+            int nchar_suffix = (int) strlen(suffix);
+            int off = nchar_title - nchar_suffix;
+            if (off > 0) {
+                if (memcmp(title + off, suffix, nchar_suffix) == 0) {
+                    SEXP ans = mkCharLenCE(title, off, getCharCE(wintitle0));
+                    if (!is_abs_path_windows(CHAR(ans)))
+                        error("invalid title, path preceding '%s' must be absolute", suffix);
+
+
+#define return_abs_path(charsxp)                               \
+                    if (verbose)                               \
+                        Rprintf((active) ? "Source: active document in Rgui\n" :\
+                                           "Source: source document in Rgui\n");\
+                    SEXP expr = allocList(2);                  \
+                    PROTECT(expr);                             \
+                    SET_TYPEOF(expr, LANGSXP);                 \
+                    SETCAR(expr, _normalizePathSymbol);        \
+                    SETCADR(expr, ScalarString((charsxp)));    \
+                    SEXP returnthis = eval(expr, mynamespace); \
+                    UNPROTECT(1);                              \
+                    return returnthis
+
+
+                    return_abs_path(ans);
+                }
+            }
+        }
+
+
+        if (is_abs_path_windows(title)) {
+            return_abs_path(wintitle0);
+        }
+
+
+        if (active) {
+            if (!strcmp(title, "R Console") ||
+                !strcmp(title, "R Console (64-bit)") ||
+                !strcmp(title, "R Console (32-bit)"))
+            {
+                active = FALSE;
+            }
+        }
+    }
+
+
+    if (active) error("no windows in Rgui; should never happen, please report!");
+    if (for_msg) return ScalarString(NA_STRING);
+
+
+    SEXP expr = allocList(2);
+    PROTECT(expr);
+    SET_TYPEOF(expr, LANGSXP);
+    SETCAR(expr, stopSymbol);
+    char msg[256];
+    snprintf(msg, 256, "%s%s",
+        this_path_used_in_an_inappropriate_fashion,
+        "* R is being run from Rgui with no documents open");
+    SEXP call2 = PROTECT(getCurrentCall(rho));
+    SETCADR(expr, thisPathNotExistsError(msg, call2));
+    eval(expr, mynamespace);
+    UNPROTECT(2);
+    return R_NilValue;  /* should not be reached */
 }

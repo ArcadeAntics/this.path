@@ -82,8 +82,9 @@ if (!(isNamespace(environment()) &&
 
     main <- function() {
 
+
         testing <- FALSE
-        # testing <- TRUE
+        # testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
 
 
         # there was a time when I was doing something more along the lines:
@@ -164,12 +165,12 @@ if (!(isNamespace(environment()) &&
         x <- x[i, , drop = FALSE]
 
 
-        # rgui <- x$rgui[[1L]]
-        # ucrt <- x$ucrt[[1L]]
+        # rgui <- x$rgui[[1L]]; warning("comment this out later", immediate. = TRUE)
+        # ucrt <- x$ucrt[[1L]]; warning("comment this out later", immediate. = TRUE)
 
 
-        # rgui <- x$rgui[[2L]]
-        # ucrt <- x$ucrt[[2L]]
+        # rgui <- x$rgui[[2L]]; warning("comment this out later", immediate. = TRUE)
+        # ucrt <- x$ucrt[[2L]]; warning("comment this out later", immediate. = TRUE)
 
 
         write.r.editor <- function(rgui, ucrt) {
@@ -296,15 +297,25 @@ if (!(isNamespace(environment()) &&
             untitled <- txt[c(FALSE, TRUE)]
 
 
+            dir <- "./inst/extdata"
+            valid.dir <- endsWith(
+                tryCatch(normalizePath(dir, "/", TRUE), error = function(e) ""),
+                "/this.path/inst/extdata"
+            )
             suffix <- if (ucrt) "ucrt" else "msvcrt"
-            r.editor.path <- sprintf("./inst/extdata/r-editor_%s.txt", suffix)
-            untitled.path <- sprintf("./inst/extdata/untitled_%s.txt", suffix)
+            r.editor.path <- sprintf("%s/r-editor_%s.txt", dir, suffix)
+            untitled.path <- sprintf("%s/untitled_%s.txt", dir, suffix)
 
 
             if (testing) {
 
 
-                if (
+                if (!valid.dir || !file.exists(r.editor.path)) {
+                    warning("\n no file to compare \" - R Editor\" strings against! Window titles:\n\n",
+                            paste(unique(r.editor), collapse = "\n"),
+                            call. = FALSE, immediate. = TRUE, domain = NA)
+                    cat("\n", file = stderr())
+                } else if (
                     any(invalid <- !(vapply(r.editor, function(str) {
                         paste(charToRaw(str), collapse = "")
                     }, FUN.VALUE = "", USE.NAMES = FALSE) %in% vapply(readLines2(r.editor.path), function(str) {
@@ -315,12 +326,16 @@ if (!(isNamespace(environment()) &&
                                                 "invalid \" - R Editor\" strings:\n"),
                          paste(utils::capture.output(r.editor[invalid]), collapse = "\n"))
                 } else {
-                    cat("\nAll \" - R Editor\" strings are valid!\n")
-                    print(r.editor)
+                    cat("\nAll \" - R Editor\" strings are valid!\n", r.editor, sep = "\n")
                 }
 
 
-                if (
+                if (!valid.dir || !file.exists(untitled.path)) {
+                    warning("\n no file to compare \"Untitled - R Editor\" strings against! Window titles:\n\n",
+                            paste(unique(untitled), collapse = "\n"),
+                            call. = FALSE, immediate. = TRUE, domain = NA)
+                    cat("\n", file = stderr())
+                } else if (
                     any(invalid <- !(vapply(untitled, function(str) {
                         paste(charToRaw(str), collapse = "")
                     }, FUN.VALUE = "", USE.NAMES = FALSE) %in% vapply(readLines2(untitled.path), function(str) {
@@ -331,8 +346,7 @@ if (!(isNamespace(environment()) &&
                                                 "invalid \"Untitled - R Editor\" strings:\n"),
                          paste(utils::capture.output(untitled[invalid]), collapse = "\n"))
                 } else {
-                    cat("\nAll \"Untitled - R Editor\" strings are valid!\n")
-                    print(untitled)
+                    cat("\nAll \"Untitled - R Editor\" strings are valid!\n", untitled, sep = "\n")
                 }
 
 
@@ -360,17 +374,39 @@ if (!(isNamespace(environment()) &&
                 untitled <- unique(untitled)
 
 
-                writeLines2 <- function(txt, path) {
-                    # save the text as its bytes without translation
-                    # plus its encoding
-                    conn <- file(path, "wb", encoding = "")
-                    on.exit(close(conn))
-                    writeLines(rbind(txt, Encoding(txt)), conn, useBytes = TRUE)
+                if (valid.dir) {
+
+
+                    writeLines2 <- function(x, path) {
+                        # save the text as its bytes without translation
+                        # plus its encoding
+                        conn <- file(path, "wb", encoding = "")
+                        on.exit(close(conn))
+                        writeLines(rbind(x, Encoding(x)), conn, useBytes = TRUE)
+                    }
+
+
+                    writeLines2(r.editor, r.editor.path)
+                    writeLines2(untitled, untitled.path)
+
+
+                } else {
+
+
+                    warning("\n no directory in which to write \" - R Editor\" strings:\n\n",
+                            paste(r.editor, collapse = "\n"),
+                            call. = FALSE, immediate. = TRUE, domain = NA)
+                    cat("\n", file = stderr())
+
+
+                    warning("\n no directory in which to write \"Untitled - R Editor\" strings:\n\n",
+                            paste(untitled, collapse = "\n"),
+                            call. = FALSE, immediate. = TRUE, domain = NA)
+                    cat("\n", file = stderr())
+
+
                 }
 
-
-                writeLines2(r.editor, r.editor.path)
-                writeLines2(untitled, untitled.path)
 
             }
 
@@ -379,8 +415,9 @@ if (!(isNamespace(environment()) &&
         }
 
 
-        write.r.editor(rgui = x$rgui[[1L]], ucrt = x$ucrt[[1L]])
-        write.r.editor(rgui = x$rgui[[2L]], ucrt = x$ucrt[[2L]])
+        invisible(lapply(seq_len(nrow(x)), function(i) {
+            write.r.editor(rgui = x$rgui[[i]], ucrt = x$ucrt[[i]])
+        }))
     }
 
 

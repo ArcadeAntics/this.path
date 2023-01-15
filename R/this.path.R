@@ -12,8 +12,8 @@ rm.list.append("rm.list.append")
 
 tmp <- readLines("./src/hooks-for-namespace-events.c", warn = FALSE)
 tmp <- list(
-    thispathofile       = str2lang(tmp[[grep("^[ \t]*#[ \t]*define[ \t]*thispathofileChar[ \t]*\\\\[ \t]*$", tmp) + 1L]]),
-    thispathfile        = str2lang(tmp[[grep("^[ \t]*#[ \t]*define[ \t]*thispathfileChar[ \t]*\\\\[ \t]*$" , tmp) + 1L]])
+    thispathofile       = str2lang(tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thispathofileChar[ \t]*\\\\[ \t]*$", tmp) + 1L]]),
+    thispathfile        = str2lang(tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thispathfileChar[ \t]*\\\\[ \t]*$" , tmp) + 1L]])
 )
 if (!all(vapply(tmp, function(x) is.character(x) && length(x) == 1 && !is.na(x), NA)))
     stop("could not determine variable names")
@@ -217,7 +217,7 @@ is.clipboard <- function (file)
 rm.list.append("this_path_used_in_an_inappropriate_fashion")
 this_path_used_in_an_inappropriate_fashion <- local({
     tmp <- readLines("./src/thispathdefn.h", warn = FALSE)
-    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]*this_path_used_in_an_inappropriate_fashion[ \t]*\\\\[ \t]*$", tmp) + 1L]]
+    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+this_path_used_in_an_inappropriate_fashion[ \t]*\\\\[ \t]*$", tmp) + 1L]]
     tmp <- str2lang(tmp)
     if (!is.character(tmp) || length(tmp) != 1L ||
         is.na(tmp))
@@ -229,6 +229,11 @@ this_path_used_in_an_inappropriate_fashion <- local({
 
 
 # this.path(), this.dir(), and here() ----
+
+
+.this.path.rgui <- function (verbose = FALSE, for.msg = FALSE)
+.External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
+    untitled, r.editor, verbose, for.msg)
 
 
 .this.path.toplevel <- function (verbose = FALSE, original = FALSE, for.msg = FALSE) NULL
@@ -359,75 +364,9 @@ body(.this.path.toplevel) <- bquote({
         # of external pointers containing the windows handles. the thing of
         # interest are the names of this list, these should be the names of the
         # windows belonging to the current R process.
-        #
-        # we are only interested in window handles that:
-        # * starts with "R Console" (for example "R Console", "R Console (64-bit)", etc.)
-        # * look like an open R script; ending with " - R Editor" or any valid
-        #   translation, see
-        #
-        #       this.path:::R.Editor.regexp
-        #
-        #   and
-        #
-        #       essentials::file.open(system.file(package = "this.path", "extdata", "write_r_editor_regexp.R"))
-        #
-        # * looks like a windows path
-        # * matches one of the untitled document patterns, see
-        #
-        #       print(this.path:::untitled, width = 10)
-        #
-        # we keep track of "R Console" because we want to know if the R script
-        # is the active document or the source document. looking for the above
-        # patterns will remove unwanted handles like images
-        #
-        # from there, similar checks are done
-        # as in the above section for 'RStudio'
 
 
-        # the previous regular expression exceeded 256 bytes, more than the
-        # POSIX standard. now, each part of the regular expression is its own
-        # regular expression of less than 256 bytes
-        x <- names(utils::getWindowsHandles(minimized = TRUE))
-        x <- x[
-            startsWith(x, "R Console") |
-            is.r.editor(x)             |
-            is.abs.path(x)             |
-            x %in% untitled
-        ]
-        if (!length(x))
-            stop("no windows in Rgui; should never happen, please report!")
-        else if (active <- !startsWith(x[[1L]], "R Console"))
-            x <- x[[1L]]
-        else if (length(x) >= 2L)
-            x <- x[[2L]]
-        else if (for.msg)
-            return(NA_character_)
-        else stop(thisPathNotExistsError(
-            ..(this_path_used_in_an_inappropriate_fashion),
-            "* R is being run from Rgui with no documents open"))
-        if (x %in% untitled) {
-            if (for.msg)
-                return(NA_character_)
-            else stop(
-                ..(this_path_used_in_an_inappropriate_fashion),
-                if (active)
-                    "* active document in Rgui does not exist"
-                else "* source document in Rgui does not exist")
-        }
-        if (any(i <- endsWith(x, r.editor)))
-            x <- substr(x, 1L, nchar(x) - nchar_r.editor[[which(i)]])
-        else active <- FALSE
-        if (is.abs.path(x)) {
-            if (verbose)
-                cat(
-                    if (active)
-                        "Source: active document in Rgui\n"
-                    else
-                        "Source: source document in Rgui\n"
-                )
-            return(normalizePath(x, winslash = "/", mustWork = TRUE))
-        }
-        else stop("invalid windows handles, path preceding \" - R Editor\" must be absolute")
+        .this.path.rgui(verbose, for.msg)
     }
 
 
@@ -600,7 +539,7 @@ tryCatch({
 
 local({
     tmp <- readLines("./src/thispathdefn.h", warn = FALSE)
-    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]*thisPathNotExistsErrorCls[ \t]*\\\\[ \t]*$", tmp) + 1L]]
+    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorCls[ \t]*\\\\[ \t]*$", tmp) + 1L]]
     tmp <- str2lang(tmp)
     if (!is.character(tmp) || length(tmp) != 1L ||
         is.na(tmp))

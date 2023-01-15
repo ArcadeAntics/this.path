@@ -87,7 +87,10 @@ SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 
-// https://github.com/wch/r-source/blob/173e7142252170d2525b5da854ca24cb8a4f9fc9/src/gnuwin32/system.c#L955
+#if defined(_WIN32)
+
+
+// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L955
 static void env_command_line(int *pac, const char **argv)
 {
     int ac = *pac, newac = 1;
@@ -111,7 +114,10 @@ static void env_command_line(int *pac, const char **argv)
 }
 
 
-// https://github.com/wch/r-source/blob/d29fd8b7f3221aaef97f0980108a230623274442/src/main/CommandLineArgs.c#L94
+#endif
+
+
+// https://github.com/wch/r-source/blob/trunk/src/main/CommandLineArgs.c#L94
 void R_common_command_line(int *pac, const char **argv)
 {
     int ac = *pac, newac = 1;
@@ -219,111 +225,10 @@ void R_common_command_line(int *pac, const char **argv)
 }
 
 
-#define print_char_array(ac, av)                               \
-    do {                                                       \
-        SEXP tmp10 = allocVector(STRSXP, ac);                  \
-        PROTECT(tmp10);                                        \
-        for (int indx = 0; indx < ac; indx++) {                \
-            SET_STRING_ELT(tmp10, indx, mkChar(av[indx]));     \
-        }                                                      \
-        Rprint(tmp10, R_BaseEnv);                              \
-        UNPROTECT(1);                                          \
-    } while (0)
+#if !defined(_WIN32)
 
 
-const char *windowsshinfo(int ac, const char **av, int *no_input)
-{
-    /*
-    windowsshinfo {this.path}                                    C Documentation
-
-    Get Information About The Command Line Arguments
-
-
-
-    Description:
-
-    Extract the command line argument FILE and determine if any input was
-    provided (from -e expr, -f FILE, or --file=FILE).
-     */
-    Rboolean processing = TRUE;
-
-
-// https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1174
-    env_command_line(&ac, av);
-
-
-#ifdef debug
-    Rprintf("\nafter removing environment variables:\n");
-    print_char_array(ac, av);
-#endif
-
-
-// https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1176
-    R_common_command_line(&ac, av);
-
-
-#ifdef debug
-    Rprintf("\nafter removing common arguments:\n");
-    print_char_array(ac, av);
-#endif
-
-
-    const char *FILE = NULL;
-// https://github.com/wch/r-source/blob/589b76ba28bb97e9d628f6e4ae1735c4e2660b3f/src/gnuwin32/system.c#L1179
-    while (--ac) {
-        if (processing && **++av == '-') {
-            // if (!strcmp(*av, "--help") || !strcmp(*av, "-h")) {
-            // } else if (!strcmp(*av, "--cd-to-userdocs")) {
-            // } else if (!strcmp(*av, "--no-environ")) {
-            // } else if (!strcmp(*av, "--ess")) {
-            // } else if (!strcmp(*av, "--internet2")) {
-            // } else if (!strcmp(*av, "--mdi")) {
-            // } else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi")) {
-            // } else if (!strcmp(*av, "--debug")) {
-            // } else
-            if (!strcmp(*av, "--args")) {
-                break;
-            } else if (!strcmp(*av, "-f")) {
-                *no_input = FALSE;
-                ac--;
-                av++;
-                if (!ac) {
-                    error("internal error, this should have been caught earlier");
-                }
-                /* if (av != "-") */
-                if (strcmp(*av, "-")) {
-                    FILE = *av;
-                }
-            } else if (!strncmp(*av, "--file=", 7)) {
-                *no_input = FALSE;
-                /* if (av != "-") */
-                if (strcmp((*av)+7, "-")) {
-                    FILE = (*av)+7;
-                }
-            // } else if (!strncmp(*av, "--workspace=", 12)) {
-            } else if (!strcmp(*av, "-e")) {
-                *no_input = FALSE;
-                ac--;
-                av++;
-                if (!ac) {
-                    error("internal error, this should have been caught earlier");
-                }
-            }
-        }
-    }
-
-
-#ifdef debug
-    set_R_Visible(1);
-    Rprintf("\n");
-#endif
-
-
-    return FILE;
-}
-
-
-// https://github.com/wch/r-source/blob/031c225f8e928f7259eed5704218edc83b7c88b0/src/unix/system.c#L163
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L163
 static char *unescape_arg(char *p, const char *avp)
 {
     /* Undo the escaping done in the front end */
@@ -344,114 +249,19 @@ static char *unescape_arg(char *p, const char *avp)
 }
 
 
-const char *unixshinfo(int ac, const char **av, int *no_input)
-{
-    /*
-    same idea as windowsshinfo, to extract FILE and determine if any input was
-    provided, but there is a different manner in which unix command line
-    arguments are processed.
-     */
-
-
-    int i, ioff = 1, j;
-    const char **avv;
-
-
-// https://github.com/wch/r-source/blob/031c225f8e928f7259eed5704218edc83b7c88b0/src/unix/system.c#L346
-    /*
-    first task is to select the GUI.
-    If run from the shell script, only Tk|tk|X11|x11 are allowed.
-     */
-    for (i = 0, avv = av; i < ac; i++, avv++) {
-        if (!strcmp(*avv, "--args"))
-            break;
-        if (!strncmp(*avv, "--gui", 5) || !strncmp(*avv, "-g", 2)) {
-            if (!strncmp(*avv, "--gui", 5) && strlen(*avv) >= 7) {
-            }
-            else {
-                if (i + 1 < ac) {
-                    avv++;
-                    ioff++;
-                }
-            }
-            /* now remove it/them */
-            for (j = i; j < ac - ioff; j++)
-                av[j] = av[j + ioff];
-            ac -= ioff;
-            break;
-        }
-    }
-
-
-#ifdef debug
-    Rprintf("\nafter removing --gui/-g argument:\n");
-    print_char_array(ac, av);
 #endif
 
 
-// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
-    R_common_command_line(&ac, av);
-
-
-#ifdef debug
-    Rprintf("\nafter removing common arguments:\n");
-    print_char_array(ac, av);
-#endif
-
-
-    const char *FILE = NULL;
-// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
-    while (--ac) {
-        if (**++av == '-') {
-            // if (!strcmp(*av, "--no-readline")) {
-            // } else
-            if (!strcmp(*av, "-f")) {
-                *no_input = FALSE;
-                ac--;
-                av++;
-#define R_INIT_TREAT_F(_AV_)                                   \
-                if (strcmp(_AV_, "-")) {                       \
-                    if (strlen(_AV_) >= PATH_MAX) {            \
-                        errorcall(R_NilValue, _("path given in -f/--file is too long"));\
-                    }                                          \
-                    char path[PATH_MAX], *p = path;            \
-                    p = unescape_arg(p, _AV_);                 \
-                    *p = '\0';                                 \
-                    FILE = path;                               \
-                }
-                R_INIT_TREAT_F(*av);
-
-            } else if (!strncmp(*av, "--file=", 7)) {
-                *no_input = FALSE;
-
-                R_INIT_TREAT_F((*av)+7);
-
-            } else if (!strcmp(*av, "-e")) {
-                *no_input = FALSE;
-                ac--;
-                av++;
-            } else if (!strcmp(*av, "--args")) {
-                break;
-            } else if (!strcmp(*av, "--interactive")) {
-                break;
-            } else {
-#ifdef HAVE_AQUA
-                // r27492: in 2003 launching from 'Finder OSX' passed this
-                if (!strncmp(*av, "-psn", 4)) break;
-#endif
-            }
-        }
-    }
-
-
-#ifdef debug
-    set_R_Visible(1);
-    Rprintf("\n");
-#endif
-
-
-    return FILE;
-}
+#define print_char_array(ac, av)                               \
+    do {                                                       \
+        SEXP tmp10 = allocVector(STRSXP, ac);                  \
+        PROTECT(tmp10);                                        \
+        for (int indx = 0; indx < ac; indx++) {                \
+            SET_STRING_ELT(tmp10, indx, mkChar(av[indx]));     \
+        }                                                      \
+        Rprint(tmp10, R_BaseEnv);                              \
+        UNPROTECT(1);                                          \
+    } while (0)
 
 
 SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -571,11 +381,186 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 #ifdef _WIN32
-    FILE = windowsshinfo(ac, av, &no_input);
-#else
-    FILE = unixshinfo(ac, av, &no_input);
+
+
+// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1064
+    Rboolean processing = TRUE;
+
+
+// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1174
+    env_command_line(&ac, av);
+
+
+#ifdef debug
+    Rprintf("\nafter removing environment variables:\n");
+    print_char_array(ac, av);
 #endif
 
 
-    return_shinfo(ScalarString(FILE ? mkChar(FILE) : NA_STRING), ScalarLogical(no_input));
+// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1176
+    R_common_command_line(&ac, av);
+
+
+#ifdef debug
+    Rprintf("\nafter removing common arguments:\n");
+    print_char_array(ac, av);
+#endif
+
+
+// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1179
+    while (--ac) {
+        if (processing && **++av == '-') {
+            // if (!strcmp(*av, "--help") || !strcmp(*av, "-h")) {
+            // } else if (!strcmp(*av, "--cd-to-userdocs")) {
+            // } else if (!strcmp(*av, "--no-environ")) {
+            // } else if (!strcmp(*av, "--ess")) {
+            // } else if (!strcmp(*av, "--internet2")) {
+            // } else if (!strcmp(*av, "--mdi")) {
+            // } else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi")) {
+            // } else if (!strcmp(*av, "--debug")) {
+            // } else
+            if (!strcmp(*av, "--args")) {
+                break;
+            } else if (!strcmp(*av, "-f")) {
+                no_input = FALSE;
+                ac--;
+                av++;
+                if (!ac) {
+                    error("internal error, this should have been caught earlier");
+                }
+                /* if (av != "-") */
+                if (strcmp(*av, "-")) {
+                    FILE = *av;
+                }
+            } else if (!strncmp(*av, "--file=", 7)) {
+                no_input = FALSE;
+                /* if (av != "-") */
+                if (strcmp((*av)+7, "-")) {
+                    FILE = (*av)+7;
+                }
+            // } else if (!strncmp(*av, "--workspace=", 12)) {
+            } else if (!strcmp(*av, "-e")) {
+                no_input = FALSE;
+                ac--;
+                av++;
+                if (!ac) {
+                    error("internal error, this should have been caught earlier");
+                }
+            }
+        }
+    }
+
+
+#ifdef debug
+    set_R_Visible(1);
+    Rprintf("\n");
+#endif
+
+
+#else
+
+
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L191
+    int i, ioff = 1, j;
+    const char **avv;
+
+
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L346
+    /* first task is to select the GUI.
+       If run from the shell script, only Tk|tk|X11|x11 are allowed.
+     */
+    for (i = 0, avv = av; i < ac; i++, avv++) {
+        if (!strcmp(*avv, "--args"))
+            break;
+        if (!strncmp(*avv, "--gui", 5) || !strncmp(*avv, "-g", 2)) {
+            if (!strncmp(*avv, "--gui", 5) && strlen(*avv) >= 7) {
+            }
+            else {
+                if (i + 1 < ac) {
+                    avv++;
+                    ioff++;
+                }
+            }
+            /* now remove it/them */
+            for (j = i; j < ac - ioff; j++)
+                av[j] = av[j + ioff];
+            ac -= ioff;
+            break;
+        }
+    }
+
+
+#ifdef debug
+    Rprintf("\nafter removing --gui/-g argument:\n");
+    print_char_array(ac, av);
+#endif
+
+
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
+    R_common_command_line(&ac, av);
+
+
+#ifdef debug
+    Rprintf("\nafter removing common arguments:\n");
+    print_char_array(ac, av);
+#endif
+
+
+// https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
+    while (--ac) {
+        if (**++av == '-') {
+            // if (!strcmp(*av, "--no-readline")) {
+            // } else
+            if (!strcmp(*av, "-f")) {
+                no_input = FALSE;
+                ac--;
+                av++;
+#define R_INIT_TREAT_F(_AV_)                                   \
+                if (strcmp(_AV_, "-")) {                       \
+                    if (strlen(_AV_) >= PATH_MAX) {            \
+                        errorcall(R_NilValue, _("path given in -f/--file is too long"));\
+                    }                                          \
+                    char path[PATH_MAX], *p = path;            \
+                    p = unescape_arg(p, _AV_);                 \
+                    *p = '\0';                                 \
+                    FILE = path;                               \
+                }
+                R_INIT_TREAT_F(*av);
+
+            } else if (!strncmp(*av, "--file=", 7)) {
+                no_input = FALSE;
+
+                R_INIT_TREAT_F((*av)+7);
+
+            } else if (!strcmp(*av, "-e")) {
+                no_input = FALSE;
+                ac--;
+                av++;
+            } else if (!strcmp(*av, "--args")) {
+                break;
+            } else if (!strcmp(*av, "--interactive")) {
+                break;
+            } else {
+#ifdef HAVE_AQUA
+                // r27492: in 2003 launching from 'Finder OSX' passed this
+                if (!strncmp(*av, "-psn", 4)) break;
+#endif
+            }
+        }
+    }
+
+
+#ifdef debug
+    set_R_Visible(1);
+    Rprintf("\n");
+#endif
+
+
+#endif
+
+
+    return_shinfo(
+        ScalarString(FILE ? mkChar(FILE) : NA_STRING),
+        ScalarLogical(no_input)
+    );
 }
