@@ -2,11 +2,35 @@
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
 \section{CHANGES IN VERSION 1.1.1}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item
+        Added \code{set.this.path()}, an alias for
+        \code{inside.source()}.
+
+      \item
+        Added \code{Sys.putenv()}, an alternate method for setting
+        environment variables.
+
+      \item
+        \code{system.file(package = "this.path", "extdata", "main.R")}
+        is the script used to determine the translations of
+        \code{"Untitled"} and \code{"R Editor"} between different
+        languages and different C runtimes (for use in \sQuote{Rgui}
+        for Windows). This script no longer relies on \sQuote{Python}
+        nor external \R packages, so anyone can run it.
+    }
+  }
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item
         \code{shFILE()} now parses the command line arguments in the exact same
         manner as \R itself, more accurately selecting argument \option{FILE}.
+
+      \item
+        A relative path returned by \code{as.rel.path()} / /
+        \code{relpath()} will always begin with \code{"./"} or
+        \code{"../"}.
     }
   }
   \subsection{BUG FIXES}{
@@ -22,6 +46,10 @@
       \item
         \pkg{this.path} does a much better job of determining if the \R session
         is from \sQuote{VSCode}.
+
+      \item
+        \pkg{this.path} does a much better job of determining the path of the
+        executing script from \sQuote{Rgui}.
     }
   }
 }

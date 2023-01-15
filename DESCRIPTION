@@ -1,11 +1,11 @@
 Package: this.path
-Version: 1.1.0.10
+Version: 1.1.0.11
 License: MIT + file LICENSE
-Title: Get Executing Script's Path, from 'RStudio', 'VSCode', 'Rgui',
+Title: Get Executing Script's Path, from 'Rgui', 'RStudio', 'VSCode',
     'source()', and 'Rscript' (Shells Including Windows Command Line /
     / Unix Terminal)
 Description: Determine the path of the executing script. Works when
-    running a line or selection in 'RStudio', 'VSCode', and 'Rgui',
+    running a line or selection in 'Rgui', 'RStudio', and 'VSCode',
     when using 'source()', 'sys.source()', 'debugSource()' in 'RStudio',
     'testthat::source_file()', and 'knitr::knit()', and when running
     from a shell.

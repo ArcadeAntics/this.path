@@ -671,16 +671,19 @@ SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
     args = CDR(args);
 
 
+    /* titles of the windows in RGui */
     SEXP wintitle = CAR(args); args = CDR(args);
     if (!(TYPEOF(wintitle) == STRSXP || wintitle == R_NilValue))
         errorcall(call, _("invalid first argument, must be %s"), "'character' / / NULL");
 
 
+    /* strings representing non-existent files in RGui */
     SEXP untitled = CAR(args); args = CDR(args);
     if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
         errorcall(call, _("invalid second argument, must be %s"), "'character' / / NULL");
 
 
+    /* strings representing R scripts in RGui */
     SEXP r_editor = CAR(args); args = CDR(args);
     if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
         errorcall(call, _("invalid third argument, must be %s"), "'character' / / NULL");
@@ -707,6 +710,9 @@ SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
         int nchar_title = (int) strlen(title);
 
 
+        /* if the title and untitled strings are equal (byte-wise, do
+         * not care if encodings match), then the script does not exist
+         */
         for (int j = 0; j < length_untitled; j++) {
             SEXP untitled0 = STRING_ELT(untitled, j);
             if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
@@ -721,6 +727,9 @@ SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
+        /* if the title ends with R Editor strings (again, bit-wise),
+         * then it is an R script, remove the suffix and return
+         */
         for (int j = 0; j < length_r_editor; j++) {
             SEXP r_editor0 = STRING_ELT(r_editor, j);
             if (r_editor0 == NA_STRING || r_editor0 == R_BlankString) continue;
@@ -754,11 +763,14 @@ SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
         }
 
 
+        /* if found an absolute path, return it */
         if (is_abs_path_windows(title)) {
+            active = FALSE;
             return_abs_path(wintitle0);
         }
 
 
+        /* determine if the executing script is active */
         if (active) {
             if (!strcmp(title, "R Console") ||
                 !strcmp(title, "R Console (64-bit)") ||

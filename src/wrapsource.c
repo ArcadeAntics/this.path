@@ -157,7 +157,25 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
      * save the root promise, the original code of the promise,
      * and make an on.exit() call that will restore said promise
      */
-    eval(lang2(on_exitSymbol, lang3(External2Symbol, C_setprseen2Symbol, ptr)), rho);
+    {
+        /* on.exit(.External2(C_setprseen2, ptr)) */
+        SEXP expr = allocList(3);
+        PROTECT(expr);
+        SET_TYPEOF(expr, LANGSXP);
+        SETCAR(expr, External2Symbol);
+        SETCADR(expr, C_setprseen2Symbol);
+        SETCADDR(expr, ptr);
+
+
+        SEXP expr2 = allocList(2);
+        PROTECT(expr2);
+        SET_TYPEOF(expr2, LANGSXP);
+        SETCAR(expr2, on_exitSymbol);
+        SETCADR(expr2, expr);
+
+
+        eval(expr2, rho);
+    }
 
 
 #define check_validity                                         \

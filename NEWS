@@ -2,10 +2,26 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  NEW FEATURES
+
+    * Added set.this.path(), an alias for inside.source().
+
+    * Added Sys.putenv(), an alternate method for setting environment
+      variables.
+
+    * system.file(package = "this.path", "extdata", "main.R") is the
+      script used to determine the translations of "Untitled" and
+      "R Editor" between different languages and different C runtimes
+      (for use in Rgui for Windows). This script no longer relies on
+      Python nor external R packages, so anyone can run it.
+
   SIGNIFICANT USER-VISIBLE CHANGES
 
     * shFILE() now parses the command line arguments in the exact same
-      manner as R itself, more accurately selecting the 'FILE' argument.
+      manner as R itself, more accurately selecting argument FILE.
+
+    * A relative path returned by as.rel.path() / / relpath() will
+      always begin with "./" or "../".
 
   BUG FIXES
 
@@ -15,7 +31,10 @@ CHANGES IN this.path devel:
     * C code no longer uses sprintf(), uses snprintf() instead.
 
     * 'this.path' does a much better job of determining if the R
-      session is from 'VSCode'.
+      session is running from 'VSCode'.
+
+    * 'this.path' does a much better job of determining the path of the
+      executing script from Rgui.
 
 CHANGES IN this.path 1.1.0:
 
@@ -25,14 +44,15 @@ CHANGES IN this.path 1.1.0:
       BugReports URL. By extension, withArgs(knitr::knit()) now also
       works.
 
-    * this.path() now accepts arguments original and for.msg that return the
-      original argument from source / / knit / / Rscript or return a character
-      string that can be used in diagnostic messages / / warnings / / errors.
-      It should be noted that this.path(for.msg = TRUE) should not be used for
-      constructing file paths.
+    * this.path() now accepts arguments original and for.msg that
+      return the original argument from source / / knit / / Rscript or
+      return a character string that can be used in diagnostic messages
+      / / warnings / / errors. It should be noted that
+      this.path(for.msg = TRUE) should not be used for constructing
+      file paths.
 
-    * shFILE() also accepts argument original that returns the original FILE
-      argument from Rscript.
+    * shFILE() also accepts argument original that returns the original
+      FILE argument from Rscript.
 
     * Added splitext(), removeext(), ext(), and ext<-() for
       manipulating paths with extensions.
@@ -43,24 +63,24 @@ CHANGES IN this.path 1.1.0:
     * Added is.main() for determining if an expression is run in a
       top-level code environment.
 
-    * Added wrap.source() and inside.source() for implementing this.path()
-      with any source-like function.
+    * Added wrap.source() and inside.source() for implementing
+      this.path() with any source-like function.
 
     * Added LINENO() for determining the line number of the executing
       expression in the executing script.
 
-    * Added relpath(), a version of as.rel.path() with different default
-      argument values.
+    * Added relpath(), a version of as.rel.path() with different
+      default argument values.
 
-    * Added OS.type, a list of TRUE/FALSE values giving more details about
-      the operating system.
+    * Added OS.type, a list of TRUE/FALSE values giving more details
+      about the operating system.
 
   DEPRECATED AND DEFUNCT:
 
-    * normalized.shFILE(), this.path2(), this.dir2(), and this.dir3() are
-      defunct and should be replaced with shFILE(), this.path(default = NULL),
-      this.dir(default = NULL), and this.dir(default = getwd()),
-      respectively.
+    * normalized.shFILE(), this.path2(), this.dir2(), and this.dir3()
+      are defunct and should be replaced with shFILE(),
+      this.path(default = NULL), this.dir(default = NULL), and
+      this.dir(default = getwd()), respectively.
 
   BUG FIXES
 

@@ -2,14 +2,14 @@
 \alias{this.path-package}
 \docType{package}
 \title{
-Get Executing Script's Path, from \sQuote{RStudio}, \sQuote{VSCode},
-\sQuote{Rgui}, \code{source()}, and \command{Rscript} (Shells Including
+Get Executing Script's Path, from \sQuote{Rgui}, \sQuote{RStudio},
+\sQuote{VSCode}, \code{source()}, and \command{Rscript} (Shells Including
 Windows Command Line / / Unix Terminal)
 }
 \description{
-Determine the path of the executing script. Works when running a line
-or selection in \sQuote{RStudio}, \sQuote{VSCode}, and \sQuote{Rgui},
-when using \sourceandlist{}, and when running from a shell.
+Determine the path of the executing script. Works when running a line or
+selection in \sQuote{Rgui}, \sQuote{RStudio}, and \sQuote{VSCode}, when using
+\sourceandlist{}, and when running from a shell.
 }
 \details{
 \code{\link{this.path}()} returns the
