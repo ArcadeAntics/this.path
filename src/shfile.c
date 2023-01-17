@@ -8,6 +8,33 @@
 
 
 
+void Rprint(SEXP x, SEXP rho)
+{
+    SEXP expr = lang2(install("print"), x);
+    PROTECT(expr);
+    eval(expr, rho);
+    UNPROTECT(1);
+}
+
+
+#define print_char_array(_ac_, _av_)                           \
+    do {                                                       \
+        SEXP tmp10 = allocVector(STRSXP, (_ac_));              \
+        PROTECT(tmp10);                                        \
+        for (int indx = 0; indx < (_ac_); indx++) {            \
+            SET_STRING_ELT(tmp10, indx, mkChar((_av_)[indx])); \
+        }                                                      \
+        Rprint(tmp10, R_BaseEnv);                              \
+        UNPROTECT(1);                                          \
+    } while (0)
+
+
+// #define debug
+
+
+
+
+
 SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     /*
@@ -118,7 +145,7 @@ static void env_command_line(int *pac, const char **argv)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/main/CommandLineArgs.c#L94
-void R_common_command_line(int *pac, const char **argv)
+void my_R_common_command_line(int *pac, const char **argv)
 {
     int ac = *pac, newac = 1;
     const char **av = argv;
@@ -252,18 +279,6 @@ static char *unescape_arg(char *p, const char *avp)
 #endif
 
 
-#define print_char_array(ac, av)                               \
-    do {                                                       \
-        SEXP tmp10 = allocVector(STRSXP, ac);                  \
-        PROTECT(tmp10);                                        \
-        for (int indx = 0; indx < ac; indx++) {                \
-            SET_STRING_ELT(tmp10, indx, mkChar(av[indx]));     \
-        }                                                      \
-        Rprint(tmp10, R_BaseEnv);                              \
-        UNPROTECT(1);                                          \
-    } while (0)
-
-
 SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     /*
@@ -306,16 +321,24 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (!is_maybe_in_shell) {
 
 
-#define return_shinfo(FILE, no_input)                          \
+#ifdef debug
+#define debugRprint(x, rho) Rprint((x), (rho))
+#else
+#define debugRprint(x, rho) do {} while (0)
+#endif
+
+
+#define return_shinfo(_FILE_, _no_input_)                      \
         do {                                                   \
             SEXP value = allocVector(VECSXP, 2);               \
             PROTECT(value);                                    \
             SEXP names = allocVector(STRSXP, 2);               \
             setAttrib(value, R_NamesSymbol, names);            \
             SET_STRING_ELT(names, 0, mkChar("FILE"));          \
-            SET_VECTOR_ELT(value, 0, (FILE));                  \
+            SET_VECTOR_ELT(value, 0, (_FILE_));                \
             SET_STRING_ELT(names, 1, mkChar("no.input"));      \
-            SET_VECTOR_ELT(value, 1, (no_input));              \
+            SET_VECTOR_ELT(value, 1, (_no_input_));            \
+            debugRprint(value, R_BaseEnv);                     \
             UNPROTECT(1);                                      \
             return value;                                      \
         } while (0)
@@ -398,7 +421,7 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1176
-    R_common_command_line(&ac, av);
+    my_R_common_command_line(&ac, av);
 
 
 #ifdef debug
@@ -451,12 +474,6 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-#ifdef debug
-    set_R_Visible(1);
-    Rprintf("\n");
-#endif
-
-
 #else
 
 
@@ -497,13 +514,16 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
-    R_common_command_line(&ac, av);
+    my_R_common_command_line(&ac, av);
 
 
 #ifdef debug
     Rprintf("\nafter removing common arguments:\n");
     print_char_array(ac, av);
 #endif
+
+
+    char path[PATH_MAX];
 
 
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
@@ -520,7 +540,7 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
                     if (strlen(_AV_) >= PATH_MAX) {            \
                         errorcall(R_NilValue, _("path given in -f/--file is too long"));\
                     }                                          \
-                    char path[PATH_MAX], *p = path;            \
+                    char *p = path;                            \
                     p = unescape_arg(p, _AV_);                 \
                     *p = '\0';                                 \
                     FILE = path;                               \
@@ -550,12 +570,12 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
 
-#ifdef debug
-    set_R_Visible(1);
-    Rprintf("\n");
 #endif
 
 
+#ifdef debug
+    set_R_Visible(1);
+    Rprintf("\n");
 #endif
 
 

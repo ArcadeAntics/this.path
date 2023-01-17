@@ -7,6 +7,15 @@ essentials:::check.this(  # this.path
 )
 
 
+if (FALSE) {
+    essentials:::check.this(
+        INSTALL = FALSE, check = FALSE,
+
+        chdir = TRUE
+    )
+}
+
+
 # .External2(this.path:::C_thispathrgui,
 #     c("~/δ.R - Редактор R", "R Console (64-bit)"),
 #     this.path:::untitled_ucrt,
