@@ -14,14 +14,6 @@
 
 
 
-// #define IS_ASCII(X) (getCharCE((X)) == CE_ANY)
-// #define IS_UTF8(X)  (getCharCE((X)) == CE_UTF8)
-#define IS_BYTES(X) (getCharCE((X)) == CE_BYTES)
-
-
-
-
-
 SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 #if debug
@@ -120,7 +112,7 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         int len = LENGTH(VECTOR_ELT(x, i));                    \
         for (j = 0; j < len; j++) {                            \
             SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);         \
-            if (IS_BYTES(cs))                                  \
+            if (getCharCE(cs) == CE_BYTES)                     \
                 error("strings with \"bytes\" encoding are not allowed");\
         }                                                      \
     }                                                          \

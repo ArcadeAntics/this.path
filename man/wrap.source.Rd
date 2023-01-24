@@ -252,6 +252,48 @@ wrapper <- function(input, ...) {
 }
 }
   }
+  \item{\boxuselink{}}{
+\preformatted{
+# 'box' is structured to be an incredible pain in the ass,
+# so this solution is not exactly ideal, but it works so whatever
+wrapper <- function(path, ...) {
+    p <- this.path::path.split.1(path.expand(path))
+    n <- length(p)
+    prefix <- if (n < 2L)
+        "."
+    else p[-n]
+    name <- p[[n]]
+    if (dir.exists(path)) {
+        paths <- this.path::path.join(path, paste0("__init__",
+            c(".r", ".R")))
+        paths <- paths[file.exists(paths)]
+        if (!length(paths))
+            stop(sprintf(
+                "no file \\"__init__.r\\" or \\"__init__.R\\" found in \%s",
+                encodeString(path, quote = "\\"")))
+        path <- paths[[1L]]
+    }
+    else {
+        x <- this.path::splitext(name)
+        if (x[[2L]] \%in\% c(".r", ".R"))
+            name <- x[[1L]]
+    }
+    spec <- list(name = name, prefix = prefix, attach = NULL,
+        alias = name, explicit = FALSE)
+    class(spec) <- c("box$mod_spec", "box$spec")
+    path <- this.path::set.this.path(path, path.only = TRUE)
+    info <- list(name = name, source_path =
+        if (.Platform$OS.type == "windows")
+        chartr("/", "\\\\", path) else path)
+    class(info) <- c("box$mod_info", "box$info")
+    caller <- parent.frame()
+    box:::rethrow_on_error({
+        box:::load_and_register(spec, info, caller)
+    }, call = sys.call(sys.nframe()))
+    invisible()
+}
+}
+  }
 }
 }
 \examples{

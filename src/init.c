@@ -84,6 +84,22 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"pathjoin"       , (DL_FUNC) &do_pathjoin       , 0},
 
 
+    /* pathsplit.c */
+
+
+    {"windowspathsplit", (DL_FUNC) &do_windowspathsplit, 1},
+    {"unixpathsplit"   , (DL_FUNC) &do_unixpathsplit   , 1},
+    {"pathsplit"       , (DL_FUNC) &do_pathsplit       , 1},
+
+    {"windowspathsplit1", (DL_FUNC) &do_windowspathsplit1, 1},
+    {"unixpathsplit1"   , (DL_FUNC) &do_unixpathsplit1   , 1},
+    {"pathsplit1"       , (DL_FUNC) &do_pathsplit1       , 1},
+
+    {"windowspathunsplit", (DL_FUNC) &do_windowspathunsplit, 0},
+    {"unixpathunsplit"   , (DL_FUNC) &do_unixpathunsplit   , 0},
+    {"pathunsplit"       , (DL_FUNC) &do_pathunsplit       , 0},
+
+
     /* promises.c */
 
 

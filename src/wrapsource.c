@@ -244,7 +244,6 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (length(expr) < 2) {
         assign_null(frame);
-        assign_done(frame);
         set_R_Visible(1);
         set_prvalues_then_return(eval(PRCODE(promise), env));
     }
@@ -422,7 +421,6 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     if (s == NULL) {
         assign_null(frame);
-        assign_done(frame);
         set_R_Visible(1);
         set_prvalues_then_return(eval(expr, env));
     }
@@ -479,7 +477,6 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     checkfile(
         /* SEXP call                  = */ R_CurrentExpression,
-        /* SEXP rho                   = */ rho,
         /* SEXP sym                   = */ fileSymbol,
         /* SEXP ofile                 = */ ofile,
         /* SEXP frame                 = */ frame,
@@ -571,6 +568,12 @@ SEXP _insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name)
         error("%s() cannot be called within wrap.source() in package this.path", name);
 
 
+    int box_loaded;
+    SEXP load_from_source = get_load_from_source(box_loaded);
+    if (box_loaded && identical(function, load_from_source))
+        error("%s() cannot be called within load_from_source() in package box", name);
+
+
     UNPROTECT(2);  /* expr & function */
 
 
@@ -606,7 +609,6 @@ SEXP _insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name)
     int missing_file = asFlag(eval(lang2(missingSymbol, fileSymbol), rho), "missing(file)");
     if (missing_file) {
         assign_null(frame);
-        assign_done(frame);
         set_thispathn(sys_parent, frame);
         set_R_Visible(1);
         UNPROTECT(nprotect);
@@ -625,7 +627,6 @@ SEXP _insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name)
     SEXP returnvalue = R_NilValue;
     checkfile(
         /* SEXP call                  = */ R_CurrentExpression,
-        /* SEXP rho                   = */ rho,
         /* SEXP sym                   = */ fileSymbol,
         /* SEXP ofile                 = */ ofile,
         /* SEXP frame                 = */ frame,

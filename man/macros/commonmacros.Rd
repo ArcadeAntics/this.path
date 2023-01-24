@@ -4,6 +4,7 @@
 \newcommand{\debugSource}{\debugwrstudio{\code{debugSource}} in \sQuote{RStudio}}
 \newcommand{\sourcefilelink}{\code{\link[testthat:source_file]{testthat::source_file}}}
 \newcommand{\knitlink}{\code{\link[knitr:knit]{knitr::knit}}}
-\newcommand{\sourcelinks}{\sourcelink{}, \syssourcelink{}, \debugSource{}, \sourcefilelink{}, \knitlink{}}
-\newcommand{\sourceorlist}{\sourcelink{}, \syssourcelink{}, \debugSource{}, \sourcefilelink{}, or \knitlink{}}
-\newcommand{\sourceandlist}{\sourcelink{}, \syssourcelink{}, \debugSource{}, \sourcefilelink{}, and \knitlink{}}
+\newcommand{\boxuselink}{\code{\link[box:use]{box::use}}}
+\newcommand{\sourcelinks}{\sourcelink{}, \syssourcelink{}, \debugSource{}, \sourcefilelink{}, \knitlink{}, \boxuselink{}}
+\newcommand{\sourceorlist}{\sourcelink{}, \syssourcelink{}, \debugSource{}, \sourcefilelink{}, \knitlink{}, or \boxuselink{}}
+\newcommand{\sourceandlist}{\sourcelink{}, \syssourcelink{}, \debugSource{}, \sourcefilelink{}, \knitlink{}, and \boxuselink{}}

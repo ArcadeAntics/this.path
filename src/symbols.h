@@ -35,6 +35,8 @@ extern SEXP
     knitrSymbol                  ,
     knitSymbol                   ,
     wrap_sourceSymbol            ,
+    boxSymbol                    ,
+    load_from_sourceSymbol       ,
     sys_callSymbol               ,
     sys_frameSymbol              ,
     sys_functionSymbol           ,

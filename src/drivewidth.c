@@ -75,7 +75,7 @@ normalizePath("/path/to/file")
 
 
     /* s starts with d: or similar */
-    if (nchar >= 2 && *(s + 1) == ':') return 2;
+    if (nchar >= 2 && *s <= 0x7f && *(s + 1) == ':') return 2;
 
 
     if (*s == '~' &&             /* s starts with ~ */
@@ -231,7 +231,7 @@ int is_abs_path_windows(const char *s)
 
 
     /* s starts with d:/ or similar */
-    if (nchar >= 3 && *(s + 1) == ':' &&
+    if (nchar >= 3 && *s <= 0x7f && *(s + 1) == ':' &&
         (*(s + 2) == '/' || *(s + 2) == '\\'))
     {
         return 1;

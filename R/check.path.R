@@ -20,96 +20,10 @@ UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
 #                 ^^                    ^^          non-capturing groups
 
 
-path.split <- function (path)
-{
-    if (!is.character(path))
-        stop(gettextf("invalid '%s' argument", "path"))
-    value <- vector("list", length(path))
-    if (any(URL <- grepl(URL.pattern, path)))
-        value[URL] <- path.split.URL(path[URL])
-    if (any(leftover <- !URL))
-        value[leftover] <- path.split.UNC.and.default(path[leftover])
-    value
-}
-
-
-path.split.1 <- function (path)
-{
-    if (grepl(URL.pattern, path))
-        path.split.URL.1(path)
-    else path.split.UNC.and.default.1(path)
-}
-
-
-path.split.URL <- function (path)
-{
-    # tested a version which uses one call to regmatches and regexec,
-    # thinking it might be faster than two calls to sub
-    #
-    # it's not lmao, this is as fast as it gets
-    root <- sub(URL.pattern, "\\1", path)
-    rest <- sub(URL.pattern, "\\2", path)
-    .mapply(c, list(root, strsplit(rest, "/+")), NULL)
-}
-
-
-path.split.URL.1 <- function (path)
-{
-    # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
-
-
-    c(sub(URL.pattern, "\\1", path), strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]])
-}
-
-
-path.split.UNC.and.default <- function (path)
-{
-    value <- vector("list", length(path))
-    path <- if (os.windows)
-        chartr("\\", "/", path.expand(path))
-    else path.expand(path)
-    if (any(UNC <- grepl(UNC.pattern, path)))
-        value[UNC] <- path.split.UNC(path[UNC])
-    if (any(leftover <- !UNC))
-        value[leftover] <- path.split.default(path[leftover])
-    value
-}
-
-
-path.split.UNC.and.default.1 <- function (path)
-{
-    path <- if (os.windows)
-        chartr("\\", "/", path.expand(path))
-    else path.expand(path)
-    if (grepl(UNC.pattern, path))
-        path.split.UNC.1(path)
-    else path.split.default.1(path)
-}
-
-
-path.split.UNC <- function (path)
-{
-    root <- sub(UNC.pattern, "\\1/\\2", path)
-    rest <- sub(UNC.pattern, "\\3"    , path)
-    .mapply(c, list(root, strsplit(rest, "/+")), NULL)
-}
-
-
-path.split.UNC.1 <- function (path)
-{
-    # path <- "//host-name/share-name/path/to/file"
-
-
-    c(sub(UNC.pattern, "\\1/\\2", path), strsplit(sub(UNC.pattern, "\\3", path), "/+")[[1L]])
-}
-
-
-path.split.default <- function (path)
-strsplit(path, "/+")
-
-
-path.split.default.1 <- function (path)
-strsplit(path, "/+")[[1L]]
+# c(
+#     "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
+#     "//host/share/path/to/file"
+# )
 
 
 tmp <- function (x, varname, name)
@@ -158,7 +72,7 @@ body(check.dir) <- tmp(quote(.this.dir()), "thisdir", "this.dir()")
 rm(tmp)
 
 
-# this.path:::path.split(c(
+# path.split(c(
 #     this.path(),
 #     "~/this.path",
 #     "testing//this/out",

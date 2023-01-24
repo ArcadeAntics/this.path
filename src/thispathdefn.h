@@ -125,19 +125,13 @@ extern void stop(SEXP cond);
 #endif
 
 
-extern SEXP _assign(SEXP file, SEXP frame);
-extern void assign_default(SEXP file, SEXP frame, SEXP rho);
+extern void assign_done(SEXP frame);
+extern void assign_default(SEXP file, SEXP frame);
 extern void assign_null(SEXP frame);
-extern void assign_chdir(SEXP file, SEXP owd, SEXP frame, SEXP rho);
-extern void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
-extern void assign_file_uri2(SEXP description, SEXP frame, SEXP rho);
-extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
-
-
-#define assign_done(frame) do {                                \
-    defineVar(thispathdoneSymbol, R_NilValue, (frame));        \
-    R_LockBinding(thispathdoneSymbol, (frame));                \
-} while (0)
+extern void assign_chdir(SEXP file, SEXP owd, SEXP frame);
+extern void assign_file_uri(SEXP ofile, SEXP file, SEXP frame);
+extern void assign_file_uri2(SEXP description, SEXP frame);
+extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
 
 
 #define isurl(url) (                                           \
@@ -164,7 +158,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
 #endif
 
 
-#define checkfile(call, rho, sym, ofile, frame, forcepromise,  \
+#define checkfile(call, sym, ofile, frame, forcepromise,       \
     assign_returnvalue,                                        \
     maybe_chdir, getowd, hasowd,                               \
     character_only, conv2utf8, allow_blank_string,             \
@@ -220,7 +214,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
         }                                                      \
         else if (!ignore_url && isurl(url)) {                  \
             if (allow_url) {                                   \
-                assign_url(ofile, file, frame, rho);           \
+                assign_url(ofile, file, frame);                \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
             }                                                  \
@@ -229,7 +223,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
         }                                                      \
         else if (!ignore_file_uri && strncmp(url, "file://", 7) == 0) {\
             if (allow_file_uri) {                              \
-                assign_file_uri(ofile, file, frame, rho);      \
+                assign_file_uri(ofile, file, frame);           \
                 if (assign_returnvalue) {                      \
                     returnvalue = PROTECT(shallow_duplicate(ofile));\
                     SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(thispathfileSymbol, frame, FALSE), 0));\
@@ -244,11 +238,11 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
             if (maybe_chdir) {                                 \
                 SEXP owd = getowd;                             \
                 if (hasowd)                                    \
-                    assign_chdir(ofile, owd, frame, rho);      \
+                    assign_chdir(ofile, owd, frame);           \
                 else                                           \
-                    assign_default(ofile, frame, rho);         \
+                    assign_default(ofile, frame);              \
             }                                                  \
-            else assign_default(ofile, frame, rho);            \
+            else assign_default(ofile, frame);                 \
             if (assign_returnvalue) {                          \
                 returnvalue = PROTECT(shallow_duplicate(ofile));\
                 SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(thispathfileSymbol, frame, FALSE), 0));\
@@ -290,14 +284,14 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                 streql(klass, "xzfile") ||                     \
                 streql(klass, "fifo"  ))                       \
             {                                                  \
-                assign_file_uri2(description, frame, rho);     \
+                assign_file_uri2(description, frame);          \
                 if (forcepromise) getInFrame(thispathfileSymbol, frame, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
                      streql(klass, "url-wininet"))             \
             {                                                  \
                 if (allow_url) {                               \
-                    assign_url(ScalarString(description), description, frame, rho);\
+                    assign_url(ScalarString(description), description, frame);\
                     if (forcepromise) getInFrame(thispathfileSymbol, frame, FALSE);\
                 }                                              \
                 else                                           \
@@ -330,6 +324,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                     R_LockBinding(thispathformsgSymbol, frame);\
                     defineVar(thispathassocwfileSymbol, R_NilValue, frame);\
                     R_LockBinding(thispathassocwfileSymbol, frame);\
+                    assign_done(frame);                        \
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a unz connection", EncodeChar(PRINTNAME(sym)));\
@@ -399,6 +394,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
                     INCREMENT_NAMED(tmp);                      \
                     defineVar(thispathformsgSymbol, tmp, frame);\
                     R_LockBinding(thispathformsgSymbol, frame);\
+                    assign_done(frame);                        \
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\
@@ -407,7 +403,6 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho);
         }                                                      \
         if (assign_returnvalue) returnvalue = PROTECT(ofile);  \
     }                                                          \
-    assign_done(frame);                                        \
     set_R_Visible(1);                                          \
 }
 
@@ -476,6 +471,12 @@ extern int maybe_in_shell;
 
 
 #define get_wrap_source (getInFrame(wrap_sourceSymbol, mynamespace, FALSE))
+
+
+#define get_load_from_source(name)                             \
+    (((name) = (findVarInFrame(R_NamespaceRegistry, boxSymbol) != R_UnboundValue)) ?\
+        (getInFrame(load_from_sourceSymbol, findVarInFrame(R_NamespaceRegistry, boxSymbol), FALSE)) :\
+        (R_NilValue))
 
 
 extern SEXP mynamespace;

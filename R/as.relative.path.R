@@ -33,17 +33,16 @@ normalizeURL <- function (path)
     # source(x)
 
 
-    vapply(path.split.URL(path), function(x) {
-        # x <- this.path:::path.split.URL("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")[[1L]]
+    path.unsplit(lapply(path.split(path), function(p) {
+        # x <- path.split("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")[[1L]]
 
 
-        y <- x[-1L]
-        y <- y[y != "."]
-        while (i <- match("..", y, 0L)) {
-            y <- y[-i + 0L:1L]
+        p <- p[p != "."]
+        while (i <- match("..", p, 0L)) {
+            p <- if (i == 2L) p[-2L] else p[-i + 0L:1L]
         }
-        paste(c(x[[1L]], gsub(extra.whitespace.pattern, "", y)), collapse = "/")
-    }, FUN.VALUE = "")
+        p
+    }))
 }
 
 
@@ -52,12 +51,12 @@ normalizeURL.1 <- function (path)
     # path <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
 
 
-    y <- strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]]
-    y <- y[y != "."]
-    while (i <- match("..", y, 0L)) {
-        y <- y[-i + 0L:1L]
+    p <- path.split.1(path)
+    p <- p[p != "."]
+    while (i <- match("..", p, 0L)) {
+        p <- if (i == 2L) p[-2L] else p[-i + 0L:1L]
     }
-    paste(c(sub(URL.pattern, "\\1", path), gsub(extra.whitespace.pattern, "", y)), collapse = "/")
+    path.unsplit(p)
 }
 
 
@@ -66,7 +65,7 @@ normalizePath.and.URL <- function (path, ...)
     # a version of normalizePath that will also normalize URLs
     if (any(i <- grepl("^file://", path)))
         path[i] <- file.URL.path(path[i])
-    if (any(i <- !i & grepl("^(ftp|ftps|http|https)://", path))) {
+    if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
         path[i] <- normalizeURL(path[i])
         path[!i] <- normpath(path = path[!i], ...)
         path
@@ -195,47 +194,8 @@ formals(relpath)["relative.to"] <- alist(getwd())
 #
 #
 #
-#
-# new.path.split.1 <- function (path)
-# {
-#     path <- chartr("\\", "/", path)
-#     p <- character(0)
-#     do({
-#         p <- c(basename2(path), p)
-#         path <- dirname2(path)
-#     }) %until% (path == (dir <- dirname2(path)))
-#     p <- c(path, p)
-#     p <- p[p != "."]
-#     if (length(p) <= 0L)
-#         p <- "."
-#     p
-#     p[[1L]] <- gsub("(?<=[^/])/{2,}", "/", p[[1L]], perl = TRUE, useBytes = TRUE)
-#     p[[1L]] <- sub("^(//[^/]+/+[^/]+)/$", "\\1", p[[1L]])
-#     p
-# }
-# environment(new.path.split.1) <- getNamespace("this.path")
-# new.path.split.1 <- compiler::cmpfun(new.path.split.1)
-#
-#
-# new.path.split <- function (path, use.names = TRUE)
-# {
-#     if (!is.character(path))
-#         stop(gettextf("invalid '%s' argument", "path", domain = "R"))
-#     if (use.names) {
-#         value <- lapply(path, new.path.split.1)
-#         names(value) <- path
-#         value
-#     }
-#     else lapply(path, new.path.split.1)
-# }
-# new.path.split <- compiler::cmpfun(new.path.split)
-#
-#
-#
-#
-#
-# xx           <- new.path.split.1(normalizePath2(path))
-# relative.to2 <- new.path.split.1(normalizePath2(relative.to))
+# xx           <- path.split.1(normalizePath2(path))
+# relative.to2 <- path.split.1(normalizePath2(relative.to))
 #
 #
 # len <- length(relative.to2)

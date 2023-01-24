@@ -94,6 +94,22 @@ extern SEXP do_unixpathjoin   (SEXP call, SEXP op, SEXP args, SEXP rho);
 extern SEXP do_pathjoin       (SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
+/* pathsplit.c */
+
+
+extern SEXP do_windowspathsplit(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_unixpathsplit   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_pathsplit       (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+extern SEXP do_windowspathsplit1(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_unixpathsplit1   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_pathsplit1       (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+extern SEXP do_windowspathunsplit(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_unixpathunsplit   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_pathunsplit       (SEXP call, SEXP op, SEXP args, SEXP rho);
+
+
 /* promises.c */
 
 

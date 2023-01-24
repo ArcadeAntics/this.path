@@ -231,6 +231,10 @@ this_path_used_in_an_inappropriate_fashion <- local({
 # this.path(), this.dir(), and here() ----
 
 
+# `utils::getWindowsHandles` (Windows exclusive) returns a list of
+# external pointers containing the windows handles. the thing of
+# interest are the names of this list, these should be the names of the
+# windows belonging to the current R process.
 .this.path.rgui <- function (verbose = FALSE, for.msg = FALSE)
 .External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
     untitled, r.editor, verbose, for.msg)
@@ -304,10 +308,10 @@ body(.this.path.toplevel) <- bquote({
                     else
                         "Source: source document in RStudio\n"
                 )
-            return(normalizePath(path, winslash = "/", mustWork = FALSE))
+            .normalizePath(path)
         }
         else if (for.msg)
-            return(NA_character_)
+            NA_character_
         else stop(
             ..(this_path_used_in_an_inappropriate_fashion),
             if (active)
@@ -346,10 +350,10 @@ body(.this.path.toplevel) <- bquote({
 
         if (nzchar(path)) {
             if (verbose) cat("Source: document in VSCode\n")
-            return(normalizePath(path, winslash = "/", mustWork = FALSE))
+            .normalizePath(path)
         }
         else if (for.msg)
-            return(NA_character_)
+            NA_character_
         else stop(
             ..(this_path_used_in_an_inappropriate_fashion),
             "* document in VSCode does not exist")
@@ -358,12 +362,6 @@ body(.this.path.toplevel) <- bquote({
 
     # running from 'Rgui' on Windows
     else if (gui.rgui) {
-
-
-        # "getWindowsHandles" from "utils" (Windows exclusive) returns a list
-        # of external pointers containing the windows handles. the thing of
-        # interest are the names of this list, these should be the names of the
-        # windows belonging to the current R process.
 
 
         .this.path.rgui(verbose, for.msg)
@@ -494,12 +492,10 @@ get.frame.number <- function (N = sys.nframe() - 1L)
 .this.dir <- function (verbose = FALSE)
 {
     path <- .this.path(verbose = FALSE)
-    if (grepl("^(ftp|ftps|http|https)://", path)) {
-        # path <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
-
-
-        y <- strsplit(sub(URL.pattern, "\\2", path), "/+")[[1L]]
-        paste(c(sub(URL.pattern, "\\1", path), y[-length(y)]), collapse = "/")
+    if (grepl("^(https|http|ftp|ftps)://", path)) {
+        # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
+        p <- path.split.1(path)
+        path.unsplit(if (length(p) >= 2L) p[-length(p)] else p)
     }
     else dirname2(path)
 }
@@ -611,21 +607,19 @@ this.dir3 <- function (...)
 here <- ici <- function (..., .. = 0L)
 {
     base <- .this.path()
-    if (grepl("^(ftp|ftps|http|https)://", base)) {
-        # base <- normalizeURL.1("https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R")
+    if (grepl("^(https|http|ftp|ftps)://", base)) {
+        # base <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         # .. <- "2"
 
 
-        y <- strsplit(sub(URL.pattern, "\\2", base), "/+")[[1L]]
-        len <- length(y) - length(seq_len(..)) - 1L
-        base <- if (len <= 0L)
-            sub(URL.pattern, "\\1", base)
-        else paste(c(sub(URL.pattern, "\\1", base), y[seq_len(len)]), collapse = "/")
+        p <- path.split.1(base)
+        n <- length(p) - length(seq_len(..)) - 1L
+        path.unsplit(if (n < 1L) p[1L] else p[seq_len(n)])
     }
 
 
-    # base <- "//host-name/share-name/path/to/file"
-    # base <- "C:/Users/andre/Documents/this.path/man/this.path.Rd"
+    # base <- "//host/share/path/to/file"
+    # base <- "C:/Users/iris/Documents/this.path/man/this.path.Rd"
     # .. <- "10"
     else base <- .External2(C_dirname2, base, ..)
     path.join(base, ...)

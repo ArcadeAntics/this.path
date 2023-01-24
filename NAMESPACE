@@ -1,43 +1,43 @@
 useDynLib(this.path, .registration = TRUE, .fixes = "C_")
 
 
-# all.char.R             ----
+# all.char.R                 ----
 
 
 export(Sys.putenv)
 
 
-# as.relative.path.R     ----
+# as.relative.path.R         ----
 
 
 export(as.relative.path, as.rel.path, relpath)
 
 
-# Args.R                 ----
+# Args.R                     ----
 
 
 export(asArgs, fileArgs, progArgs, withArgs)
 
 
-# basename2.R            ----
+# basename2.R                ----
 
 
 export(basename2, dirname2)
 
 
-# check.path.R           ----
+# check.path.R               ----
 
 
 export(check.path, check.dir)
 
 
-# ext.R                  ----
+# ext.R                      ----
 
 
 export(splitext, removeext, ext, "ext<-")
 
 
-# from.shell.R           ----
+# from.shell.R               ----
 
 
 export(from.shell, is.main)
@@ -49,31 +49,37 @@ export(from.shell, is.main)
 export(OS.type)
 
 
-# LINENO.R               ----
+# LINENO.R                   ----
 
 
 export(LINENO)
 
 
-# path.join.R            ----
+# path.join.R                ----
 
 
 export(path.join)
 
 
-# promises.R             ----
+# path.split.R               ----
+
+
+export(path.split, path.split.1, path.unsplit)
+
+
+# promises.R                 ----
 
 
 export(initwd, getinitwd)
 
 
-# rprojroot.R            ----
+# rprojroot.R                ----
 
 
 export(this.proj)
 
 
-# this.path.R            ----
+# this.path.R                ----
 
 
 export(shFILE, normalized.shFILE)
@@ -83,13 +89,13 @@ export(here, ici)
 export(Sys.path, Sys.dir)
 
 
-# tryCatch2.R            ----
+# tryCatch2.R                ----
 
 
 export(tryCatch2)
 
 
-# wrapsource.R           ----
+# wrapsource.R               ----
 
 
 export(wrap.source, inside.source, set.this.path)

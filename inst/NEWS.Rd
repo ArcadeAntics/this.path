@@ -1,6 +1,18 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
+\section{CHANGES IN VERSION 1.2.0.1}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item
+        \code{this.path()} now works inside \code{box::use()}
+
+      \item
+        Added \code{path.split()}, \code{path.split.1()}, and
+        \code{path.unsplit()}.
+    }
+  }
+}
 \section{CHANGES IN VERSION 1.2.0}{
   \subsection{NEW FEATURES}{
     \itemize{
@@ -45,7 +57,7 @@
 
       \item
         \pkg{this.path} does a much better job of determining if the \R session
-        is from \sQuote{VSCode}.
+        is running from \sQuote{VSCode}.
 
       \item
         \pkg{this.path} does a much better job of determining the path of the
@@ -131,8 +143,8 @@
     \itemize{
       \item
         See \href{https://github.com/ArcadeAntics/this.path/issues/3}{issue #3 at BugReports URL}.
-        Fixed \code{this.path()} when called in a script from a shell on ubuntu
-        installed on an android (where \code{.Platform$GUI == "unknown"},
+        Fixed \code{this.path()} when called in a script from a shell on Ubuntu
+        installed on an Android (where \code{.Platform$GUI == "unknown"},
         normally "unix").
     }
   }

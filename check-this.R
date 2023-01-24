@@ -1,10 +1,40 @@
 essentials:::check.this(  # this.path
     special = TRUE,
 
-    check = FALSE, as.cran = FALSE,
+    check = TRUE, as.cran = TRUE,
 
     chdir = TRUE
 )
+
+
+realpath2 <- function (path)
+{
+    vapply(path.split(path), function(p) {
+        path <- normalizePath(p[[1L]], "/", TRUE)
+        for (p in p[-1L]) {
+            path <- normalizePath(path.unsplit(c(path, p)), "/", FALSE)
+        }
+        path
+    }, FUN.VALUE = "")
+}
+path <- "C:/Users/andre/Documents/this.path/symlink/../Downloads"
+realpath2(path)
+normalizePath(path, "/", FALSE)
+
+
+relpath <- function (path, relative.to = getwd())
+{
+    path <- this.path:::normalizePath.and.URL(path, "/", FALSE)
+    relative.to <- this.path:::normalizePath.and.URL.1(relative.to, "/", FALSE)
+    relative.to <- this.path::path.split.1(relative.to)
+    len <- length(relative.to)
+    x <- this.path::path.split(path)
+    x
+}
+
+
+relpath("testing/.")
+this.path::relpath
 
 
 if (FALSE) {

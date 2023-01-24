@@ -1,5 +1,13 @@
 this.path News
 
+CHANGES IN this.path 1.2.0.1:
+
+  NEW FEATURES
+
+    * this.path() now works inside box::use().
+
+    * Added path.split(), path.split.1(), and path.unsplit().
+
 CHANGES IN this.path 1.2.0:
 
   NEW FEATURES
@@ -96,7 +104,7 @@ CHANGES IN this.path 1.0.2:
   BUG FIXES
 
     * See issue #3 at BugReports URL. Fixed this.path() when called
-      in a script run from a shell on ubuntu installed on an android
+      in a script run from a shell on Ubuntu installed on an Android
       (where .Platform$GUI == "unknown", normally "unix").
 
 CHANGES IN this.path 1.0.1:

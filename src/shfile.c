@@ -145,7 +145,7 @@ static void env_command_line(int *pac, const char **argv)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/main/CommandLineArgs.c#L94
-void my_R_common_command_line(int *pac, const char **argv)
+void common_command_line(int *pac, const char **argv)
 {
     int ac = *pac, newac = 1;
     const char **av = argv;
@@ -421,7 +421,7 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1176
-    my_R_common_command_line(&ac, av);
+    common_command_line(&ac, av);
 
 
 #ifdef debug
@@ -514,7 +514,7 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
-    my_R_common_command_line(&ac, av);
+    common_command_line(&ac, av);
 
 
 #ifdef debug

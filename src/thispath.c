@@ -148,7 +148,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
         else                                                   \
             expr = lang1(this_path_toplevelSymbol);            \
         PROTECT(expr);                                         \
-        returnthis = eval(expr, rho);                          \
+        returnthis = eval(expr, mynamespace);                  \
         UNPROTECT(1);                                          \
         return returnthis
 
@@ -169,7 +169,7 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
     init_tools_rstudio(FALSE);
 
 
-    int testthat_loaded, knitr_loaded;
+    int testthat_loaded, knitr_loaded, box_loaded;
 
 
     SEXP source     = getInFrame(sourceSymbol    , R_BaseEnv, FALSE),
@@ -177,13 +177,15 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
          debugSource,
          source_file,
          knit       ,
-         wrap_source;
+         wrap_source,
+         load_from_source;
 
 
     debugSource = get_debugSource;
     source_file = get_source_file(testthat_loaded);
     knit        = get_knit(knitr_loaded);
-    wrap_source = get_wrap_source;
+    wrap_source = get_wrap_source,
+    load_from_source = get_load_from_source(box_loaded);
 
 
     SEXP which = allocVector(INTSXP, 1);
@@ -216,7 +218,6 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 }
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP rho                   = */ rho,
                     /* SEXP sym                   = */ ofileSymbol,
                     /* SEXP ofile                 = */ ofile,
                     /* SEXP frame                 = */ frame,
@@ -377,7 +378,6 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 }
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP rho                   = */ rho,
                     /* SEXP sym                   = */ fileSymbol,
                     /* SEXP ofile                 = */ ofile,
                     /* SEXP frame                 = */ frame,
@@ -437,7 +437,6 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 }
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP rho                   = */ rho,
                     /* SEXP sym                   = */ fileNameSymbol,
                     /* SEXP ofile                 = */ ofile,
                     /* SEXP frame                 = */ frame,
@@ -495,10 +494,9 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                     else
                         ofile = PRVALUE(ofile);
                 }
-                int ignore_all = asLogical(eval(lang1(testthat_uses_brioSymbol), rho));
+                int ignore_all = asLogical(eval(lang1(testthat_uses_brioSymbol), mynamespace));
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP rho                   = */ rho,
                     /* SEXP sym                   = */ pathSymbol,
                     /* SEXP ofile                 = */ ofile,
                     /* SEXP frame                 = */ frame,
@@ -553,21 +551,19 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 UNPROTECT(1);
                 if (missing_input) {
                     assign_null(frame);
-                    assign_done(frame);
                     UNPROTECT(1);
                     continue;
                 }
                 ofile = getInFrame(inputSymbol, frame, FALSE);
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP rho                   = */ rho,
                     /* SEXP sym                   = */ inputSymbol,
                     /* SEXP ofile                 = */ ofile,
                     /* SEXP frame                 = */ frame,
                     /* int forcepromise           = */ FALSE,
                     /* int assign_returnvalue     = */ FALSE,
                     /* int maybe_chdir            = */ TRUE,
-                    /* SEXP getowd                = */ eval(lang1(knitr_output_dirSymbol), rho),
+                    /* SEXP getowd                = */ eval(lang1(knitr_output_dirSymbol), mynamespace),
                     /* int hasowd                 = */ ((owd) != R_NilValue),
                     /* int character_only         = */ FALSE,
                     /* int conv2utf8              = */ FALSE,
@@ -614,6 +610,62 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
                 /* int promise_must_be_forced = */ TRUE,
                 /* const char *fun_name       = */
                 "wrap.source in package this.path"
+            );
+        }
+
+
+        else if (box_loaded && identical(function, load_from_source)) {
+            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+                /* info$source_path */
+                SEXP expr = lang3(
+                    R_DollarSymbol,
+                    install("info"),
+                    install("source_path")
+                );
+                PROTECT(expr);
+                SEXP ofile = eval(expr, frame);
+                UNPROTECT(1);
+                PROTECT(ofile);
+                checkfile(
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP sym                   = */ install("info$source_path"),
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ TRUE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ FALSE,
+                    /* SEXP getowd                = */ NULL,
+                    /* int hasowd                 = */ FALSE,
+                    /* int character_only         = */ TRUE,
+                    /* int conv2utf8              = */ FALSE,
+                    /* int allow_blank_string     = */ FALSE,
+                    /* int allow_clipboard        = */ FALSE,
+                    /* int allow_stdin            = */ FALSE,
+                    /* int allow_url              = */ FALSE,
+                    /* int allow_file_uri         = */ FALSE,
+                    /* int allow_unz              = */ FALSE,
+                    /* int allow_pipe             = */ FALSE,
+                    /* int allow_terminal         = */ FALSE,
+                    /* int allow_textConnection   = */ FALSE,
+                    /* int allow_rawConnection    = */ FALSE,
+                    /* int allow_sockconn         = */ FALSE,
+                    /* int allow_servsockconn     = */ FALSE,
+                    /* int allow_customConnection = */ FALSE,
+                    /* int ignore_blank_string    = */ FALSE,
+                    /* int ignore_clipboard       = */ FALSE,
+                    /* int ignore_stdin           = */ FALSE,
+                    /* int ignore_url             = */ FALSE,
+                    /* int ignore_file_uri        = */ FALSE
+                )
+                UNPROTECT(1);  /* ofile */
+            }
+            returnfile(
+                /* int character_only         = */ TRUE,
+                /* int file_only              = */ TRUE,
+                /* SEXP which                 = */ which,
+                /* int promise_must_be_forced = */ TRUE,
+                /* const char *fun_name       = */
+                "load_from_source in package box"
             );
         }
 
@@ -786,17 +838,13 @@ SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (for_msg) return ScalarString(NA_STRING);
 
 
-    SEXP expr = allocList(2);
-    PROTECT(expr);
-    SET_TYPEOF(expr, LANGSXP);
-    SETCAR(expr, stopSymbol);
     char msg[256];
     snprintf(msg, 256, "%s%s",
         this_path_used_in_an_inappropriate_fashion,
         "* R is being run from Rgui with no documents open");
-    SEXP call2 = PROTECT(getCurrentCall(rho));
-    SETCADR(expr, thisPathNotExistsError(msg, call2));
-    eval(expr, mynamespace);
+    SEXP cond = thisPathNotExistsError(msg, PROTECT(getCurrentCall(rho)));
+    PROTECT(cond);
+    stop(cond);
     UNPROTECT(2);
     return R_NilValue;  /* should not be reached */
 }

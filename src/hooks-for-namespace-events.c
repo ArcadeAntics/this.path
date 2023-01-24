@@ -35,6 +35,8 @@ SEXP
     knitrSymbol                   = NULL,
     knitSymbol                    = NULL,
     wrap_sourceSymbol             = NULL,
+    boxSymbol                     = NULL,
+    load_from_sourceSymbol        = NULL,
     sys_callSymbol                = NULL,
     sys_frameSymbol               = NULL,
     sys_functionSymbol            = NULL,
@@ -108,6 +110,13 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(_this_proj) != CLOSXP)
         error(_("object '%s' of mode '%s' was not found"), ".this.proj", "function");
     R_LockEnvironment(CLOENV(_this_proj), FALSE);
+
+
+    /* get the function find_root and lock its environment and bindings */
+    SEXP find_root = getInFrame(install("find_root"), mynamespace, FALSE);
+    if (TYPEOF(find_root) != CLOSXP)
+        error(_("object '%s' of mode '%s' was not found"), "find_root", "function");
+    R_LockEnvironment(CLOENV(find_root), TRUE);
 
 
     /* force the promise initwd */
@@ -190,6 +199,8 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     knitrSymbol                   = install("knitr");
     knitSymbol                    = install("knit");
     wrap_sourceSymbol             = install("wrap.source");
+    boxSymbol                     = install("box");
+    load_from_sourceSymbol        = install("load_from_source");
     sys_callSymbol                = install("sys.call");
     sys_frameSymbol               = install("sys.frame");
     sys_functionSymbol            = install("sys.function");

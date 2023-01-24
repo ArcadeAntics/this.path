@@ -321,6 +321,13 @@ void stop(SEXP cond)
 }
 
 
+void assign_done(SEXP frame)
+{
+    defineVar(thispathdoneSymbol, R_NilValue, frame);
+    R_LockBinding(thispathdoneSymbol, frame);
+}
+
+
 #define _assign(file, frame)                                   \
     INCREMENT_NAMED((file));                                   \
     defineVar(thispathofileSymbol, (file), (frame));           \
@@ -336,15 +343,15 @@ void stop(SEXP cond)
     eval(expr, R_EmptyEnv);                                    \
     UNPROTECT(1);                                              \
     R_LockBinding(thispathfileSymbol, (frame));                \
+    assign_done((frame));                                      \
     SEXP e = findVarInFrame((frame), thispathfileSymbol)
 
 
-
-void assign_default(SEXP file, SEXP frame, SEXP rho)
+void assign_default(SEXP file, SEXP frame)
 {
     _assign(file, frame);
     SET_PRCODE(e, lang2(_normalizePathSymbol, file));
-    SET_PRENV(e, ENCLOS(rho));
+    SET_PRENV(e, mynamespace);
 }
 
 
@@ -356,16 +363,16 @@ void assign_null(SEXP frame)
 }
 
 
-void assign_chdir(SEXP file, SEXP owd, SEXP frame, SEXP rho)
+void assign_chdir(SEXP file, SEXP owd, SEXP frame)
 {
     _assign(file, frame);
     SET_PRCODE(e, lang3(_normalizeAgainstSymbol, file, owd));
-    SET_PRENV(e, ENCLOS(rho));
+    SET_PRENV(e, mynamespace);
     return;
 }
 
 
-void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
+void assign_file_uri(SEXP ofile, SEXP file, SEXP frame)
 {
     _assign(ofile, frame);
 
@@ -398,11 +405,11 @@ void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 
 
     SET_PRCODE(e, lang2(_normalizePathSymbol, ScalarString(mkCharCE(url, ienc))));
-    SET_PRENV(e, ENCLOS(rho));
+    SET_PRENV(e, mynamespace);
 }
 
 
-void assign_file_uri2(SEXP description, SEXP frame, SEXP rho)
+void assign_file_uri2(SEXP description, SEXP frame)
 {
     char _buf[7 + strlen(CHAR(description)) + 1];
     char *buf = _buf;
@@ -416,11 +423,11 @@ void assign_file_uri2(SEXP description, SEXP frame, SEXP rho)
 
     _assign(ofile, frame);
     SET_PRCODE(e, lang2(_normalizePathSymbol, ScalarString(description)));
-    SET_PRENV(e, ENCLOS(rho));
+    SET_PRENV(e, mynamespace);
 }
 
 
-void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
+void assign_url(SEXP ofile, SEXP file, SEXP frame)
 {
     _assign(ofile, frame);
 
@@ -432,7 +439,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame, SEXP rho)
 
 
     SET_PRCODE(e, lang2(normalizeURL_1Symbol, ofile));
-    SET_PRENV(e, ENCLOS(rho));
+    SET_PRENV(e, mynamespace);
 
 
     /* force the promise */
