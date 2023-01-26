@@ -289,7 +289,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
     dir.create(my.tmpdir <- tempfile("dir"))
     on.exit(
         if (getRversion() >= "4.0.0")
-            unlink(my.tmpdir, recursive = TRUE, force = TRUE, expand = FALSE)
+            (unlink)(my.tmpdir, recursive = TRUE, force = TRUE, expand = FALSE)
         else unlink(my.tmpdir, recursive = TRUE, force = TRUE),
         add = TRUE
     )
@@ -432,6 +432,12 @@ maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
     }
     else expr
 }
+
+
+# this function does not exist in R < 4.0.0
+deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...)
+paste(deparse(expr, width.cutoff, ...), collapse = collapse)
+environment(deparse1) <- getNamespace("base")
 
 
 code2character <- function (x, width.cutoff = 60L,

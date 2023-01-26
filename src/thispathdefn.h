@@ -41,6 +41,9 @@ extern int IS_LATIN1(SEXP x);
 extern int IS_ASCII(SEXP x);
 
 
+extern void R_removeVarFromFrame(SEXP name, SEXP env);
+
+
 #if R_VERSION >= R_Version(4, 1, 0)
 extern int IS_UTF8(SEXP x);
 #else

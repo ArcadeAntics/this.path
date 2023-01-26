@@ -11,10 +11,12 @@ local({
 
     fun <- function(expr, envir = parent.frame()) {
         if (!is.environment(envir))
-            stop(gettextf("invalid '%s' argument", "envir", domain = "R"))
-        expr <- call("bquote", substitute(expr), as.symbol("envir"), splice = TRUE)
+            stop(gettextf("invalid '%s' argument", "envir", domain = "R"), domain = NA)
+        expr <- call("bquote", substitute(expr), as.symbol("envir"))
         expr <- eval(expr)
-        dep <- deparse1(expr, "\n", 60L)
+        # dep <- deparse1(expr, "\n", 60L)
+        # replace with this for R < 4.0.0:
+        dep <- paste(deparse(expr, 60L), collapse = "\n")
         dep <- gsub("\n", "\n+ ", dep, fixed = TRUE, useBytes = TRUE)
         dep <- paste0("> ", dep)
         cat("\n\n\n\n\n\n\n\n\n\n", dep, "\n", sep = "")
