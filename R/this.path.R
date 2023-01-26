@@ -491,7 +491,7 @@ get.frame.number <- function (N = sys.nframe() - 1L)
 
 .this.dir <- function (verbose = FALSE)
 {
-    path <- .this.path(verbose = FALSE)
+    path <- .this.path(verbose)
     if (grepl("^(https|http|ftp|ftps)://", path)) {
         # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         p <- path.split.1(path)

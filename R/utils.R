@@ -287,7 +287,12 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
 
     # create a new directory to hold the temporary files and archives
     dir.create(my.tmpdir <- tempfile("dir"))
-    on.exit(unlink(my.tmpdir, recursive = TRUE, force = TRUE), add = TRUE)
+    on.exit(
+        if (getRversion() >= "4.0.0")
+            unlink(my.tmpdir, recursive = TRUE, force = TRUE, expand = FALSE)
+        else unlink(my.tmpdir, recursive = TRUE, force = TRUE),
+        add = TRUE
+    )
 
 
     # create another directory to hold the temporary files

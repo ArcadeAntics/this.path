@@ -20,7 +20,11 @@ install_thispathhelper <- function ()
 
 
     FILE <- tempfile(fileext = ".txt")
-    on.exit(unlink(FILE, force = TRUE, expand = TRUE))
+    on.exit(
+        if (getRversion() >= "4.0.0")
+            unlink(FILE, force = TRUE, expand = TRUE)
+        else unlink(FILE, force = TRUE)
+    )
     conn <- file(FILE, "w")
     on.exit(close(conn), add = TRUE, after = FALSE)
     sink(conn)
@@ -59,7 +63,12 @@ install_thispathhelper <- function ()
 
 
             destdir <- tempfile("downloaded_packages")
-            on.exit(unlink(destdir, force = TRUE, recursive = TRUE, expand = FALSE), add = TRUE, after = FALSE)
+            on.exit(
+                if (getRversion() >= "4.0.0")
+                    unlink(destdir, force = TRUE, recursive = TRUE, expand = FALSE)
+                else unlink(destdir, force = TRUE, recursive = TRUE),
+                add = TRUE, after = FALSE
+            )
             dir.create(destdir, showWarnings = FALSE, recursive = TRUE)
             pkgs <- suppressWarnings(utils::download.packages(
                 "this.path.helper", destdir = destdir,

@@ -7,6 +7,138 @@ essentials:::check.this(  # this.path
 )
 
 
+tolower.ASCII <- function (x)
+chartr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", x)
+
+
+toupper.ASCII <- function (x)
+chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
+
+
+remove.LOCALHOST <- function (x)
+sub("^[/\\\\][/\\\\](127\\.0\\.0\\.1|LOCALHOST)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
+    "\\2:/", x, ignore.case = TRUE)
+
+
+.relpath.noNA.noblank <- function (path, relative.to = this.path::Sys.dir())
+{
+    # path <- c("A:\\Users\\documents", "c:/users/andre/documents/\u03b4.r",
+    #     "//LOCALHOST/C$/Users/andre/Documents/test59.R")
+    # relative.to <- Sys.dir()
+
+
+    if (length(path) <= 0L)
+        return(character())
+
+
+    path <- this.path:::normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
+    if (!missing(relative.to)) {
+        if (!is.character(relative.to) || length(relative.to) != 1L)
+            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
+        relative.to <- this.path:::normalizePath.and.URL.1(relative.to,
+            winslash = "/", mustWork = TRUE)
+    }
+
+
+    path <- c(relative.to, path)
+    path <- remove.LOCALHOST(path)
+    p <- this.path::path.split(path)
+
+
+    multiple.drives <- {
+        u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
+        if (length(u) == 1L)
+            FALSE
+        else if (!any(i <- grepl("^[abcdefghijklmnopqrstuvwxyz]:/$", u)))
+            TRUE
+        else {
+            u[i] <- toupper.ASCII(u[i])
+            length(unique(u)) != 1L
+        }
+    }
+    if (multiple.drives) {
+        x <- system("net use", intern = TRUE)
+        m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *$", x)
+        keep <- !vapply(m, function(mm) length(mm) == 1L && mm == -1L, FUN.VALUE = NA)
+        if (any(keep)) {
+            x <- regmatches(x[keep], m[keep])
+            local <- paste0(vapply(x, `[[`, 2L, FUN.VALUE = ""), "/")
+            remote <- paste0(vapply(x, `[[`, 3L, FUN.VALUE = ""), "/")
+            if (any(i <- grepl("^[/\\\\]{2}", remote)))
+                remote[i] <- chartr("\\", "/", remote[i])
+            p <- lapply(p, function(p) {
+                if (indx <- match(tolower.ASCII(p[[1L]]), tolower.ASCII(local), 0L)) {
+                    c(remote[[indx]], p[-1L])
+                } else p
+            })
+        }
+    }
+
+
+    r <- p[[1L]]
+    p <- p[-1L]
+    ignore.case <- !grepl("^(http|https)://", r[[1L]])
+    if (ignore.case)
+        r <- tolower.ASCII(r)
+    maybe.lower <- if (ignore.case) tolower.ASCII else force
+    len <- length(r)
+    path.unsplit(lapply(p, function(p) {
+        len2 <- length(p)
+        n <- min(len2, len)
+        n <- match(FALSE, maybe.lower(p)[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
+        if (n == 0L)
+            return(p)
+        value <- c(
+            rep("..", len - n),
+            p[seq.int(n + 1L, length.out = len2 - n)]
+        )
+        if (length(value) <= 0L)
+            "."
+        else if (!(value[[1L]] %in% c(".", "..")))
+            c(".", value)
+        else value
+    }))
+}
+
+
+rel2here <- function (path)
+{
+    if (!is.character(path))
+        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
+    n <- length(path)
+    if (n <= 0L) {
+        character()
+    } else {
+        value <- character(n)
+        value[] <- path
+        if (any(i <- !(is.na(value) | value == "")))
+            value[i] <- .relpath.noNA.noblank(value[i])
+        value
+    }
+}
+
+
+relpath <- function (path, relative.to = getwd())
+{
+    if (!is.character(path))
+        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
+    n <- length(path)
+    if (n <= 0L) {
+        character()
+    } else {
+        value <- character(n)
+        value[] <- path
+        if (any(i <- !(is.na(value) | value == "")))
+            value[i] <- .relpath.noNA.noblank(value[i], relative.to)
+        value
+    }
+}
+
+
+relpath(c(NA, "", ".", "A:\\Users\\documents", "c:/users/andre/documents/\u03b4.r",
+    "//LOCALHOST/C$/Users/andre/Documents/test59.R"))
+
+
 realpath2 <- function (path)
 {
     vapply(path.split(path), function(p) {
