@@ -46,12 +46,12 @@ SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
             }
             if (vl == R_MissingArg)
                 errorcall(call,
-		            _("argument \"%s\" is missing, with no default"),
-		            EncodeChar(PRINTNAME(symbol)));
+                    _("argument \"%s\" is missing, with no default"),
+                    EncodeChar(PRINTNAME(symbol)));
         }
     }
     errorcall(call,
-	    _("could not find function \"%s\""),
+        _("could not find function \"%s\""),
         EncodeChar(PRINTNAME(symbol)));
     return R_UnboundValue;
 }
@@ -67,6 +67,42 @@ int IS_ASCII(SEXP x)
         }
     }
     return TRUE;
+}
+#endif
+
+
+#if R_VERSION < R_Version(4, 0, 0)
+void R_removeVarFromFrame(SEXP name, SEXP env)
+{
+    static SEXP removeSymbol   = NULL,
+                envirSymbol    = NULL,
+                inheritsSymbol = NULL;
+    if (removeSymbol == NULL) {
+        removeSymbol   = install("remove");
+        envirSymbol    = install("envir");
+        inheritsSymbol = install("inherits");
+    }
+
+    if (TYPEOF(env) == NILSXP)
+        error(_("use of NULL environment is defunct"));
+
+    if (!isEnvironment(env))
+        error(_("argument to '%s' is not an environment"), "R_removeVarFromFrame");
+
+    if (TYPEOF(name) != SYMSXP)
+        error(_("not a symbol"));
+
+    SEXP expr = allocList(4);
+    PROTECT(expr);
+    SET_TYPEOF(expr, LANGSXP);
+    SETCAR(expr, removeSymbol);
+    SETCADR(expr, name);
+    SET_TAG(CDDR(expr), envirSymbol);
+    SETCADDR(expr, env);
+    SET_TAG(CDDDR(expr), inheritsSymbol);
+    SETCADDDR(expr, ScalarLogical(FALSE));
+    eval(expr, R_BaseEnv);
+    UNPROTECT(1);
 }
 #endif
 
