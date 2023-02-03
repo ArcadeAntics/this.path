@@ -1,7 +1,3 @@
-#include <R.h>
-#include <Rinternals.h>
-
-
 #include "thispathdefn.h"
 
 

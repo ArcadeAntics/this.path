@@ -1,8 +1,11 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.4:
+CHANGES IN this.path 1.2.0.5:
 
   NEW FEATURES
+
+    * For logging purposes, this.path(for.msg = TRUE) will now return
+      "Untitled" when appropriate.
 
     * this.path() now works inside box::use().
 

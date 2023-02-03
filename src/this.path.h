@@ -1,7 +1,7 @@
 /*
 My C code is stylized much the same as R's C code. See
 
-https://github.com/wch/r-source/blob/b2acf5ace952cb58bc702675f882003bbc48ac0c/src/main/names.c#L51
+https://github.com/wch/r-source/blob/trunk/src/main/names.c#L51
 
 Each function must:
   * be called from R by .External2(.)

@@ -1,9 +1,13 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.4}{
+\section{CHANGES IN VERSION 1.2.0.5}{
   \subsection{NEW FEATURES}{
     \itemize{
+      \item
+        For logging purposes, \code{this.path(for.msg = TRUE)} will now return
+        \code{"Untitled"} when appropriate.
+
       \item
         \code{this.path()} now works inside \code{box::use()}
 

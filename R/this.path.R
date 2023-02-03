@@ -357,7 +357,7 @@ body(.this.path.toplevel) <- bquote({
             .normalizePath(path)
         }
         else if (for.msg)
-            NA_character_
+            gettext("Untitled", domain = "RGui", trim = FALSE)
         else stop(
             ..(this_path_used_in_an_inappropriate_fashion),
             if (active)
@@ -383,7 +383,7 @@ body(.this.path.toplevel) <- bquote({
 
         if (startsWith(context[["id"]], "untitled:")) {
             if (for.msg)
-                return(NA_character_)
+                return(gettext("Untitled", domain = "RGui", trim = FALSE))
             else stop(
                 ..(this_path_used_in_an_inappropriate_fashion),
                 "* document in VSCode does not exist")
@@ -399,7 +399,7 @@ body(.this.path.toplevel) <- bquote({
             .normalizePath(path)
         }
         else if (for.msg)
-            NA_character_
+            gettext("Untitled", domain = "RGui", trim = FALSE)
         else stop(
             ..(this_path_used_in_an_inappropriate_fashion),
             "* document in VSCode does not exist")

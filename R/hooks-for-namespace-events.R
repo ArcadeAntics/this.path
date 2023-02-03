@@ -60,6 +60,5 @@
 .onUnload <- function (libpath)
 {
     .External2(C_onunload, libpath)
-    try(unloadNamespace("this.path.helper"), silent = TRUE)
     library.dynam.unload(pkgname, libpath)
 }

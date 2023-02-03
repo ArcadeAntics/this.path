@@ -4,24 +4,100 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Connections.h>
 #include <Rversion.h>
+#include "translations.h"
+#include "use-r-non-api.h"
 
 
-#if !defined(R_CONNECTIONS_VERSION)
-    #error why is R_CONNECTIONS_VERSION not defined????
-#elif R_CONNECTIONS_VERSION == 1
-    extern Rconnection R_GetConnection2(SEXP sConn);
-    extern Rconnection GetUnderlyingConnection(SEXP sConn);
-#else
-    #error this.path is only implemented for R_CONNECTIONS_VERSION 1
+#if defined(R_VERSION) && R_VERSION >= R_Version(3, 3, 0)
+    #if defined(R_THIS_PATH_USE_R_NON_API)
+        #include <R_ext/Connections.h>
+        #if !defined(R_CONNECTIONS_VERSION)
+        #elif R_CONNECTIONS_VERSION == 1
+            #define use_R_GetConnection
+            extern Rconnection R_GetConnection(SEXP sConn);
+        #endif
+    #endif
 #endif
 
 
-#include "translations.h"
+extern SEXP
+    thispathofileSymbol          ,
+    thispathfileSymbol           ,
+    thispathformsgSymbol         ,
+    thispatherrorSymbol          ,
+    thispathassocwfileSymbol     ,
+    thispathdoneSymbol           ,
+    insidesourcewashereSymbol    ,
+    thispathnSymbol              ,
+    _normalizePathSymbol         ,
+    _normalizeAgainstSymbol      ,
+    stopSymbol                   ,
+    delayedAssignSymbol          ,
+    normalizePathSymbol          ,
+    winslashSymbol               ,
+    mustWorkSymbol               ,
+    normalizeURL_1Symbol         ,
+    sourceSymbol                 ,
+    sys_sourceSymbol             ,
+    gui_rstudioSymbol            ,
+    init_tools_rstudioSymbol     ,
+    tools_rstudioSymbol          ,
+    _rs_api_getActiveDocumentContextSymbol,
+    _rs_api_getSourceEditorContextSymbol,
+    debugSourceSymbol            ,
+    testthatSymbol               ,
+    source_fileSymbol            ,
+    testthat_uses_brioSymbol     ,
+    knitr_output_dirSymbol       ,
+    knitrSymbol                  ,
+    knitSymbol                   ,
+    wrap_sourceSymbol            ,
+    boxSymbol                    ,
+    load_from_sourceSymbol       ,
+    sys_callSymbol               ,
+    sys_frameSymbol              ,
+    sys_functionSymbol           ,
+    sys_nframeSymbol             ,
+    sys_parentSymbol             ,
+    sys_parentsSymbol            ,
+    ofileSymbol                  ,
+    owdSymbol                    ,
+    old_dirSymbol                ,
+    fileSymbol                   ,
+    fileNameSymbol               ,
+    pathSymbol                   ,
+    inputSymbol                  ,
+    missingSymbol                ,
+    returnSymbol                 ,
+    this_path_toplevelSymbol     ,
+    encodeStringSymbol           ,
+    na_encodeSymbol              ,
+    exprSymbol                   ,
+    on_exitSymbol                ,
+    External2Symbol              ,
+    C_setprseen2Symbol           ,
+    thispathtempSymbol           ,
+    parent_frameSymbol           ,
+#if !defined(R_THIS_PATH_USE_R_NON_API)
+    invisibleSymbol              ,
+#endif
+    as_environmentSymbol         ,
+    oenvirSymbol                 ,
+    withArgsSymbol               ,
+    summary_connectionSymbol     ,
+    _asArgsSymbol                ,
+    commandArgsSymbol            ,
+    maybe_in_shellSymbol         ,
+    _packageName                 ;
 
 
+#if defined(R_THIS_PATH_USE_R_NON_API)
+extern Rboolean R_Visible;
+#define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
+#else
 #define set_R_Visible(v) (eval((v) ? R_NilValue : lang1(invisibleSymbol), R_BaseEnv))
+#endif
 #define streql(str1, str2) (strcmp((str1), (str2)) == 0)
 
 
@@ -44,7 +120,7 @@ extern int IS_ASCII(SEXP x);
 extern void R_removeVarFromFrame(SEXP name, SEXP env);
 
 
-#if R_VERSION >= R_Version(4, 1, 0)
+#if defined(R_VERSION) && R_VERSION >= R_Version(4, 1, 0)
 extern int IS_UTF8(SEXP x);
 #else
 #define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
@@ -68,18 +144,17 @@ extern const char *EncodeChar(SEXP x);
 extern void R_LockBinding(SEXP sym, SEXP env);
 
 
-#include "symbols.h"
-#include "requirethispathhelper.h"
-
-
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 
 
 extern SEXP as_environment_char(const char *what);
 
 
+#if defined(use_R_GetConnection)
 extern SEXP summaryconnection(Rconnection Rcon);
-extern SEXP summaryconnection2(SEXP sConn);
+#else
+extern SEXP summaryconnection(SEXP sConn);
+#endif
 
 
 extern SEXP errorCondition (const char *msg, SEXP call, const char **cls, int n, int nfields);
@@ -99,8 +174,11 @@ extern SEXP simpleError(const char *msg, SEXP call);
     "this.path::thisPathNotExistsError"
 
 
+#if defined(use_R_GetConnection)
 extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
-extern SEXP thisPathUnrecognizedConnectionClassError2(SEXP call, SEXP summary);
+#else
+extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
+#endif
 extern SEXP thisPathUnrecognizedMannerError         (SEXP call);
 extern SEXP thisPathNotImplementedError             (const char *msg, SEXP call);
 extern SEXP thisPathNotExistsError                  (const char *msg, SEXP call);
@@ -145,19 +223,35 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
                    )
 
 
-#define get_description_from_Rconnection(Rcon)                 \
-    (((Rcon)->enc == CE_UTF8) ? mkCharCE((Rcon)->description, CE_UTF8) : mkChar((Rcon)->description))
-#define get_description_from_summary(summary)                  \
-    STRING_ELT(VECTOR_ELT((summary), 0), 0)
-#define get_class_from_Rconnection(Rcon) ((Rcon)->class)
-#define get_class_from_summary(summary)                        \
-    CHAR(STRING_ELT(VECTOR_ELT((summary), 1), 0))
-
-
-#if defined(R_VERSION) && R_VERSION >= R_Version(3, 3, 0)
-#define notimplementedforgzcon "this.path() not implemented for a gzcon()\n try installing 'this.path.helper':\n utils::install.packages(\"this.path.helper\", repos =\n     \"https://raw.githubusercontent.com/ArcadeAntics/PACKAGES\")"
+#if defined(use_R_GetConnection)
+#define get_connection_description(Rcon) mkCharCE((Rcon)->description, ((Rcon)->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE)
+#define get_connection_class(Rcon) ((Rcon)->class)
 #else
-#define notimplementedforgzcon "this.path() not implemented for a gzcon()"
+#define get_connection_description(summary) STRING_ELT(VECTOR_ELT((summary), 0), 0)
+#define get_connection_class(summary) CHAR(STRING_ELT(VECTOR_ELT((summary), 1), 0))
+#endif
+
+
+#if defined(use_R_GetConnection)
+typedef struct gzconn {
+    Rconnection con;
+} *Rgzconn;
+#define get_description_and_class                              \
+            Rconnection Rcon = R_GetConnection(ofile);         \
+            if (Rcon->isGzcon) {                               \
+                Rcon = (((Rgzconn)(Rcon->private))->con);      \
+                if (Rcon->isGzcon) error("invalid connection; should never happen, please report!");\
+            }                                                  \
+            SEXP description = get_connection_description(Rcon);\
+            const char *klass = get_connection_class(Rcon)
+#define Rcon_or_summary(Rcon, summary) Rcon
+#else
+#define get_description_and_class                              \
+            SEXP summary = summaryconnection(ofile);           \
+            SEXP description = get_connection_description(summary);\
+            const char *klass = get_connection_class(summary); \
+            if (streql(klass, "gzcon")) error("this.path() not implemented for a gzcon()")
+#define Rcon_or_summary(Rcon, summary) summary
 #endif
 
 
@@ -260,27 +354,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
         else if (!inherits(ofile, "connection"))               \
             errorcall(call, "invalid '%s', must be a string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \
-            SEXP summary = NULL;                               \
-            Rconnection Rcon = NULL;                           \
-            SEXP description = NULL;                           \
-            const char *klass = NULL;                          \
-            int thispathhelper_loaded = (findVarInFrame(R_NamespaceRegistry, thispathhelperSymbol) != R_UnboundValue);\
-            if (!thispathhelper_loaded) {                      \
-                SEXP summary = summaryconnection2(ofile);      \
-                description = get_description_from_summary(summary);\
-                klass = get_class_from_summary(summary);       \
-                if (streql(klass, "gzcon")) {                  \
-                    requirethispathhelper;                     \
-                    thispathhelper_loaded = (findVarInFrame(R_NamespaceRegistry, thispathhelperSymbol) != R_UnboundValue);\
-                    if (!thispathhelper_loaded) error(notimplementedforgzcon);\
-                }                                              \
-            }                                                  \
-            if (thispathhelper_loaded) {                       \
-                Rcon = GetUnderlyingConnection(ofile);         \
-                if (Rcon->isGzcon) error("invalid connection; should never happen, please report!");\
-                description = get_description_from_Rconnection(Rcon);\
-                klass = get_class_from_Rconnection(Rcon);      \
-            }                                                  \
+            get_description_and_class;                         \
             if (streql(klass, "file"  ) ||                     \
                 streql(klass, "gzfile") ||                     \
                 streql(klass, "bzfile") ||                     \
@@ -385,11 +459,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
                        know if this connection has an          \
                        associated file                         \
                      */                                        \
-                    SEXP tmp;                                  \
-                    if (thispathhelper_loaded)                 \
-                        tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon);\
-                    else                                       \
-                        tmp = thisPathUnrecognizedConnectionClassError2(R_NilValue, summary);\
+                    SEXP tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary(Rcon, summary));\
                     INCREMENT_NAMED(tmp);                      \
                     defineVar(thispatherrorSymbol, tmp, frame);\
                     R_LockBinding(thispatherrorSymbol, frame); \

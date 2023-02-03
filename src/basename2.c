@@ -1,13 +1,8 @@
-#include <R.h>
-#include <Rinternals.h>
+#include "drivewidth.h"
+#include "thispathdefn.h"
 
 
 #define debug 0
-
-
-#include "drivewidth.h"
-#include "translations.h"
-#include "thispathdefn.h"
 
 
 

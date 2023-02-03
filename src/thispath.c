@@ -1,8 +1,5 @@
-#include <R.h>
-#include <Rinternals.h>
-
-
 #include "thispathdefn.h"
+#include "drivewidth.h"
 
 
 static R_INLINE int asFlag(SEXP x, const char *name)
@@ -33,10 +30,11 @@ SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, 
     SEXP call2 = CAR(args);
     ENSURE_NAMEDMAX(call2);
     args = CDR(args);
-    if (findVarInFrame(R_NamespaceRegistry, thispathhelperSymbol) != R_UnboundValue)
-        return thisPathUnrecognizedConnectionClassError(call2, R_GetConnection2(CAR(args)));
-    else
-        return thisPathUnrecognizedConnectionClassError2(call2, summaryconnection2(CAR(args)));
+#if defined(use_R_GetConnection)
+    return thisPathUnrecognizedConnectionClassError(call2, R_GetConnection(CAR(args)));
+#else
+    return thisPathUnrecognizedConnectionClassError(call2, summaryconnection(CAR(args)));
+#endif
 }
 
 
@@ -715,9 +713,6 @@ SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-#include "drivewidth.h"
-
-
 SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     args = CDR(args);
@@ -770,7 +765,7 @@ SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
             if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
             // if (wintitle0 == untitled0) {
             if (!strcmp(title, CHAR(untitled0))) {
-                if (for_msg) return ScalarString(NA_STRING);
+                if (for_msg) return mkString(_RGui("Untitled"));
                 error("%s%s",
                     this_path_used_in_an_inappropriate_fashion,
                     (active) ? "* active document in Rgui does not exist" :

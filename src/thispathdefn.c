@@ -13,7 +13,7 @@ const char *EncodeChar(SEXP x)
 }
 
 
-#if !defined(_WIN32) || R_VERSION < R_Version(4, 1, 0)
+#if !defined(_WIN32) || (!defined(R_VERSION) || R_VERSION < R_Version(4, 1, 0))
 SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
 {
     SEXP expr = lang3(exported ? R_DoubleColonSymbol : R_TripleColonSymbol, ns, name);
@@ -58,7 +58,7 @@ SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
 #endif
 
 
-#if R_VERSION < R_Version(4, 1, 0)
+#if !defined(R_VERSION) || R_VERSION < R_Version(4, 1, 0)
 int IS_ASCII(SEXP x)
 {
     for (const char *s = CHAR(x); *s; s++) {
@@ -71,7 +71,7 @@ int IS_ASCII(SEXP x)
 #endif
 
 
-#if R_VERSION < R_Version(4, 0, 0)
+#if !defined(R_VERSION) || R_VERSION < R_Version(4, 0, 0)
 void R_removeVarFromFrame(SEXP name, SEXP env)
 {
     static SEXP removeSymbol   = NULL,
@@ -107,28 +107,6 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
 #endif
 
 
-Rconnection R_GetConnection2(SEXP sConn)
-{
-    if (!inherits(sConn, "connection")) error(_("invalid connection"));
-    SEXP expr = lang2(R_getNSValue(R_NilValue, thispathhelperSymbol, GetConnectionSymbol, FALSE), sConn);
-    PROTECT(expr);
-    SEXP ptr = eval(expr, R_EmptyEnv);
-    UNPROTECT(1);
-    return (Rconnection) R_ExternalPtrAddr(ptr);
-}
-
-
-Rconnection GetUnderlyingConnection(SEXP sConn)
-{
-    if (!inherits(sConn, "connection")) error(_("invalid connection"));
-    SEXP expr = lang2(R_getNSValue(R_NilValue, thispathhelperSymbol, GetUnderlyingConnectionSymbol, FALSE), sConn);
-    PROTECT(expr);
-    SEXP ptr = eval(expr, R_EmptyEnv);
-    UNPROTECT(1);
-    return (Rconnection) R_ExternalPtrAddr(ptr);
-}
-
-
 SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 {
     SEXP value = findVarInFrame(env, sym);
@@ -162,6 +140,7 @@ SEXP as_environment_char(const char *what)
 }
 
 
+#if defined(use_R_GetConnection)
 SEXP summaryconnection(Rconnection Rcon)
 {
     SEXP value, names;
@@ -170,7 +149,7 @@ SEXP summaryconnection(Rconnection Rcon)
     setAttrib(value, R_NamesSymbol, names);
     SET_STRING_ELT(names, 0, mkChar("description"));
     SET_VECTOR_ELT(value, 0, ScalarString(
-        (Rcon->enc == CE_UTF8) ? mkCharCE(Rcon->description, CE_UTF8) : mkChar(Rcon->description)
+        mkCharCE(Rcon->description, (Rcon->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE)
     ));
     SET_STRING_ELT(names, 1, mkChar("class"));
     SET_VECTOR_ELT(value, 1, mkString(Rcon->class));
@@ -187,9 +166,8 @@ SEXP summaryconnection(Rconnection Rcon)
     UNPROTECT(1);
     return value;
 }
-
-
-SEXP summaryconnection2(SEXP sConn)
+#else
+SEXP summaryconnection(SEXP sConn)
 {
     if (!inherits(sConn, "connection")) error(_("invalid connection"));
     SEXP expr = lang2(summary_connectionSymbol, sConn);
@@ -198,6 +176,7 @@ SEXP summaryconnection2(SEXP sConn)
     UNPROTECT(1);
     return value;
 }
+#endif
 
 
 SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numCls, int numFields)
@@ -259,8 +238,6 @@ SEXP simpleError(const char *msg, SEXP call)
 }
 
 
-SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
-{
 #define funbody(class_as_CHARSXP, summConn)                    \
     const char *klass = EncodeChar((class_as_CHARSXP));        \
     const char *format = "'this.path' not implemented when source-ing a connection of class '%s'";\
@@ -275,17 +252,18 @@ SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
     SET_VECTOR_ELT(cond , 2, (summConn));                      \
     UNPROTECT(2);                                              \
     return cond
-
-
-    funbody(mkChar(get_class_from_Rconnection(Rcon)), summaryconnection(Rcon));
+#if defined(use_R_GetConnection)
+SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
+{
+    funbody(mkChar(get_connection_class(Rcon)), summaryconnection(Rcon));
 }
-
-
-SEXP thisPathUnrecognizedConnectionClassError2(SEXP call, SEXP summary)
+#else
+SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
 {
     funbody(STRING_ELT(VECTOR_ELT(summary, 1), 0), summary);
-#undef funbody
 }
+#endif
+#undef funbody
 
 
 SEXP thisPathUnrecognizedMannerError(SEXP call)

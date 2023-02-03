@@ -1,6 +1,4 @@
-#include <R.h>
-#include <Rinternals.h>
-#include "translations.h"
+#include "thispathdefn.h"
 
 
 SEXP
@@ -62,15 +60,10 @@ SEXP
     thispathtempSymbol            = NULL,
     parent_frameSymbol            = NULL,
     invisibleSymbol               = NULL,
-    getConnectionSymbol           = NULL,
     as_environmentSymbol          = NULL,
     oenvirSymbol                  = NULL,
     withArgsSymbol                = NULL,
-    thispathhelperSymbol          = NULL,
-    GetConnectionSymbol           = NULL,
-    GetUnderlyingConnectionSymbol = NULL,
     summary_connectionSymbol      = NULL,
-    require_this_path_helperSymbol= NULL,
     _asArgsSymbol                 = NULL,
     commandArgsSymbol             = NULL,
     maybe_in_shellSymbol          = NULL,
@@ -78,9 +71,6 @@ SEXP
 
 
 SEXP mynamespace = NULL;
-
-
-extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 
 
 SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -140,14 +130,14 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     /* find and save libpath in the namespace */
-    /* building the call getNamespaceInfo(pkgname, "path") and evaluating in the base environment */
+    /* building the call getNamespaceInfo(pkgname, "path") and evaluating */
     SEXP expr = allocList(3);
     PROTECT(expr);
     SET_TYPEOF(expr, LANGSXP);
     SETCAR  (expr, install("getNamespaceInfo"));
-    SETCADR (expr, pkgname);
+    SETCADR (expr, install("pkgname"));
     SETCADDR(expr, mkString("path"));
-    defineVarInc(install("libpath"), eval(expr, R_BaseEnv), mynamespace);
+    defineVarInc(install("libpath"), eval(expr, rho), mynamespace);
     UNPROTECT(1);  /* expr */
 
 
@@ -226,29 +216,18 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     thispathtempSymbol            = install("._this.path::temp_.");
     parent_frameSymbol            = install("parent.frame");
     invisibleSymbol               = install("invisible");
-    getConnectionSymbol           = install("getConnection");
     as_environmentSymbol          = install("as.environment");
     oenvirSymbol                  = install("oenvir");
     withArgsSymbol                = install("withArgs");
-    thispathhelperSymbol          = install("this.path.helper");
-    GetConnectionSymbol           = install("GetConnection");
-    GetUnderlyingConnectionSymbol = install("GetUnderlyingConnection");
     summary_connectionSymbol      = install("summary.connection");
-    require_this_path_helperSymbol= install("require.this.path.helper");
     _asArgsSymbol                 = install(".asArgs");
     commandArgsSymbol             = install("commandArgs");
     maybe_in_shellSymbol          = install("maybe.in.shell");
 
 
-#include "requirethispathhelper.h"
-
-
-    requirethispathhelper;
-
-
     /* save HAVE_AQUA and PATH_MAX in my namespace */
 #if defined(HAVE_AQUA)
-    defineVarInc(install("HAVE_AQUA"), ScalarLogical(TRUE ), mynamespace);
+    defineVarInc(install("HAVE_AQUA"), ScalarLogical(TRUE), mynamespace);
 #else
     defineVarInc(install("HAVE_AQUA"), ScalarLogical(FALSE), mynamespace);
 #endif

@@ -1,3 +1,4 @@
+# unlink("~/temp8.txt")
 essentials:::check.this(  # this.path
     special = TRUE,
 
@@ -5,6 +6,10 @@ essentials:::check.this(  # this.path
 
     chdir = TRUE
 )
+# this.path:::cat.file("~/temp8.txt")
+
+
+
 
 
 tolower.ASCII <- function (x)
@@ -15,12 +20,7 @@ toupper.ASCII <- function (x)
 chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
 
 
-remove.LOCALHOST <- function (x)
-sub("^[/\\\\][/\\\\](127\\.0\\.0\\.1|LOCALHOST)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
-    "\\2:/", x, ignore.case = TRUE)
-
-
-.relpath.noNA.noblank <- function (path, relative.to = this.path::Sys.dir())
+windows.relpath.noNA.noblank <- function (path, relative.to = this.path::Sys.dir())
 {
     # path <- c("A:\\Users\\documents", "c:/users/andre/documents/\u03b4.r",
     #     "//LOCALHOST/C$/Users/andre/Documents/test59.R")
@@ -41,7 +41,8 @@ sub("^[/\\\\][/\\\\](127\\.0\\.0\\.1|LOCALHOST)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWX
 
 
     path <- c(relative.to, path)
-    path <- remove.LOCALHOST(path)
+    path <- sub("^[/\\\\][/\\\\](LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
+                "\\2:/", path, ignore.case = TRUE)
     p <- this.path::path.split(path)
 
 
@@ -62,30 +63,74 @@ sub("^[/\\\\][/\\\\](127\\.0\\.0\\.1|LOCALHOST)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWX
         keep <- !vapply(m, function(mm) length(mm) == 1L && mm == -1L, FUN.VALUE = NA)
         if (any(keep)) {
             x <- regmatches(x[keep], m[keep])
-            local <- paste0(vapply(x, `[[`, 2L, FUN.VALUE = ""), "/")
-            remote <- paste0(vapply(x, `[[`, 3L, FUN.VALUE = ""), "/")
+            local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
+            local <- tolower.ASCII(local)
+            local <- paste0(local, "/")
+            remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
             if (any(i <- grepl("^[/\\\\]{2}", remote)))
                 remote[i] <- chartr("\\", "/", remote[i])
-            p <- lapply(p, function(p) {
-                if (indx <- match(tolower.ASCII(p[[1L]]), tolower.ASCII(local), 0L)) {
+            remote <- paste0(remote, "/")
+            fix.local <- function(p) {
+                if (indx <- match(tolower.ASCII(p[[1L]]), local, 0L)) {
                     c(remote[[indx]], p[-1L])
                 } else p
-            })
+            }
         }
+        else fix.local <- force
     }
+    else fix.local <- force
 
 
     r <- p[[1L]]
     p <- p[-1L]
+    r <- fix.local(r)
     ignore.case <- !grepl("^(http|https)://", r[[1L]])
-    if (ignore.case)
-        r <- tolower.ASCII(r)
-    maybe.lower <- if (ignore.case) tolower.ASCII else force
+    fix.case <- if (ignore.case) tolower.ASCII else force
+    r <- fix.case(r)
     len <- length(r)
     path.unsplit(lapply(p, function(p) {
         len2 <- length(p)
         n <- min(len2, len)
-        n <- match(FALSE, maybe.lower(p)[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
+        q <- fix.case(fix.local(p))
+        n <- match(FALSE, q[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
+        if (n == 0L)
+            return(p)
+        value <- c(
+            rep("..", len - n),
+            p[seq.int(n + 1L, length.out = len2 - n)]
+        )
+        if (length(value) <= 0L)
+            "."
+        else if (!(value[[1L]] %in% c(".", "..")))
+            c(".", value)
+        else value
+    }))
+}
+
+
+unix.relpath.noNA.noblank <- function (path, relative.to = this.path::Sys.dir())
+{
+    if (length(path) <= 0L)
+        return(character())
+
+
+    path <- this.path:::normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
+    if (!missing(relative.to)) {
+        if (!is.character(relative.to) || length(relative.to) != 1L)
+            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
+        relative.to <- this.path:::normalizePath.and.URL.1(relative.to,
+            winslash = "/", mustWork = TRUE)
+    }
+
+
+    path <- c(relative.to, path)
+    p <- this.path::path.split(path)
+    r <- p[[1L]]
+    len <- length(r)
+    path.unsplit(lapply(p[-1L], function(p) {
+        len2 <- length(p)
+        n <- min(len2, len)
+        n <- match(FALSE, p[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
         if (n == 0L)
             return(p)
         value <- c(
@@ -111,8 +156,11 @@ rel2here <- function (path)
     } else {
         value <- character(n)
         value[] <- path
-        if (any(i <- !(is.na(value) | value == "")))
-            value[i] <- .relpath.noNA.noblank(value[i])
+        if (any(i <- !(is.na(value) | value == ""))) {
+            value[i] <- if (.Platform$OS.type == "windows")
+                windows.relpath.noNA.noblank(value[i])
+            else unix.relpath.noNA.noblank(value[i])
+        }
         value
     }
 }
@@ -128,15 +176,29 @@ relpath <- function (path, relative.to = getwd())
     } else {
         value <- character(n)
         value[] <- path
-        if (any(i <- !(is.na(value) | value == "")))
-            value[i] <- .relpath.noNA.noblank(value[i], relative.to)
+        if (any(i <- !(is.na(value) | value == ""))) {
+            value[i] <- if (.Platform$OS.type == "windows")
+                windows.relpath.noNA.noblank(value[i], relative.to)
+            else unix.relpath.noNA.noblank(value[i], relative.to)
+        }
         value
     }
 }
 
 
-relpath(c(NA, "", ".", "A:\\Users\\documents", "c:/users/andre/documents/\u03b4.r",
-    "//LOCALHOST/C$/Users/andre/Documents/test59.R"))
+path <- c(
+    NA,
+    "",
+    ".",
+    # "A:\\Users\\documents",
+    "c:/users/andre/documents/\u03b4.r",
+    "//LOCALHOST/C$/Users/andre/Documents/this.path/inst/extdata/untitled_msvcrt.txt"
+)
+setwd("~")
+path2 <- relpath(path)
+path3 <- rel2here(path)
+path2
+path3
 
 
 realpath2 <- function (path)
@@ -271,18 +333,15 @@ local({
 
 
 # local({
-#     unloadNamespace("this.path.helper")
 #     FILE <- tempfile(fileext = ".R")
-#     on.exit(unlink(FILE))
+#     on.exit(unlink(FILE), add = TRUE, after = FALSE)
 #     writeLines("this.path::this.path()", FILE)
 #     conn1 <- file(FILE)
 #     on.exit(close(conn1), add = TRUE, after = FALSE)
 #     source(conn1, echo = TRUE)
 #     conn2 <- gzcon(file(FILE, "rb"))
 #     on.exit(close(conn2), add = TRUE, after = FALSE)
-#     cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
 #     source(conn2, echo = TRUE)
-#     cat('\n> isNamespaceLoaded("this.path.helper")\n'); print(isNamespaceLoaded("this.path.helper"))
 # })
 
 
