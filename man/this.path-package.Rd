@@ -22,6 +22,9 @@ executing script is located.
 \code{\link{here}()} constructs file paths relative to the executing script's
 directory.
 
+\code{\link{LINENO}()} returns the line number of the executing expression in
+the executing script.
+
 \code{\link{path.join}()}, \code{\link{basename2}()}, and
 \code{\link{dirname2}()} are replacements for \code{\link{file.path}()},
 \code{\link{basename}()}, and \code{\link{dirname}()} that better handle
@@ -35,8 +38,8 @@ get extensions, and set extensions, respectively.
 \code{\link{this.path}()} and \code{\link{this.dir}()} are functioning
 correctly.
 
-\code{\link{as.rel.path}()} ( or \code{\link{as.relative.path}()} ) will turn
-absolute paths into relative paths.
+\code{\link{relpath}()} and \code{\link{rel2here}()} will turn absolute paths
+into relative paths.
 
 \code{\link{asArgs}()}, \code{\link{fileArgs}()}, \code{\link{progArgs}()}, and
 \code{\link{withArgs}()} provide functionality for running scripts with

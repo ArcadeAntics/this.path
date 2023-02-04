@@ -1,19 +1,18 @@
-\name{as.relative.path}
-\alias{as.relative.path}
-\alias{as.rel.path}
+\name{relpath}
 \alias{relpath}
+\alias{rel2here}
 \title{
 Make a Path Relative to Another Path
 }
 \description{
 When working with \pkg{this.path}, you will be dealing with a lot of absolute
 paths. These paths are no good for saving within files, so you will need to use
-\code{as.relative.path()} to turn your absolute paths into relative paths.
+\code{relpath()} and \code{rel2here()} to turn your absolute paths into
+relative paths.
 }
 \usage{
-as.relative.path(path, relative.to = this.dir(verbose = FALSE))
-as.rel.path     (path, relative.to = this.dir(verbose = FALSE))
-relpath         (path, relative.to = getwd())
+relpath(path, relative.to = getwd())
+rel2here(path)
 }
 \arguments{
   \item{path}{
@@ -35,11 +34,11 @@ returned. If \code{path} and \code{relative.to} have no base in common, the
 character vector of the same length as \code{path}.
 }
 \note{
-\code{relpath} and \code{as.rel.path} are the same function with different
-default arguments.
+\code{rel2here} is a variant of \code{relpath} in which \code{relative.to} is
+always \code{\link{this.dir}()}.
 }
-\examples{
 #ifdef unix
+\examples{
 \dontrun{
 relpath(
     c(
@@ -59,8 +58,10 @@ relpath(
     relative.to = "/home/effective_user/Documents/this.path/man"
 )
 }
+}
 #endif
 #ifdef windows
+\examples{
 \dontrun{
 relpath(
     c(
@@ -81,5 +82,5 @@ relpath(
     relative.to = "C:/Users/effective_user/Documents/this.path/man"
 )
 }
-#endif
 }
+#endif

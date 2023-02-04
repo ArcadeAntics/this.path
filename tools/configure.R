@@ -10,17 +10,20 @@ main <- function ()
     # )
 
 
-    libname <- Sys.getenv("R_LIBRARY_DIR")
-    writeLines(
+    conn <- file("./src/use-r-non-api.h", "wb", encoding = "")
+    on.exit(close(conn))
+    writeLines(con = conn, {
+        libname <- Sys.getenv("R_LIBRARY_DIR")
         if (libname == "" || endsWith(libname, "/this.path.Rcheck")) {
             character(0)
-        } else c(
-            "#ifndef R_THIS_PATH_USE_R_NON_API",
-            "#define R_THIS_PATH_USE_R_NON_API",
-            "#endif"
-        ),
-        "./src/use-r-non-api.h"
-    )
+        } else {
+            c(
+                "#ifndef R_THIS_PATH_USE_R_NON_API",
+                "#define R_THIS_PATH_USE_R_NON_API",
+                "#endif"
+            )
+        }
+    })
 }
 
 

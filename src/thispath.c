@@ -30,7 +30,7 @@ SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, 
     SEXP call2 = CAR(args);
     ENSURE_NAMEDMAX(call2);
     args = CDR(args);
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
     return thisPathUnrecognizedConnectionClassError(call2, R_GetConnection(CAR(args)));
 #else
     return thisPathUnrecognizedConnectionClassError(call2, summaryconnection(CAR(args)));

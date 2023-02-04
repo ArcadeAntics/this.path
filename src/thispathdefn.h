@@ -14,7 +14,7 @@
         #include <R_ext/Connections.h>
         #if !defined(R_CONNECTIONS_VERSION)
         #elif R_CONNECTIONS_VERSION == 1
-            #define use_R_GetConnection
+            #define R_CONNECTIONS_VERSION_1
             extern Rconnection R_GetConnection(SEXP sConn);
         #endif
     #endif
@@ -150,7 +150,7 @@ extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 extern SEXP as_environment_char(const char *what);
 
 
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
 extern SEXP summaryconnection(Rconnection Rcon);
 #else
 extern SEXP summaryconnection(SEXP sConn);
@@ -174,7 +174,7 @@ extern SEXP simpleError(const char *msg, SEXP call);
     "this.path::thisPathNotExistsError"
 
 
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
 extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
 #else
 extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
@@ -223,7 +223,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
                    )
 
 
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
 #define get_connection_description(Rcon) mkCharCE((Rcon)->description, ((Rcon)->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE)
 #define get_connection_class(Rcon) ((Rcon)->class)
 #else
@@ -232,7 +232,7 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
 #endif
 
 
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
 typedef struct gzconn {
     Rconnection con;
 } *Rgzconn;

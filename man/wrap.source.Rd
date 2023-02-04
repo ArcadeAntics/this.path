@@ -233,8 +233,8 @@ wrapper <- function(fileName, ...) {
   \item{\sourcefilelink{}}{
 \preformatted{
 wrapper <- function(path, ...) {
-    # before testthat_3.1.2, source_file() used base::readLines() to
-    # read the input lines. changed in 3.1.2, source_file() uses
+    # before testthat_3.1.2, source_file() used readLines() to read the
+    # input lines. changed in 3.1.2, source_file() uses
     # brio::read_lines() which normalizes 'path' before reading,
     # disregarding the special meaning of the strings listed above
     path <- inside.source(path, path.only = TRUE,

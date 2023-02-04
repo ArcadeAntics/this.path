@@ -140,7 +140,7 @@ SEXP as_environment_char(const char *what)
 }
 
 
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
 SEXP summaryconnection(Rconnection Rcon)
 {
     SEXP value, names;
@@ -252,7 +252,7 @@ SEXP simpleError(const char *msg, SEXP call)
     SET_VECTOR_ELT(cond , 2, (summConn));                      \
     UNPROTECT(2);                                              \
     return cond
-#if defined(use_R_GetConnection)
+#if defined(R_CONNECTIONS_VERSION_1)
 SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
 {
     funbody(mkChar(get_connection_class(Rcon)), summaryconnection(Rcon));

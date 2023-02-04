@@ -9,226 +9,83 @@ essentials:::check.this(  # this.path
 # this.path:::cat.file("~/temp8.txt")
 
 
+# unix.getFinalPathName <- function (path)
+# {
+#     if (!is.character(path))
+#         stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
+#     path <- this.path:::normpath(path)
+#     path.unsplit(lapply(path.split(path), function(p) {
+#         failure <- TRUE
+#         tryCatch({
+#             path <- normalizePath(p[[1L]], "/", TRUE)
+#             failure <- FALSE
+#         }, error = function(e) {
+#             p <- p[p != "."]
+#             while (i <- match("..", p, 0L)) {
+#                 p <- if (i == 2L)
+#                     p[-2L]
+#                 else p[-i + 0L:1L]
+#             }
+#             p <<- p
+#         })
+#         if (failure) return(p)
+#         for (p in p[-1L]) {
+#             print(path)
+#             if (p == ".") {
+#             }
+#             else if (p == "..")
+#                 path <- dirname2(path)
+#             else path <- normalizePath(path.unsplit(c(path, p)), "/", FALSE)
+#         }
+#         path
+#     }))
+# }
+#
+#
+# unix.getFinalPathName("C:/testing/./..")
 
 
-
-tolower.ASCII <- function (x)
-chartr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", x)
-
-
-toupper.ASCII <- function (x)
-chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
-
-
-windows.relpath.noNA.noblank <- function (path, relative.to = this.path::Sys.dir())
-{
-    # path <- c("A:\\Users\\documents", "c:/users/andre/documents/\u03b4.r",
-    #     "//LOCALHOST/C$/Users/andre/Documents/test59.R")
-    # relative.to <- Sys.dir()
-
-
-    if (length(path) <= 0L)
-        return(character())
-
-
-    path <- this.path:::normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
-    if (!missing(relative.to)) {
-        if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
-        relative.to <- this.path:::normalizePath.and.URL.1(relative.to,
-            winslash = "/", mustWork = TRUE)
-    }
-
-
-    path <- c(relative.to, path)
-    path <- sub("^[/\\\\][/\\\\](LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
-                "\\2:/", path, ignore.case = TRUE)
-    p <- this.path::path.split(path)
-
-
-    multiple.drives <- {
-        u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
-        if (length(u) == 1L)
-            FALSE
-        else if (!any(i <- grepl("^[abcdefghijklmnopqrstuvwxyz]:/$", u)))
-            TRUE
-        else {
-            u[i] <- toupper.ASCII(u[i])
-            length(unique(u)) != 1L
-        }
-    }
-    if (multiple.drives) {
-        x <- system("net use", intern = TRUE)
-        m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *$", x)
-        keep <- !vapply(m, function(mm) length(mm) == 1L && mm == -1L, FUN.VALUE = NA)
-        if (any(keep)) {
-            x <- regmatches(x[keep], m[keep])
-            local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
-            local <- tolower.ASCII(local)
-            local <- paste0(local, "/")
-            remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
-            if (any(i <- grepl("^[/\\\\]{2}", remote)))
-                remote[i] <- chartr("\\", "/", remote[i])
-            remote <- paste0(remote, "/")
-            fix.local <- function(p) {
-                if (indx <- match(tolower.ASCII(p[[1L]]), local, 0L)) {
-                    c(remote[[indx]], p[-1L])
-                } else p
-            }
-        }
-        else fix.local <- force
-    }
-    else fix.local <- force
-
-
-    r <- p[[1L]]
-    p <- p[-1L]
-    r <- fix.local(r)
-    ignore.case <- !grepl("^(http|https)://", r[[1L]])
-    fix.case <- if (ignore.case) tolower.ASCII else force
-    r <- fix.case(r)
-    len <- length(r)
-    path.unsplit(lapply(p, function(p) {
-        len2 <- length(p)
-        n <- min(len2, len)
-        q <- fix.case(fix.local(p))
-        n <- match(FALSE, q[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
-        if (n == 0L)
-            return(p)
-        value <- c(
-            rep("..", len - n),
-            p[seq.int(n + 1L, length.out = len2 - n)]
-        )
-        if (length(value) <= 0L)
-            "."
-        else if (!(value[[1L]] %in% c(".", "..")))
-            c(".", value)
-        else value
-    }))
-}
-
-
-unix.relpath.noNA.noblank <- function (path, relative.to = this.path::Sys.dir())
-{
-    if (length(path) <= 0L)
-        return(character())
-
-
-    path <- this.path:::normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
-    if (!missing(relative.to)) {
-        if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
-        relative.to <- this.path:::normalizePath.and.URL.1(relative.to,
-            winslash = "/", mustWork = TRUE)
-    }
-
-
-    path <- c(relative.to, path)
-    p <- this.path::path.split(path)
-    r <- p[[1L]]
-    len <- length(r)
-    path.unsplit(lapply(p[-1L], function(p) {
-        len2 <- length(p)
-        n <- min(len2, len)
-        n <- match(FALSE, p[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
-        if (n == 0L)
-            return(p)
-        value <- c(
-            rep("..", len - n),
-            p[seq.int(n + 1L, length.out = len2 - n)]
-        )
-        if (length(value) <= 0L)
-            "."
-        else if (!(value[[1L]] %in% c(".", "..")))
-            c(".", value)
-        else value
-    }))
-}
-
-
-rel2here <- function (path)
-{
-    if (!is.character(path))
-        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
-    n <- length(path)
-    if (n <= 0L) {
-        character()
-    } else {
-        value <- character(n)
-        value[] <- path
-        if (any(i <- !(is.na(value) | value == ""))) {
-            value[i] <- if (.Platform$OS.type == "windows")
-                windows.relpath.noNA.noblank(value[i])
-            else unix.relpath.noNA.noblank(value[i])
-        }
-        value
-    }
-}
-
-
-relpath <- function (path, relative.to = getwd())
-{
-    if (!is.character(path))
-        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
-    n <- length(path)
-    if (n <= 0L) {
-        character()
-    } else {
-        value <- character(n)
-        value[] <- path
-        if (any(i <- !(is.na(value) | value == ""))) {
-            value[i] <- if (.Platform$OS.type == "windows")
-                windows.relpath.noNA.noblank(value[i], relative.to)
-            else unix.relpath.noNA.noblank(value[i], relative.to)
-        }
-        value
-    }
-}
-
-
-path <- c(
-    NA,
-    "",
-    ".",
-    # "A:\\Users\\documents",
-    "c:/users/andre/documents/\u03b4.r",
-    "//LOCALHOST/C$/Users/andre/Documents/this.path/inst/extdata/untitled_msvcrt.txt"
-)
-setwd("~")
-path2 <- relpath(path)
-path3 <- rel2here(path)
-path2
-path3
-
-
-realpath2 <- function (path)
-{
-    vapply(path.split(path), function(p) {
-        path <- normalizePath(p[[1L]], "/", TRUE)
-        for (p in p[-1L]) {
-            path <- normalizePath(path.unsplit(c(path, p)), "/", FALSE)
-        }
+local({
+    path <- c(
+        NA,
+        "",
+        ".",
+        "c:/users/andre/documents/\u03b4.r",
+        "//LOCALHOST/C$/Users/andre/Documents/this.path/inst/extdata/untitled_msvcrt.txt"
+    )
+    owd <- getwd()
+    if (is.null(owd))
+        stop("cannot 'chdir' as current directory is unknown")
+    on.exit(setwd(owd))
+    setwd("~")
+    oopt <- options(width = 10L)
+    on.exit(options(oopt), add = TRUE, after = FALSE)
+    withAutoprint({
         path
-    }, FUN.VALUE = "")
-}
-path <- "C:/Users/andre/Documents/this.path/symlink/../Downloads"
-realpath2(path)
-normalizePath(path, "/", FALSE)
+        getwd()
+        this.path::here()
+        this.path::relpath(path)
+        this.path::rel2here(path)
+        this.path::relpath(path2 <- c(path, "A:\\Users\\documents"))
+        this.path::rel2here(path2)
+    }, echo = TRUE, spaced = TRUE, verbose = FALSE,
+        max.deparse.length = Inf, width.cutoff = 60L)
+})
 
 
-relpath <- function (path, relative.to = getwd())
-{
-    path <- this.path:::normalizePath.and.URL(path, "/", FALSE)
-    relative.to <- this.path:::normalizePath.and.URL.1(relative.to, "/", FALSE)
-    relative.to <- this.path::path.split.1(relative.to)
-    len <- length(relative.to)
-    x <- this.path::path.split(path)
-    x
-}
-
-
-relpath("testing/.")
-this.path::relpath
+# realpath2 <- function (path)
+# {
+#     vapply(path.split(path), function(p) {
+#         path <- normalizePath(p[[1L]], "/", TRUE)
+#         for (p in p[-1L]) {
+#             path <- normalizePath(path.unsplit(c(path, p)), "/", FALSE)
+#         }
+#         path
+#     }, FUN.VALUE = "")
+# }
+# path <- "C:/Users/andre/Documents/this.path/symlink/../Downloads"
+# realpath2(path)
+# normalizePath(path, "/", FALSE)
 
 
 if (FALSE) {
@@ -463,7 +320,7 @@ local({
     setwd(owd)
 
 
-    file <- this.path::as.rel.path(FILE, ".")
+    file <- this.path::rel2here(FILE, ".")
     if (.Platform$OS.type == "windows")
         file <- chartr("/", "\\", file)
 
@@ -503,7 +360,7 @@ local({
         FILE2 <- tempfile("fil\u{00E9}", fileext = ".R")
         on.exit(unlink(FILE2, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
         file.copy(FILE, FILE2, copy.date = TRUE)
-        file2 <- this.path::as.rel.path(FILE2, ".")
+        file2 <- this.path::rel2here(FILE2, ".")
         if (.Platform$OS.type == "windows")
             file2 <- chartr("/", "\\", file2)
         file2 <- iconv(file2, "UTF-8", "latin1")
@@ -529,7 +386,7 @@ local({
     on.exit(unlink(FILE4, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
 
 
-    file3 <- this.path::as.rel.path(FILE3, ".")
+    file3 <- this.path::rel2here(FILE3, ".")
     if (.Platform$OS.type == "windows")
         file3 <- chartr("/", "\\", file3)
     fun(knitr::knit(.(file3), FILE4, quiet = TRUE))

@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.5}{
+\section{CHANGES IN VERSION 1.2.0.6}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item
@@ -14,6 +14,13 @@
       \item
         Added \code{path.split()}, \code{path.split.1()}, and
         \code{path.unsplit()}.
+    }
+  }
+  \subsection{DEPRECATED AND DEFUNCT}{
+    \itemize{
+      \item
+        \code{as.relative.path()} and \code{as.rel.path()} are defunct and
+        should be replaced with \code{rel2here()}.
     }
   }
 }

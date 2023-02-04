@@ -30,6 +30,9 @@ to do anything special before calling.
 
 For \knitlink{}, there is nothing that can be done, the \code{srcref} is never
 stored. I am looking into a fix for such a thing.
+
+For \boxuselink{}, the \code{srcref} is always stored, so you do not need
+to do anything special before calling.
 }
 \examples{
 FILE <- tempfile(fileext = ".R")

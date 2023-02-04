@@ -1,6 +1,6 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.5:
+CHANGES IN this.path 1.2.0.6:
 
   NEW FEATURES
 
@@ -10,6 +10,11 @@ CHANGES IN this.path 1.2.0.5:
     * this.path() now works inside box::use().
 
     * Added path.split(), path.split.1(), and path.unsplit().
+
+  DEPRECATED AND DEFUNCT
+
+    * as.relative.path() and as.rel.path() are defunct and should be
+      replaced with rel2here().
 
 CHANGES IN this.path 1.2.0:
 

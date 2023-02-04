@@ -1,5 +1,7 @@
 \name{this.path-defunct}
 \alias{this.path-defunct}
+\alias{as.relative.path}
+\alias{as.rel.path}
 \alias{this.path2}
 \alias{this.dir2}
 \alias{this.dir3}
@@ -12,6 +14,10 @@ The functions or variables listed here are no longer part of \pkg{this.path} as
 they are no longer needed.
 }
 \usage{
+# Defunct in 1.2.0.6
+as.relative.path(...)   # use 'rel2here(...)' instead
+as.rel.path(...)        # use 'rel2here(...)' instead
+
 # Defunct in 1.1.0
 this.path2(...)         # use 'this.path(..., default = NULL)' instead
 this.dir2(...)          # use 'this.dir(..., default = NULL)' instead

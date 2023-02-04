@@ -382,7 +382,7 @@ if (!(isNamespace(environment()) &&
                         # plus its encoding
                         conn <- file(path, "wb", encoding = "")
                         on.exit(close(conn))
-                        writeLines(rbind(x, Encoding(x)), conn, useBytes = TRUE)
+                        writeLines(rbind(x, Encoding(x)), conn, sep = "\r\n", useBytes = TRUE)
                     }
 
 

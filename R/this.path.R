@@ -501,8 +501,8 @@ identical(x, y)
 
 
 
-.normalizePath <- function (path)
-normalizePath(path, winslash = "/", mustWork = TRUE)
+.normalizePath <- function (path, winslash = "/", mustWork = TRUE)
+normalizePath(path, winslash, mustWork)
 
 
 .normalizeAgainst <- function (ofile, owd)
@@ -653,7 +653,7 @@ this.dir3 <- function (...)
 here <- ici <- function (..., .. = 0L)
 {
     base <- .this.path()
-    if (grepl("^(https|http|ftp|ftps)://", base)) {
+    base <- if (grepl("^(https|http|ftp|ftps)://", base)) {
         # base <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         # .. <- "2"
 
@@ -667,7 +667,7 @@ here <- ici <- function (..., .. = 0L)
     # base <- "//host/share/path/to/file"
     # base <- "C:/Users/iris/Documents/this.path/man/this.path.Rd"
     # .. <- "10"
-    else base <- .External2(C_dirname2, base, ..)
+    else .External2(C_dirname2, base, ..)
     path.join(base, ...)
 }
 
