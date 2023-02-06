@@ -9,6 +9,62 @@ essentials:::check.this(  # this.path
 # this.path:::cat.file("~/temp8.txt")
 
 
+if (FALSE) {
+    essentials:::check.this(
+        INSTALL = FALSE,
+
+        check = FALSE,
+
+        chdir = TRUE
+    )
+}
+
+
+local({  # testing this.path() with source(gzcon())
+    FILE <- tempfile(fileext = ".R")
+    on.exit(unlink(FILE), add = TRUE, after = FALSE)
+    writeLines(c(
+        "sys.frame(-3)$ofile",
+        "this.path::this.path(original = TRUE)",
+        "this.path::this.path()"
+    ), FILE)
+    conn1 <- file(this.path::relpath(FILE))
+    on.exit(close(conn1), add = TRUE, after = FALSE)
+    source(conn1, echo = TRUE)
+    conn2 <- gzcon(file(this.path::relpath(FILE), "rb"))
+    on.exit(close(conn2), add = TRUE, after = FALSE)
+    source(conn2, echo = TRUE)
+})
+
+
+local({  # testing relpath() and rel2here()
+    path <- c(
+        NA,
+        "",
+        ".",
+        "c:/users/andre/documents/\u03b4.r",
+        "//LOCALHOST/C$/Users/andre/Documents/this.path/inst/extdata/untitled_msvcrt.txt"
+    )
+    owd <- getwd()
+    if (is.null(owd))
+        stop("cannot 'chdir' as current directory is unknown")
+    on.exit(setwd(owd))
+    setwd("~")
+    oopt <- options(width = 10L)
+    on.exit(options(oopt), add = TRUE, after = FALSE)
+    withAutoprint({
+        path
+        getwd()
+        this.path::here()
+        this.path::relpath(path)
+        this.path::rel2here(path)
+        this.path::relpath(path2 <- c(path, "A:\\Users\\documents"))
+        this.path::rel2here(path2)
+    }, echo = TRUE, spaced = TRUE, verbose = FALSE,
+        max.deparse.length = Inf, width.cutoff = 60L)
+})
+
+
 # unix.getFinalPathName <- function (path)
 # {
 #     if (!is.character(path))
@@ -45,34 +101,6 @@ essentials:::check.this(  # this.path
 # unix.getFinalPathName("C:/testing/./..")
 
 
-local({
-    path <- c(
-        NA,
-        "",
-        ".",
-        "c:/users/andre/documents/\u03b4.r",
-        "//LOCALHOST/C$/Users/andre/Documents/this.path/inst/extdata/untitled_msvcrt.txt"
-    )
-    owd <- getwd()
-    if (is.null(owd))
-        stop("cannot 'chdir' as current directory is unknown")
-    on.exit(setwd(owd))
-    setwd("~")
-    oopt <- options(width = 10L)
-    on.exit(options(oopt), add = TRUE, after = FALSE)
-    withAutoprint({
-        path
-        getwd()
-        this.path::here()
-        this.path::relpath(path)
-        this.path::rel2here(path)
-        this.path::relpath(path2 <- c(path, "A:\\Users\\documents"))
-        this.path::rel2here(path2)
-    }, echo = TRUE, spaced = TRUE, verbose = FALSE,
-        max.deparse.length = Inf, width.cutoff = 60L)
-})
-
-
 # realpath2 <- function (path)
 # {
 #     vapply(path.split(path), function(p) {
@@ -86,80 +114,6 @@ local({
 # path <- "C:/Users/andre/Documents/this.path/symlink/../Downloads"
 # realpath2(path)
 # normalizePath(path, "/", FALSE)
-
-
-if (FALSE) {
-    essentials:::check.this(
-        INSTALL = FALSE, check = FALSE,
-
-        chdir = TRUE
-    )
-}
-
-
-# .External2(this.path:::C_thispathrgui,
-#     c("~/δ.R - Редактор R", "R Console (64-bit)"),
-#     this.path:::untitled_ucrt,
-#     this.path:::r.editor_ucrt,
-#     verbose = FALSE, for.msg = FALSE
-# )
-#
-#
-# .External2(this.path:::C_thispathrgui,
-#     c("~/δ.R", "R Console (64-bit)"),
-#     this.path:::untitled_ucrt,
-#     this.path:::r.editor_ucrt,
-#     verbose = FALSE, for.msg = FALSE
-# )
-#
-#
-# .External2(this.path:::C_thispathrgui,
-#     c("R Console (64-bit)", "İsimsiz  - R Düzenleyici"),
-#     this.path:::untitled_ucrt,
-#     this.path:::r.editor_ucrt,
-#     verbose = FALSE, for.msg = FALSE
-# )
-#
-#
-# .External2(this.path:::C_thispathrgui,
-#     "İsimsiz  - R Düzenleyici",
-#     this.path:::untitled_ucrt,
-#     this.path:::r.editor_ucrt,
-#     verbose = FALSE, for.msg = FALSE
-# )
-#
-#
-# .External2(this.path:::C_thispathrgui,
-#     "R Console",
-#     this.path:::untitled_ucrt,
-#     this.path:::r.editor_ucrt,
-#     verbose = FALSE, for.msg = FALSE
-# )
-#
-#
-# .External2(this.path:::C_thispathrgui,
-#     NULL,
-#     this.path:::untitled_ucrt,
-#     this.path:::r.editor_ucrt,
-#     verbose = FALSE, for.msg = FALSE
-# )
-
-
-local({
-    x <- c(
-        "shINFO",
-        "os.unix", "os.windows",
-        "gui.aqua", "gui.rgui", "gui.tk",
-        "gui.rstudio", "gui.vscode",
-        "maybe.os.unix.in.shell", "maybe.os.windows.in.shell", "maybe.in.shell",
-        "os.unix.in.shell", "os.windows.in.shell", "in.shell",
-        "unrecognized.manner", "initwd", "ucrt", "utf8",
-
-        "has.shFILE",
-        "r.editor", "untitled", "nchar_r.editor", "identical2"
-    )
-    sapply(x, getFromNamespace, getNamespace("this.path"), simplify = FALSE)
-})
 
 
 local({
@@ -187,19 +141,6 @@ local({
     writeLines(command)
     utils::read.csv(pipe(command))
 })
-
-
-# local({
-#     FILE <- tempfile(fileext = ".R")
-#     on.exit(unlink(FILE), add = TRUE, after = FALSE)
-#     writeLines("this.path::this.path()", FILE)
-#     conn1 <- file(FILE)
-#     on.exit(close(conn1), add = TRUE, after = FALSE)
-#     source(conn1, echo = TRUE)
-#     conn2 <- gzcon(file(FILE, "rb"))
-#     on.exit(close(conn2), add = TRUE, after = FALSE)
-#     source(conn2, echo = TRUE)
-# })
 
 
 local({

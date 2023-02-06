@@ -697,7 +697,7 @@ function for when one is specified.
 %
 %
 %
-\examples{\dontshow{.unload.testthat <- !isNamespaceLoaded("testthat") ; .unload.knitr <- !isNamespaceLoaded("knitr")}
+\examples{\dontshow{.unload <- !vapply(c("testthat", "knitr", "box"), isNamespaceLoaded, NA)}
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
     withAutoprint({
@@ -736,6 +736,28 @@ if (requireNamespace("knitr")) {
     cat("\\n")
     unlink(c(FILE3, FILE2))
 }
+if (requireNamespace("box")) {
+    FILE4 <- tempfile(fileext = ".R")
+    this.path:::write.code(as.expression(list(
+        as.call(list(
+            call("::", as.symbol("box"), as.symbol("set_script_path")),
+            FILE
+        )),
+        call("withAutoprint",
+            call("{",
+                as.call(list(
+                    call("::", as.symbol("box"), as.symbol("use")),
+                    call("/",
+                        as.symbol("."),
+                        as.symbol(this.path::removeext(this.path::basename2(FILE)))
+                    )
+                ))
+            ), spaced = TRUE, verbose = FALSE, width.cutoff = 60L
+        )
+    )), FILE4)
+    this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE4))
+    unlink(FILE4)
+}
 
 
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
@@ -767,4 +789,4 @@ this.path::this.path(verbose = FALSE, default = "script.log",
         path
         # or you could use paste0(this.path::removeext(path), ".log")
     })
-\dontshow{unlink(FILE); if (.unload.testthat) unloadNamespace("testthat"); if (.unload.knitr) unloadNamespace("knitr")}}
+\dontshow{unlink(FILE); invisible(lapply(names(which(.unload)), unloadNamespace))}}

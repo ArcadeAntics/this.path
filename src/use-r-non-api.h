@@ -1,0 +1,3 @@
+#ifndef R_THIS_PATH_USE_R_NON_API
+#define R_THIS_PATH_USE_R_NON_API
+#endif

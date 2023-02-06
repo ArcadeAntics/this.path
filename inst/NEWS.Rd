@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.6}{
+\section{CHANGES IN VERSION 1.2.0.7}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item

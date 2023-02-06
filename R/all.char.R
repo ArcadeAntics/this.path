@@ -2,11 +2,10 @@ all.char <- function ()
 {
     c(
         local({
-            nms <- sprintf("%02x", strtoi("01", 16):strtoi("ff", 16))
-            value <- as.character(str2expression(sprintf("\"\\x%s\"", nms)))
+            value <- vapply(as.raw(1:255), rawToChar, "")
             Encoding(value) <- "latin1"
             value <- enc2utf8(value)
-            names(value) <- nms
+            names(value) <- sprintf("0x%02x", 1:255)
             value
         }),
         local({
@@ -30,3 +29,36 @@ all.char <- function ()
 
 sys.source("./inst/extdata/main.R", environment(),
     toplevel.env = getOption("topLevelEnvironment", as.environment(environment())))
+
+
+tmp <- function(expr) {
+    if (typeof(expr) == "closure") {
+        formals(expr) <- tmp(formals(expr))
+        body(expr) <- tmp(body(expr))
+        expr
+    }
+    else if (is.pairlist(expr)) {
+        as.pairlist(lapply(expr, tmp))
+    }
+    else if (is.call(expr)) {
+        if (identical(expr, `.Platform$OS.type == "windows"`))
+            os.windows
+        else if (identical(expr, `identical(R.version[["crt"]], "ucrt")`))
+            ucrt
+        else as.call(lapply(expr, tmp))
+    }
+    else expr
+}
+evalq(envir = environment(tmp) <- new.env(), {
+    `.Platform$OS.type == "windows"` <- quote(.Platform$OS.type == "windows")
+    os.windows <- quote(os.windows)
+    `identical(R.version[["crt"]], "ucrt")` <- quote(identical(R.version[["crt"]], "ucrt"))
+    ucrt <- quote(ucrt)
+})
+
+
+languageEnvvars <- tmp(languageEnvvars)
+Sys.putenv <- tmp(Sys.putenv)
+
+
+rm(tmp)

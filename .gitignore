@@ -4,3 +4,5 @@
 *.Rcheck
 /*.Rcheck/
 /*.Rcheck/**
+/this.path*.tar.gz
+/this.path*.zip

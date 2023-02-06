@@ -34,19 +34,32 @@ tmp <- function (x, varname, name)
         if (!is.character(expected) || length(expected) != 1L)
             stop(gettextf("'%s' must be a character string", "expected", domain = "R"))
         expected <- path.split.1(expected)
+        if (length(expected) <= 0L)
+            stop(gettextf("'%s' must not be \"\"", "expected"))
+        check.wd <- expected[[1L]] == "."
+        expected <- expected[expected != "."]
         varname <- .
         varname <- path.split.1(varname)
         if (length(varname) < length(expected) || {
-            varname <- varname[seq.int(to = length(varname), along.with = expected)]
-            any(varname != expected)
+            i <- seq_along(varname) > length(varname) - length(expected)
+            any(varname[i] != expected)
         })
         {
             expected <- paste(expected, collapse = "/")
-            varname <- paste(varname, collapse = "/")
+            varname <- paste(varname[i], collapse = "/")
             stop(msg1,
                 paste0(msg2, {
                     encodeString(c(varname, expected), quote = "\"")
                 }, collapse = "\n"))
+        }
+        if (check.wd) {
+            expected <- path.unsplit(varname[!i])
+            if (relpath(expected) != ".") {
+                stop("'getwd()' and expected path do not match\n",
+                    paste0(c("* getwd() : ", "* expected: "), {
+                        encodeString(c(getwd(), expected), quote = "\"")
+                    }, collapse = "\n"))
+            }
         }
         invisible(TRUE)
     }, list(

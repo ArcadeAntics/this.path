@@ -35,7 +35,7 @@ character vector of the same length as \code{path}.
 }
 \note{
 \code{rel2here} is a variant of \code{relpath} in which \code{relative.to} is
-always \code{\link{this.dir}()}.
+always \code{\link{here}()}.
 }
 #ifdef unix
 \examples{
