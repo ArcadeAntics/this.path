@@ -33,11 +33,11 @@ tmp <- function (x, varname, name)
         expected <- path.join(...)
         if (!is.character(expected) || length(expected) != 1L)
             stop(gettextf("'%s' must be a character string", "expected", domain = "R"))
-        expected <- path.split.1(expected)
-        if (length(expected) <= 0L)
+        if (!nzchar(expected))
             stop(gettextf("'%s' must not be \"\"", "expected"))
-        check.wd <- expected[[1L]] == "."
-        expected <- expected[expected != "."]
+        expected <- path.split.1(expected)
+        if (check.wd <- expected[[1L]] == ".")
+            expected <- expected[-1L]
         varname <- .
         varname <- path.split.1(varname)
         if (length(varname) < length(expected) || {
@@ -45,8 +45,8 @@ tmp <- function (x, varname, name)
             any(varname[i] != expected)
         })
         {
-            expected <- paste(expected, collapse = "/")
-            varname <- paste(varname[i], collapse = "/")
+            expected <- path.unsplit(expected)
+            varname <- path.unsplit(varname[i])
             stop(msg1,
                 paste0(msg2, {
                     encodeString(c(varname, expected), quote = "\"")

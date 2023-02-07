@@ -1,15 +1,18 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.7:
+CHANGES IN this.path 1.2.0.8:
 
   NEW FEATURES
+
+    * Added path.split(), path.split.1(), and path.unsplit().
+
+    * this.path() now works inside box::use().
 
     * For logging purposes, this.path(for.msg = TRUE) will now return
       "Untitled" when appropriate.
 
-    * this.path() now works inside box::use().
-
-    * Added path.split(), path.split.1(), and path.unsplit().
+    * Added unset.this.path() to undo a call to set.this.path(),
+      allowing for multiple calls to set.this.path() within a function.
 
   DEPRECATED AND DEFUNCT
 

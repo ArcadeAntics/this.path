@@ -1,6 +1,6 @@
 main <- function ()
 {
-    # Sys.setenv(R_THIS_PATH_USE_R_NON_API = "TRUE"); warning("in ./tools/configure.R:\n comment out this line later", call. = FALSE, immediate. = TRUE)
+    Sys.setenv(R_THIS_PATH_USE_R_NON_API = "TRUE"); warning("in ./tools/configure.R:\n comment out this line later", call. = FALSE, immediate. = TRUE)
 
 
     cat("\n",

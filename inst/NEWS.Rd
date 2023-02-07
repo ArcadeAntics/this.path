@@ -1,19 +1,24 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.7}{
+\section{CHANGES IN VERSION 1.2.0.8}{
   \subsection{NEW FEATURES}{
     \itemize{
+
       \item
-        For logging purposes, \code{this.path(for.msg = TRUE)} will now return
-        \code{"Untitled"} when appropriate.
+        Added \code{path.split()}, \code{path.split.1()}, and
+        \code{path.unsplit()}.
 
       \item
         \code{this.path()} now works inside \code{box::use()}
 
       \item
-        Added \code{path.split()}, \code{path.split.1()}, and
-        \code{path.unsplit()}.
+        For logging purposes, \code{this.path(for.msg = TRUE)} will now return
+        \code{"Untitled"} when appropriate.
+
+      \item
+        Added \code{unset.this.path()} to undo a call to \code{set.this.path()},
+        allowing for multiple calls to \code{set.this.path()} within a function.
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{

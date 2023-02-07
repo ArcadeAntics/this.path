@@ -201,43 +201,19 @@ profile file, the user profile, nor the function \code{.First} (see
 GUI, and often incorrect. For example:
 
 \describe{
-  \item{in \sQuote{RStudio}}{
-in all three cases, it throws an error:
-\preformatted{
-> this.path(original = TRUE)
-Error in (.rs.api.getActiveDocumentContext)() :
-  RStudio has not finished loading
-}
-  }
-  \item{in \sQuote{VSCode}}{
-in the site-wide startup profile file and the function \code{.First}, it throws
-an error:
-\preformatted{
-> this.path(original = TRUE)
-Error : RStudio not running
-}
-but in the user profile, it returns:
-#ifdef windows
-\preformatted{
-> this.path(original = TRUE)
-Source: call to function source
-[1] "~/.Rprofile"
-
-> this.path()
-[1] "C:/Users/iris/Documents/.Rprofile"
-}
-#endif
 #ifdef unix
+  \item{in \sQuote{X11}}{
+in all three cases, it returns the command line argument \option{FILE}:
 \preformatted{
 > this.path(original = TRUE)
-Source: call to function source
-[1] "~/.Rprofile"
+Source: shell argument 'FILE'
+[1] "./file569c63d647ba.R"
 
 > this.path()
-[1] "/home/iris/.Rprofile"
+[1] "/tmp/RtmpGMmR3A/file569c63d647ba.R"
 }
-#endif
   }
+#endif
 #ifdef windows
   \item{in \sQuote{Rgui}}{
 in all three cases, it throws an error:
@@ -261,19 +237,43 @@ Source: shell argument 'FILE'
 }
 }
 #endif
-#ifdef unix
-  \item{in \sQuote{X11}}{
-in all three cases, it returns the command line argument \option{FILE}:
+  \item{in \sQuote{RStudio}}{
+in all three cases, it throws an error:
 \preformatted{
 > this.path(original = TRUE)
-Source: shell argument 'FILE'
-[1] "./file569c63d647ba.R"
-
-> this.path()
-[1] "/tmp/RtmpGMmR3A/file569c63d647ba.R"
+Error in (.rs.api.getActiveDocumentContext)() :
+  RStudio has not finished loading
 }
   }
+  \item{in \sQuote{VSCode}}{
+in the site-wide startup profile file and the function \code{.First}, it throws
+an error:
+\preformatted{
+> this.path(original = TRUE)
+Error : RStudio not running
+}
+but in the user profile, it returns:
+#ifdef unix
+\preformatted{
+> this.path(original = TRUE)
+Source: call to function source
+[1] "~/.Rprofile"
+
+> this.path()
+[1] "/home/iris/.Rprofile"
+}
 #endif
+#ifdef windows
+\preformatted{
+> this.path(original = TRUE)
+Source: call to function source
+[1] "~/.Rprofile"
+
+> this.path()
+[1] "C:/Users/iris/Documents/.Rprofile"
+}
+#endif
+  }
 }
 
 Sometimes it returns the command line argument \option{FILE}, sometimes it
@@ -708,7 +708,8 @@ this.path:::write.code({
                 " similar manner, doing arbitrary things only if the\\n",
                 " executing script does not exist")
         })), "\\n\\n")
-    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
+    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
+        prompt.echo = "FILE> ", continue.echo = "FILE+ ")
 }, FILE)
 
 
@@ -719,43 +720,39 @@ if (.Platform$GUI == "RStudio")
 if (requireNamespace("testthat"))
     testthat::source_file(FILE, chdir = FALSE, wrap = FALSE)
 if (requireNamespace("knitr")) {
-    writeLines(con = FILE2 <- tempfile(fileext = ".Rmd"), c(
+    FILE2 <- tempfile(fileext = ".Rmd")
+    FILE3 <- tempfile(fileext = ".md")
+    writeLines(c(
         "```{r}",
         # same expression as above
         deparse(parse(FILE)[[c(1L, 2L, 2L)]]),
         "```"
-    ))
-    knitr::knit(input = FILE2, output = FILE3 <- tempfile(fileext = ".md"),
-        quiet = TRUE)
-    cat(sprintf("\\n$ cat -bsT \%s\\n", shQuote(FILE2)))
+    ), FILE2)
+    knitr::knit(input = FILE2, output = FILE3, quiet = TRUE)
     this.path:::cat.file(FILE2, number.nonblank = TRUE,
-        squeeze.blank = TRUE, show.tabs = TRUE)
-    cat(sprintf("\\n$ cat -bsT \%s\\n", shQuote(FILE3)))
+        squeeze.blank = TRUE, show.tabs = TRUE,
+        print.command = TRUE)
     this.path:::cat.file(FILE3, number.nonblank = TRUE,
-        squeeze.blank = TRUE, show.tabs = TRUE)
-    cat("\\n")
+        squeeze.blank = TRUE, show.tabs = TRUE,
+        print.command = TRUE)
     unlink(c(FILE3, FILE2))
 }
 if (requireNamespace("box")) {
     FILE4 <- tempfile(fileext = ".R")
-    this.path:::write.code(as.expression(list(
-        as.call(list(
-            call("::", as.symbol("box"), as.symbol("set_script_path")),
-            FILE
-        )),
-        call("withAutoprint",
-            call("{",
-                as.call(list(
-                    call("::", as.symbol("box"), as.symbol("use")),
-                    call("/",
-                        as.symbol("."),
-                        as.symbol(this.path::removeext(this.path::basename2(FILE)))
-                    )
-                ))
-            ), spaced = TRUE, verbose = FALSE, width.cutoff = 60L
-        )
-    )), FILE4)
-    this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE4))
+    this.path:::write.code(bquote({
+        withAutoprint({
+            # we have to use box::set_script_path() because {box}
+            # does not allow us to import a module by its path
+            script_path <- box::script_path()
+            on.exit(box::set_script_path(script_path))
+            box::set_script_path(.(normalizePath(FILE, "/")))
+            box::use(./.(as.symbol(this.path::removeext(
+                this.path::basename2(FILE)
+            ))))
+        }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
+            prompt.echo = "FILE4> ", continue.echo = "FILE4+ ")
+    }), FILE4)
+    source(FILE4, verbose = FALSE)
     unlink(FILE4)
 }
 

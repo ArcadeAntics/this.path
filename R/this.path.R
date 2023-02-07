@@ -56,10 +56,10 @@ if (getRversion() < "4.1.0") {
 
 
 
-tmp <- readLines("./src/hooks-for-namespace-events.c", warn = FALSE)
+tmp <- readLines("./src/symbols.h")
 tmp <- list(
-    thispathofile       = str2lang(tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thispathofileChar[ \t]*\\\\[ \t]*$", tmp) + 1L]]),
-    thispathfile        = str2lang(tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thispathfileChar[ \t]*\\\\[ \t]*$" , tmp) + 1L]])
+    thispathofile = str2lang(tmp[[grep("^[ \t]*thispathofileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
+    thispathfile  = str2lang(tmp[[grep("^[ \t]*thispathfileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]])
 )
 if (!all(vapply(tmp, function(x) is.character(x) && length(x) == 1 && !is.na(x), NA)))
     stop("could not determine variable names")
@@ -262,7 +262,7 @@ is.clipboard <- function (file)
 
 rm.list.append("this_path_used_in_an_inappropriate_fashion")
 this_path_used_in_an_inappropriate_fashion <- local({
-    tmp <- readLines("./src/thispathdefn.h", warn = FALSE)
+    tmp <- readLines("./src/thispathdefn.h")
     tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+this_path_used_in_an_inappropriate_fashion[ \t]*\\\\[ \t]*$", tmp) + 1L]]
     tmp <- str2lang(tmp)
     if (!is.character(tmp) || length(tmp) != 1L ||
@@ -325,10 +325,10 @@ body(.this.path.toplevel) <- bquote({
 
         # this might look stupid af, but we need to do this so the byte
         # compiler doesn't try to evaluate these promises early
-        context <- (.rs.api.getActiveDocumentContext)()
+        context <- .rs.api.getActiveDocumentContext()
         active <- context[["id"]] != "#console"
         if (!active) {
-            context <- (.rs.api.getSourceEditorContext)()
+            context <- .rs.api.getSourceEditorContext()
             if (is.null(context)) {
                 if (for.msg)
                     return(NA_character_)
@@ -580,7 +580,7 @@ tryCatch({
 
 
 local({
-    tmp <- readLines("./src/thispathdefn.h", warn = FALSE)
+    tmp <- readLines("./src/thispathdefn.h")
     tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorCls[ \t]*\\\\[ \t]*$", tmp) + 1L]]
     tmp <- str2lang(tmp)
     if (!is.character(tmp) || length(tmp) != 1L ||

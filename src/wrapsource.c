@@ -511,7 +511,7 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP _insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name)
+SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rboolean unset)
 {
     int nprotect = 0;
     args = CDR(args);  /* skip C_insidesource */
@@ -595,6 +595,24 @@ SEXP _insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name)
         error("%s() cannot be used within a locked environment", name);
 
 
+    if (unset) {
+        if (findVarInFrame(frame, insidesourcewashereSymbol) == R_UnboundValue)
+            error("%s() cannot be called before inside.source() / / set.this.path()", name);
+        if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
+            error("%s() cannot be called within this environment", name);
+        R_removeVarFromFrame(thispathofileSymbol      , frame);
+        R_removeVarFromFrame(thispathfileSymbol       , frame);
+        R_removeVarFromFrame(thispathformsgSymbol     , frame);
+        R_removeVarFromFrame(thispatherrorSymbol      , frame);
+        R_removeVarFromFrame(thispathassocwfileSymbol , frame);
+        R_removeVarFromFrame(thispathdoneSymbol       , frame);
+        R_removeVarFromFrame(insidesourcewashereSymbol, frame);
+        R_removeVarFromFrame(thispathnSymbol          , frame);
+        set_R_Visible(0);
+        return R_NilValue;
+    }
+
+
     if (findVarInFrame(frame, insidesourcewashereSymbol) != R_UnboundValue)
         error("%s() cannot be called more than once within an environment", name);
     if (findVarInFrame(frame, thispathdoneSymbol) != R_UnboundValue)
@@ -664,13 +682,19 @@ SEXP _insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name)
 
 SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    return _insidesource(call, op, args, rho, "inside.source");
+    return insidesource(call, op, args, rho, "inside.source", FALSE);
 }
 
 
 SEXP do_setthispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    return _insidesource(call, op, args, rho, "set.this.path");
+    return insidesource(call, op, args, rho, "set.this.path", FALSE);
+}
+
+
+SEXP do_unsetthispath(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    return insidesource(call, op, args, rho, "unset.this.path", TRUE);
 }
 
 

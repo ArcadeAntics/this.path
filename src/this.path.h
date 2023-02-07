@@ -145,10 +145,11 @@ extern SEXP do_thispathrgui    (SEXP call, SEXP op, SEXP args, SEXP rho);
 /* wrapsource.c */
 
 
-extern SEXP do_setprseen2  (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_wrapsource  (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_setthispath (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_setprseen2   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_wrapsource   (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_insidesource (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_setthispath  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_unsetthispath(SEXP call, SEXP op, SEXP args, SEXP rho);
 
 
 #endif  /* #ifndef THIS_PATH_H */

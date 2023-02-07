@@ -98,4 +98,4 @@ export(tryCatch2)
 # wrapsource.R               ----
 
 
-export(wrap.source, inside.source, set.this.path)
+export(wrap.source, inside.source, set.this.path, unset.this.path)

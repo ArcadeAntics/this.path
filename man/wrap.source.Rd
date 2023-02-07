@@ -2,6 +2,7 @@
 \alias{wrap.source}
 \alias{inside.source}
 \alias{set.this.path}
+\alias{unset.this.path}
 \title{
 Implement \code{this.path()} For Arbitrary \code{source}-Like Functions
 }
@@ -15,6 +16,10 @@ Currently, \code{\link{this.path}()} is implemented to work with
 \code{this.path()} for any other \code{source}-like functions.
 
 \code{set.this.path()} is just an alias for \code{inside.source()}.
+
+\code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
+need to use this if you wish to call \code{set.this.path()} multiple times
+within a function.
 }
 \usage{
 wrap.source(expr,
@@ -91,6 +96,8 @@ set.this.path(file,
     ignore.stdin = ignore.all,
     ignore.url = ignore.all,
     ignore.file.uri = ignore.all)
+
+unset.this.path()
 }
 \arguments{
   \item{expr}{
@@ -287,9 +294,7 @@ wrapper <- function(path, ...) {
         chartr("/", "\\\\", path) else path)
     class(info) <- c("box$mod_info", "box$info")
     caller <- parent.frame()
-    box:::rethrow_on_error({
-        box:::load_and_register(spec, info, caller)
-    }, call = sys.call(sys.nframe()))
+    box:::load_and_register(spec, info, caller)
     invisible()
 }
 }
@@ -371,4 +376,15 @@ sourcelike4 <- function (pathname, ...)
     sourcelike2(pathname = pathname, ...)
 }
 sourcelike4(FILE)
+
+
+# perhaps you wish to run several scripts in the same function
+fun <- function (paths, ...)
+{
+    for (pathname in paths) {
+        pathname <- set.this.path(pathname, path.only = TRUE)
+        sourcelike2(pathname = pathname, ...)
+        unset.this.path(pathname)
+    }
+}
 \dontshow{unlink(FILE)}}

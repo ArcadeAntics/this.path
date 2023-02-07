@@ -1,4 +1,4 @@
-.Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, ...)
+.Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
 {
     command <- path.join(R.home("bin"), if (os.windows)
         "Rscript.exe"
@@ -8,12 +8,13 @@
     command <- paste(args, collapse = " ")
     if (dry.run)
         return(command)
-    cat(command, "\n", sep = "")
+    if (print.command)
+        cat(command, "\n", sep = "")
     invisible(system(command = command, ...))
 }
 
 
-.Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, ...)
+.Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
 {
     command <- path.join(R.home("bin"), if (os.windows)
         "Rterm.exe"
@@ -23,7 +24,8 @@
     command <- paste(args, collapse = " ")
     if (dry.run)
         return(command)
-    cat(command, "\n", sep = "")
+    if (print.command)
+        cat(command, "\n", sep = "")
     invisible(system(command = command, ...))
 }
 

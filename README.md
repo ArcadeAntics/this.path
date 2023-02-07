@@ -11,10 +11,15 @@ working directory).
 ## Installation
 
 Install it from CRAN:
->   `install.packages("this.path")`
+```R
+install.packages("this.path")
+```
 
 Install the development version from GitHub:
->   `install.packages("this.path", repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES")`
+```R
+install.packages("this.path",
+    repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES")
+```
 
 ## Details
 
@@ -29,7 +34,7 @@ executing script is located.
 `here()` constructs file paths against the executing script's
 directory.
 
-this.path also provides functions for constructing and manipulating
+{this.path} also provides functions for constructing and manipulating
 file paths. `path.join()`, `basename2()`, and `dirname2()` are drop in
 replacements for `file.path()`, `basename()`, and `dirname()` which
 better handle drives and network shares. `splitext()`, `removeext()`,
@@ -43,7 +48,7 @@ The only equivalent to `this.path()` (that I've seen) is
 this.path resolves:
 
 1.  `this.path()` works with `sys.source()`, `debugSource()` in RStudio,
-    `testthat::source_file()`, and `knitr::knit()`. It also works in
+    `testthat::source_file()`, `knitr::knit()`, and `box::use()`. It also works in
     interactive mode inside RStudio, VSCode, and Rgui for Windows.
 
 2.  Related to `source()`, `this.path()`:

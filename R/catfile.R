@@ -1,11 +1,33 @@
 cat.file <- function (file, show.all = FALSE, number.nonblank = FALSE, show.ends = FALSE,
     number = FALSE, squeeze.blank = FALSE, show.tabs = FALSE,
-    show.nonprinting = FALSE, outfile = stdout())
+    show.nonprinting = FALSE, outfile = stdout(), print.command = FALSE)
 {
+    if (print.command) {
+        flags <- ""
+        if (number.nonblank <- if (number.nonblank) TRUE else FALSE) {
+            flags <- paste0(flags, "b")
+        } else if (number <- if (number) TRUE else FALSE)
+            flags <- paste0(flags, "n")
+        if (squeeze.blank <- if (squeeze.blank) TRUE else FALSE)
+            flags <- paste0(flags, "s")
+        if (show.all <- if (show.all) TRUE else FALSE) {
+            flags <- paste0(flags, "A")
+        } else {
+            if (show.nonprinting <- if (show.nonprinting) TRUE else FALSE)
+                flags <- paste0(flags, "v")
+            if (show.ends <- if (show.ends) TRUE else FALSE)
+                flags <- paste0(flags, "E")
+            if (show.tabs <- if (show.tabs) TRUE else FALSE)
+                flags <- paste0(flags, "T")
+        }
+        if (nzchar(flags))
+            flags <- paste0(" -", flags)
+        cat(sprintf("\n$ cat%s %s\n", flags, shQuote(file)))
+    }
     if (show.all) {
+        show.nonprinting <- TRUE
         show.ends <- TRUE
         show.tabs <- TRUE
-        show.nonprinting <- TRUE
     }
     Lines <- readLines(file, warn = FALSE)
     # Lines <- strsplit(rawToChar(as.raw(1:255)), "", useBytes = TRUE)[[1L]]

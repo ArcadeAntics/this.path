@@ -135,10 +135,11 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* wrapsource.c */
 
 
-    {"setprseen2"  , (DL_FUNC) &do_setprseen2  ,  1},
-    {"wrapsource"  , (DL_FUNC) &do_wrapsource  , 20},
-    {"insidesource", (DL_FUNC) &do_insidesource, 20},
-    {"setthispath" , (DL_FUNC) &do_setthispath , 20},
+    {"setprseen2"   , (DL_FUNC) &do_setprseen2   ,  1},
+    {"wrapsource"   , (DL_FUNC) &do_wrapsource   , 20},
+    {"insidesource" , (DL_FUNC) &do_insidesource , 20},
+    {"setthispath"  , (DL_FUNC) &do_setthispath  , 20},
+    {"unsetthispath", (DL_FUNC) &do_unsetthispath,  0},
 
 
     {NULL, NULL, 0}
