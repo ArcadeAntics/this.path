@@ -1,7 +1,7 @@
 find_root <- function (path = getwd(), verbose = FALSE, criterion = default.criterion)
 {
     # path <- "\\\\host\\share\\path\\to\\file\\"
-    criterion <- rprojroot::as_root_criterion(criterion)
+    criterion <- rprojroot::as.root_criterion(criterion)
     opath <- path
     p <- path.split.1(path)
     while (n <- length(p)) {

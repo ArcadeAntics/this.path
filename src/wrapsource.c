@@ -600,6 +600,20 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
             error("%s() cannot be called before inside.source() / / set.this.path()", name);
         if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
             error("%s() cannot be called within this environment", name);
+#if defined(R_THIS_PATH_USE_removeFromFrame)
+        SEXP names[] = {
+            thispathofileSymbol      ,
+            thispathfileSymbol       ,
+            thispathformsgSymbol     ,
+            thispatherrorSymbol      ,
+            thispathassocwfileSymbol ,
+            thispathdoneSymbol       ,
+            insidesourcewashereSymbol,
+            thispathnSymbol          ,
+            NULL
+        };
+        removeFromFrame(names, frame);
+#else
         R_removeVarFromFrame(thispathofileSymbol      , frame);
         R_removeVarFromFrame(thispathfileSymbol       , frame);
         R_removeVarFromFrame(thispathformsgSymbol     , frame);
@@ -608,6 +622,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
         R_removeVarFromFrame(thispathdoneSymbol       , frame);
         R_removeVarFromFrame(insidesourcewashereSymbol, frame);
         R_removeVarFromFrame(thispathnSymbol          , frame);
+#endif
         set_R_Visible(0);
         return R_NilValue;
     }

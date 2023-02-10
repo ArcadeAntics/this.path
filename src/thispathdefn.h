@@ -6,11 +6,11 @@
 #include <Rinternals.h>
 #include <Rversion.h>
 #include "translations.h"
-#include "use-r-non-api.h"
+#include "defines.h"
 
 
 #if defined(R_VERSION) && R_VERSION >= R_Version(3, 3, 0)
-    #if defined(R_THIS_PATH_USE_R_NON_API)
+    #if defined(R_THIS_PATH_DEFINES)
         #include <R_ext/Connections.h>
         #if !defined(R_CONNECTIONS_VERSION)
         #elif R_CONNECTIONS_VERSION == 1
@@ -24,12 +24,16 @@
 #include "symbols.h"
 
 
-#if defined(R_THIS_PATH_USE_R_NON_API)
+#if defined(R_THIS_PATH_DEFINES)
 extern Rboolean R_Visible;
 #define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
 #else
 #define set_R_Visible(v) (eval((v) ? R_NilValue : lang1(invisibleSymbol), R_BaseEnv))
 #endif
+
+
+extern SEXP R_shallow_duplicate_attr(SEXP x);
+extern SEXP installTrChar(SEXP x);
 
 
 #define streql(str1, str2) (strcmp((str1), (str2)) == 0)
@@ -52,6 +56,7 @@ extern int IS_ASCII(SEXP x);
 
 
 extern void R_removeVarFromFrame(SEXP name, SEXP env);
+extern void removeFromFrame(SEXP *names, SEXP env);
 
 
 #if defined(R_VERSION) && R_VERSION >= R_Version(4, 1, 0)

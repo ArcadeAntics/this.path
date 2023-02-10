@@ -1,9 +1,6 @@
 #include "thispathdefn.h"
 
 
-extern void (SET_PRSEEN)(SEXP x, int v);
-
-
 
 
 

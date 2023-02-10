@@ -14,6 +14,9 @@
 
 
 extern0 SEXP0
+#if !defined(R_VERSION) || R_VERSION < R_Version(3, 4, 0)
+    R_AsCharacterSymbol                    INI_as(install("as.character")),
+#endif
     /* formatted weird on purpose, do not modify */
     thispathofileSymbol                    INI_as(install(
         "._this.path::ofile_."
@@ -72,7 +75,7 @@ extern0 SEXP0
     C_setprseen2Symbol                     INI_as(install("C_setprseen2")),
     thispathtempSymbol                     INI_as(install("._this.path::temp_.")),
     parent_frameSymbol                     INI_as(install("parent.frame")),
-#if !defined(R_THIS_PATH_USE_R_NON_API)
+#if !defined(R_THIS_PATH_DEFINES)
     invisibleSymbol                        INI_as(install("invisible")),
 #endif
     as_environmentSymbol                   INI_as(install("as.environment")),

@@ -128,6 +128,11 @@ ext(x) <- val
 stopifnot(identical(x, c(Z = "C:/path/to/file.png", Y = "C:/path/to/.file.png", X = "C:/path/to/file..png", W = "C:/path/to/.....", V = "C:/path/to/file.png", U = "C:/path/to/file")))
 
 
+x <- "a"
+ext(x) <- 5
+stopifnot(identical(x, "a.5"))
+
+
 # unix replacement tests ----
 
 
@@ -158,3 +163,8 @@ val <- c(".png"         , ".png"          , ".png"          , ".png"          , 
 names(x) <- rev(LETTERS)[seq_along(x)]
 ext(x) <- val
 stopifnot(identical(x, c(Z = "/path/to/file.png", Y = "/path/to/.file.png", X = "/path/to/file..png", W = "/path/to/.....", V = "/path/to/file.png", U = "/path/to/file")))
+
+
+x <- "a"
+ext(x) <- 5
+stopifnot(identical(x, "a.5"))

@@ -27,7 +27,7 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
-    int n;
+    int n = 0;
 
 
     int nargs = length(args) - 1;

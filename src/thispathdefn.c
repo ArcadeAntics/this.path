@@ -13,6 +13,19 @@ const char *EncodeChar(SEXP x)
 }
 
 
+#if !defined(R_VERSION) || R_VERSION < R_Version(3, 6, 0)
+SEXP R_shallow_duplicate_attr(SEXP x) { return shallow_duplicate(x); }
+#endif
+
+
+#if !defined(R_VERSION) || R_VERSION < R_Version(3, 6, 0)
+SEXP installTrChar(SEXP x)
+{
+    return install(translateChar(x));
+}
+#endif
+
+
 #if !defined(_WIN32) || (!defined(R_VERSION) || R_VERSION < R_Version(4, 1, 0))
 SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
 {
@@ -72,6 +85,7 @@ int IS_ASCII(SEXP x)
 
 
 #if !defined(R_VERSION) || R_VERSION < R_Version(4, 0, 0)
+#define R_THIS_PATH_USE_removeFromFrame
 void R_removeVarFromFrame(SEXP name, SEXP env)
 {
     static SEXP removeSymbol   = NULL,
@@ -95,14 +109,77 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
     SEXP expr = allocList(4);
     PROTECT(expr);
     SET_TYPEOF(expr, LANGSXP);
-    SETCAR(expr, removeSymbol);
-    SETCADR(expr, name);
-    SET_TAG(CDDR(expr), envirSymbol);
-    SETCADDR(expr, env);
-    SET_TAG(CDDDR(expr), inheritsSymbol);
-    SETCADDDR(expr, ScalarLogical(FALSE));
+
+    SEXP ptr = expr;
+                                  SETCAR(ptr, removeSymbol);         ptr = CDR(ptr);
+                                  SETCAR(ptr, name);                 ptr = CDR(ptr);
+    SET_TAG(ptr, envirSymbol);    SETCAR(ptr, env);                  ptr = CDR(ptr);
+    SET_TAG(ptr, inheritsSymbol); SETCAR(ptr, ScalarLogical(FALSE)); ptr = CDR(ptr);
+
     eval(expr, R_BaseEnv);
     UNPROTECT(1);
+}
+
+
+void removeFromFrame(SEXP *names, SEXP env)
+{
+    static SEXP removeSymbol   = NULL,
+                listSymbol     = NULL,
+                envirSymbol    = NULL,
+                inheritsSymbol = NULL;
+    if (removeSymbol == NULL) {
+        removeSymbol   = install("remove");
+        listSymbol     = install("list");
+        envirSymbol    = install("envir");
+        inheritsSymbol = install("inherits");
+    }
+
+    if (TYPEOF(env) == NILSXP)
+        error(_("use of NULL environment is defunct"));
+
+    if (!isEnvironment(env))
+        error(_("argument to '%s' is not an environment"), "removeFromFrame");
+
+    int n;
+    for (n = 0; names[n]; n++) {
+        if (TYPEOF(names[n]) != SYMSXP)
+            error(_("not a symbol"));
+    }
+
+    SEXP expr = allocList(4);
+    PROTECT(expr);
+    SET_TYPEOF(expr, LANGSXP);
+
+    SEXP ptr = expr;
+                                  SETCAR(ptr, removeSymbol);         ptr = CDR(ptr);
+    SEXP list = allocVector(STRSXP, n);
+    SET_TAG(ptr, listSymbol);     SETCAR(ptr, list);                 ptr = CDR(ptr);
+    SET_TAG(ptr, envirSymbol);    SETCAR(ptr, env);                  ptr = CDR(ptr);
+    SET_TAG(ptr, inheritsSymbol); SETCAR(ptr, ScalarLogical(FALSE)); ptr = CDR(ptr);
+
+    for (n = 0; names[n]; n++)
+        SET_STRING_ELT(list, n, PRINTNAME(names[n]));
+
+    eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+}
+#else
+void removeFromFrame(SEXP *names, SEXP env)
+{
+    if (TYPEOF(env) == NILSXP)
+        error(_("use of NULL environment is defunct"));
+
+    if (!isEnvironment(env))
+        error(_("argument to '%s' is not an environment"), "removeFromFrame");
+
+    int i;
+    for (i = 0; names[i]; i++) {
+        if (TYPEOF(names[i]) != SYMSXP)
+            error(_("not a symbol"));
+    }
+
+    for (i = 0; names[i]; i++)
+        R_removeVarFromFrame(names[i], env);
 }
 #endif
 

@@ -7,6 +7,22 @@ rm.list.append <- function (...)
 rm.list.append("rm.list.append")
 
 
+# str2lang() was added in R 3.6.0
+if (getRversion() < "3.6.0") {
+    rm.list.append("str2lang")
+    str2lang <- function(s) {
+        if (typeof(s) != "character")
+            stop("argument must be character", domain = "R")
+        if (length(s) != 1L)
+            stop("argument must be a character string", domain = "R")
+        ans <- parse(text = s, n = -1, keep.source = FALSE)
+        if (length(ans) != 1L)
+            stop(gettextf("parsing result not of length one, but %d", length(ans), domain = "R"), domain = NA)
+        ans[[1L]]
+    }
+}
+
+
 # bquote(splice = TRUE) was added in R 4.1.0
 if (getRversion() < "4.1.0") {
     rm.list.append("bquote")
