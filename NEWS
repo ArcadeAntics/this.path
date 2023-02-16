@@ -1,6 +1,6 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.9:
+CHANGES IN this.path 1.2.0.10:
 
   NEW FEATURES
 
@@ -18,6 +18,13 @@ CHANGES IN this.path 1.2.0.9:
 
     * as.relative.path() and as.rel.path() are defunct and should be
       replaced with rel2here().
+
+  BUG FIXES
+
+    * shFILE(for.msg = TRUE, default = <...>) now does not evaluate default, as
+      intended. By extension, this.path(for.msg = TRUE) now returns
+      NA_character when running from a shell instead of incorrectly throwing an
+      error.
 
 CHANGES IN this.path 1.2.0:
 

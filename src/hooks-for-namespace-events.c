@@ -46,6 +46,10 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
     LockCLOENV(install("find_root"), TRUE);
 
 
+    /* get the function .this.path.toplevel and lock its environment and bindings */
+    LockCLOENV(install(".this.path.toplevel"), TRUE);
+
+
     /* force the promise initwd */
     getInFrame(install("initwd"), mynamespace, FALSE);
 

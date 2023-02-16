@@ -222,12 +222,47 @@ delayedAssign("os.windows", .Platform$OS.type == "windows")
 
 
 # popular GUIs for which specific methods of this.path() are implemented
-delayedAssign("gui.aqua"   , os.unix    && .Platform$GUI == "AQUA"    && !gui.rstudio && !gui.vscode)
-delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"    && !gui.rstudio && !gui.vscode)
-delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"      && !gui.rstudio && !gui.vscode)
+delayedAssign("gui.aqua"   , os.unix    && .Platform$GUI == "AQUA"    && !gui.rstudio && !gui.vscode && !gui.jupyter)
+delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"    && !gui.rstudio && !gui.vscode && !gui.jupyter)
+delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"      && !gui.rstudio && !gui.vscode && !gui.jupyter)
 delayedAssign("gui.rstudio",           if (.Platform$GUI == "RStudio") { .External2(C_inittoolsrstudio, skipCheck = TRUE); TRUE }
-                                       else isTRUE(Sys.getpid() == as.integer(Sys.getenv("RSTUDIO_SESSION_PID"))))
-delayedAssign("gui.vscode" , interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && isTRUE(shINFO[["no.input"]]))
+                                       else isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")))
+delayedAssign("gui.vscode" , interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && is.na(shINFO[["ENC"]]) && isFALSE(shINFO[["has.input"]]))
+
+
+delayedAssign("maybe.os.unix.in.shell"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && !gui.rstudio &&                        "R" == basename2(commandArgs()[[1L]]) )
+delayedAssign("maybe.os.windows.in.shell", os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && !gui.rstudio && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
+delayedAssign("maybe.in.shell", maybe.os.unix.in.shell || maybe.os.windows.in.shell)
+
+
+IRkernel.main.call <- as.call(list(call("::", as.symbol("IRkernel"), as.symbol("main"))))
+# jupyter build a competent API challenge (impossible)
+delayedAssign("gui.jupyter",
+    !interactive() &&
+
+        Sys.getenv("JPY_API_TOKEN") != "" &&
+        Sys.getenv("JPY_PARENT_PID") != "" &&
+
+        maybe.in.shell &&
+
+        is.na(shINFO[["ENC"]]) &&
+        isTRUE(shINFO[["has.input"]]) &&
+        is.na(shINFO[["FILE"]]) &&
+        !is.na(shINFO[["EXPR"]]) &&
+
+        length(commandArgs(TRUE)) == 1L &&
+        file.exists(commandArgs(TRUE)) &&
+
+        # this is the longest check, save for last
+        local({
+            exprs <- tryCatch(parse(text = shINFO[["EXPR"]],
+                n = -1, keep.source = FALSE, srcfile = NULL),
+                error = identity)
+            !inherits(exprs, "error") &&
+                length(exprs) &&
+                identical(exprs[[length(exprs)]], IRkernel.main.call)
+        })
+)
 
 
 `tools:rstudio` <- emptyenv()
@@ -245,17 +280,12 @@ debugSource <- .rs.api.getActiveDocumentContext
 .External2(C_inittoolsrstudio)
 
 
-delayedAssign("maybe.os.unix.in.shell"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && !gui.rstudio &&                        "R" == basename2(commandArgs()[[1L]]) )
-delayedAssign("maybe.os.windows.in.shell", os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && !gui.rstudio && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
-delayedAssign("maybe.in.shell", maybe.os.unix.in.shell || maybe.os.windows.in.shell)
-
-
-delayedAssign("os.unix.in.shell"   , maybe.os.unix.in.shell    && !gui.vscode)
-delayedAssign("os.windows.in.shell", maybe.os.windows.in.shell && !gui.vscode)
+delayedAssign("os.unix.in.shell"   , maybe.os.unix.in.shell    && !gui.vscode && !gui.jupyter)
+delayedAssign("os.windows.in.shell", maybe.os.windows.in.shell && !gui.vscode && !gui.jupyter)
 delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
 
 
-delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.rgui && !gui.aqua && !gui.tk)
+delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.jupyter && !gui.rgui && !gui.aqua && !gui.tk)
 
 
 delayedAssign("initwd", getwd())

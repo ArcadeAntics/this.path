@@ -57,9 +57,9 @@ missing or a function to apply if there is an executing script. See
 There are three ways in which \R code is typically run:
 \enumerate{
   \item
-    in \sQuote{RStudio} / / \sQuote{Rgui} / / \sQuote{VSCode} by running the
-    current line / / selection with the \strong{Run} button / / appropriate
-    keyboard shortcut
+    in \sQuote{Rgui} / / \sQuote{RStudio} / / \sQuote{VSCode} / /
+    \sQuote{Jupyter} by running the current line / / selection with the
+    \strong{Run} button / / appropriate keyboard shortcut
   \item
     through a source call: a call to function \sourceorlist{}
   \item
@@ -241,7 +241,7 @@ Source: shell argument 'FILE'
 in all three cases, it throws an error:
 \preformatted{
 > this.path(original = TRUE)
-Error in (.rs.api.getActiveDocumentContext)() :
+Error in .rs.api.getActiveDocumentContext() :
   RStudio has not finished loading
 }
   }

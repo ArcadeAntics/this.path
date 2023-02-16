@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.9}{
+\section{CHANGES IN VERSION 1.2.0.10}{
   \subsection{NEW FEATURES}{
     \itemize{
 
@@ -23,9 +23,20 @@
   }
   \subsection{DEPRECATED AND DEFUNCT}{
     \itemize{
+
       \item
         \code{as.relative.path()} and \code{as.rel.path()} are defunct and
         should be replaced with \code{rel2here()}.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+
+      \item
+        \code{shFILE(for.msg = TRUE, default = <...>)} now does not evaluate
+        \code{default}, as intended. By extension,
+        \code{this.path(for.msg = TRUE)} now returns \code{NA_character} when
+        running from a shell instead of incorrectly throwing an error.
     }
   }
 }
