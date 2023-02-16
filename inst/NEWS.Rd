@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.10}{
+\section{CHANGES IN VERSION 1.2.0.11}{
   \subsection{NEW FEATURES}{
     \itemize{
 
@@ -10,7 +10,7 @@
         \code{path.unsplit()}.
 
       \item
-        \code{this.path()} now works inside \code{box::use()}
+        \code{this.path()} now works inside \code{box::use()}.
 
       \item
         For logging purposes, \code{this.path(for.msg = TRUE)} will now return
@@ -19,6 +19,9 @@
       \item
         Added \code{unset.this.path()} to undo a call to \code{set.this.path()},
         allowing for multiple calls to \code{set.this.path()} within a function.
+
+      \item
+        \code{this.path()} now works in \sQuote{Jupyter}.
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{
@@ -50,14 +53,6 @@
       \item
         Added \code{Sys.putenv()}, an alternate method for setting
         environment variables.
-
-      \item
-        \code{system.file(package = "this.path", "extdata", "main.R")}
-        is the script used to determine the translations of
-        \code{"Untitled"} and \code{"R Editor"} between different
-        languages and different C runtimes (for use in \sQuote{Rgui}
-        for Windows). This script no longer relies on \sQuote{Python}
-        nor external \R packages, so anyone can run it.
     }
   }
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
@@ -243,7 +238,7 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item
-        \code{this.path()} and others now work in VSCode.
+        \code{this.path()} and others now work in \sQuote{VSCode}.
     }
   }
   \subsection{BUG FIXES}{

@@ -1,6 +1,6 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.10:
+CHANGES IN this.path 1.2.0.11:
 
   NEW FEATURES
 
@@ -13,6 +13,8 @@ CHANGES IN this.path 1.2.0.10:
 
     * Added unset.this.path() to undo a call to set.this.path(),
       allowing for multiple calls to set.this.path() within a function.
+
+    * this.path() now works in 'Jupyter'.
 
   DEPRECATED AND DEFUNCT
 
@@ -35,12 +37,6 @@ CHANGES IN this.path 1.2.0:
     * Added Sys.putenv(), an alternate method for setting environment
       variables.
 
-    * system.file(package = "this.path", "extdata", "main.R") is the
-      script used to determine the translations of "Untitled" and
-      "R Editor" between different languages and different C runtimes
-      (for use in Rgui for Windows). This script no longer relies on
-      Python nor external R packages, so anyone can run it.
-
   SIGNIFICANT USER-VISIBLE CHANGES
 
     * shFILE() now parses the command line arguments in the exact same
@@ -60,7 +56,7 @@ CHANGES IN this.path 1.2.0:
       session is running from 'VSCode'.
 
     * 'this.path' does a much better job of determining the path of the
-      executing script from Rgui.
+      executing script from 'Rgui'.
 
 CHANGES IN this.path 1.1.0:
 
@@ -179,7 +175,7 @@ CHANGES IN this.path 0.9.0:
 
   NEW FEATURES:
 
-    * this.path() and others now work in VSCode.
+    * this.path() and others now work in 'VSCode'.
 
   BUG FIXES:
 
