@@ -14,7 +14,7 @@ The functions or variables listed here are no longer part of \pkg{this.path} as
 they are no longer needed.
 }
 \usage{
-# Defunct in 1.2.0.11
+# Defunct in 1.2.0.12
 as.relative.path(...)   # use 'rel2here(...)' instead
 as.rel.path(...)        # use 'rel2here(...)' instead
 

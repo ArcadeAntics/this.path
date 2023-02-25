@@ -112,16 +112,16 @@ if (sys.nframe() != 0L) {
         path <- c(file.path(R.home("bin"), exe), path)
 
 
-        args <- c("--version")
-        args <- c("--default-packages=NULL", "--vanilla", "-e", "writeLines(.Platform$r_arch)")
-        args <- c("--default-packages=NULL", "--vanilla", "-e", "strrep")
-        args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(file.info)")
-        args <- paste(shQuote(args), collapse = " ")
-        command <- paste(shQuote(path), args)
-        names(command) <- path
-        x <- lapply(command, system, intern = TRUE)
-        print(x, quote = FALSE, width = 10)
-        stop("comment this out later")
+        # args <- c("--version")
+        # args <- c("--default-packages=NULL", "--vanilla", "-e", "writeLines(.Platform$r_arch)")
+        # args <- c("--default-packages=NULL", "--vanilla", "-e", "strrep")
+        # args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(file.info)")
+        # args <- paste(shQuote(args), collapse = " ")
+        # command <- paste(shQuote(path), args)
+        # names(command) <- path
+        # x <- lapply(command, system, intern = TRUE)
+        # print(x, quote = FALSE, width = 10)
+        # stop("comment this out later")
 
 
         FILE <- tempfile(fileext = ".R")

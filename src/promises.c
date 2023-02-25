@@ -4,7 +4,9 @@
 
 
 
+#if R_version_less_than(3, 0, 0)
 #define XLENGTH LENGTH
+#endif
 
 
 #define _get_sym(elsecode)                                     \
