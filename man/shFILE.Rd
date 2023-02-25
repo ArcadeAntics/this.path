@@ -45,7 +45,7 @@ In Windows, the normalized path will use / as the file separator.
 \examples{
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
-    withAutoprint({
+    this.path:::withAutoprint({
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {

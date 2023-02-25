@@ -13,12 +13,12 @@ const char *EncodeChar(SEXP x)
 }
 
 
-#if !defined(R_VERSION) || R_VERSION < R_Version(3, 6, 0)
+#if R_version_less_than(3, 6, 0)
 SEXP R_shallow_duplicate_attr(SEXP x) { return shallow_duplicate(x); }
 #endif
 
 
-#if !defined(R_VERSION) || R_VERSION < R_Version(3, 6, 0)
+#if R_version_less_than(3, 6, 0)
 SEXP installTrChar(SEXP x)
 {
     return install(translateChar(x));
@@ -26,7 +26,7 @@ SEXP installTrChar(SEXP x)
 #endif
 
 
-#if !defined(_WIN32) || (!defined(R_VERSION) || R_VERSION < R_Version(4, 1, 0))
+#if !defined(_WIN32) || R_version_less_than(4, 1, 0)
 SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
 {
     SEXP expr = lang3(exported ? R_DoubleColonSymbol : R_TripleColonSymbol, ns, name);
@@ -38,7 +38,7 @@ SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported)
 #endif
 
 
-#if !defined(_WIN32)
+#if !defined(_WIN32) || R_version_less_than(3, 4, 0)
 SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
 {
     SEXP vl;
@@ -71,7 +71,7 @@ SEXP findFun3(SEXP symbol, SEXP rho, SEXP call)
 #endif
 
 
-#if !defined(R_VERSION) || R_VERSION < R_Version(4, 1, 0)
+#if R_version_less_than(4, 1, 0)
 int IS_ASCII(SEXP x)
 {
     for (const char *s = CHAR(x); *s; s++) {
@@ -84,7 +84,7 @@ int IS_ASCII(SEXP x)
 #endif
 
 
-#if !defined(R_VERSION) || R_VERSION < R_Version(4, 0, 0)
+#if R_version_less_than(4, 0, 0)
 #define R_THIS_PATH_USE_removeFromFrame
 void R_removeVarFromFrame(SEXP name, SEXP env)
 {
@@ -180,6 +180,62 @@ void removeFromFrame(SEXP *names, SEXP env)
 
     for (i = 0; names[i]; i++)
         R_removeVarFromFrame(names[i], env);
+}
+#endif
+
+
+void UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t)
+{
+    error(_("unimplemented type '%s' in '%s'\n"), type2char(t), s);
+}
+
+
+void UNIMPLEMENTED_TYPE(const char *s, SEXP x)
+{
+    UNIMPLEMENTED_TYPEt(s, TYPEOF(x));
+}
+
+
+#if R_version_less_than(3, 1, 0)
+SEXP lazy_duplicate(SEXP s)
+{
+    switch (TYPEOF(s)) {
+    case NILSXP:
+    case SYMSXP:
+    case ENVSXP:
+    case SPECIALSXP:
+    case BUILTINSXP:
+    case EXTPTRSXP:
+    case BCODESXP:
+    case WEAKREFSXP:
+    case CHARSXP:
+    case PROMSXP:
+        break;
+    case CLOSXP:
+    case LISTSXP:
+    case LANGSXP:
+    case DOTSXP:
+    case EXPRSXP:
+    case VECSXP:
+    case LGLSXP:
+    case INTSXP:
+    case REALSXP:
+    case CPLXSXP:
+    case RAWSXP:
+    case STRSXP:
+    case S4SXP:
+        ENSURE_NAMEDMAX(s);
+        break;
+    default:
+        UNIMPLEMENTED_TYPE("lazy_duplicate", s);
+    }
+    return s;
+}
+
+
+SEXP shallow_duplicate(SEXP s)
+{
+    return duplicate(s);
 }
 #endif
 

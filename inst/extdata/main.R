@@ -104,11 +104,24 @@ if (sys.nframe() != 0L) {
         stopifnot(bindtextdomain("RGui") != "")
 
 
+        exe <- "Rscript.exe"
         path <- R.home("..")
         path <- list.files(path, full.names = TRUE)
-        path <- file.path(path, "bin", "Rscript.exe")
+        path <- file.path(path, "bin", exe)
         path <- path[file.exists(path)]
-        path <- c(file.path(R.home("bin"), "Rscript.exe"), path)
+        path <- c(file.path(R.home("bin"), exe), path)
+
+
+        args <- c("--version")
+        args <- c("--default-packages=NULL", "--vanilla", "-e", "writeLines(.Platform$r_arch)")
+        args <- c("--default-packages=NULL", "--vanilla", "-e", "strrep")
+        args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(file.info)")
+        args <- paste(shQuote(args), collapse = " ")
+        command <- paste(shQuote(path), args)
+        names(command) <- path
+        x <- lapply(command, system, intern = TRUE)
+        print(x, quote = FALSE, width = 10)
+        stop("comment this out later")
 
 
         FILE <- tempfile(fileext = ".R")

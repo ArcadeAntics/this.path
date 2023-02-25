@@ -1,3 +1,4 @@
+#include <R_ext/Rdynload.h>
 #include <R_ext/Visibility.h>
 #include "this.path.h"
 
@@ -27,6 +28,27 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
     {"asargs", (DL_FUNC) &do_asargs, -1},
+
+
+    /* backports.c */
+
+
+#if R_version_less_than(3, 3, 0)
+    {"strrep"    , (DL_FUNC) &do_strrep    , 2},
+    {"startsWith", (DL_FUNC) &do_startsWith, 2},
+    {"endsWith"  , (DL_FUNC) &do_endsWith  , 2},
+#endif
+
+
+#if R_version_less_than(3, 2, 0)
+    {"direxists", (DL_FUNC) &do_direxists, 1},
+    {"lengths"  , (DL_FUNC) &do_lengths  , 2},
+#endif
+
+
+#if R_version_less_than(3, 1, 0)
+    {"anyNA", (DL_FUNC) &do_anyNA, -1},
+#endif
 
 
     /* basename2.c */
@@ -63,6 +85,11 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
     /* hooks-for-namespace-events.c */
 
+
+    // {"utf8locale"  , (DL_FUNC) &do_utf8locale  , 0},
+    {"mbcslocale"  , (DL_FUNC) &do_mbcslocale  , 0},
+    // {"latin1locale", (DL_FUNC) &do_latin1locale, 0},
+    {"R_MB_CUR_MAX", (DL_FUNC) &do_R_MB_CUR_MAX, 0},
 
     {"onload"  , (DL_FUNC) &do_onload  , 2},
     {"onunload", (DL_FUNC) &do_onunload, 1},
@@ -132,6 +159,17 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  5},
 
 
+    /* utils.c */
+
+
+#if R_version_less_than(3, 5, 0)
+    {"dotslength", (DL_FUNC) &do_dotslength, 0},
+#endif
+#if R_version_less_than(3, 2, 0)
+    {"isRegisteredNamespace", (DL_FUNC) &do_isRegisteredNamespace, 1},
+#endif
+
+
     /* wrapsource.c */
 
 
@@ -150,5 +188,7 @@ void attribute_visible R_init_this_path(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, callRoutines, NULL, externalRoutines);
     R_useDynamicSymbols(dll, FALSE);
+#if R_version_at_least(3, 0, 0)
     R_forceSymbols(dll, TRUE);
+#endif
 }

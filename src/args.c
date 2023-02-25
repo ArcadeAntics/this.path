@@ -4,7 +4,7 @@
 
 
 
-SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_asargs do_formals
 {
     /*
     do_asargs {this.path}                                        C Documentation
@@ -24,18 +24,21 @@ SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho)
      */
 
 
+    do_start("asargs", -1);
+
+
     int nprotect = 0;
 
 
-    int n = 0;
+    int n;
 
 
-    int nargs = length(args) - 1;
+    int nargs = length(args);
     if (nargs == 0) {
         n = 0;
     }
     else if (nargs == 1) {
-        n = asInteger(CADR(args));
+        n = asInteger(CAR(args));
         if (n == NA_INTEGER || n < 0)
             errorcall(call, _("argument must be coercible to non-negative integer"));
     }

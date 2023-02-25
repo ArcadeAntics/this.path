@@ -225,8 +225,8 @@ delayedAssign("os.windows", .Platform$OS.type == "windows")
 delayedAssign("gui.aqua"   , os.unix    && .Platform$GUI == "AQUA"    && !gui.rstudio && !gui.vscode && !gui.jupyter)
 delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"    && !gui.rstudio && !gui.vscode && !gui.jupyter)
 delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"      && !gui.rstudio && !gui.vscode && !gui.jupyter)
-delayedAssign("gui.rstudio",           if (.Platform$GUI == "RStudio") { .External2(C_inittoolsrstudio, skipCheck = TRUE); TRUE }
-                                       else isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")))
+delayedAssign("gui.rstudio", if (.Platform$GUI == "RStudio") { .External2(C_inittoolsrstudio, skipCheck = TRUE); TRUE }
+                             else isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")))
 delayedAssign("gui.vscode" , interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && is.na(shINFO[["ENC"]]) && isFALSE(shINFO[["has.input"]]))
 
 
@@ -255,8 +255,7 @@ delayedAssign("gui.jupyter",
 
         # this is the longest check, save for last
         local({
-            exprs <- tryCatch(parse(text = shINFO[["EXPR"]],
-                n = -1, keep.source = FALSE, srcfile = NULL),
+            exprs <- tryCatch(parse(text = shINFO[["EXPR"]], n = -1, keep.source = FALSE, srcfile = NULL),
                 error = identity)
             !inherits(exprs, "error") &&
                 length(exprs) &&

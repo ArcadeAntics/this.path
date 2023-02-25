@@ -9,14 +9,63 @@
 SEXP mynamespace = NULL;
 
 
-SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
+// LibExtern Rboolean utf8locale;
+LibExtern Rboolean mbcslocale;
+// LibExtern Rboolean latin1locale;
+
+
+// SEXP do_utf8locale do_formals
+// {
+//     do_start("utf8locale", 0);
+//     return ScalarLogical(utf8locale);
+// }
+
+
+SEXP do_mbcslocale do_formals
 {
+    do_start("mbcslocale", 0);
+    return ScalarLogical(mbcslocale);
+}
+
+
+// SEXP do_latin1locale do_formals
+// {
+//     do_start("latin1locale", 0);
+//     return ScalarLogical(latin1locale);
+// }
+
+
+#if R_version_at_least(4, 2, 0)
+LibExtern int R_MB_CUR_MAX;
+SEXP do_R_MB_CUR_MAX do_formals
+{
+    do_start("R_MB_CUR_MAX", 0);
+    return ScalarInteger(R_MB_CUR_MAX);
+}
+#else
+SEXP do_R_MB_CUR_MAX do_formals
+{
+    do_start("R_MB_CUR_MAX", 0);
+    return ScalarInteger(MB_CUR_MAX);
+}
+#endif
+
+
+SEXP do_onload do_formals
+{
+    do_start("onload", 2);
+
+
     /* these arguments are passed from .onLoad() */
-    SEXP libname = CADR(args),
-         pkgname = CADDR(args);
+    SEXP libname = CAR(args),
+         pkgname = CADR(args);
 
 
+#if R_version_at_least(3, 2, 0)
     SEXP _packageName = installChar(STRING_ELT(pkgname, 0));
+#else
+    SEXP _packageName = install(CHAR(STRING_ELT(pkgname, 0)));
+#endif
 
 
     /* get my namespace from the namespace registry */
@@ -48,6 +97,10 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* get the function .this.path.toplevel and lock its environment and bindings */
     LockCLOENV(install(".this.path.toplevel"), TRUE);
+
+
+    // /* get the function eval.with.message and lock its environment */
+    // LockCLOENV(install("eval.with.message"), FALSE);
 
 
     /* force the promise initwd */
@@ -96,6 +149,28 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     defineVarInc(install("PATH_MAX"), ScalarInteger(PATH_MAX), mynamespace);
+
+
+#if R_version_less_than(3, 0, 0)
+    defineVarInc(install("NAMEDMAX"), ScalarInteger(NA_INTEGER), mynamespace);
+#else
+    defineVarInc(install("NAMEDMAX"), ScalarInteger(NAMEDMAX), mynamespace);
+#endif
+
+
+#define convert2activebinding(symbol)                          \
+    do {                                                       \
+        SEXP sym = (symbol);                                   \
+        SEXP fun = getInFrame(sym, mynamespace, FALSE);        \
+        R_removeVarFromFrame(sym, mynamespace);                \
+        R_MakeActiveBinding(sym, fun, mynamespace);            \
+    } while (0)
+
+
+    // convert2activebinding(install("utf8locale"));
+    convert2activebinding(install("mbcslocale"));
+    // convert2activebinding(install("latin1locale"));
+    convert2activebinding(install("R_MB_CUR_MAX"));
 
 
     SEXP value = allocVector(VECSXP, 13);
@@ -258,9 +333,12 @@ SEXP do_onload(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_onunload(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_onunload do_formals
 {
-    // SEXP libpath = CADR(args);
+    do_start("onunload", 1);
+
+
+    // SEXP libpath = CAR(args);
 
 
     R_ReleaseObject(mynamespace);

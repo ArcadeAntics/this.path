@@ -697,10 +697,10 @@ function for when one is specified.
 %
 %
 %
-\examples{\dontshow{.unload <- !vapply(c("testthat", "knitr", "box"), isNamespaceLoaded, NA)}
+\examples{\dontshow{.unload <- !vapply(c("testthat", "knitr", "box"), this.path:::isNamespaceLoaded, NA)}
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
-    withAutoprint({
+    this.path:::withAutoprint({
         cat(sQuote(this.path::this.path(verbose = TRUE, default = {
             stop("since the executing script's path will be found, argument\\n",
                 " 'default' will not be evaluated, so this error will not\\n",
@@ -740,13 +740,16 @@ if (requireNamespace("knitr")) {
 if (requireNamespace("box")) {
     FILE4 <- tempfile(fileext = ".R")
     this.path:::write.code(bquote({
-        withAutoprint({
+        this.path:::withAutoprint({
             # we have to use box::set_script_path() because {box}
             # does not allow us to import a module by its path
             script_path <- box::script_path()
             on.exit(box::set_script_path(script_path))
             box::set_script_path(.(normalizePath(FILE, "/")))
             box::use(./.(as.symbol(this.path::removeext(
+                this.path::basename2(FILE)
+            ))))
+            box::unload(.(as.symbol(this.path::removeext(
                 this.path::basename2(FILE)
             ))))
         }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
@@ -764,7 +767,7 @@ this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))
 # (included tryCatch in case an internet connection is not available)
 tryCatch({
     source("https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R")
-}, condition = message)
+}, condition = this.path:::cat.condition)
 
 
 for (expr in c("this.path()",
@@ -774,7 +777,9 @@ for (expr in c("this.path()",
                "this.dir(default = getwd())"))
 {
     cat("\\n\\n")
-    this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+    suppressWarnings(this.path:::.Rscript(
+        c("--default-packages=this.path", "--vanilla", "-e", expr)
+    ))
 }
 
 
@@ -786,4 +791,6 @@ this.path::this.path(verbose = FALSE, default = "script.log",
         path
         # or you could use paste0(this.path::removeext(path), ".log")
     })
-\dontshow{unlink(FILE); invisible(lapply(names(which(.unload)), unloadNamespace))}}
+\dontshow{unlink(FILE); invisible(lapply(names(which(.unload)), function(name) {
+    if (this.path:::isNamespaceLoaded(name)) unloadNamespace(name)
+}))}}

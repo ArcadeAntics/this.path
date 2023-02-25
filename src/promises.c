@@ -4,8 +4,11 @@
 
 
 
+#define XLENGTH LENGTH
+
+
 #define _get_sym(elsecode)                                     \
-    sym = CADR(args);                                          \
+    sym = CAR(args);                                           \
     if (TYPEOF(sym) == SYMSXP) {}                              \
     else if (isValidStringF(sym)) {                            \
         if (XLENGTH(sym) > 1)                                  \
@@ -19,31 +22,34 @@
 
 
 #define handles_nargs(one_arg_env, name)                       \
-    switch (length(args) - 1) {                                \
+    switch (length(args)) {                                    \
     case 1:                                                    \
         get_sym;                                               \
         env = (one_arg_env);                                   \
         break;                                                 \
     case 2:                                                    \
         get_sym;                                               \
-        env = CADDR(args);                                     \
+        env = CADR(args);                                      \
         if (TYPEOF(env) != ENVSXP)                             \
             errorcall(call, "invalid second argument");        \
         break;                                                 \
     default:                                                   \
-        errorcall(call, wrong_nargs_to_External(length(args) - 1, (name), "1 or 2"));\
+        errorcall(call, wrong_nargs_to_External(length(args), (name), "1 or 2"));\
     }
 
 
 
 
 
-SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_isunevaluatedpromise do_formals
 {
     /*
     return TRUE if get(sym, env, inherits = FALSE) will force a promise
     return FALSE otherwise
      */
+
+
+    do_start("isunevaluatedpromise", -1);
 
 
     SEXP sym, env;
@@ -52,7 +58,7 @@ SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP value = findVarInFrame(env, sym);
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), CHAR(PRINTNAME(sym)));
+        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
     return ScalarLogical(TYPEOF(value) == PROMSXP &&
@@ -60,9 +66,12 @@ SEXP do_isunevaluatedpromise(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_promiseisunevaluated(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_promiseisunevaluated do_formals
 {
     /* similar to do_isunevaluatedpromise, but the binding MUST be a promise */
+
+
+    do_start("promiseisunevaluated", -1);
 
 
     SEXP sym, env;
@@ -71,18 +80,18 @@ SEXP do_promiseisunevaluated(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP value = findVarInFrame(env, sym);
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), CHAR(PRINTNAME(sym)));
+        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
     if (TYPEOF(value) != PROMSXP)
-        errorcall(call, "'%s' is not a promise", CHAR(PRINTNAME(sym)));
+        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
     return ScalarLogical(PRVALUE(value) == R_UnboundValue);
 }
 
 
-SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_getpromisewithoutwarning do_formals
 {
     /* return the result of getting a promise, silencing a possible warning
      * about "restarting interrupted promise evaluation"
@@ -91,17 +100,20 @@ SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho)
      */
 
 
+    do_start("getpromisewithoutwarning", -1);
+
+
     SEXP sym, env;
     handles_nargs(ENCLOS(rho), "C_getpromisewithoutwarning");
 
 
     SEXP value = findVarInFrame(env, sym);
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), CHAR(PRINTNAME(sym)));
+        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
     if (TYPEOF(value) != PROMSXP)
-        errorcall(call, "'%s' is not a promise", CHAR(PRINTNAME(sym)));
+        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
     if (PRVALUE(value) == R_UnboundValue) {
@@ -198,9 +210,12 @@ SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 #define simple_as_environment(arg) (IS_S4_OBJECT(arg) && (TYPEOF(arg) == S4SXP) ? R_getS4DataSlot(arg, ENVSXP) : R_NilValue)
 
 
-SEXP do_prinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_prinfo do_formals
 {
-    int nargs = length(args) - 1;
+    do_start("prinfo", -1);
+
+
+    int nargs = length(args);
 
 
     SEXP sym, env = rho;
@@ -209,11 +224,11 @@ SEXP do_prinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     switch (nargs) {
     case 3:
-        inherits = asLogical(CADDDR(args));
+        inherits = asLogical(CADDR(args));
         if (inherits == NA_LOGICAL)
             errorcall(call, _("invalid '%s' argument"), "inherits");
     case 2:
-        env = CADDR(args);
+        env = CADR(args);
         if (!isEnvironment(env) &&
             !isEnvironment(env = simple_as_environment(env)))
         {
@@ -237,9 +252,9 @@ SEXP do_prinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP e = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
     if (e == R_UnboundValue)
-        error(_("object '%s' not found"), CHAR(PRINTNAME(sym)));
+        error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(e) != PROMSXP)
-        error("'%s' is not a promise", CHAR(PRINTNAME(sym)));
+        error("'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
     return PRINFO(e);

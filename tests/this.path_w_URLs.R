@@ -7,10 +7,10 @@ cat(sQuote(this.path::this.dir(verbose = TRUE)), "\n\n", sep = "")
 
 
 cat("Testing 'here':\n")
-withAutoprint({
+(if (getRversion() < "3.4.0" || as.numeric_version(getNamespaceVersion("this.path")) < "1.2.0.11") this.path:::withAutoprint else withAutoprint)({
     this.path::here("test.R")
     this.path::here(.. = 1, "R", "this.path.R")
-}, verbose = FALSE)
+}, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 
 
 cat("\n\n\n\n")

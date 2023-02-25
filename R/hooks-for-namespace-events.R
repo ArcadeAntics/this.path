@@ -44,6 +44,22 @@
 # }
 
 
+# utf8locale <- function ()
+# .External2(C_utf8locale)
+
+
+mbcslocale <- function ()
+.External2(C_mbcslocale)
+
+
+# latin1locale <- function ()
+# .External2(C_latin1locale)
+
+
+R_MB_CUR_MAX <- function ()
+.External2(C_R_MB_CUR_MAX)
+
+
 .onLoad <- function (libname, pkgname)
 .External2(C_onload, libname, pkgname)
 # {

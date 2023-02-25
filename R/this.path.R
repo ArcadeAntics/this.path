@@ -7,6 +7,26 @@ rm.list.append <- function (...)
 rm.list.append("rm.list.append")
 
 
+if (getRversion() < "3.0.0") {
+
+
+parse <- function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"), ...)
+{
+    if (!missing(keep.source)) {
+        opt.keep.source <- getOption("keep.source")
+        if (isTRUE(keep.source) != isTRUE(opt.keep.source)) {
+            on.exit(options(keep.source = opt.keep.source))
+            options(keep.source = keep.source)
+        }
+    }
+    parse(file = file, n = n, text = text, prompt = prompt, ...)
+}
+environment(parse) <- .BaseNamespaceEnv
+
+
+}
+
+
 # str2lang() was added in R 3.6.0
 if (getRversion() < "3.6.0") {
     rm.list.append("str2lang")
@@ -15,7 +35,7 @@ if (getRversion() < "3.6.0") {
             stop("argument must be character", domain = "R")
         if (length(s) != 1L)
             stop("argument must be a character string", domain = "R")
-        ans <- parse(text = s, n = -1, keep.source = FALSE)
+        ans <- parse(text = s, n = -1, keep.source = FALSE, srcfile = NULL)
         if (length(ans) != 1L)
             stop(gettextf("parsing result not of length one, but %d", length(ans), domain = "R"), domain = NA)
         ans[[1L]]
@@ -25,7 +45,6 @@ if (getRversion() < "3.6.0") {
 
 # bquote(splice = TRUE) was added in R 4.1.0
 if (getRversion() < "4.1.0") {
-    rm.list.append("bquote")
     bquote <- function(expr, where = parent.frame(), splice = FALSE) {
         if (!is.environment(where))
             where <- as.environment(where)
@@ -544,7 +563,13 @@ body(.this.path.toplevel) <- bquote({
         call <- removeSource(ocall)
 
 
-        files <- list.files(initwd, all.files = TRUE, full.names = TRUE, no.. = TRUE)
+        files <- list.files(initwd, all.files = TRUE, full.names = TRUE,
+            ..(
+                if (getRversion() < "3.0.0")
+                    expression()
+                else expression(no.. = TRUE)
+            )
+        )
         files <- files[!dir.exists(files)]
         i <- grepl("\\.ipynb$", files, useBytes = TRUE)
         ipynb <- files[i]

@@ -129,7 +129,12 @@ If you have multiple versions of \R installed, make sure this is the version of
 In an \R session, you can find the location of your \R executable files with the
 following command:
 
+#ifdef unix
+\verb{cat(sQuote(R.home("bin")), "\n")}
+#endif
+#ifdef windows
 \verb{cat(sQuote(normalizePath(R.home("bin"))), "\n")}
+#endif
 
 For me, this is:
 

@@ -12,24 +12,23 @@ static R_INLINE int asFlag(SEXP x, const char *name)
 
 
 #define errorbody                                              \
-    args = CDR(args);                                          \
     if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||      \
         STRING_ELT(CAR(args), 0) == NA_STRING)                 \
     {                                                          \
-        errorcall(call, "invalid first argument");             \
+        errorcall(call, _("invalid first argument"));          \
     }                                                          \
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0)); \
-    args = CDR(args);                                          \
-    SEXP call2 = CAR(args);                                    \
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0)); args = CDR(args);                                          \
+    SEXP call2 = CAR(args); args = CDR(args);                  \
     ENSURE_NAMEDMAX(call2)
 
 
-SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathunrecognizedconnectionclasserror do_formals
 {
-    args = CDR(args);
-    SEXP call2 = CAR(args);
+    do_start("thispathunrecognizedconnectionclasserror", 2);
+
+
+    SEXP call2 = CAR(args); args = CDR(args);
     ENSURE_NAMEDMAX(call2);
-    args = CDR(args);
 #if defined(R_CONNECTIONS_VERSION_1)
     return thisPathUnrecognizedConnectionClassError(call2, R_GetConnection(CAR(args)));
 #else
@@ -38,33 +37,43 @@ SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, 
 }
 
 
-SEXP do_thispathunrecognizedmannererror(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathunrecognizedmannererror do_formals
 {
-    op = CADR(args);
+    do_start("thispathunrecognizedmannererror", 1);
+
+
+    op = CAR(args);
     ENSURE_NAMEDMAX(op);
     return thisPathUnrecognizedMannerError(op);
 }
 
 
-SEXP do_thispathnotimplementederror(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathnotimplementederror do_formals
 {
+    do_start("thispathnotimplementederror", 2);
+
+
     errorbody;
     return thisPathNotImplementedError(msg, call2);
 }
 
 
-SEXP do_thispathnotexistserror(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathnotexistserror do_formals
 {
+    do_start("thispathnotexistserror", 2);
+
+
     errorbody;
     return thisPathNotExistsError(msg, call2);
 }
 
 
-SEXP do_thispathinzipfileerror(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathinzipfileerror do_formals
 {
-    args = CDR(args);
-    SEXP call2 = CAR(args);
-    args = CDR(args);
+    do_start("thispathinzipfileerror", 2);
+
+
+    SEXP call2 = CAR(args); args = CDR(args);
     if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
@@ -75,18 +84,24 @@ SEXP do_thispathinzipfileerror(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_thispathinaquaerror(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathinaquaerror do_formals
 {
-    return thisPathInAQUAError(lazy_duplicate(CADR(args)));
+    do_start("thispathinaquaerror", 1);
+
+
+    return thisPathInAQUAError(lazy_duplicate(CAR(args)));
 }
 
 
 #undef errorbody
 
 
-SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_isclipboard do_formals
 {
-    SEXP file = CADR(args);
+    do_start("isclipboard", 1);
+
+
+    SEXP file = CAR(args);
     if (TYPEOF(file) != STRSXP)
         error(_("a character vector argument expected"));
     int n = LENGTH(file);
@@ -103,22 +118,22 @@ SEXP do_isclipboard(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispath do_formals
 {
+    do_start("thispath", 5);
+
+
     SEXP returnthis = NULL;
     SEXP returnvalue;  /* this is never used */
 
 
-    args = CDR(args);
-
-
-    int verbose  = asFlag(CAR(args), "verbose");
-    int original = asLogical(CADR(args));
-    int for_msg  = asFlag(CADDR(args), "for.msg");
-    int N        = asInteger(CADDDR(args));
+    int verbose  = asFlag   (CAR(args), "verbose"); args = CDR(args);
+    int original = asLogical(CAR(args));            args = CDR(args);
+    int for_msg  = asFlag   (CAR(args), "for.msg"); args = CDR(args);
+    int N        = asInteger(CAR(args));            args = CDR(args);
     if (N == NA_INTEGER || N < 0)
         error(_("invalid '%s' argument"), "N");
-    int get_frame_number = asFlag(CAD4R(args), "get.frame.number");
+    int get_frame_number = asFlag(CAR(args), "get.frame.number"); args = CDR(args);
 
 
     if (get_frame_number && (original || for_msg)) {
@@ -699,23 +714,26 @@ SEXP do_thispath(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_inittoolsrstudio do_formals
 {
+    do_start("inittoolsrstudio", -1);
+
+
     Rboolean skipCheck = FALSE;
-    int nargs = length(args) - 1;
+    int nargs = length(args);
     if (nargs == 0) {
     }
     else if (nargs == 1) {
-        skipCheck = asLogical(CADR(args));
+        skipCheck = asLogical(CAR(args));
     }
     else errorcall(call, wrong_nargs_to_External(nargs, "C_inittoolsrstudio", "0 or 1"));
     return ScalarLogical(init_tools_rstudio(skipCheck));
 }
 
 
-SEXP do_thispathrgui(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_thispathrgui do_formals
 {
-    args = CDR(args);
+    do_start("thispathrgui", 5);
 
 
     /* titles of the windows in RGui */

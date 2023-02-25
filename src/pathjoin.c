@@ -1,7 +1,4 @@
-#include <R.h>
-#include <Rinternals.h>
-
-
+#include "thispathdefn.h"
 #include <ctype.h>  /* includes toupper() */
 
 
@@ -9,121 +6,15 @@
 
 
 #include "drivewidth.h"
+#include "thispathbackports.h"
 
 
 
 
 
-SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
+void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 {
-#if debug
-    Rprintf("in %s\n\n", "C_windowspathjoin");
-#endif
-
-
-#define pathjoin_start                                         \
-    int nprotect = 0;                                          \
-                                                               \
-                                                               \
-    /* we don't pass the ... list directly because we want to  \
-       avoid an accidental argument name match to PACKAGE      \
-     */                                                        \
-    SEXP dots = findVarInFrame(rho, R_DotsSymbol);             \
-    if (dots == R_UnboundValue)                                \
-        error("could not find the ... list; should never happen, please report!");\
-                                                               \
-                                                               \
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);\
-                                                               \
-                                                               \
-    if (dots_length == 0) return allocVector(STRSXP, 0);       \
-                                                               \
-                                                               \
-    SEXP x = allocVector(VECSXP, dots_length);                 \
-    PROTECT(x); nprotect++;                                    \
-    int x_length = dots_length;                                \
-    int i, j;                                                  \
-    SEXP d, xi;                                                \
-                                                               \
-                                                               \
-    /* the common length of a set of arguments is 0 if one has a length of 0 */\
-    /* or the maximal length when all are non-zero                           */\
-    int commonLength = 1;                                      \
-    /* for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) { *//* slightly slower */\
-    for (i = 0, d = dots; i < x_length; i++, d = CDR(d)) {     \
-                                                               \
-                                                               \
-        /* evaluate each argument of 'dots' */                 \
-        xi = CAR(d);                                           \
-        xi = eval(xi, rho);                                    \
-        if (commonLength) {                                    \
-                                                               \
-                                                               \
-            /* add the evaluated object to 'x' */              \
-            SET_VECTOR_ELT(x, i, xi);                          \
-                                                               \
-                                                               \
-            /* coerce the object to string if needed */        \
-            if (!isString(xi)) {                               \
-                if (OBJECT(xi)) {                              \
-                    SEXP expr = allocList(2);                  \
-                    PROTECT(expr);                             \
-                    SET_TYPEOF(expr, LANGSXP);                 \
-                    SETCAR(expr, findVarInFrame(R_BaseEnv, R_AsCharacterSymbol));\
-                    SEXP expr2 = allocList(2);                 \
-                    PROTECT(expr2);                            \
-                    SET_TYPEOF(expr2, LANGSXP);                \
-                    SETCAR(expr2, findVarInFrame(R_BaseEnv, R_QuoteSymbol));\
-                    SETCADR(expr2, xi);                        \
-                    SETCADR(expr, expr2);                      \
-                    SET_VECTOR_ELT(x, i, eval(expr, rho));     \
-                    UNPROTECT(2);                              \
-                }                                              \
-                else if (isSymbol(xi))                         \
-                    SET_VECTOR_ELT(x, i, ScalarString(PRINTNAME(xi)));\
-                else SET_VECTOR_ELT(x, i, coerceVector(xi, STRSXP));\
-                                                               \
-                if (!isString(VECTOR_ELT(x, i)))               \
-                    errorcall(call, "non-string argument to 'C_pathjoin'");\
-            }                                                  \
-                                                               \
-                                                               \
-            /* compute the length and possibly update 'commonLength'       */\
-            /* if the commonLength is 0, we don't need to do any more      */\
-            /* calculations, we know the return value is character(0), BUT */\
-            /* we still want to evaluate all objects in 'dots', would be a */\
-            /* little strange to not do that                               */\
-            if (commonLength) {                                \
-                int len = LENGTH(VECTOR_ELT(x, i));            \
-                if (len == 0 || len > commonLength)            \
-                    commonLength = len;                        \
-            }                                                  \
-        }                                                      \
-    }                                                          \
-                                                               \
-                                                               \
-    if (commonLength == 0) {                                   \
-        UNPROTECT(nprotect);                                   \
-        return allocVector(STRSXP, 0);                         \
-    }                                                          \
-                                                               \
-                                                               \
-    for (i = 0; i < x_length; i++) {                           \
-        int len = LENGTH(VECTOR_ELT(x, i));                    \
-        for (j = 0; j < len; j++) {                            \
-            SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);         \
-            if (getCharCE(cs) == CE_BYTES)                     \
-                error("strings with \"bytes\" encoding are not allowed");\
-        }                                                      \
-    }                                                          \
-                                                               \
-                                                               \
-    SEXP value = allocVector(STRSXP, commonLength);            \
-    PROTECT(value); nprotect++
-/* omit ; on purpose */
-
-
-    pathjoin_start;
+    int i, j;
 
 
     int drive_indx,                /*  largest index of the string vector which contains a drivespec */
@@ -543,21 +434,12 @@ SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         /* use cbuf because we want the whole string */
         SET_STRING_ELT(value, j, mkCharCE(cbuf, CE_UTF8));
     }
-
-
-    UNPROTECT(nprotect);
-    return value;
 }
 
 
-SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
+void unixpathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 {
-#if debug
-    Rprintf("in %s\n\n", "C_unixpathjoin");
-#endif
-
-
-    pathjoin_start;
+    int i, j;
 
 
     /* width of the path */
@@ -692,23 +574,149 @@ SEXP do_unixpathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
         /* use cbuf because we want the whole string */
         SET_STRING_ELT(value, j, mkCharCE(cbuf, CE_UTF8));
     }
-
-
-    UNPROTECT(nprotect);
-    return value;
 }
 
 
-SEXP do_pathjoin(SEXP call, SEXP op, SEXP args, SEXP rho)
+void pathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 {
-#if debug
-    Rprintf("in %s\n\n", "C_pathjoin");
-#endif
-
-
 #ifdef _WIN32
-    return do_windowspathjoin(call, op, args, rho);
+    windowspathjoin(x, x_length, commonLength, value);
 #else
-    return do_unixpathjoin(call, op, args, rho);
+    unixpathjoin(x, x_length, commonLength, value);
 #endif
+}
+
+
+
+
+
+#define do_pathjoin_body(name, fun)                            \
+    int nprotect = 0;                                          \
+                                                               \
+                                                               \
+    /* we don't pass the ... list directly because we want to  \
+       avoid an accidental argument name match to PACKAGE      \
+     */                                                        \
+    SEXP dots = findVarInFrame(rho, R_DotsSymbol);             \
+    if (dots == R_UnboundValue)                                \
+        error("could not find the ... list; should never happen, please report!");\
+                                                               \
+                                                               \
+    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);\
+                                                               \
+                                                               \
+    if (dots_length == 0) return allocVector(STRSXP, 0);       \
+                                                               \
+                                                               \
+    SEXP x = allocVector(VECSXP, dots_length);                 \
+    PROTECT(x); nprotect++;                                    \
+    int x_length = dots_length;                                \
+    int i, j;                                                  \
+    SEXP d, xi;                                                \
+                                                               \
+                                                               \
+    /* the common length of a set of arguments is 0 if one has a length of 0 */\
+    /* or the maximal length when all are non-zero                           */\
+    int commonLength = 1;                                      \
+    /* for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) { *//* slightly slower */\
+    for (i = 0, d = dots; i < x_length; i++, d = CDR(d)) {     \
+                                                               \
+                                                               \
+        /* evaluate each argument of 'dots' */                 \
+        xi = CAR(d);                                           \
+        xi = eval(xi, rho);                                    \
+        if (commonLength) {                                    \
+                                                               \
+                                                               \
+            /* add the evaluated object to 'x' */              \
+            SET_VECTOR_ELT(x, i, xi);                          \
+                                                               \
+                                                               \
+            /* coerce the object to string if needed */        \
+            if (!isString(xi)) {                               \
+                if (OBJECT(xi)) {                              \
+                    SEXP expr, expr2;                          \
+                    expr = allocList(2);                       \
+                    PROTECT(expr);                             \
+                    SET_TYPEOF(expr, LANGSXP);                 \
+                    SETCAR(expr, findVarInFrame(R_BaseEnv, R_AsCharacterSymbol));\
+                    SETCADR(expr, expr2 = allocList(2));       \
+                    SET_TYPEOF(expr2, LANGSXP);                \
+                    SETCAR(expr2, findVarInFrame(R_BaseEnv, R_QuoteSymbol));\
+                    SETCADR(expr2, xi);                        \
+                    SET_VECTOR_ELT(x, i, eval(expr, rho));     \
+                    UNPROTECT(1);                              \
+                }                                              \
+                else if (isSymbol(xi))                         \
+                    SET_VECTOR_ELT(x, i, ScalarString(PRINTNAME(xi)));\
+                else SET_VECTOR_ELT(x, i, coerceVector(xi, STRSXP));\
+                                                               \
+                if (!isString(VECTOR_ELT(x, i)))               \
+                    errorcall(call, "non-string argument to '%s'", (name));\
+            }                                                  \
+                                                               \
+                                                               \
+            /* compute the length and possibly update 'commonLength'       */\
+            /* if the commonLength is 0, we don't need to do any more      */\
+            /* calculations, we know the return value is character(0), BUT */\
+            /* we still want to evaluate all objects in 'dots', would be a */\
+            /* little strange to not do that                               */\
+            if (commonLength) {                                \
+                int len = LENGTH(VECTOR_ELT(x, i));            \
+                if (len == 0 || len > commonLength)            \
+                    commonLength = len;                        \
+            }                                                  \
+        }                                                      \
+    }                                                          \
+                                                               \
+                                                               \
+    if (commonLength == 0) {                                   \
+        UNPROTECT(nprotect);                                   \
+        return allocVector(STRSXP, 0);                         \
+    }                                                          \
+                                                               \
+                                                               \
+    for (i = 0; i < x_length; i++) {                           \
+        int len = LENGTH(VECTOR_ELT(x, i));                    \
+        for (j = 0; j < len; j++) {                            \
+            SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);         \
+            if (getCharCE(cs) == CE_BYTES)                     \
+                error("strings with \"bytes\" encoding are not allowed");\
+        }                                                      \
+    }                                                          \
+                                                               \
+                                                               \
+    SEXP value = allocVector(STRSXP, commonLength);            \
+    PROTECT(value); nprotect++;                                \
+                                                               \
+                                                               \
+    fun(x, x_length, commonLength, value);                     \
+                                                               \
+                                                               \
+    UNPROTECT(nprotect);                                       \
+    return value
+/* omit ; on purpose */
+
+
+SEXP do_windowspathjoin do_formals
+{
+    do_start("windowspathjoin", 0);
+    if (debug) Rprintf("in do_windowspathjoin\n\n");
+    do_pathjoin_body("windows.path.join", windowspathjoin);
+}
+
+
+SEXP do_unixpathjoin do_formals
+{
+    do_start("unixpathjoin", 0);
+    if (debug) Rprintf("in do_unixpathjoin\n\n");
+    do_pathjoin_body("unix.path.join", unixpathjoin);
+}
+
+
+SEXP do_pathjoin do_formals
+{
+    do_start("pathjoin", 0);
+    if (debug) Rprintf("in do_pathjoin\n\n");
+    do_pathjoin_body("path.join", pathjoin);
 }

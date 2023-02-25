@@ -48,6 +48,17 @@ LINENO <- function ()
 }
 
 
+if (getRversion() < "3.2.0") {
+
+
+# file.info() did not have argument extra_cols at this time
+file.mtime <- function (...)
+file.info(...)$mtime
+
+
+}
+
+
 source2 <- function (file, local = FALSE, echo = verbose, print.eval = echo,
     exprs, spaced = use_file, verbose = getOption("verbose"),
     prompt.echo = getOption("prompt"), max.deparse.length = 150,

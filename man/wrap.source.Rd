@@ -314,10 +314,10 @@ sourcelike <- function (file, envir = parent.frame())
 {
     file <- inside.source(file)
     envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
+    exprs <- parse(n = -1, file = file)
     # this prints nicely
-    source(local = envir, echo = TRUE, exprs = exprs,
-        spaced = TRUE, verbose = FALSE, max.deparse.length = Inf)
+    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE, local = envir,
+        spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
     # you could alternatively do:
     # 'for (i in seq_along(exprs)) eval(exprs[i], envir)'
     # which does no pretty printing
@@ -336,9 +336,9 @@ sourcelike2 <- function (pathname, envir = globalenv())
         stop(gettextf("'\%s' is not an existing file",
              pathname, domain = "R-base"))
     envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = pathname, srcfile = NULL, keep.source = FALSE)
-    source(local = envir, echo = TRUE, exprs = exprs,
-        spaced = TRUE, verbose = FALSE, max.deparse.length = Inf)
+    exprs <- parse(n = -1, file = pathname)
+    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE, local = envir,
+        spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }
 
 

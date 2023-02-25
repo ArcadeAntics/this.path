@@ -10,9 +10,12 @@ static R_INLINE int asFlag(SEXP x, const char *name)
 }
 
 
-SEXP do_setprseen2(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_setprseen2 do_formals
 {
-    SEXP ptr = CADR(args);
+    do_start("setprseen2", 1);
+
+
+    SEXP ptr = CAR(args);
     if (TYPEOF(ptr) != EXTPTRSXP)
         errorcall(call, "invalid first argument, must be an external pointer");
     SEXP promises = R_ExternalPtrProtected(ptr);
@@ -38,8 +41,11 @@ SEXP do_setprseen2(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_wrapsource do_formals
 {
+    do_start("wrapsource", 20);
+
+
     SEXP expr = findVarInFrame(rho, exprSymbol);
     if (expr == R_UnboundValue)
         error(_("object '%s' not found"), EncodeChar(PRINTNAME(exprSymbol)));
@@ -48,7 +54,6 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     int nprotect = 0;
-    args = CDR(args);  /* skip C_wrapsource */
 
 
     /* determine context number for .this.path(get.frame.number = TRUE) */
@@ -154,13 +159,22 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
      * and make an on.exit() call that will restore said promise
      */
     {
-        /* on.exit(.External2(C_setprseen2, ptr)) */
+#if R_version_at_least(3, 0, 0)
+        /* .External2(C_setprseen2, ptr) */
         SEXP expr = allocList(3);
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);
         SETCAR(expr, External2Symbol);
         SETCADR(expr, C_setprseen2Symbol);
         SETCADDR(expr, ptr);
+#else
+        /* setprseen2(ptr) */
+        SEXP expr = allocList(2);
+        PROTECT(expr);
+        SET_TYPEOF(expr, LANGSXP);
+        SETCAR(expr, setprseen2Symbol);
+        SETCADR(expr, ptr);
+#endif
 
 
         SEXP expr2 = allocList(2);
@@ -171,6 +185,7 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
         eval(expr2, rho);
+        UNPROTECT(2);
     }
 
 
@@ -472,7 +487,11 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
     checkfile(
+#if R_version_at_least(3, 4, 0)
         /* SEXP call                  = */ R_CurrentExpression,
+#else
+        /* SEXP call                  = */ R_NilValue,
+#endif
         /* SEXP sym                   = */ fileSymbol,
         /* SEXP ofile                 = */ ofile,
         /* SEXP frame                 = */ frame,
@@ -514,7 +533,6 @@ SEXP do_wrapsource(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rboolean unset)
 {
     int nprotect = 0;
-    args = CDR(args);  /* skip C_insidesource */
 
 
     int sys_parent = asInteger(eval(lang1(sys_parentSymbol), rho));
@@ -655,7 +673,11 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     SEXP returnvalue = R_NilValue;
     checkfile(
+#if R_version_at_least(3, 4, 0)
         /* SEXP call                  = */ R_CurrentExpression,
+#else
+        /* SEXP call                  = */ R_NilValue,
+#endif
         /* SEXP sym                   = */ fileSymbol,
         /* SEXP ofile                 = */ ofile,
         /* SEXP frame                 = */ frame,
@@ -695,20 +717,29 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 }
 
 
-SEXP do_insidesource(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_insidesource do_formals
 {
+    do_start("insidesource", 20);
+
+
     return insidesource(call, op, args, rho, "inside.source", FALSE);
 }
 
 
-SEXP do_setthispath(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_setthispath do_formals
 {
+    do_start("setthispath", 20);
+
+
     return insidesource(call, op, args, rho, "set.this.path", FALSE);
 }
 
 
-SEXP do_unsetthispath(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_unsetthispath do_formals
 {
+    do_start("unsetthispath", 0);
+
+
     return insidesource(call, op, args, rho, "unset.this.path", TRUE);
 }
 

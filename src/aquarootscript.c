@@ -1,5 +1,4 @@
-#include <R.h>
-#include <Rinternals.h>
+#include "thispathdefn.h"
 
 
 // #define ready 0
@@ -20,8 +19,11 @@
 
 
 
-SEXP do_aquarootscript(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_aquarootscript do_formals
 {
+    do_start("aquarootscript", 0);
+
+
     errorcall(call, "not implemented yet");
     return R_NilValue;
 }

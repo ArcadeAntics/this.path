@@ -10,15 +10,9 @@
 
 #define basename2(windows)                                     \
 {                                                              \
-    if (debug) {                                               \
-        Rprintf((windows) ? "in do_windowsbasename2\n\n" : "in do_unixbasename2\n\n");\
-    }                                                          \
-                                                               \
-                                                               \
     int nprotect = 0;                                          \
                                                                \
                                                                \
-    SEXP path = CADR(args);                                    \
     const char *ptr;                                           \
     char *buf, *last_char, *slash;                             \
     int n, i, nchar, drivewidth;                               \
@@ -163,48 +157,7 @@
 
 #define dirname2(windows)                                      \
 {                                                              \
-    if (debug) {                                               \
-        Rprintf((windows) ? "in do_windowsdirname2\n\n" : "in do_unixdirname2\n\n");\
-    }                                                          \
-                                                               \
-                                                               \
     int nprotect = 0;                                          \
-                                                               \
-                                                               \
-    SEXP path;                                                 \
-    int times;                                                 \
-                                                               \
-                                                               \
-    /* it's not documented in the R function dirname2() or in man/dirname2.Rd */\
-    /* but dirname2() actually accepts 1 or 2 arguments                       */\
-    /*                                                                        */\
-    /* the first argument is always the 'path' argument                       */\
-    /* the second argument (optional) is the number of additional times to    */\
-    /* calculate dirname2(). for example:                                     */\
-    /*                                                                        */\
-    /* .External2(C_dirname2, path, 2)                                        */\
-    /*                                                                        */\
-    /* will calculate the dirname() once, then calculate it 2 more times      */\
-    /* afterward                                                              */\
-    /*                                                                        */\
-    /* this saves miniscule time (because you don't have to setup a for loop  */\
-    /* at the R level) but it was easy enough to do so why not?               */\
-    int nargs = length(args) - 1;                              \
-    if (nargs == 1) {                                          \
-        path = CADR(args);                                     \
-        if (TYPEOF(path) != STRSXP)                            \
-            error(_("a character vector argument expected"));  \
-        times = 0;                                             \
-    }                                                          \
-    else if (nargs == 2) {                                     \
-        path = CADR(args);                                     \
-        if (TYPEOF(path) != STRSXP)                            \
-            error(_("a character vector argument expected"));  \
-        times = asInteger(CADDR(args));                        \
-        if (times == NA_INTEGER || times < 0)                  \
-            errorcall(call, "invalid second argument, must be coercible to non-negative integer");\
-    }                                                          \
-    else errorcall(call, wrong_nargs_to_External(nargs, (windows) ? "C_windowsdirname2" : "C_unixdirname2", "1 or 2"));\
                                                                \
                                                                \
     const char *ptr;                                           \
@@ -441,42 +394,132 @@
 
 
 
-SEXP do_windowsbasename2(SEXP call, SEXP op, SEXP args, SEXP rho) basename2(1)
+SEXP windowsbasename2(SEXP path) basename2(1)
 
 
-SEXP do_unixbasename2(SEXP call, SEXP op, SEXP args, SEXP rho) basename2(0)
+SEXP unixbasename2(SEXP path) basename2(0)
 
 
-SEXP do_basename2(SEXP call, SEXP op, SEXP args, SEXP rho)
+#undef basename2
+
+
+SEXP basename2(SEXP path)
 {
-    if (debug) {
-        Rprintf("in do_basename2\n\n");
-    }
 #ifdef _WIN32
-    return do_windowsbasename2(call, op, args, rho);
+    return windowsbasename2(path);
 #else
-    return do_unixbasename2(call, op, args, rho);
+    return unixbasename2(path);
 #endif
+}
+
+
+SEXP do_windowsbasename2 do_formals
+{
+    do_start("windowsbasename2", 1);
+    if (debug) Rprintf("in do_windowsbasename2\n\n");
+    return windowsbasename2(CAR(args));
+}
+
+
+SEXP do_unixbasename2 do_formals
+{
+    do_start("unixbasename2", 1);
+    if (debug) Rprintf("in do_unixbasename2\n\n");
+    return unixbasename2(CAR(args));
+}
+
+
+SEXP do_basename2 do_formals
+{
+    do_start("basename2", 1);
+    if (debug) Rprintf("in do_basename2\n\n");
+    return basename2(CAR(args));
 }
 
 
 
 
 
-SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho) dirname2(1)
+SEXP windowsdirname2(SEXP path, int times) dirname2(1)
 
 
-SEXP do_unixdirname2(SEXP call, SEXP op, SEXP args, SEXP rho) dirname2(0)
+SEXP unixdirname2(SEXP path, int times) dirname2(0)
 
 
-SEXP do_dirname2(SEXP call, SEXP op, SEXP args, SEXP rho)
+#undef dirname2
+
+
+SEXP dirname2(SEXP path, int times)
 {
-    if (debug) {
-        Rprintf("in do_dirname2\n\n");
-    }
 #ifdef _WIN32
-    return do_windowsdirname2(call, op, args, rho);
+    return windowsdirname2(path, times);
 #else
-    return do_unixdirname2(call, op, args, rho);
+    return unixdirname2(path, times);
 #endif
 }
+
+
+/* it's not documented in the R function dirname2() or in man/dirname2.Rd
+   but dirname2() actually accepts 1 or 2 arguments
+
+   the first argument is always the 'path' argument
+   the second argument (optional) is the number of additional times to
+   calculate dirname2(). for example:
+
+   .External2(C_dirname2, path, 2)
+
+   will calculate the dirname() once, then calculate it 2 more times
+   afterward
+
+   this saves miniscule time (because you don't have to setup a for loop
+   at the R level) but it was easy enough to do so why not?
+ */
+#define do_dirname2_check_nargs(name)                          \
+    SEXP path;                                                 \
+    int times;                                                 \
+    int nargs = length(args);                                  \
+    if (nargs == 1) {                                          \
+        path = CAR(args);                                      \
+        if (TYPEOF(path) != STRSXP)                            \
+            error(_("a character vector argument expected"));  \
+        times = 0;                                             \
+    }                                                          \
+    else if (nargs == 2) {                                     \
+        path = CAR(args);                                      \
+        if (TYPEOF(path) != STRSXP)                            \
+            error(_("a character vector argument expected"));  \
+        times = asInteger(CADR(args));                         \
+        if (times == NA_INTEGER || times < 0)                  \
+            errorcall(call, "invalid second argument, must be coercible to non-negative integer");\
+    }                                                          \
+    else errorcall(call, wrong_nargs_to_External(nargs, (name), "1 or 2"))
+
+
+SEXP do_windowsdirname2 do_formals
+{
+    do_start("windowsdirname2", -1);
+    if (debug) Rprintf("in do_windowsdirname2\n\n");
+    do_dirname2_check_nargs("C_windowsdirname2");
+    return windowsdirname2(path, times);
+}
+
+
+SEXP do_unixdirname2 do_formals
+{
+    do_start("unixdirname2", -1);
+    if (debug) Rprintf("in do_unixdirname2\n\n");
+    do_dirname2_check_nargs("C_unixdirname2");
+    return unixdirname2(path, times);
+}
+
+
+SEXP do_dirname2 do_formals
+{
+    do_start("dirname2", -1);
+    if (debug) Rprintf("in do_dirname2\n\n");
+    do_dirname2_check_nargs("C_dirname2");
+    return dirname2(path, times);
+}
+
+
+#undef do_dirname2_check_nargs

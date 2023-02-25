@@ -102,7 +102,7 @@ this.path::asArgs(
 
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
-    withAutoprint({
+    this.path:::withAutoprint({
         this.path::this.path()
         this.path::fileArgs()
         this.path::progArgs()
@@ -138,7 +138,7 @@ sourcelike <- function (file, envir = parent.frame())
 {
     file <- inside.source(file)
     envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
+    exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
 }
 this.path::withArgs(sourcelike(FILE), letters)
@@ -147,7 +147,7 @@ this.path::withArgs(sourcelike(FILE), letters)
 sourcelike2 <- function (file, envir = parent.frame())
 {
     envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
+    exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
 }
 sourcelike3 <- function (file, envir = parent.frame())

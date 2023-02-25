@@ -3,12 +3,12 @@
 
 
 #include "drivewidth.h"
+#include "thispathbackports.h"
 #include "translations.h"
 
 
-#define isabspath(windows)                                     \
-{                                                              \
-    SEXP path = CADR(args);                                    \
+#define do_isabspath_body(windows)                             \
+    SEXP path = CAR(args);                                     \
     int n;                                                     \
     if (TYPEOF(path) != STRSXP)                                \
         error(_("a character vector argument expected"));      \
@@ -25,24 +25,32 @@
         }                                                      \
     }                                                          \
     UNPROTECT(1);                                              \
-    return value;                                              \
+    return value
+
+
+SEXP do_windowsisabspath do_formals
+{
+    do_start("windowsisabspath", 1);
+    do_isabspath_body(TRUE);
 }
 
 
-SEXP do_windowsisabspath(SEXP call, SEXP op, SEXP args, SEXP rho) isabspath(1)
-
-
-SEXP do_unixisabspath(SEXP call, SEXP op, SEXP args, SEXP rho) isabspath(0)
-
-
-#undef isabspath
-
-
-SEXP do_isabspath(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_unixisabspath do_formals
 {
+    do_start("unixisabspath", 1);
+    do_isabspath_body(FALSE);
+}
+
+
+SEXP do_isabspath do_formals
+{
+    do_start("isabspath", 1);
 #ifdef _WIN32
-    return do_windowsisabspath(call, op, args, rho);
+    do_isabspath_body(TRUE);
 #else
-    return do_unixisabspath(call, op, args, rho);
+    do_isabspath_body(FALSE);
 #endif
 }
+
+
+#undef do_isabspath_body

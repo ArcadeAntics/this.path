@@ -27,7 +27,7 @@ toplevel context, and \code{FALSE} otherwise.
 }
 \examples{
 FILES <- tempfile(c("file1_", "file2_"), fileext = ".R")
-this.path:::write.code(file = FILES[1], bquote(withAutoprint({
+this.path:::write.code(file = FILES[1], bquote(this.path:::withAutoprint({
     from.shell()
     is.main()
     source(.(FILES[2]), echo = TRUE, verbose = FALSE,

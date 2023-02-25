@@ -4,12 +4,13 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include <Rversion.h>
+#include "Rversiondefines.h"
 #include "translations.h"
 #include "defines.h"
+#include "thispathbackports.h"
 
 
-#if defined(R_VERSION) && R_VERSION >= R_Version(3, 3, 0)
+#if R_version_at_least(3, 3, 0)
     #if defined(R_THIS_PATH_DEFINES)
         #include <R_ext/Connections.h>
         #if !defined(R_CONNECTIONS_VERSION)
@@ -24,7 +25,29 @@
 #include "symbols.h"
 
 
-#if defined(R_THIS_PATH_DEFINES)
+#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3, 0, 0)
+#define NAMEDMAX 2
+#define NO_REFERENCES(x) (NAMED(x) == 0)
+#define MAYBE_REFERENCED(x) (! NO_REFERENCES(x))
+#define MARK_NOT_MUTABLE(x) SET_NAMED(x, NAMEDMAX)
+#endif
+#define INCREMENT_NAMED(x) do {                                \
+    SEXP _x_ = (x);                                            \
+    if (NAMED(_x_) != NAMEDMAX)                                \
+        SET_NAMED(_x_, NAMED(_x_) + 1);                        \
+} while (0)
+#endif
+
+
+#if R_version_less_than(3, 5, 0)
+#define ENSURE_NAMEDMAX(_x_) SET_NAMED((_x_), NAMEDMAX)
+#else
+extern void (ENSURE_NAMEDMAX)(SEXP x);
+#endif
+
+
+#if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
 extern Rboolean R_Visible;
 #define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
 #else
@@ -59,7 +82,17 @@ extern void R_removeVarFromFrame(SEXP name, SEXP env);
 extern void removeFromFrame(SEXP *names, SEXP env);
 
 
-#if defined(R_VERSION) && R_VERSION >= R_Version(4, 1, 0)
+extern void UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t);
+extern void UNIMPLEMENTED_TYPE(const char *s, SEXP x);
+
+
+#if R_version_less_than(3, 1, 0)
+extern SEXP lazy_duplicate(SEXP s);
+extern SEXP shallow_duplicate(SEXP s);
+#endif
+
+
+#if R_version_at_least(4, 1, 0)
 extern int IS_UTF8(SEXP x);
 #else
 #define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
@@ -69,9 +102,6 @@ extern int IS_UTF8(SEXP x);
 extern int ENC_KNOWN(SEXP x);
 extern int SET_CACHED(SEXP x);
 extern int IS_CACHED(SEXP x);
-
-
-extern void (ENSURE_NAMEDMAX)(SEXP x);
 
 
 extern SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported);

@@ -3,6 +3,7 @@
 
 
 #include "drivewidth.h"
+#include "thispathbackports.h"
 #include "translations.h"
 
 
@@ -55,14 +56,17 @@
         }
 
 
-#define do_pathsplit(windows)                                  \
-{                                                              \
-    SEXP path = CADR(args);                                    \
+#define do_pathsplit_body(windows, length1)                    \
+    SEXP path = CAR(args);                                     \
     if (TYPEOF(path) != STRSXP)                                \
         error(_("invalid '%s' argument"), "path");             \
                                                                \
                                                                \
     int n = LENGTH(path);                                      \
+    if ((length1) && n != 1)                                   \
+        error(_("invalid '%s' argument"), "path");             \
+                                                               \
+                                                               \
     SEXP value = allocVector(VECSXP, n);                       \
     PROTECT(value);                                            \
     for (int i = 0; i < n; i++) {                              \
@@ -246,25 +250,68 @@
     }                                                          \
                                                                \
                                                                \
+    if ((length1)) value = VECTOR_ELT(value, 0);               \
     UNPROTECT(1);                                              \
-    return value;                                              \
+    return value
+
+
+SEXP do_windowspathsplit do_formals
+{
+    do_start("windowspathsplit", 1);
+    do_pathsplit_body(TRUE, FALSE);
 }
 
 
-SEXP do_windowspathsplit(SEXP call, SEXP op, SEXP args, SEXP rho) do_pathsplit(TRUE)
+SEXP do_unixpathsplit do_formals
+{
+    do_start("unixpathsplit", 1);
+    do_pathsplit_body(FALSE, FALSE);
+}
 
 
-SEXP do_unixpathsplit(SEXP call, SEXP op, SEXP args, SEXP rho) do_pathsplit(FALSE)
+SEXP do_pathsplit do_formals
+{
+    do_start("pathsplit", 1);
+#ifdef _WIN32
+    do_pathsplit_body(TRUE, FALSE);
+#else
+    do_pathsplit_body(FALSE, FALSE);
+#endif
+}
 
 
-#undef do_pathsplit
+SEXP do_windowspathsplit1 do_formals
+{
+    do_start("windowspathsplit1", 1);
+    do_pathsplit_body(TRUE, TRUE);
+}
+
+
+SEXP do_unixpathsplit1 do_formals
+{
+    do_start("unixpathsplit1", 1);
+    do_pathsplit_body(FALSE, TRUE);
+}
+
+
+SEXP do_pathsplit1 do_formals
+{
+    do_start("pathsplit1", 1);
+#ifdef _WIN32
+    do_pathsplit_body(TRUE, TRUE);
+#else
+    do_pathsplit_body(FALSE, TRUE);
+#endif
+}
+
+
+#undef do_pathsplit_body
 
 
 
 
 
-#define do_pathunsplit(windows)                                \
-{                                                              \
+#define do_pathunsplit_body(windows)                           \
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);             \
     if (dots == R_UnboundValue)                                \
         error(_("'...' used in an incorrect context"));        \
@@ -428,72 +475,32 @@ SEXP do_unixpathsplit(SEXP call, SEXP op, SEXP args, SEXP rho) do_pathsplit(FALS
                                                                \
                                                                \
     UNPROTECT(2);                                              \
-    return value;                                              \
+    return value
+
+
+SEXP do_windowspathunsplit do_formals
+{
+    do_start("windowspathunsplit", 0);
+    do_pathunsplit_body(TRUE);
 }
 
 
-SEXP do_windowspathunsplit(SEXP call, SEXP op, SEXP args, SEXP rho) do_pathunsplit(TRUE)
-
-
-SEXP do_unixpathunsplit(SEXP call, SEXP op, SEXP args, SEXP rho) do_pathunsplit(FALSE)
-
-
-#undef do_pathunsplit
-
-
-
-
-
-SEXP do_windowspathsplit1(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_unixpathunsplit do_formals
 {
-    SEXP path = CADR(args);
-    if (TYPEOF(path) != STRSXP)
-        error(_("invalid '%s' argument"), "path");
-    if (LENGTH(path) != 1)
-        error(_("invalid '%s' argument"), "path");
-    return VECTOR_ELT(do_windowspathsplit(call, op, args, rho), 0);
+    do_start("unixpathunsplit", 0);
+    do_pathunsplit_body(FALSE);
 }
 
 
-SEXP do_unixpathsplit1(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_pathunsplit do_formals
 {
-    SEXP path = CADR(args);
-    if (TYPEOF(path) != STRSXP)
-        error(_("invalid '%s' argument"), "path");
-    if (LENGTH(path) != 1)
-        error(_("invalid '%s' argument"), "path");
-    return VECTOR_ELT(do_unixpathsplit(call, op, args, rho), 0);
-}
-
-
-
-
-
-SEXP do_pathsplit(SEXP call, SEXP op, SEXP args, SEXP rho)
-{
+    do_start("pathunsplit", 0);
 #ifdef _WIN32
-    return do_windowspathsplit(call, op, args, rho);
+    do_pathunsplit_body(TRUE);
 #else
-    return do_unixpathsplit(call, op, args, rho);
+    do_pathunsplit_body(FALSE);
 #endif
 }
 
 
-SEXP do_pathunsplit(SEXP call, SEXP op, SEXP args, SEXP rho)
-{
-#ifdef _WIN32
-    return do_windowspathunsplit(call, op, args, rho);
-#else
-    return do_unixpathunsplit(call, op, args, rho);
-#endif
-}
-
-
-SEXP do_pathsplit1(SEXP call, SEXP op, SEXP args, SEXP rho)
-{
-#ifdef _WIN32
-    return do_windowspathsplit1(call, op, args, rho);
-#else
-    return do_unixpathsplit1(call, op, args, rho);
-#endif
-}
+#undef do_pathunsplit_body

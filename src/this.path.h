@@ -25,131 +25,170 @@ accessing and assigning variables
 
 
 #include <Rinternals.h>
+#include "Rversiondefines.h"
+#include "thispathbackports.h"
 
 
 /* aquarootscript.c */
 
 
-extern SEXP do_aquarootscript(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_aquarootscript do_formals;
 
 
 /* args.c */
 
 
-extern SEXP do_asargs(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_asargs do_formals;
+
+
+/* backports.c */
+
+
+#if R_version_less_than(3, 3, 0)
+extern SEXP do_strrep     do_formals;
+extern SEXP do_startsWith do_formals;
+extern SEXP do_endsWith   do_formals;
+#endif
+
+
+#if R_version_less_than(3, 2, 0)
+extern SEXP do_direxists do_formals;
+extern SEXP do_lengths   do_formals;
+#endif
+
+
+#if R_version_less_than(3, 1, 0)
+extern SEXP do_anyNA do_formals;
+#endif
 
 
 /* basename2.c */
 
 
-extern SEXP do_windowsbasename2(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixbasename2   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_basename2       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowsbasename2 do_formals;
+extern SEXP do_unixbasename2    do_formals;
+extern SEXP do_basename2        do_formals;
 
-extern SEXP do_windowsdirname2(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixdirname2   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_dirname2       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowsdirname2 do_formals;
+extern SEXP do_unixdirname2    do_formals;
+extern SEXP do_dirname2        do_formals;
 
 
 /* ext.c */
 
 
-extern SEXP do_windowssplitext(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixsplitext   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_splitext       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowssplitext do_formals;
+extern SEXP do_unixsplitext    do_formals;
+extern SEXP do_splitext        do_formals;
 
-extern SEXP do_windowsremoveext(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixremoveext   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_removeext       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowsremoveext do_formals;
+extern SEXP do_unixremoveext    do_formals;
+extern SEXP do_removeext        do_formals;
 
-extern SEXP do_windowsext(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixext   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_ext       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowsext do_formals;
+extern SEXP do_unixext    do_formals;
+extern SEXP do_ext        do_formals;
 
-extern SEXP do_windowsextgets(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixextgets   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_extgets       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowsextgets do_formals;
+extern SEXP do_unixextgets    do_formals;
+extern SEXP do_extgets        do_formals;
 
 
 /* hooks-for-namespace-events.c */
 
 
-extern SEXP do_onload  (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_onunload(SEXP call, SEXP op, SEXP args, SEXP rho);
+// extern SEXP do_utf8locale   do_formals;
+extern SEXP do_mbcslocale   do_formals;
+// extern SEXP do_latin1locale do_formals;
+extern SEXP do_R_MB_CUR_MAX do_formals;
+
+extern SEXP do_onload   do_formals;
+extern SEXP do_onunload do_formals;
 
 
 /* isabspath.c */
 
 
-extern SEXP do_windowsisabspath(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixisabspath   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_isabspath       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowsisabspath do_formals;
+extern SEXP do_unixisabspath    do_formals;
+extern SEXP do_isabspath        do_formals;
 
 
 /* pathjoin.c */
 
 
-extern SEXP do_windowspathjoin(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixpathjoin   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_pathjoin       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowspathjoin do_formals;
+extern SEXP do_unixpathjoin    do_formals;
+extern SEXP do_pathjoin        do_formals;
 
 
 /* pathsplit.c */
 
 
-extern SEXP do_windowspathsplit(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixpathsplit   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_pathsplit       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowspathsplit do_formals;
+extern SEXP do_unixpathsplit    do_formals;
+extern SEXP do_pathsplit        do_formals;
 
-extern SEXP do_windowspathsplit1(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixpathsplit1   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_pathsplit1       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowspathsplit1 do_formals;
+extern SEXP do_unixpathsplit1    do_formals;
+extern SEXP do_pathsplit1        do_formals;
 
-extern SEXP do_windowspathunsplit(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unixpathunsplit   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_pathunsplit       (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_windowspathunsplit do_formals;
+extern SEXP do_unixpathunsplit    do_formals;
+extern SEXP do_pathunsplit        do_formals;
 
 
 /* promises.c */
 
 
-extern SEXP do_isunevaluatedpromise    (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_promiseisunevaluated    (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_getpromisewithoutwarning(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_prinfo                  (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_isunevaluatedpromise     do_formals;
+extern SEXP do_promiseisunevaluated     do_formals;
+extern SEXP do_getpromisewithoutwarning do_formals;
+extern SEXP do_prinfo                   do_formals;
 
 
 /* shfile.c */
 
 
-extern SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_shfile do_formals;
+extern SEXP do_shinfo do_formals;
 
 
 /* thispath.c */
 
 
-extern SEXP do_thispathunrecognizedconnectionclasserror(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispathunrecognizedmannererror         (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispathnotimplementederror             (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispathnotexistserror                  (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispathinzipfileerror                  (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispathinaquaerror                     (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_thispathunrecognizedconnectionclasserror do_formals;
+extern SEXP do_thispathunrecognizedmannererror          do_formals;
+extern SEXP do_thispathnotimplementederror              do_formals;
+extern SEXP do_thispathnotexistserror                   do_formals;
+extern SEXP do_thispathinzipfileerror                   do_formals;
+extern SEXP do_thispathinaquaerror                      do_formals;
 
-extern SEXP do_isclipboard     (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispath        (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_inittoolsrstudio(SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_thispathrgui    (SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_isclipboard      do_formals;
+extern SEXP do_thispath         do_formals;
+extern SEXP do_inittoolsrstudio do_formals;
+extern SEXP do_thispathrgui     do_formals;
+
+
+/* utils.c */
+
+
+#if R_version_less_than(3, 5, 0)
+extern SEXP do_dotslength do_formals;
+#endif
+#if R_version_less_than(3, 2, 0)
+extern SEXP do_isRegisteredNamespace do_formals;
+#endif
 
 
 /* wrapsource.c */
 
 
-extern SEXP do_setprseen2   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_wrapsource   (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_insidesource (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_setthispath  (SEXP call, SEXP op, SEXP args, SEXP rho);
-extern SEXP do_unsetthispath(SEXP call, SEXP op, SEXP args, SEXP rho);
+extern SEXP do_setprseen2    do_formals;
+extern SEXP do_wrapsource    do_formals;
+extern SEXP do_insidesource  do_formals;
+extern SEXP do_setthispath   do_formals;
+extern SEXP do_unsetthispath do_formals;
 
 
 #endif  /* #ifndef THIS_PATH_H */

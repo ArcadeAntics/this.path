@@ -13,25 +13,7 @@
 #define EXT 2
 #define EXTGETS 3
 #define ext(windows, op)                                       \
-{                                                              \
-    if (debug) {                                               \
-        if (op == SPLITEXT) {                                  \
-            Rprintf((windows) ? "in do_windowssplitext\n\n" : "in do_unixsplitext\n\n");\
-        }                                                      \
-        else if (op == REMOVEEXT) {                            \
-            Rprintf((windows) ? "in do_windowsremoveext\n\n" : "in do_unixremoveext\n\n");\
-        }                                                      \
-        else if (op == EXT) {                                  \
-            Rprintf((windows) ? "in do_windowsext\n\n" : "in do_unixext\n\n");\
-        }                                                      \
-        else if (op == EXTGETS) {                              \
-            Rprintf((windows) ? "in do_windowsextgets\n\n" : "in do_unixextgets\n\n");\
-        }                                                      \
-    }                                                          \
-                                                               \
-                                                               \
     int nprotect = 0;                                          \
-    args = CDR(args);                                          \
                                                                \
                                                                \
     if (op == EXTGETS) {                                       \
@@ -655,28 +637,36 @@
                                                                \
                                                                \
     UNPROTECT(nprotect);                                       \
-    return value;                                              \
+    return value
+
+
+
+
+
+SEXP do_windowssplitext do_formals
+{
+    do_start("windowssplitext", 2);
+    if (debug) Rprintf("in do_windowssplitext\n\n");
+    ext(1, SPLITEXT);
 }
 
 
-
-
-
-SEXP do_windowssplitext(SEXP call, SEXP op, SEXP args, SEXP rho) ext(1, SPLITEXT)
-
-
-SEXP do_unixsplitext(SEXP call, SEXP op, SEXP args, SEXP rho) ext(0, SPLITEXT)
-
-
-SEXP do_splitext(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_unixsplitext do_formals
 {
-    if (debug) {
-        Rprintf("in do_splitext\n\n");
-    }
+    do_start("unixsplitext", 2);
+    if (debug) Rprintf("in do_unixsplitext\n\n");
+    ext(0, SPLITEXT);
+}
+
+
+SEXP do_splitext do_formals
+{
+    do_start("splitext", 2);
+    if (debug) Rprintf("in do_splitext\n\n");
 #ifdef _WIN32
-    return do_windowssplitext(call, op, args, rho);
+    ext(1, SPLITEXT);
 #else
-    return do_unixsplitext(call, op, args, rho);
+    ext(0, SPLITEXT);
 #endif
 }
 
@@ -684,21 +674,30 @@ SEXP do_splitext(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 
-SEXP do_windowsremoveext(SEXP call, SEXP op, SEXP args, SEXP rho) ext(1, REMOVEEXT)
-
-
-SEXP do_unixremoveext(SEXP call, SEXP op, SEXP args, SEXP rho) ext(0, REMOVEEXT)
-
-
-SEXP do_removeext(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_windowsremoveext do_formals
 {
-    if (debug) {
-        Rprintf("in do_removeext\n\n");
-    }
+    do_start("windowsremoveext", 2);
+    if (debug) Rprintf("in do_windowsremoveext\n\n");
+    ext(1, REMOVEEXT);
+}
+
+
+SEXP do_unixremoveext do_formals
+{
+    do_start("unixremoveext", 2);
+    if (debug) Rprintf("in do_unixremoveext\n\n");
+    ext(0, REMOVEEXT);
+}
+
+
+SEXP do_removeext do_formals
+{
+    do_start("removeext", 2);
+    if (debug) Rprintf("in do_removeext\n\n");
 #ifdef _WIN32
-    return do_windowsremoveext(call, op, args, rho);
+    ext(1, REMOVEEXT);
 #else
-    return do_unixremoveext(call, op, args, rho);
+    ext(0, REMOVEEXT);
 #endif
 }
 
@@ -706,21 +705,30 @@ SEXP do_removeext(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 
-SEXP do_windowsext(SEXP call, SEXP op, SEXP args, SEXP rho) ext(1, EXT)
-
-
-SEXP do_unixext(SEXP call, SEXP op, SEXP args, SEXP rho) ext(0, EXT)
-
-
-SEXP do_ext(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_windowsext do_formals
 {
-    if (debug) {
-        Rprintf("in do_ext\n\n");
-    }
+    do_start("windowsext", 2);
+    if (debug) Rprintf("in do_windowsext\n\n");
+    ext(1, EXT);
+}
+
+
+SEXP do_unixext do_formals
+{
+    do_start("unixext", 2);
+    if (debug) Rprintf("in do_unixext\n\n");
+    ext(0, EXT);
+}
+
+
+SEXP do_ext do_formals
+{
+    do_start("ext", 2);
+    if (debug) Rprintf("in do_ext\n\n");
 #ifdef _WIN32
-    return do_windowsext(call, op, args, rho);
+    ext(1, EXT);
 #else
-    return do_unixext(call, op, args, rho);
+    ext(0, EXT);
 #endif
 }
 
@@ -728,20 +736,29 @@ SEXP do_ext(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 
-SEXP do_windowsextgets(SEXP call, SEXP op, SEXP args, SEXP rho) ext(1, EXTGETS)
-
-
-SEXP do_unixextgets(SEXP call, SEXP op, SEXP args, SEXP rho) ext(0, EXTGETS)
-
-
-SEXP do_extgets(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_windowsextgets do_formals
 {
-    if (debug) {
-        Rprintf("in do_extgets\n\n");
-    }
+    do_start("windowsextgets", 3);
+    if (debug) Rprintf("in do_windowsextgets\n\n");
+    ext(1, EXTGETS);
+}
+
+
+SEXP do_unixextgets do_formals
+{
+    do_start("unixextgets", 3);
+    if (debug) Rprintf("in do_unixextgets\n\n");
+    ext(0, EXTGETS);
+}
+
+
+SEXP do_extgets do_formals
+{
+    do_start("extgets", 3);
+    if (debug) Rprintf("in do_extgets\n\n");
 #ifdef _WIN32
-    return do_windowsextgets(call, op, args, rho);
+    ext(1, EXTGETS);
 #else
-    return do_unixextgets(call, op, args, rho);
+    ext(0, EXTGETS);
 #endif
 }

@@ -14,8 +14,12 @@
 
 
 extern0 SEXP0
-#if !defined(R_VERSION) || R_VERSION < R_Version(3, 4, 0)
+#if R_version_less_than(3, 4, 0)
     R_AsCharacterSymbol                    INI_as(install("as.character")),
+#endif
+#if R_version_less_than(3, 2, 0)
+    R_DoubleColonSymbol                    INI_as(install("::")),
+    R_TripleColonSymbol                    INI_as(install(":::")),
 #endif
     /* formatted weird on purpose, do not modify */
     thispathofileSymbol                    INI_as(install(
@@ -71,11 +75,16 @@ extern0 SEXP0
     na_encodeSymbol                        INI_as(install("na.encode")),
     exprSymbol                             INI_as(install("expr")),
     on_exitSymbol                          INI_as(install("on.exit")),
+#if R_version_at_least(3, 0, 0)
     External2Symbol                        INI_as(install(".External2")),
     C_setprseen2Symbol                     INI_as(install("C_setprseen2")),
+#else
+    setprseen2Symbol                       INI_as(install("setprseen2")),
+#endif
     thispathtempSymbol                     INI_as(install("._this.path::temp_.")),
     parent_frameSymbol                     INI_as(install("parent.frame")),
-#if !defined(R_THIS_PATH_DEFINES)
+#if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
+#else
     invisibleSymbol                        INI_as(install("invisible")),
 #endif
     as_environmentSymbol                   INI_as(install("as.environment")),

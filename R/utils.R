@@ -1,3 +1,62 @@
+if (getRversion() < "3.5.0") {
+
+
+...length <- function ()
+.External2(C_dotslength)
+
+
+isFALSE <- function (x)
+is.logical(x) && length(x) == 1L && !is.na(x) && !x
+
+
+}
+
+
+if (getRversion() < "3.4.0") {
+
+
+withAutoprint <- function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
+    echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20,
+        getOption("width")), deparseCtrl = c("keepInteger", "showAttributes",
+        "keepNA"), spaced = FALSE, ...)
+{
+    if (!evaluated) {
+        exprs <- substitute(exprs)
+        if (is.call(exprs)) {
+            if (exprs[[1]] == quote(`{`))
+                exprs <- as.list(exprs[-1])
+        }
+    }
+    if (!is.expression(exprs))
+        exprs <- as.expression(exprs)
+    conn <- textConnection(code2character(exprs, width.cutoff = width.cutoff, deparseCtrl = deparseCtrl))
+    on.exit(close(conn))
+    source(file = conn, local = local, print.eval = print., echo = echo,
+        max.deparse.length = max.deparse.length, ...)
+}
+
+
+} else withAutoprint <- base::withAutoprint
+
+
+if (getRversion() < "3.2.0") {
+
+
+isNamespaceLoaded <- function (name)
+.External2(C_isRegisteredNamespace, name)
+
+
+} else {
+
+
+isNamespaceLoaded <- function (name)
+isNamespaceLoaded(name)
+environment(isNamespaceLoaded) <- .BaseNamespaceEnv
+
+
+}
+
+
 .Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
 {
     command <- path.join(R.home("bin"), if (os.windows)
@@ -30,8 +89,8 @@
 }
 
 
-build_this <- function (chdir = FALSE, file = here(), which = "tar")
-{
+build_this <- function(chdir = FALSE, file = here(), which = "tar") NULL
+body(build_this) <- bquote({
     # build_this {this.path}                                     R Documentation
     #
     # Building Packages
@@ -311,18 +370,33 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
     # fill the directory and sub-directories with their files,
     # while maintaining file modify time
     if (any(i <- !file.copy(
-        path.join(file  , files[!isdir]),
-        path.join(pkgdir, files[!isdir]),
-        copy.date = TRUE
+        ..(
+            if (getRversion() < "3.1.0")
+                expression(
+                    from <- path.join(file  , files[!isdir]),
+                    to <- path.join(pkgdir, files[!isdir])
+                )
+            else
+                expression(
+                    path.join(file  , files[!isdir]),
+                    path.join(pkgdir, files[!isdir]),
+                    copy.date = TRUE
+                )
+        )
     )))
         stop(ngettext(sum(i), "unable to copy file: ", "unable to copy files:\n  "),
              paste(encodeString(files[!isdir][i], quote = "\""), collapse = "\n  "))
+    else ..(
+        if (getRversion() < "3.1.0")
+            expression(Sys.setFileTime(to, file.info(from)$mtime))
+        else expression()
+    )
 
 
     # set the modify time of the sub-directories to their original values
     Sys.setFileTime(
-                  path.join(pkgdir, dirs),
-        file.info(path.join(file  , dirs), extra_cols = FALSE)$mtime
+                   path.join(pkgdir, dirs),
+        file.mtime(path.join(file  , dirs))
     )
 
 
@@ -371,7 +445,7 @@ build_this <- function (chdir = FALSE, file = here(), which = "tar")
             }
         }, stop("invalid 'which'; should not happen, please report!"))
     }
-}
+}, splice = TRUE)
 
 
 build.this <- build_this
@@ -532,6 +606,20 @@ write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
         writeLines(x, file, useBytes = !utf8)
         invisible(x)
     }
+}
+
+
+if (getRversion() < "3.2.0") {
+
+
+    tmp <- formals(code2character)[["deparseCtrl"]]
+    formals(code2character)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
+
+
+    tmp <- formals(write.code)[["deparseCtrl"]]
+    formals(write.code)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
+
+
 }
 
 

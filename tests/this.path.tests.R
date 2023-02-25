@@ -4,9 +4,9 @@ local({
         message("cannot 'chdir' as current directory is unknown")
         return(invisible())
     } else on.exit(setwd(owd), add = TRUE)
-    .unload <- !isNamespaceLoaded("testthat")
+    .unload <- !this.path:::isNamespaceLoaded("testthat")
     if (.unload)
-        on.exit(unloadNamespace("testthat"), add = TRUE)
+        on.exit(if (this.path:::isNamespaceLoaded("testthat")) unloadNamespace("testthat"), add = TRUE)
 
 
     fun <- function(expr, envir = parent.frame()) {
@@ -72,7 +72,7 @@ local({
     ## the directories that lead to the 3 paths from above
     base.path.dir  <- dirname(full.path)
     short.path.dir <- dirname(base.path.dir)
-    full.path.dir  <- tempdir(check = TRUE)
+    full.path.dir  <- if (getRversion() >= "3.5.0") tempdir(check = TRUE) else tempdir()
 
 
     ## try using source in all possible manners

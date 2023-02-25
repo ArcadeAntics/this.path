@@ -31,7 +31,7 @@ void Rprint(SEXP x, SEXP rho)
 
 
 
-SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_shfile do_formals
 {
     /*
     do_shfile {this.path}                                        C Documentation
@@ -50,9 +50,12 @@ SEXP do_shfile(SEXP call, SEXP op, SEXP args, SEXP rho)
      */
 
 
+    do_start("shfile", 2);
+
+
     /* see ?shFILE */
-    int original = asLogical(CADR(args));
-    int for_msg  = asLogical(CADDR(args));
+    int original = asLogical(CAR(args)); args = CDR(args);
+    int for_msg  = asLogical(CAR(args)); args = CDR(args);
     if (for_msg == NA_LOGICAL)
         error(_("invalid '%s' argument"), "for.msg");
 
@@ -282,7 +285,7 @@ static char *unescape_arg(char *p, const char *avp)
 #endif
 
 
-SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP do_shinfo do_formals
 {
     /*
     do_shinfo {this.path}                                        C Documentation
@@ -323,6 +326,9 @@ SEXP do_shinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 
         character string; command line argument EXPR or NA_character_
      */
+
+
+    do_start("shinfo", 0);
 
 
     if (!is_maybe_in_shell) {

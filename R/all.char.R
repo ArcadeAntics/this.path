@@ -2,7 +2,7 @@ if (getRversion() < "3.6.0") {
     str2expression <- function(text) {
         if (typeof(text) != "character")
             stop("argument must be character", domain = "R")
-        parse(text = text, n = -1, keep.source = FALSE)
+        parse(text = text, n = -1, keep.source = FALSE, srcfile = NULL)
     }
 }
 
@@ -36,8 +36,7 @@ all.char <- function ()
 }
 
 
-sys.source("./inst/extdata/main.R", environment(),
-    toplevel.env = getOption("topLevelEnvironment", as.environment(environment())))
+sys.source("./inst/extdata/main.R", environment())
 
 
 tmp <- function(expr) {

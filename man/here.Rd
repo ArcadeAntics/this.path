@@ -34,7 +34,7 @@ the executing script's directory.
 % this.path:::write.code(file = FILE <- tempfile(), {
 %
 %
-%     withAutoprint({
+%     this.path:::withAutoprint({
 %
 %
 %         this.path::here()
