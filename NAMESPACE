@@ -22,7 +22,7 @@ export(basename2, dirname2)
 # check.path.R               ----
 
 
-export(check.path, check.dir)
+export(check.path, check.dir, check.proj)
 
 
 # ext.R                      ----

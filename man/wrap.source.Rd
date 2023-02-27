@@ -4,16 +4,16 @@
 \alias{set.this.path}
 \alias{unset.this.path}
 \title{
-Implement \code{this.path()} For Arbitrary \code{source}-Like Functions
+Implement \code{this.path()} For Arbitrary \sourcelink{}-Like Functions
 }
 \description{
-A \code{source}-like function is any function which evaluates code from a file.
+A \sourcelink{}-like function is any function which evaluates code from a file.
 
 Currently, \code{\link{this.path}()} is implemented to work with
-\sourceandlist{}.
+\sourcesandlistlinks{}.
 
 \code{wrap.source()} and \code{inside.source()} can be used to implement
-\code{this.path()} for any other \code{source}-like functions.
+\code{this.path()} for any other \sourcelink{}-like functions.
 
 \code{set.this.path()} is just an alias for \code{inside.source()}.
 
@@ -101,7 +101,7 @@ unset.this.path()
 }
 \arguments{
   \item{expr}{
-an (unevaluated) call to a \code{source}-like function.
+an (unevaluated) call to a \sourcenolink{}-like function.
   }
   \item{file}{
 a \code{\link[base:connections]{connection}} or a character string giving the
@@ -156,26 +156,27 @@ instead?
   }
 }
 \details{
-\code{inside.source()} should be added to the body of your \code{source}-like
+\code{inside.source()} should be added to the body of your \sourcenolink{}-like
 function before reading / / evaluating the expressions.
 
 \code{wrap.source()}, unlike \code{inside.source()}, does not accept an
 argument \code{file}. Instead, an attempt is made to extract the file from
 \code{expr}, after which \code{expr} is evaluated. It is assumed that the file
-is the first argument of the function, as is the case with \sourceandlist{}.
-The function of the call is evaluated, its \code{\link[base]{formals}()} are
-retrieved, and then the arguments of \code{expr} are searched for a name
-matching the name of the first formal argument. If a match cannot be found by
-name, the first unnamed argument is taken instead. If no such argument exists,
-the file is assumed missing.
+is the first argument of the function, as is the case with
+\sources1stargisfileandlistnolinks{}. The function of the call is evaluated, its
+\code{\link[base]{formals}()} are retrieved, and then the arguments of
+\code{expr} are searched for a name matching the name of the first formal
+argument. If a match cannot be found by name, the first unnamed argument is
+taken instead. If no such argument exists, the file is assumed missing.
 
 \code{wrap.source()} does non-standard evaluation and does some guess work to
 determine the file. As such, it is less desirable than \code{inside.source()}
 when the option is available. I can think of exactly one scenario in which
-\code{wrap.source()} might be preferable: suppose there is a \code{source}-like
-function \code{sourcelike()} in a foreign package (a package for which you do
-not have write permission). Suppose that you write your own function in which
-the formals are \code{(\dots)} to wrap \code{sourcelike()}:
+\code{wrap.source()} might be preferable: suppose there is a
+\sourcenolink{}-like function \code{sourcelike()} in a foreign package (a
+package for which you do not have write permission). Suppose that you write
+your own function in which the formals are \code{(\dots)} to wrap
+\code{sourcelike()}:
 
 \preformatted{wrapper <- function (...)
 {
@@ -190,9 +191,9 @@ you could simply change the formals of \code{wrapper()} from \code{(\dots)} to
 \code{inside.source()} instead.
 }
 \value{
-for \code{wrap.source}, the result of evaluating \code{expr}.
+for \code{wrap.source()}, the result of evaluating \code{expr}.
 
-for \code{inside.source}, if \code{file} is a path, then the normalized path
+for \code{inside.source()}, if \code{file} is a path, then the normalized path
 with the same attributes, otherwise \code{file} itself. The return value of
 \code{inside.source()} should be assigned to a variable before use, something
 like:
@@ -207,12 +208,12 @@ like:
 \note{
 Both functions should only be called within another function.
 
-Suppose that the functions \sourceandlist{} were not implemented with
+Suppose that the functions \sourcesandlistnolinks{} were not implemented with
 \code{this.path()}. You could use \code{inside.source()} to implement each of
 them as follows:
 
 \describe{
-  \item{\sourcelink{}}{
+  \item{\sourcenolink{}}{
 \preformatted{
 wrapper <- function(file, ...) {
     file <- inside.source(file)
@@ -220,7 +221,7 @@ wrapper <- function(file, ...) {
 }
 }
   }
-  \item{\syssourcelink{}}{
+  \item{\syssourcenolink{}}{
 \preformatted{
 wrapper <- function(file, ...) {
     file <- inside.source(file, path.only = TRUE)
@@ -228,7 +229,7 @@ wrapper <- function(file, ...) {
 }
 }
   }
-  \item{\debugSource{}}{
+  \item{\debugSourcenolink{}}{
 \preformatted{
 wrapper <- function(fileName, ...) {
     fileName <- inside.source(fileName, character.only = TRUE,
@@ -237,7 +238,7 @@ wrapper <- function(fileName, ...) {
 }
 }
   }
-  \item{\sourcefilelink{}}{
+  \item{\sourcefilenolink{}}{
 \preformatted{
 wrapper <- function(path, ...) {
     # before testthat_3.1.2, source_file() used readLines() to read the
@@ -250,7 +251,7 @@ wrapper <- function(path, ...) {
 }
 }
   }
-  \item{\knitlink{}}{
+  \item{\knitnolink{}}{
 \preformatted{
 wrapper <- function(input, ...) {
     # this works for the most part, but will not work in child mode
@@ -259,7 +260,7 @@ wrapper <- function(input, ...) {
 }
 }
   }
-  \item{\boxuselink{}}{
+  \item{\boxusenolink{}}{
 \preformatted{
 # 'box' is structured to be an incredible pain in the ass,
 # so this solution is not exactly ideal, but it works so whatever

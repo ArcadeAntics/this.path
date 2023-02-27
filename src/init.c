@@ -134,6 +134,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"promiseisunevaluated"    , (DL_FUNC) &do_promiseisunevaluated    , -1},
     {"getpromisewithoutwarning", (DL_FUNC) &do_getpromisewithoutwarning, -1},
     {"prinfo"                  , (DL_FUNC) &do_prinfo                  , -1},
+    {"setthispathjupyter"      , (DL_FUNC) &do_setthispathjupyter      ,  1},
 
 
     /* shfile.c */
@@ -156,7 +157,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"isclipboard"     , (DL_FUNC) &do_isclipboard     ,  1},
     {"thispath"        , (DL_FUNC) &do_thispath        ,  5},
     {"inittoolsrstudio", (DL_FUNC) &do_inittoolsrstudio, -1},
-    {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  5},
+    {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  6},
 
 
     /* utils.c */

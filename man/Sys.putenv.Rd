@@ -4,8 +4,8 @@
 Set Environment Variables
 }
 \description{
-\code{Sys.putenv} sets environment variables (for other processes called from
-within \R or future calls to \code{\link[base]{Sys.getenv}} from this \R
+\code{Sys.putenv()} sets environment variables (for other processes called from
+within \R or future calls to \code{\link[base]{Sys.getenv}()} from this \R
 process).
 }
 \usage{
@@ -22,7 +22,7 @@ A logical vector, with elements being true if setting the corresponding
 variable succeeded.
 }
 \seealso{
-\code{\link[base]{Sys.setenv}}
+\code{\link[base]{Sys.setenv}()}
 }
 \examples{
 Sys.putenv(c("R_TEST=testit", "A+C=123"))

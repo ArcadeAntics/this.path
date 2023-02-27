@@ -22,14 +22,14 @@ For \sourcelink{} or \syssourcelink{}, make sure to supply argument
 \code{keep.source = TRUE} directly, or set the options \code{"keep.source"} or
 \code{"keep.source.pkgs"} to \code{TRUE}.
 
-For \debugSource{}, it has no argument \code{keep.source}, so set the option
-\code{"keep.source"} to \code{TRUE} before calling.
+For \debugSourcelink{}, it has no argument \code{keep.source}, so set the
+option \code{"keep.source"} to \code{TRUE} before calling.
 
 For \sourcefilelink{}, the \code{srcref} is always stored, so you do not need
 to do anything special before calling.
 
-For \knitlink{}, there is nothing that can be done, the \code{srcref} is never
-stored. I am looking into a fix for such a thing.
+For \knitlink{}, the \code{srcref} is never stored, there is nothing that can
+be done. I am looking into a fix for such a thing.
 
 For \boxuselink{}, the \code{srcref} is always stored, so you do not need
 to do anything special before calling.

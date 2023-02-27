@@ -4,12 +4,13 @@
 \title{
 Get Executing Script's Path, from \sQuote{Rgui}, \sQuote{RStudio},
 \sQuote{VSCode}, \sQuote{Jupyter}, \code{source()}, and \command{Rscript}
-(Shells Including Windows Command Line / / Unix Terminal)
+(Shells Including Windows Command-Line / / Unix Terminal)
 }
 \description{
 Determine the path of the executing script. Works when running a line or
 selection in \sQuote{Rgui}, \sQuote{RStudio}, \sQuote{VSCode}, and
-\sQuote{Jupyter}, when using \sourceandlist{}, and when running from a shell.
+\sQuote{Jupyter}, when using \sourcesandlistlinks{}, and when running from a
+shell.
 }
 \details{
 \code{\link{this.path}()} returns the
@@ -74,7 +75,7 @@ Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
 \seealso{
-\sourcelinks{}
+\sourceslistlinks{}
 
 \code{\link{R.from.shell}}
 }

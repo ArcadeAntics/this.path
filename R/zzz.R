@@ -241,6 +241,8 @@ if (getRversion() < "3.0.0") {
     promise.is.unevaluated                   <- fix.External2(promise.is.unevaluated                  )
     is.clipboard                             <- fix.External2(is.clipboard                            )
     .this.path.rgui                          <- fix.External2(.this.path.rgui                         )
+    .this.path.toplevel                      <- fix.External2(.this.path.toplevel                     )
+    set.this.path.jupyter                    <- fix.External2(set.this.path.jupyter                   )
     .this.path                               <- fix.External2(.this.path                              )
     get.frame.number                         <- fix.External2(get.frame.number                        )
     here                                     <- fix.External2(here                                    )

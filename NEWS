@@ -1,6 +1,6 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.12:
+CHANGES IN this.path 1.2.0.13:
 
   NEW FEATURES
 
@@ -16,6 +16,8 @@ CHANGES IN this.path 1.2.0.12:
 
     * this.path() now works in 'Jupyter'.
 
+    * Added check.proj().
+
   DEPRECATED AND DEFUNCT
 
     * as.relative.path() and as.rel.path() are defunct and should be
@@ -25,8 +27,8 @@ CHANGES IN this.path 1.2.0.12:
 
     * shFILE(for.msg = TRUE, default = <...>) now does not evaluate default, as
       intended. By extension, this.path(for.msg = TRUE) now returns
-      NA_character when running from a shell instead of incorrectly throwing an
-      error.
+      NA_character_ when running from a shell instead of incorrectly throwing
+      an error.
 
 CHANGES IN this.path 1.2.0:
 

@@ -7,13 +7,13 @@
 File Extensions
 }
 \description{
-\code{splitext} splits an extension from a path.
+\code{splitext()} splits an extension from a path.
 
-\code{removeext} removes an extension from a path.
+\code{removeext()} removes an extension from a path.
 
-\code{ext} gets the extension of a path.
+\code{ext()} gets the extension of a path.
 
-\code{ext<-} sets the extension of a path.
+\code{ext<-()} sets the extension of a path.
 }
 \usage{
 splitext(path, compression = FALSE)
@@ -41,14 +41,14 @@ Trailing path separators are removed before dissecting the path.
 It will always be true that \code{path == paste0(removeext(path), ext(path))}.
 }
 \value{
-for \code{splitext}, a matrix with 2 rows and \code{length(path)} columns. The
-first row will be the roots of the paths, the second row will be the extensions
-of the paths.
+for \code{splitext()}, a matrix with 2 rows and \code{length(path)} columns.
+The first row will be the roots of the paths, the second row will be the
+extensions of the paths.
 
-for \code{removeext} and \code{ext}, a character vector the same length as
+for \code{removeext()} and \code{ext()}, a character vector the same length as
 \code{path}.
 
-for \code{ext<-}, the updated object.
+for \code{ext<-()}, the updated object.
 }
 \examples{
 splitext(character(0))

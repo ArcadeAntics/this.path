@@ -601,7 +601,7 @@ static Rboolean _init_tools_rstudio(void)
         return TRUE;
 
 
-    const char *what = CHAR(PRINTNAME(tools_rstudioSymbol));
+    const char *what = EncodeChar(PRINTNAME(tools_rstudioSymbol));
 
 
     SEXP name;

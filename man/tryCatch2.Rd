@@ -4,7 +4,7 @@
 Condition Handling and Recovery
 }
 \description{
-A variant of \code{\link[base:conditions]{tryCatch}} that accepts an
+A variant of \code{\link[base:conditions]{tryCatch}()} that accepts an
 \code{else.} argument, similar to \code{try except} in \sQuote{Python}.
 }
 \usage{
@@ -28,7 +28,7 @@ expression to be evaluated before returning or exiting.
 \details{
 The use of the \code{else.} argument is better than adding additional code to
 \code{expr} because it avoids accidentally catching a condition that was not
-being protected by the \code{tryCatch} call.
+being protected by the \code{tryCatch()} call.
 }
 \examples{
 FILES <- tempfile(c("existent-file_", "non-existent-file_"))

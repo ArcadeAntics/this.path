@@ -1,4 +1,4 @@
-find_root <- function (path = getwd(), verbose = FALSE, criterion = default.criterion)
+find_root <- function (path = normalizePath(getwd()), verbose = FALSE, criterion = default.criterion)
 {
     # path <- "\\\\host\\share\\path\\to\\file\\"
     criterion <- rprojroot::as.root_criterion(criterion)
@@ -36,8 +36,9 @@ evalq(envir = environment(find_root) <- new.env(), {
 })
 
 
-.this.proj <- function (path, verbose = FALSE)
+.this.proj <- function (verbose = FALSE)
 {
+    path <- .this.dir()
     if (indx <- match(path, names(table), 0L))
         table[[indx]]
     else (table[[path]] <<- find_root(path, verbose))
@@ -49,6 +50,6 @@ evalq(envir = environment(.this.proj) <- new.env(), {
 
 this.proj <- function (...)
 {
-    base <- .this.proj(.this.dir())
+    base <- .this.proj()
     path.join(base, ...)
 }

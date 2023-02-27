@@ -26,7 +26,7 @@ if \option{FILE} is not found, this value is returned.
   }
   \item{else.}{
 missing or a function to apply if \option{FILE} is found. See
-\code{\link{tryCatch2}} for inspiration.
+\code{\link{tryCatch2}()} for inspiration.
   }
 }
 \value{
@@ -40,7 +40,7 @@ called subsequent times.
 In Windows, the normalized path will use / as the file separator.
 }
 \seealso{
-\code{\link{this.path}}, \code{\link{here}}
+\code{\link{this.path}()}, \code{\link{here}()}
 }
 \examples{
 FILE <- tempfile(fileext = ".R")

@@ -145,6 +145,7 @@ extern SEXP do_isunevaluatedpromise     do_formals;
 extern SEXP do_promiseisunevaluated     do_formals;
 extern SEXP do_getpromisewithoutwarning do_formals;
 extern SEXP do_prinfo                   do_formals;
+extern SEXP do_setthispathjupyter       do_formals;
 
 
 /* shfile.c */

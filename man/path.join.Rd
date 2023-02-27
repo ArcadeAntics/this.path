@@ -17,8 +17,9 @@ character vectors.
 }
 \details{
 When constructing a path to a file, the last absolute path is selected and all
-trailing paths are appended. This is different from \code{\link[base]{file.path}}
-where all trailing paths are treated as components.
+trailing paths are appended. This is different from
+\code{\link[base]{file.path}()} where all trailing paths are treated as
+components.
 }
 \value{
 A character vector of the arguments concatenated term-by-term and separated by

@@ -23,20 +23,39 @@
 #define get_sym _get_sym(errorcall(call, "invalid first argument"))
 
 
+#define get_env                                                \
+        env = CADR(args);                                      \
+        if (TYPEOF(env) != ENVSXP)                             \
+            errorcall(call, "invalid second argument")
+
+
+#define get_inherits                                           \
+        inherits = asLogical(CADDR(args));                     \
+        if (inherits == NA_LOGICAL)                            \
+            errorcall(call, "invalid third argument")
+
+
 #define handles_nargs(one_arg_env, name)                       \
+    SEXP sym, env;                                             \
+    Rboolean inherits;                                         \
     switch (length(args)) {                                    \
     case 1:                                                    \
         get_sym;                                               \
         env = (one_arg_env);                                   \
+        inherits = FALSE;                                      \
         break;                                                 \
     case 2:                                                    \
         get_sym;                                               \
-        env = CADR(args);                                      \
-        if (TYPEOF(env) != ENVSXP)                             \
-            errorcall(call, "invalid second argument");        \
+        get_env;                                               \
+        inherits = FALSE;                                      \
+        break;                                                 \
+    case 3:                                                    \
+        get_sym;                                               \
+        get_env;                                               \
+        get_inherits;                                          \
         break;                                                 \
     default:                                                   \
-        errorcall(call, wrong_nargs_to_External(length(args), (name), "1 or 2"));\
+        errorcall(call, wrong_nargs_to_External(length(args), (name), "1, 2, or 3"));\
     }
 
 
@@ -54,11 +73,10 @@ SEXP do_isunevaluatedpromise do_formals
     do_start("isunevaluatedpromise", -1);
 
 
-    SEXP sym, env;
     handles_nargs(rho, "C_isunevaluatedpromise");
 
 
-    SEXP value = findVarInFrame(env, sym);
+    SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
     if (value == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
@@ -76,11 +94,10 @@ SEXP do_promiseisunevaluated do_formals
     do_start("promiseisunevaluated", -1);
 
 
-    SEXP sym, env;
-    handles_nargs(rho, "C_promiseisunevaluated");
+    handles_nargs(ENCLOS(rho), "C_promiseisunevaluated");
 
 
-    SEXP value = findVarInFrame(env, sym);
+    SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
     if (value == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
@@ -105,11 +122,10 @@ SEXP do_getpromisewithoutwarning do_formals
     do_start("getpromisewithoutwarning", -1);
 
 
-    SEXP sym, env;
-    handles_nargs(ENCLOS(rho), "C_getpromisewithoutwarning");
+    handles_nargs(rho, "C_getpromisewithoutwarning");
 
 
-    SEXP value = findVarInFrame(env, sym);
+    SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
     if (value == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
@@ -260,4 +276,59 @@ SEXP do_prinfo do_formals
 
 
     return PRINFO(e);
+}
+
+
+#include "drivewidth.h"
+
+
+SEXP do_setthispathjupyter do_formals
+{
+    do_start("setjupyterpath", 1);
+
+
+    static SEXP thispathtoplevelSymbol = NULL;
+    if (thispathtoplevelSymbol == NULL) {
+        thispathtoplevelSymbol = install(".this.path.toplevel");
+    }
+
+
+    SEXP path = CAR(args);
+    if (TYPEOF(path) != STRSXP || LENGTH(path) != 1L)
+        errorcall(call, _("invalid '%s' argument"), "path");
+    if (STRING_ELT(path, 0) == NA_STRING ||
+#ifdef _WIN32
+        is_abs_path_windows(CHAR(STRING_ELT(path, 0)))
+#else
+        is_abs_path_unix(CHAR(STRING_ELT(path, 0)))
+#endif
+        )
+    {}
+    else errorcall(call, _("invalid '%s' argument"), "path");
+
+
+    SEXP sym, env = getInFrame(thispathtoplevelSymbol, mynamespace, FALSE);
+    if (TYPEOF(env) != CLOSXP)
+        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(thispathtoplevelSymbol)));
+    env = CLOENV(env);
+
+
+    sym = thispathfilejupyterSymbol;
+    SEXP e = findVarInFrame(env, sym);
+    if (e == R_UnboundValue)
+        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+    if (TYPEOF(e) != PROMSXP)
+        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+    SET_PRENV(e, env);
+    SET_PRVALUE(e, R_UnboundValue);
+
+
+    sym = thispathofilejupyterSymbol;
+    R_unLockBinding(sym, env);
+    defineVar(sym, path, env);
+    R_LockBinding(sym, env);
+
+
+    set_R_Visible(0);
+    return path;
 }

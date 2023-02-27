@@ -319,7 +319,7 @@ SEXP do_wrapsource do_formals
                     for (dot = dots ; dot != R_NilValue ; dot = CDR(dot)) {
                         if (TAG(dot) != R_NilValue && pmatch(tag, TAG(dot), 1)) {
                             if (s != NULL)
-                                errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), CHAR(PRINTNAME(tag)));
+                                errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                             else
                                 s = CAR(dot);
                             if (TYPEOF(s) != PROMSXP)
@@ -332,7 +332,7 @@ SEXP do_wrapsource do_formals
             }
             else if (TAG(b) != R_NilValue && pmatch(tag, TAG(b), 1)) {
                 if (s != NULL)
-                    errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), CHAR(PRINTNAME(tag)));
+                    errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                 else
                     s = CAR(b);
                 n = i;
@@ -352,7 +352,7 @@ SEXP do_wrapsource do_formals
                         for (dot = dots ; dot != R_NilValue ; dot = CDR(dot)) {
                             if (TAG(dot) != R_NilValue && pmatch(tag, TAG(dot), 0)) {
                                 if (s != NULL)
-                                    errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), CHAR(PRINTNAME(tag)));
+                                    errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                                 else
                                     s = CAR(dot);
                                 if (TYPEOF(s) != PROMSXP)
@@ -365,7 +365,7 @@ SEXP do_wrapsource do_formals
                 }
                 else if (TAG(b) != R_NilValue && pmatch(tag, TAG(b), 0)) {
                     if (s != NULL)
-                        errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), CHAR(PRINTNAME(tag)));
+                        errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                     else
                         s = CAR(b);
                     n = i;

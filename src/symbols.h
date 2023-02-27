@@ -23,17 +23,23 @@ extern0 SEXP0
 #endif
     /* formatted weird on purpose, do not modify */
     thispathofileSymbol                    INI_as(install(
-        "._this.path::ofile_."
+        ".this.path::ofile"
     )),
     thispathfileSymbol                     INI_as(install(
-            "._this.path::file_."
+        ".this.path::file"
     )),
-    thispathformsgSymbol                   INI_as(install("._this.path::for msg_.")),
-    thispatherrorSymbol                    INI_as(install("._this.path::error_.")),
-    thispathassocwfileSymbol               INI_as(install("._this.path::associated with file_.")),
-    thispathdoneSymbol                     INI_as(install("._this.path::done_.")),
-    insidesourcewashereSymbol              INI_as(install("._this.path::inside.source() was here_.")),
-    thispathnSymbol                        INI_as(install("._this.path::n_.")),
+    thispathofilejupyterSymbol             INI_as(install(
+        ".this.path::ofile.jupyter"
+    )),
+    thispathfilejupyterSymbol              INI_as(install(
+        ".this.path::file.jupyter"
+    )),
+    thispathformsgSymbol                   INI_as(install(".this.path::for msg")),
+    thispatherrorSymbol                    INI_as(install(".this.path::error")),
+    thispathassocwfileSymbol               INI_as(install(".this.path::associated with file")),
+    thispathdoneSymbol                     INI_as(install(".this.path::done")),
+    insidesourcewashereSymbol              INI_as(install(".this.path::inside.source() was here")),
+    thispathnSymbol                        INI_as(install(".this.path::n")),
     _normalizePathSymbol                   INI_as(install(".normalizePath")),
     _normalizeAgainstSymbol                INI_as(install(".normalizeAgainst")),
     stopSymbol                             INI_as(install("stop")),
@@ -81,7 +87,7 @@ extern0 SEXP0
 #else
     setprseen2Symbol                       INI_as(install("setprseen2")),
 #endif
-    thispathtempSymbol                     INI_as(install("._this.path::temp_.")),
+    thispathtempSymbol                     INI_as(install(".this.path::temp")),
     parent_frameSymbol                     INI_as(install("parent.frame")),
 #if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
 #else

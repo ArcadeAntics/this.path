@@ -2,7 +2,7 @@
 \alias{here}
 \alias{ici}
 \title{
-Construct Path to File, Beginning with \code{this.dir()}
+Construct Path to File, Beginning with \code{\link{this.dir}()}
 }
 \description{
 Construct the path to a file from components/paths in a
@@ -24,7 +24,7 @@ the number of directories to go back.
 The path to a file begins with a base. The base is \code{..} number of
 directories back from the executing script's directory (\code{this.dir()}). The
 argument is named \code{..} because \code{".."} refers to the parent directory
-in Windows, Unix, and URL paths alike.
+in Windows, Unix-alikes, and URL paths.
 }
 \value{
 A character vector of the arguments concatenated term-by-term, beginning with

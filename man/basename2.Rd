@@ -5,10 +5,10 @@
 Manipulate File Paths
 }
 \description{
-\code{basename2} removes all of the path up to and including the last path
+\code{basename2()} removes all of the path up to and including the last path
 separator (if any).
 
-\code{dirname2} returns the part of the \code{path} up to but excluding the
+\code{dirname2()} returns the part of the \code{path} up to but excluding the
 last path separator, or \code{"."} if there is no path separator.
 }
 \usage{

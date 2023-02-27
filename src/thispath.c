@@ -733,33 +733,42 @@ SEXP do_inittoolsrstudio do_formals
 
 SEXP do_thispathrgui do_formals
 {
-    do_start("thispathrgui", 5);
+    do_start("thispathrgui", 6);
+
+
+    SEXP wintitle, untitled, r_editor;
+    Rboolean verbose, original, for_msg;
 
 
     /* titles of the windows in RGui */
-    SEXP wintitle = CAR(args); args = CDR(args);
+    wintitle = CAR(args); args = CDR(args);
     if (!(TYPEOF(wintitle) == STRSXP || wintitle == R_NilValue))
         errorcall(call, _("invalid first argument, must be %s"), "'character' / / NULL");
 
 
     /* strings representing non-existent files in RGui */
-    SEXP untitled = CAR(args); args = CDR(args);
+    untitled = CAR(args); args = CDR(args);
     if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
         errorcall(call, _("invalid second argument, must be %s"), "'character' / / NULL");
 
 
     /* strings representing R scripts in RGui */
-    SEXP r_editor = CAR(args); args = CDR(args);
+    r_editor = CAR(args); args = CDR(args);
     if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
         errorcall(call, _("invalid third argument, must be %s"), "'character' / / NULL");
 
 
-    Rboolean verbose = asLogical(CAR(args)); args = CDR(args);
+    verbose = asLogical(CAR(args)); args = CDR(args);
     if (verbose == NA_LOGICAL)
         errorcall(call, _("invalid '%s' value"), "verbose");
 
 
-    Rboolean for_msg = asLogical(CAR(args)); args = CDR(args);
+    original = asLogical(CAR(args)); args = CDR(args);
+    if (verbose == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "original");
+
+
+    for_msg = asLogical(CAR(args)); args = CDR(args);
     if (for_msg == NA_LOGICAL)
         errorcall(call, _("invalid '%s' value"), "for.msg");
 
@@ -812,6 +821,8 @@ SEXP do_thispathrgui do_formals
                     if (verbose)                               \
                         Rprintf((active) ? "Source: active document in Rgui\n" :\
                                            "Source: source document in Rgui\n");\
+                    if (original)                              \
+                        return ScalarString((charsxp));        \
                     SEXP expr = allocList(2);                  \
                     PROTECT(expr);                             \
                     SET_TYPEOF(expr, LANGSXP);                 \

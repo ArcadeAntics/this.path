@@ -93,8 +93,10 @@ if (getRversion() < "4.1.0") {
 
 tmp <- readLines("./src/symbols.h")
 tmp <- list(
-    thispathofile = str2lang(tmp[[grep("^[ \t]*thispathofileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
-    thispathfile  = str2lang(tmp[[grep("^[ \t]*thispathfileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]])
+    thispathofile        = str2lang(tmp[[grep("^[ \t]*thispathofileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
+    thispathfile         = str2lang(tmp[[grep("^[ \t]*thispathfileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
+    thispathofilejupyter = str2lang(tmp[[grep("^[ \t]*thispathofilejupyterSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
+    thispathfilejupyter  = str2lang(tmp[[grep("^[ \t]*thispathfilejupyterSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]])
 )
 if (!all(vapply(tmp, function(x) is.character(x) && length(x) == 1 && !is.na(x), NA)))
     stop("could not determine variable names")
@@ -407,9 +409,9 @@ getNamedElement <- function (x, names)
 # external pointers containing the windows handles. the thing of
 # interest are the names of this list, these should be the names of the
 # windows belonging to the current R process.
-.this.path.rgui <- function (verbose = FALSE, for.msg = FALSE)
+.this.path.rgui <- function (verbose = FALSE, original = FALSE, for.msg = FALSE)
 .External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
-    untitled, r.editor, verbose, for.msg)
+    untitled, r.editor, verbose, original, for.msg)
 
 
 .this.path.toplevel <- function (verbose = FALSE, original = FALSE, for.msg = FALSE) NULL
@@ -480,7 +482,9 @@ body(.this.path.toplevel) <- bquote({
                     else
                         "Source: source document in RStudio\n"
                 )
-            .normalizePath(path)
+            if (original)
+                path
+            else .normalizePath(path)
         }
         else if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
@@ -522,7 +526,9 @@ body(.this.path.toplevel) <- bquote({
 
         if (nzchar(path)) {
             if (verbose) cat("Source: document in VSCode\n")
-            .normalizePath(path)
+            if (original)
+                path
+            else .normalizePath(path)
         }
         else if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
@@ -536,9 +542,11 @@ body(.this.path.toplevel) <- bquote({
     else if (gui.jupyter) {
 
 
-        if (!is.null(jupyter.path)) {
+        if (!is.na(.(as.symbol(thispathofilejupyter)))) {
             if (verbose) cat("Source: document in Jupyter\n")
-            return(jupyter.path)
+            if (original)
+                return(.(as.symbol(thispathofilejupyter)))
+            else return(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)))
         }
 
 
@@ -607,13 +615,11 @@ body(.this.path.toplevel) <- bquote({
                             if (!inherits(exprs, "error")) {
                                 for (expr in exprs) {
                                     if (identical(expr, call)) {
-                                        file <- .normalizePath(file)
-                                        env <- parent.env(environment())
-                                        (unlockBinding)("jupyter.path", env)
-                                        assign("jupyter.path", file, envir = env, inherits = FALSE)
-                                        lockBinding("jupyter.path", env)
+                                        .External2(C_setthispathjupyter, file)
                                         if (verbose) cat("Source: document in Jupyter\n")
-                                        return(jupyter.path)
+                                        if (original)
+                                            return(.(as.symbol(thispathofilejupyter)))
+                                        else return(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)))
                                     }
                                 }
                             }
@@ -640,7 +646,7 @@ body(.this.path.toplevel) <- bquote({
     else if (gui.rgui) {
 
 
-        .this.path.rgui(verbose, for.msg)
+        .this.path.rgui(verbose, original, for.msg)
     }
 
 
@@ -675,8 +681,26 @@ body(.this.path.toplevel) <- bquote({
     }
 }, splice = TRUE)
 evalq(envir = environment(.this.path.toplevel) <- new.env(), {
-    jupyter.path <- NULL
+    assign(thispathofilejupyter, NA_character_)
+    eval(call("delayedAssign", thispathfilejupyter, call(".normalizePath", as.symbol(thispathofilejupyter))))
 })
+
+
+set.this.path.jupyter <- function (...)
+{
+    if (!gui.jupyter)
+        stop(gettextf("'%s' can only be called in Jupyter",
+            "set.this.path.jupyter"))
+    if (!isNamespaceLoaded("IRkernel") || !(identical2)(sys.function(1L), IRkernel::main))
+        stop(gettextf("'%s' can only be called after Jupyter has finished loading",
+            "set.this.path.jupyter"))
+    n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
+    if (sys.nframe() != n)
+        stop(gettextf("'%s' can only be called from a top-level context",
+            "set.this.path.jupyter"))
+    path <- path.join(...)
+    .External2(C_setthispathjupyter, path)
+}
 
 
 delayedAssign("identical2", {

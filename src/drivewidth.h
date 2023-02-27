@@ -1,5 +1,5 @@
-#ifndef DRIVEWIDTH_H
-#define DRIVEWIDTH_H
+#ifndef R_THIS_PATH_DRIVEWIDTH_H
+#define R_THIS_PATH_DRIVEWIDTH_H
 
 
 extern int get_drive_width_windows(const char *s, int nchar);

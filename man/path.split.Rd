@@ -22,12 +22,12 @@ character vectors, or one list of character vectors.
   }
 }
 \value{
-for \code{path.split}, a list of character vectors.
+for \code{path.split()}, a list of character vectors.
 
-for \code{path.split.1} and \code{path.unsplit}, a character vector.
+for \code{path.split.1()} and \code{path.unsplit()}, a character vector.
 }
 \note{
-\code{path.unsplit} is \strong{NOT} the same as \code{\link{path.join}}.
+\code{path.unsplit()} is \strong{NOT} the same as \code{\link{path.join}()}.
 }
 #ifdef windows
 \examples{

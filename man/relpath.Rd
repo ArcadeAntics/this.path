@@ -23,7 +23,7 @@ character string; the file / / URL path to make \code{path} relative to.
   }
 }
 \details{
-Tilde-expansion (see \code{\link[base]{path.expand}}) is first done on
+Tilde-expansion (see \code{\link[base]{path.expand}()}) is first done on
 \code{path} and \code{relative.to}.
 
 If \code{path} and \code{relative.to} are equivalent, \code{"."} will be
@@ -34,8 +34,8 @@ returned. If \code{path} and \code{relative.to} have no base in common, the
 character vector of the same length as \code{path}.
 }
 \note{
-\code{rel2here} is a variant of \code{relpath} in which \code{relative.to} is
-always \code{\link{here}()}.
+\code{rel2here()} is a variant of \code{relpath()} in which \code{relative.to}
+is always \code{\link{here}()}.
 }
 #ifdef unix
 \examples{

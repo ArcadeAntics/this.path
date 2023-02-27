@@ -8,7 +8,7 @@
 Providing Arguments to a Script
 }
 \description{
-\code{withArgs} allows you to \sourcelink{} an \R script while providing
+\code{withArgs()} allows you to \sourcelink{} an \R script while providing
 arguments. As opposed to running with \code{\link[utils]{Rscript}}, the code
 will be evaluated in the same session, in an environment of your choosing.
 
@@ -16,8 +16,8 @@ will be evaluated in the same session, in an environment of your choosing.
 \code{\link[base]{commandArgs}(trailingOnly = TRUE)}, allowing you to access
 the script's arguments whether it was sourced or run from a shell.
 
-\code{asArgs} coerces \R objects into a character vector, for use with command
-line applications and \code{withArgs}.
+\code{asArgs()} coerces \R objects into a character vector, for use with
+command line applications and \code{withArgs()}.
 }
 \usage{
 asArgs(...)
@@ -32,8 +32,10 @@ withArgs(...)
 \code{\link[base]{character}}, \code{\link[base:Dates]{Date}}, and
 \code{\link[base:DateTimeClasses]{POSIXt}} vectors.
 
-for \code{withArgs}, the first argument should be an (unevaluated) call to
-\sourceorlist{}.
+for \code{withArgs()}, the first argument should be an (unevaluated) call to
+\sourcescompatiblewithwithArgslistlinks{}, or a \sourcenolink{}-like function
+containing \code{\link{wrap.source}()} / / \code{\link{inside.source}()} / /
+\code{\link{set.this.path}()}.
   }
 }
 \details{
@@ -49,7 +51,7 @@ first put into a list, and then each non-list element is converted to
 character. They are converted as follows:
 \describe{
   \item{Factors (class \code{"factor"})}{
-using \code{\link[base:character]{as.character.factor}}
+using \code{\link[base:character]{as.character.factor}()}
   }
   \item{Date-Times (class \code{"POSIXct"} and \code{"POSIXlt"})}{
 using format \code{"\%Y-\%m-\%d \%H:\%M:\%OS6"} (retains as much precision as
@@ -66,7 +68,7 @@ with \code{\link[base:raw]{as.raw}()} or
   }
 }
 All others will be converted to character using
-\code{\link[base:character]{as.character}} and its methods.
+\code{\link[base:character]{as.character}()} and its methods.
 
 The arguments will then be unlisted, and all attributes will be removed.
 Arguments that are \code{NA_character_} after conversion will be converted to
@@ -75,9 +77,10 @@ Arguments that are \code{NA_character_} after conversion will be converted to
 
 }
 \value{
-for \code{asArgs}, \code{fileArgs}, and \code{progArgs}, a character vector.
+for \code{asArgs()}, \code{fileArgs()}, and \code{progArgs()}, a character
+vector.
 
-for \code{withArgs}, the result of evaluating \code{expr}.
+for \code{withArgs()}, the result of evaluating \code{expr}.
 }
 \examples{
 this.path::asArgs(

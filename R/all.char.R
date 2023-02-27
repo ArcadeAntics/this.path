@@ -36,7 +36,11 @@ all.char <- function ()
 }
 
 
-sys.source("./inst/extdata/main.R", environment())
+if (getRversion() >= "3.4.0") {
+    sys.source("./inst/extdata/main.R", environment(), toplevel.env = getOption("topLevelEnvironment"))
+} else {
+    sys.source("./inst/extdata/main.R", environment())
+}
 
 
 tmp <- function(expr) {
