@@ -1,6 +1,6 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.13:
+CHANGES IN this.path 1.2.0.14:
 
   NEW FEATURES
 
@@ -25,10 +25,12 @@ CHANGES IN this.path 1.2.0.13:
 
   BUG FIXES
 
-    * shFILE(for.msg = TRUE, default = <...>) now does not evaluate default, as
-      intended. By extension, this.path(for.msg = TRUE) now returns
-      NA_character_ when running from a shell instead of incorrectly throwing
-      an error.
+    * shFILE(for.msg = TRUE, default = <...>) now does not evaluate
+      default, as intended. By extension, this.path(for.msg = TRUE) now
+      returns NA_character_ when running from a shell instead of
+      incorrectly throwing an error.
+
+    * this.path() now works when run in 'VSCode' with the 'radian' console.
 
 CHANGES IN this.path 1.2.0:
 

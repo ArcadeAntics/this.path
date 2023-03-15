@@ -227,7 +227,7 @@ delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"    && !gui.rs
 delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"      && !gui.rstudio && !gui.vscode && !gui.jupyter)
 delayedAssign("gui.rstudio", if (.Platform$GUI == "RStudio") { .External2(C_inittoolsrstudio, skipCheck = TRUE); TRUE }
                              else isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")))
-delayedAssign("gui.vscode" , interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && is.na(shINFO[["ENC"]]) && isFALSE(shINFO[["has.input"]]))
+delayedAssign("gui.vscode" , interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && (is.na(shINFO[["ENC"]]) && isFALSE(shINFO[["has.input"]]) || commandArgs()[[1L]] == "radian"))
 
 
 delayedAssign("maybe.os.unix.in.shell"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && !gui.rstudio &&                        "R" == basename2(commandArgs()[[1L]]) )

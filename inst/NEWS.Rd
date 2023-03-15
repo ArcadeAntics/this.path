@@ -1,7 +1,7 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
-\section{CHANGES IN VERSION 1.2.0.13}{
+\section{CHANGES IN VERSION 1.2.0.14}{
   \subsection{NEW FEATURES}{
     \itemize{
 
@@ -42,6 +42,10 @@
         \code{default}, as intended. By extension,
         \code{this.path(for.msg = TRUE)} now returns \code{NA_character_} when
         running from a shell instead of incorrectly throwing an error.
+
+      \item
+        \code{this.path()} now works when run in \sQuote{VSCode} with the
+        \sQuote{radian} console.
 
     }
   }
