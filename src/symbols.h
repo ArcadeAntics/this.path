@@ -101,7 +101,7 @@ extern0 SEXP0
 #endif
     _asArgsSymbol                          INI_as(install(".asArgs")),
     commandArgsSymbol                      INI_as(install("commandArgs")),
-    maybe_in_shellSymbol                   INI_as(install("maybe.in.shell"));
+    maybe_unembedded_shellSymbol           INI_as(install("maybe.unembedded.shell"));
 
 
 #undef extern0

@@ -17,6 +17,31 @@ args is the argument list provided to .External2(.), including C_funname
 
 rho is the environment in which .External2(.) was evaluated, useful for
 accessing and assigning variables
+
+
+
+
+
+for R < 3.0.0, .External2 does not exist, so we must .External
+here are the alternate rules. Each function must:
+  * be called from R by .External(.)
+  * have a name that starts with "do_"
+  * return a SEXP
+  * have an argument list (SEXP args)
+
+the first element of 'args' is '.NAME', as usual. The next 3 elements must be
+the 'call', 'op', and 'rho' that would have been provided if .External2() was
+available. for example:
+
+ .External2(C_thispath, verbose, original, for.msg, N, get.frame.number)
+
+becomes:
+
+ .External(C_thispath,
+     quote(.External(C_thispath, verbose, original, for.msg, N, get.frame.number)),
+     .External,
+     environment(),
+     verbose, original, for.msg, N, get.frame.number)
  */
 
 

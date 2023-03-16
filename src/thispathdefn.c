@@ -671,4 +671,4 @@ Rboolean init_tools_rstudio(Rboolean skipCheck)
 }
 
 
-int maybe_in_shell = -1;
+int maybe_unembedded_shell = -1;

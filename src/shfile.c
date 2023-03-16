@@ -314,24 +314,28 @@ SEXP do_shinfo do_formals
 
     A list with at least the following components:
 
-    has.input
+    ENC
 
-        length-one logical vector
+        character string; command line argument 'ENC' or NA_character_
 
     FILE
 
-        character string; command line argument FILE or NA_character_
+        character string; command line argument 'FILE' or NA_character_
 
     EXPR
 
-        character string; command line argument EXPR or NA_character_
+        character string; command line argument 'EXPR' or NA_character_
+
+    has.input
+
+        length-one logical vector; was 'FILE' or 'EXPR' provided?
      */
 
 
     do_start("shinfo", 0);
 
 
-    if (!is_maybe_in_shell) {
+    if (!is_maybe_unembedded_shell) {
 
 
 #ifdef debug

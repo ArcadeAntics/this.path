@@ -37,11 +37,14 @@ tmp(bindings = c(
     # promises.R
 
 
-    "shINFO",
     "os.unix", "os.windows",
-    "gui.aqua", "gui.rgui", "gui.tk", "gui.rstudio", "gui.vscode",
-    "maybe.os.unix.in.shell", "maybe.os.windows.in.shell", "maybe.in.shell",
+    "gui.rstudio",
+    "os.unix.maybe.unembedded.shell", "os.windows.maybe.unembedded.shell", "maybe.unembedded.shell",
+    "shINFO",
+    "os.unix.console.radian", "os.windows.console.radian", "console.radian",
+    "gui.vscode",
     "gui.jupyter",
+    "gui.aqua", "gui.rgui", "gui.tk",
     "os.unix.in.shell", "os.windows.in.shell", "in.shell",
     "unrecognized.manner",
     "initwd", "ucrt", "utf8",

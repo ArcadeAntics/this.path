@@ -489,11 +489,11 @@ extern Rboolean init_tools_rstudio(Rboolean skipCheck);
     ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getInFrame(gui_rstudioSymbol, mynamespace, FALSE))))
 
 
-extern int maybe_in_shell;
+extern int maybe_unembedded_shell;
 
 
-#define is_maybe_in_shell                                      \
-    ((maybe_in_shell == -1) ? (maybe_in_shell = asLogical(getInFrame(maybe_in_shellSymbol, mynamespace, FALSE))) : (maybe_in_shell))
+#define is_maybe_unembedded_shell                              \
+    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getInFrame(maybe_unembedded_shellSymbol, mynamespace, FALSE))))
 
 
 #define get_debugSource                                        \

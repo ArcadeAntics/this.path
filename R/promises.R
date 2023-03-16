@@ -214,25 +214,42 @@
 # evaluated during the regular use of the package
 
 
-delayedAssign("shINFO", .External2(C_shinfo))
-
-
 delayedAssign("os.unix"   , .Platform$OS.type == "unix"   )
 delayedAssign("os.windows", .Platform$OS.type == "windows")
 
 
-# popular GUIs for which specific methods of this.path() are implemented
-delayedAssign("gui.aqua"   , os.unix    && .Platform$GUI == "AQUA"    && !gui.rstudio && !gui.vscode && !gui.jupyter)
-delayedAssign("gui.rgui"   , os.windows && .Platform$GUI == "Rgui"    && !gui.rstudio && !gui.vscode && !gui.jupyter)
-delayedAssign("gui.tk"     , os.unix    && .Platform$GUI == "Tk"      && !gui.rstudio && !gui.vscode && !gui.jupyter)
-delayedAssign("gui.rstudio", if (.Platform$GUI == "RStudio") { .External2(C_inittoolsrstudio, skipCheck = TRUE); TRUE }
-                             else isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")))
-delayedAssign("gui.vscode" , interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && (is.na(shINFO[["ENC"]]) && isFALSE(shINFO[["has.input"]]) || commandArgs()[[1L]] == "radian"))
+# we need to determine the type of GUI in use. unfortunately, .Platform$GUI is
+# not good enough. for example, 'VSCode' and 'Jupyter' do not set .Platform$GUI,
+# and 'RStudio' does not set .Platform$GUI until after the site-wide startup
+# profile file, the user profile, and the function .First() have been run
+# (see ?Startup).
+#
+# as such, I've made my own ways of determining the type of GUI in use
+delayedAssign("gui.rstudio", commandArgs()[[1L]] == "RStudio" &&
+                             isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")) &&
+                             if (.Platform$GUI == "RStudio") { .External2(C_inittoolsrstudio, skipCheck = TRUE); TRUE }
+                             else (
+                                 (os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none")) ||
+                                 (os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ))
+                             )
+)
 
 
-delayedAssign("maybe.os.unix.in.shell"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && !gui.rstudio &&                        "R" == basename2(commandArgs()[[1L]]) )
-delayedAssign("maybe.os.windows.in.shell", os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && !gui.rstudio && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
-delayedAssign("maybe.in.shell", maybe.os.unix.in.shell || maybe.os.windows.in.shell)
+delayedAssign("os.unix.maybe.unembedded.shell"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") &&                        "R" == basename2(commandArgs()[[1L]]) )
+delayedAssign("os.windows.maybe.unembedded.shell", os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
+delayedAssign("maybe.unembedded.shell", os.unix.maybe.unembedded.shell || os.windows.maybe.unembedded.shell)
+
+
+# see function do_shinfo in file ./src/shfile.c
+delayedAssign("shINFO", .External2(C_shinfo))
+
+
+delayedAssign("os.unix.console.radian"   , os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && commandArgs()[[1L]] == "radian")
+delayedAssign("os.windows.console.radian", os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && commandArgs()[[1L]] == "radian")
+delayedAssign("console.radian", os.unix.console.radian || os.windows.console.radian)
+
+
+delayedAssign("gui.vscode", interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && (is.na(shINFO[["ENC"]]) && isFALSE(shINFO[["has.input"]]) || console.radian))
 
 
 IRkernel.main.call <- as.call(list(call("::", as.symbol("IRkernel"), as.symbol("main"))))
@@ -240,28 +257,34 @@ IRkernel.main.call <- as.call(list(call("::", as.symbol("IRkernel"), as.symbol("
 delayedAssign("gui.jupyter",
     !interactive() &&
 
-        Sys.getenv("JPY_API_TOKEN") != "" &&
-        Sys.getenv("JPY_PARENT_PID") != "" &&
+    Sys.getenv("JPY_API_TOKEN") != "" &&
+    Sys.getenv("JPY_PARENT_PID") != "" &&
 
-        maybe.in.shell &&
+    maybe.unembedded.shell &&
 
-        is.na(shINFO[["ENC"]]) &&
-        isTRUE(shINFO[["has.input"]]) &&
-        is.na(shINFO[["FILE"]]) &&
-        !is.na(shINFO[["EXPR"]]) &&
+    is.na(shINFO[["ENC"]]) &&
+    isTRUE(shINFO[["has.input"]]) &&
+    is.na(shINFO[["FILE"]]) &&
+    !is.na(shINFO[["EXPR"]]) &&
 
-        length(commandArgs(TRUE)) == 1L &&
-        file.exists(commandArgs(TRUE)) &&
+    length(commandArgs(TRUE)) == 1L &&
+    file.exists(commandArgs(TRUE)) &&
 
-        # this is the longest check, save for last
-        local({
-            exprs <- tryCatch(parse(text = shINFO[["EXPR"]], n = -1, keep.source = FALSE, srcfile = NULL),
-                error = identity)
-            !inherits(exprs, "error") &&
-                length(exprs) &&
-                identical(exprs[[length(exprs)]], IRkernel.main.call)
-        })
+    # this is the longest check, save for last
+    local({
+        exprs <- tryCatch(parse(text = shINFO[["EXPR"]], n = -1, keep.source = FALSE, srcfile = NULL),
+            error = identity)
+        !inherits(exprs, "error") &&
+            length(exprs) &&
+            identical(exprs[[length(exprs)]], IRkernel.main.call)
+    })
 )
+
+
+# popular GUIs for which specific methods of this.path() are implemented
+delayedAssign("gui.aqua", os.unix    && .Platform$GUI == "AQUA" && !gui.rstudio && !gui.vscode && !gui.jupyter)
+delayedAssign("gui.rgui", os.windows && .Platform$GUI == "Rgui" && !gui.rstudio && !gui.vscode && !gui.jupyter)
+delayedAssign("gui.tk"  , os.unix    && .Platform$GUI == "Tk"   && !gui.rstudio && !gui.vscode && !gui.jupyter)
 
 
 `tools:rstudio` <- emptyenv()
@@ -279,17 +302,25 @@ debugSource <- .rs.api.getActiveDocumentContext
 .External2(C_inittoolsrstudio)
 
 
-delayedAssign("os.unix.in.shell"   , maybe.os.unix.in.shell    && !gui.vscode && !gui.jupyter)
-delayedAssign("os.windows.in.shell", maybe.os.windows.in.shell && !gui.vscode && !gui.jupyter)
+delayedAssign("os.unix.in.shell"   , os.unix.maybe.unembedded.shell    && !gui.vscode && !gui.jupyter)
+delayedAssign("os.windows.in.shell", os.windows.maybe.unembedded.shell && !gui.vscode && !gui.jupyter)
 delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
 
 
-delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.jupyter && !gui.rgui && !gui.aqua && !gui.tk)
+delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.jupyter && !gui.rgui && !gui.aqua && !gui.tk && !console.radian)
 
 
 delayedAssign("initwd", getwd())
 delayedAssign("ucrt"  , identical(R.version[["crt"]], "ucrt"))
 delayedAssign("utf8"  , identical(utils::localeToCharset()[1L], "UTF-8"))
+delayedAssign("GUI", if (in.shell) .Platform$GUI
+                     else if (gui.rstudio) "RStudio"
+                     else if (gui.vscode) "vscode"
+                     else if (gui.jupyter) "jupyter"
+                     # else if (gui.rgui) "Rgui"
+                     # else if (gui.aqua) "AQUA"
+                     # else if (gui.tk) "Tk"
+                     else .Platform$GUI)
 
 
 getinitwd <- function ()
