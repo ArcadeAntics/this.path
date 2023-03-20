@@ -24,7 +24,7 @@ the number of directories to go back.
 The path to a file begins with a base. The base is \code{..} number of
 directories back from the executing script's directory (\code{this.dir()}). The
 argument is named \code{..} because \code{".."} refers to the parent directory
-in Windows, Unix-alikes, and URL paths.
+in Windows, Unix-alikes, and URL pathnames.
 }
 \value{
 A character vector of the arguments concatenated term-by-term, beginning with

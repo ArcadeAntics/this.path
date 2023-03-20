@@ -199,10 +199,24 @@
             Rprintf("drivespec is %d bytes long\n", drivewidth);\
         }                                                      \
         if (drivewidth == nchar) {                             \
-            SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));  \
-            if (debug) {                                       \
-                Rprintf("pathspec is 0 bytes long\n");         \
-                Rprintf("assigning: \"%s\"\n\n", ptr);         \
+            if ((windows) && drivewidth == 2) {                \
+                char _buf[4];                                  \
+                _buf[0] = ptr[0];                              \
+                _buf[1] = ptr[1];                              \
+                _buf[2] = '.';                                 \
+                _buf[3] = '\0';                                \
+                SET_STRING_ELT(value, i, mkCharCE(_buf, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("pathspec is 0 bytes long\n");     \
+                    Rprintf("assigning: \"%s\"\n\n", _buf);    \
+                }                                              \
+            }                                                  \
+            else {                                             \
+                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));\
+                if (debug) {                                   \
+                    Rprintf("pathspec is 0 bytes long\n");     \
+                    Rprintf("assigning: \"%s\"\n\n", ptr);     \
+                }                                              \
             }                                                  \
             continue;                                          \
         }                                                      \
@@ -235,11 +249,11 @@
         for (j = -1; j < times; j++) {                         \
                                                                \
                                                                \
-            /* remove the trailing path separators                        */\
-            /* we remove the trailing separators a little different than  */\
-            /* do_basename2()                                             */\
-            /* in this case, we only want to remove trailing slashes      */\
-            /* only if there is a non-slash before those trailing slashes */\
+            /* remove the trailing path separators                          \
+               we remove the trailing separators a little different than    \
+               do_basename2()                                               \
+               in this case, we only want to remove trailing slashes        \
+               only if there is a non-slash before those trailing slashes */\
             if (windows) {                                     \
                 for (; last_char >= pathspec; last_char--) {   \
                     if (*last_char == '/' || *last_char == '\\') {}\
@@ -299,7 +313,8 @@
                         /* for a drive with a pathspec without a path separator */\
                         /* e.g. d:test                                          */\
                         if (drivewidth) {                      \
-                            *pathspec = '\0';                  \
+                            *pathspec = '.';                   \
+                            *(pathspec + 1) = '\0';            \
                             SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));\
                             if (debug) {                       \
                                 Rprintf("path is of the form d:file\n");\

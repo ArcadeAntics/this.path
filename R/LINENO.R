@@ -44,7 +44,7 @@ LINENO <- function ()
     }
 
 
-    return(NA_integer_)
+    NA_integer_
 }
 
 

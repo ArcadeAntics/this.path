@@ -486,12 +486,13 @@ SEXP do_wrapsource do_formals
     SEXP returnvalue;  /* this is never used */
 
 
-    checkfile(
 #if R_version_at_least(3, 4, 0)
-        /* SEXP call                  = */ R_CurrentExpression,
+#define checkfile_call R_CurrentExpression
 #else
-        /* SEXP call                  = */ R_NilValue,
+#define checkfile_call R_NilValue
 #endif
+    checkfile(
+        /* SEXP call                  = */ checkfile_call,
         /* SEXP sym                   = */ fileSymbol,
         /* SEXP ofile                 = */ ofile,
         /* SEXP frame                 = */ frame,
@@ -673,11 +674,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     SEXP returnvalue = R_NilValue;
     checkfile(
-#if R_version_at_least(3, 4, 0)
-        /* SEXP call                  = */ R_CurrentExpression,
-#else
-        /* SEXP call                  = */ R_NilValue,
-#endif
+        /* SEXP call                  = */ checkfile_call,
         /* SEXP sym                   = */ fileSymbol,
         /* SEXP ofile                 = */ ofile,
         /* SEXP frame                 = */ frame,

@@ -351,10 +351,18 @@ SEXP do_thispath do_formals
                     returnthis = PRVALUE(thispathfile);        \
                 }                                              \
                 else {                                         \
-                    if (PRVALUE(thispathfile) == R_UnboundValue)\
-                        returnthis = (original ? thispathofile : eval(thispathfile, R_EmptyEnv));\
-                    else                                       \
-                        returnthis = PRVALUE(thispathfile);    \
+                    if (PRVALUE(thispathfile) == R_UnboundValue) {\
+                        if (original)                          \
+                            returnthis = thispathofile;        \
+                        else {                                 \
+                            if (PRSEEN(thispathfile)) {        \
+                                if (PRSEEN(thispathfile) == 1) {}\
+                                else SET_PRSEEN(thispathfile, 0);\
+                            }                                  \
+                            returnthis = eval(thispathfile, R_EmptyEnv);\
+                        }                                      \
+                    }                                          \
+                    else returnthis = PRVALUE(thispathfile);   \
                 }                                              \
             }                                                  \
             if (verbose) Rprintf("Source: call to function %s\n", fun_name);\

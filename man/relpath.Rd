@@ -16,10 +16,10 @@ rel2here(path)
 }
 \arguments{
   \item{path}{
-character vector of file / / URL paths.
+character vector of file / / URL pathnames.
   }
   \item{relative.to}{
-character string; the file / / URL path to make \code{path} relative to.
+character string; the file / / URL pathname to make \code{path} relative to.
   }
 }
 \details{
@@ -35,7 +35,7 @@ character vector of the same length as \code{path}.
 }
 \note{
 \code{rel2here()} is a variant of \code{relpath()} in which \code{relative.to}
-is always \code{\link{here}()}.
+is \code{\link{here}()}.
 }
 #ifdef unix
 \examples{

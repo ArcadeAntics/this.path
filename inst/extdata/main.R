@@ -117,6 +117,7 @@ if (sys.nframe() != 0L) {
         # args <- c("--default-packages=NULL", "--vanilla", "-e", "strrep")
         # args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(file.info)")
         # args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(sys.source)")
+        # args <- c("--default-packages=NULL", "--vanilla", "-e", "isTRUE")
         # args <- paste(shQuote(args), collapse = " ")
         # command <- paste(shQuote(path), args)
         # names(command) <- path

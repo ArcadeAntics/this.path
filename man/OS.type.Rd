@@ -4,7 +4,7 @@
 Detect the Operating System Type
 }
 \description{
-\code{OS.type} is a list of \code{TRUE} / / \code{FALSE} values dependent of
+\code{OS.type} is a list of \code{TRUE} / / \code{FALSE} values dependent on
 the platform under which this package was built.
 }
 \usage{

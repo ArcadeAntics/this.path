@@ -24,7 +24,7 @@ install.packages("this.path",
 ## Details
 
 The most important functions from **this.path** are `this.path()`,
-`this.dir()`, and `here()`:
+`this.dir()`, `here()`, and `this.proj()`:
 
 *   `this.path()` returns the normalized path of the executing script.
 
@@ -33,6 +33,9 @@ The most important functions from **this.path** are `this.path()`,
 
 *   `here()` constructs file paths against the executing script's
     directory.
+
+*   `this.proj()` constructs file paths against the executing project's
+    directory instead of the executing script's directory.
 
 **this.path** also provides functions for constructing and manipulating
 file paths:
@@ -48,7 +51,7 @@ file paths:
 *   `path.split()`, `path.split.1()`, and `path.unsplit()` split the
     path to a file into components.
 
-*   `rel2here()` and `relpath()` turn absolute paths into relative
+*   `relpath()` and `rel2here()` turn absolute paths into relative
     paths.
 
 New additions to **this.path** include:
@@ -62,9 +65,6 @@ New additions to **this.path** include:
 
 *   `shFILE()` looks through the command line arguments, extracting
     *FILE* from either of the following: `-f FILE` or `--file=FILE`
-
-*   `this.proj()` constructs file paths against the executing project's
-    directory instead of the executing script's directory.
 
 ## **this.path** vs **whereami**
 
@@ -84,7 +84,7 @@ The only equivalent to `this.path()` (that I have seen) is
     2.2. recognizes that `file = ""`, `file = "clipboard"`, and
          `file = "stdin"` are not referring files and skips them.
 
-    2.3. accounts for `file` being a URL path.
+    2.3. accounts for `file` being a URL pathname.
 
     2.4. accounts for `file` being a connection instead of a character
          string.
@@ -106,20 +106,18 @@ The only equivalent to `this.path()` (that I have seen) is
     script cannot be found, obviously there is a problem that needs to
     be addressed, so the script should not continue.
 
-Ignoring the direct comparison of **this.path** and **whereami**,
-**whereami** has some objectively incorrect coding issues and poor
-recommendations for how you should structure your projects:
+**whereami** also has some objectively incorrect coding issues:
 
 1.  It treats R and Rscript as two separate applications to look for
     command line arguments. At least since R 2.5.0 (>= 15 years ago),
     Rscript directly calls R, so there should not be separate cases.
-    Additionally, it does NOT take into account the differences between
-    the command line applications on Windows and Unix-alikes.
+    Additionally, it does **NOT** take into account the differences
+    between the command line applications on Windows and Unix-alikes.
 
 2.  It checks for uses of `knitr::knit()` after checking the entire
-    call stack for `source()` and checking the command line arguments.
-    This is incorrect, it should be checking for `knitr::knit()` at the
-    same time as it checks for `source()`.
+    call stack for `source()` and after checking the command line
+    arguments. This is incorrect, it should be checking for
+    `knitr::knit()` at the same time as it checks for `source()`.
 
 3.  When **whereami** is loaded or attached, it changes option
     `keep.source` to `TRUE`. A package should **never** be changing
@@ -134,13 +132,13 @@ recommendations for how you should structure your projects:
     because, contrary to what the package claims, **whereami** enhances
     **knitr** rather than requires it.
 
-5.  Code aside, **whereami** suggests that an R script needing to know
-    its own path should only be done if absolutely necessary, and that
-    it should be set outside the context of the R script if possible. I
-    find this vague and unconvincing. Other scripting languages have
-    methods of requesting a script's path without issue, so R should
-    too. We should not be scaring programmers into thinking that this
-    is rule-breaking or bad practice.
+Code aside, **whereami** suggests that an R script needing to know its
+own path should only be done if absolutely necessary, and that it
+should be set outside the context of the R script if possible. I find
+this vague and unconvincing. Other scripting languages have methods of 
+requesting a script's path without issue, so R should too. We should
+not be scaring programmers into thinking that this is rule-breaking or
+bad practice.
 
 ## **this.path** vs **here**
 
@@ -159,7 +157,7 @@ just no longer fits my use-cases.
 1.  `here::here()` returns the initial working directory when it cannot
     find the project's directory. If the project's directory cannot be
     found, there is something wrong and an error should be raised, but
-    it doesn't, and this leads to incorrect or unexpected behaviour.
+    it doesn't, and this leads to incorrect / / unexpected behaviour.
 
 2.  **here** does not work when the initial working directory is set
     outside the context of the project. Occasionally, I would set the
@@ -168,15 +166,11 @@ just no longer fits my use-cases.
     **here** not being able to find the project's directory and
     incorrectly returning the initial working directory.
 
-3.  **here** does not work for projects which contain sub-projects, or
-    when two projects rely on each other. In my scenario, I had project
-    A and B, both of which rarely relied on the other (so I did not
-    want to combine them into one project), but had once instance in
-    which they ran a script from the other project. However, the
-    project root was already set to the root of project A, so when I
-    tried to run the script in project B from a script in project A,
-    the project root did not update and the script in project B would
-    fail.
+3.  **here** does not work for projects containing sub-projects. In my 
+    scenario, I had a project "A", and later I had a project "B" of
+    which "A" is a sub-project. I would run a script in "B" which runs
+    another script in "A", but the project root is already set to the
+    root of "B", so the script in "A" fails.
 
 4.  **here** does not work when a project is stored on the internet.
     When I say on the internet, I am not referring to a project stored
@@ -185,8 +179,8 @@ just no longer fits my use-cases.
     source code and input be publicly available through our website,
     and that the code should run as expected (slow as it may be, and
     only code that exclusively reads files and / / or produces
-    graphics). Since the project root of **here** cannot be a URL, I
-    cannot use it.
+    graphics). Since the project root of **here** cannot be a URL
+    pathname, I cannot use it.
 
 It should be noted that if you prefer specifying files relative to the
 project's directory instead of the executing script's directory, you

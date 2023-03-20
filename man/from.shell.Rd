@@ -5,7 +5,7 @@
 Top-Level Code Environment
 }
 \description{
-Determine is a program is the main program, or if an \R script was run from a
+Determine if a program is the main program, or if an \R script was run from a
 shell.
 }
 \usage{

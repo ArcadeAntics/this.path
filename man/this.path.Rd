@@ -12,11 +12,11 @@ path of the executing script.
 \code{this.dir()} returns the \code{\link[base:normalizePath]{normalized}} path
 of the directory in which the executing script is located.
 
-See also \code{\link{here}()} and \code{\link{this.proj}()} for constructing
-paths to files, starting with \code{this.dir()} or the project's directory.
-
 \code{Sys.path()} and \code{Sys.dir()} are versions of \code{this.path()} and
 \code{this.dir()} that takes no arguments.
+
+See also \code{\link{here}()} and \code{\link{this.proj}()} for constructing
+paths to files, starting with \code{this.dir()} or the project's directory.
 }
 \usage{
 this.path(verbose = getOption("verbose"), original = FALSE,

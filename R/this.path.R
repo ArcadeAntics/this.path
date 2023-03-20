@@ -671,17 +671,6 @@ body(.this.path.toplevel) <- bquote({
     }
 
 
-    else if (console.radian) {
-
-
-        if (for.msg)
-            NA_character_
-        else stop(thisPathNotExistsError(
-            ..(this_path_used_in_an_inappropriate_fashion),
-            "* R is being run from radian which does not accept a -f FILE, --file=FILE argument"))
-    }
-
-
     # running R in another manner
     else {
 
@@ -951,6 +940,17 @@ Sys.path <- function ()
 
 Sys.dir <- function ()
 .this.dir()
+
+
+
+
+
+try.shFILE <- function ()
+tryCatch(.shFILE(FALSE), error = function(e) .shFILE())
+
+
+try.this.path <- function ()
+tryCatch(.this.path(), error = function(e) .this.path(for.msg = TRUE))
 
 
 

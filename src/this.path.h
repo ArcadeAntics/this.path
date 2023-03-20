@@ -22,7 +22,7 @@ accessing and assigning variables
 
 
 
-for R < 3.0.0, .External2 does not exist, so we must .External
+for R < 3.0.0, .External2 does not exist, so we must use .External
 here are the alternate rules. Each function must:
   * be called from R by .External(.)
   * have a name that starts with "do_"

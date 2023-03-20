@@ -42,7 +42,7 @@ containing \code{\link{wrap.source}()} / / \code{\link{inside.source}()} / /
 \code{fileArgs()} will return the arguments associated with the executing
 script, or \code{character(0)} when there is no executing script.
 
-\code{progArgs()} will return the arguments assocaited with the executing
+\code{progArgs()} will return the arguments associated with the executing
 script, or \code{commandArgs(trailingOnly = TRUE)} when there is no executing
 script.
 
@@ -80,7 +80,7 @@ Arguments that are \code{NA_character_} after conversion will be converted to
 for \code{asArgs()}, \code{fileArgs()}, and \code{progArgs()}, a character
 vector.
 
-for \code{withArgs()}, the result of evaluating \code{expr}.
+for \code{withArgs()}, the result of evaluating the first argument.
 }
 \examples{
 this.path::asArgs(
@@ -116,23 +116,27 @@ this.path:::write.code({
 # wrap your source call with a call to 'withArgs'
 this.path::withArgs(
     source(FILE, local = TRUE, verbose = FALSE),
-    letters, pi, exp(1)
+    letters[6:10], pi, exp(1)
 )
 this.path::withArgs(
     sys.source(FILE, environment()),
-    letters, pi + 1i * exp(1)
+    letters[11:15], pi + 1i * exp(1)
 )
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE,
-    this.path::asArgs(letters, pi, as.POSIXct("2022-07-17 04:25"))))
+    this.path::asArgs(letters[16:20], pi, as.POSIXct("2022-07-17 04:25"))))
+# fileArgs() will be character(0) because there is no executing script
+this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
+    rbind("-e", readLines(FILE)[-2L]),
+    this.path::asArgs(letters[16:20], pi, as.POSIXct("2022-07-17 04:25"))))
 
 
 # with R >= 4.1.0, use the forward pipe operator '|>' to
 # make calls to 'withArgs' more intuitive:
 # source(FILE, local = TRUE, verbose = FALSE) |> this.path::withArgs(
-#     letters, pi, exp(1)
+#     letters[6:10], pi, exp(1)
 # )
 # sys.source(FILE, environment()) |> this.path::withArgs(
-#     letters, pi + 1i * exp(1)
+#     letters[11:15], pi + 1i * exp(1)
 # )
 
 
@@ -144,7 +148,7 @@ sourcelike <- function (file, envir = parent.frame())
     exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
 }
-this.path::withArgs(sourcelike(FILE), letters)
+this.path::withArgs(sourcelike(FILE), letters[21:26])
 
 
 sourcelike2 <- function (file, envir = parent.frame())
@@ -158,6 +162,6 @@ sourcelike3 <- function (file, envir = parent.frame())
     envir <- as.environment(envir)
     wrap.source(sourcelike2(file = file, envir = envir))
 }
-this.path::withArgs(sourcelike3(FILE), letters)
-this.path::withArgs(wrap.source(sourcelike2(FILE)), letters)
+this.path::withArgs(sourcelike3(FILE), LETTERS[1:5])
+this.path::withArgs(wrap.source(sourcelike2(FILE)), LETTERS[6:10])
 \dontshow{unlink(FILE)}}

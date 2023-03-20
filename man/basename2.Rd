@@ -45,16 +45,16 @@ is the path specification of \code{"//host/share/path/to/file"} and
 \code{"d:/path/to/file"}. For a path which does not start with a network share
 or drive, the path specification is the entire string.
 
-And lastly, the path specification of a network share will always be empty or
-absolute, but the path specification of a drive does not have to be, e.g.
-\code{"d:file"} is a valid path despite the fact that the path specification
-does not begin with \code{"/"}.
+The path specification of a network share will always be empty or absolute, but
+the path specification of a drive does not have to be, e.g. \code{"d:file"} is
+a valid path despite the fact that the path specification does not begin with
+\code{"/"}.
 
 If the path specification of \code{path} is empty or is \code{"/"}, then
 \code{dirname2()} will return \code{path} and \code{basename2()} will return an
 empty string.
 }
-\section{Behaviour Elsewhere}{
+\section{Behaviour on Unix-alikes}{
 If \code{path} is an empty string, then both \code{dirname2()} and
 \code{basename2()} return an emty string.
 

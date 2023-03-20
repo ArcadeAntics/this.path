@@ -5,8 +5,14 @@ if (getRversion() < "3.5.0") {
 .External2(C_dotslength)
 
 
+isTRUE <- function (x)
+is.logical(x) && length(x) == 1L && !is.na(x) && x
+environment(isTRUE) <- .BaseNamespaceEnv
+
+
 isFALSE <- function (x)
 is.logical(x) && length(x) == 1L && !is.na(x) && !x
+environment(isFALSE) <- .BaseNamespaceEnv
 
 
 }

@@ -4,7 +4,7 @@
 \alias{set.this.path}
 \alias{unset.this.path}
 \title{
-Implement \code{this.path()} For Arbitrary \sourcelink{}-Like Functions
+Implement \code{\link{this.path}()} For Arbitrary \sourcelink{}-Like Functions
 }
 \description{
 A \sourcelink{}-like function is any function which evaluates code from a file.
@@ -163,8 +163,8 @@ function before reading / / evaluating the expressions.
 argument \code{file}. Instead, an attempt is made to extract the file from
 \code{expr}, after which \code{expr} is evaluated. It is assumed that the file
 is the first argument of the function, as is the case with
-\sources1stargisfileandlistnolinks{}. The function of the call is evaluated, its
-\code{\link[base]{formals}()} are retrieved, and then the arguments of
+\sources1stargisfileandlistnolinks{}. The function of the call is evaluated,
+its \code{\link[base]{formals}()} are retrieved, and then the arguments of
 \code{expr} are searched for a name matching the name of the first formal
 argument. If a match cannot be found by name, the first unnamed argument is
 taken instead. If no such argument exists, the file is assumed missing.

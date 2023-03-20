@@ -123,7 +123,7 @@ windows.relpath <- function (path, relative.to = .this.dir())
     path <- normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
     if (!missing(relative.to)) {
         if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
+            stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
         relative.to <- normalizePath.and.URL.1(relative.to,
             winslash = "/", mustWork = TRUE)
     }
@@ -165,16 +165,16 @@ windows.relpath <- function (path, relative.to = .this.dir())
                 } else p
             }
         }
-        else fix.local <- force
+        else fix.local <- identity
     }
-    else fix.local <- force
+    else fix.local <- identity
 
 
     r <- p[[1L]]
     p <- p[-1L]
     r <- fix.local(r)
     ignore.case <- !grepl("^(http|https)://", r[[1L]])
-    fix.case <- if (ignore.case) tolower.ASCII else force
+    fix.case <- if (ignore.case) tolower.ASCII else identity
     r <- fix.case(r)
     len <- length(r)
     path.unsplit(lapply(p, function(p) {
@@ -206,7 +206,7 @@ unix.relpath <- function (path, relative.to = .this.dir())
     path <- normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
     if (!missing(relative.to)) {
         if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop(gettextf("invalid '%s' argument", "relative.to", domain = "R"), domain = NA)
+            stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
         relative.to <- normalizePath.and.URL.1(relative.to,
             winslash = "/", mustWork = TRUE)
     }

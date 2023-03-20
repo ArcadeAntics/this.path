@@ -14,7 +14,7 @@ basename2 <- this.path:::windows.basename2
 check("", "", "")
 
 
-check("d:", "d:", "")
+check("d:", "d:.", "")
 check("//host/share", "//host/share", "")
 
 
@@ -28,7 +28,7 @@ check("//host/share/path", "//host/share/", "path")
 check("/path", "/", "path")
 
 
-check("d:file", "d:", "file")
+check("d:file", "d:.", "file")
 check("file", ".", "file")
 check("d:path/to/file", "d:path/to", "file")
 

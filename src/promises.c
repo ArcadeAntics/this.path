@@ -284,7 +284,7 @@ SEXP do_prinfo do_formals
 
 SEXP do_setthispathjupyter do_formals
 {
-    do_start("setjupyterpath", 1);
+    do_start("setthispathjupyter", 1);
 
 
     static SEXP thispathtoplevelSymbol = NULL;
@@ -319,6 +319,7 @@ SEXP do_setthispathjupyter do_formals
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(e) != PROMSXP)
         errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+    /* restore the promise to its original state */
     SET_PRENV(e, env);
     SET_PRVALUE(e, R_UnboundValue);
 

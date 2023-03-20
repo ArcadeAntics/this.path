@@ -38,7 +38,8 @@ a character vector, typically of length \code{1} or \code{length(path)}, or \cod
 
 Trailing path separators are removed before dissecting the path.
 
-It will always be true that \code{path == paste0(removeext(path), ext(path))}.
+Except for \code{path <- NA_character_}, it will always be true that
+\code{path == paste0(removeext(path), ext(path))}.
 }
 \value{
 for \code{splitext()}, a matrix with 2 rows and \code{length(path)} columns.
