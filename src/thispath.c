@@ -751,19 +751,19 @@ SEXP do_thispathrgui do_formals
     /* titles of the windows in RGui */
     wintitle = CAR(args); args = CDR(args);
     if (!(TYPEOF(wintitle) == STRSXP || wintitle == R_NilValue))
-        errorcall(call, _("invalid first argument, must be %s"), "'character' / / NULL");
+        errorcall(call, "%s, must be %s", _("invalid first argument"), "'character' / / NULL");
 
 
     /* strings representing non-existent files in RGui */
     untitled = CAR(args); args = CDR(args);
     if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
-        errorcall(call, _("invalid second argument, must be %s"), "'character' / / NULL");
+        errorcall(call, "%s, must be %s", "invalid second argument", "'character' / / NULL");
 
 
     /* strings representing R scripts in RGui */
     r_editor = CAR(args); args = CDR(args);
     if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
-        errorcall(call, _("invalid third argument, must be %s"), "'character' / / NULL");
+        errorcall(call, "%s, must be %s", "invalid third argument", "'character' / / NULL");
 
 
     verbose = asLogical(CAR(args)); args = CDR(args);

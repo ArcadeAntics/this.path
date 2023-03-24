@@ -9,23 +9,49 @@
 #endif
 
 
+SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
+{
+    static SEXP _xDataSymbol = NULL,
+                _DataSymbol  = NULL;
+    if (_xDataSymbol == NULL) {
+        _xDataSymbol = install(".xData");
+        _DataSymbol  = install(".Data");
+    }
+
+
+    SEXP value = getAttrib(obj, _DataSymbol);
+    if (value == R_NilValue)
+        value = getAttrib(obj, _xDataSymbol);
+    if (value != R_NilValue &&
+        (type == ANYSXP || type == TYPEOF(value)))
+    {
+        return value;
+    }
+    else return R_NilValue;
+}
+
+
+#define simple_as_environment(arg) (IS_S4_OBJECT(arg) && (TYPEOF(arg) == S4SXP) ? R_getS4DataSlot(arg, ENVSXP) : R_NilValue)
+
+
 #define _get_sym(elsecode)                                     \
     sym = CAR(args);                                           \
     if (TYPEOF(sym) == SYMSXP) {}                              \
     else if (isValidStringF(sym)) {                            \
         if (XLENGTH(sym) > 1)                                  \
-            errorcall(call, "first argument has length > 1");  \
+            errorcall(call, _("first argument has length > 1"));\
         sym = installTrChar(STRING_ELT(sym, 0));               \
     }                                                          \
     else elsecode
 
 
-#define get_sym _get_sym(errorcall(call, "invalid first argument"))
+#define get_sym _get_sym(errorcall(call, _("invalid first argument")))
 
 
 #define get_env                                                \
         env = CADR(args);                                      \
-        if (TYPEOF(env) != ENVSXP)                             \
+        if (!isEnvironment(env) &&                             \
+            !isEnvironment(env = simple_as_environment(env)))  \
             errorcall(call, "invalid second argument")
 
 
@@ -205,29 +231,6 @@ SEXP PRINFO(SEXP e)
 }
 
 
-SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
-{
-    static SEXP _xDataSymbol = NULL,
-                _DataSymbol  = NULL;
-    if (_xDataSymbol == NULL) {
-        _xDataSymbol = install(".xData");
-        _DataSymbol  = install(".Data");
-    }
-
-
-    SEXP value = getAttrib(obj, _DataSymbol);
-    if (value == R_NilValue)
-        value = getAttrib(obj, _xDataSymbol);
-    if (value != R_NilValue &&
-        (type == ANYSXP || type == TYPEOF(value)))
-    {
-        return value;
-    }
-    else return R_NilValue;
-}
-#define simple_as_environment(arg) (IS_S4_OBJECT(arg) && (TYPEOF(arg) == S4SXP) ? R_getS4DataSlot(arg, ENVSXP) : R_NilValue)
-
-
 SEXP do_prinfo do_formals
 {
     do_start("prinfo", -1);
@@ -279,6 +282,9 @@ SEXP do_prinfo do_formals
 }
 
 
+
+
+
 #include "drivewidth.h"
 
 
@@ -295,7 +301,7 @@ SEXP do_setthispathjupyter do_formals
 
     SEXP path = CAR(args);
     if (TYPEOF(path) != STRSXP || LENGTH(path) != 1L)
-        errorcall(call, _("invalid '%s' argument"), "path");
+        errorcall(call, _("'%s' must be a character string"), "path");
     if (STRING_ELT(path, 0) == NA_STRING ||
 #ifdef _WIN32
         is_abs_path_windows(CHAR(STRING_ELT(path, 0)))

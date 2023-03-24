@@ -93,10 +93,10 @@ if (getRversion() < "4.1.0") {
 
 tmp <- readLines("./src/symbols.h")
 tmp <- list(
-    thispathofile        = str2lang(tmp[[grep("^[ \t]*thispathofileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
-    thispathfile         = str2lang(tmp[[grep("^[ \t]*thispathfileSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
-    thispathofilejupyter = str2lang(tmp[[grep("^[ \t]*thispathofilejupyterSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]]),
-    thispathfilejupyter  = str2lang(tmp[[grep("^[ \t]*thispathfilejupyterSymbol[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$", tmp) + 1L]])
+    thispathofile        = str2lang(tmp[[grep(paste0("^[ \t]*", "thispathofileSymbol"       , "[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$"), tmp) + 1L]]),
+    thispathfile         = str2lang(tmp[[grep(paste0("^[ \t]*", "thispathfileSymbol"        , "[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$"), tmp) + 1L]]),
+    thispathofilejupyter = str2lang(tmp[[grep(paste0("^[ \t]*", "thispathofilejupyterSymbol", "[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$"), tmp) + 1L]]),
+    thispathfilejupyter  = str2lang(tmp[[grep(paste0("^[ \t]*", "thispathfilejupyterSymbol" , "[ \t]+INI_as[ \t]*\\([ \t]*install[ \t]*\\([ \t]*$"), tmp) + 1L]])
 )
 if (!all(vapply(tmp, function(x) is.character(x) && length(x) == 1 && !is.na(x), NA)))
     stop("could not determine variable names")
@@ -108,10 +108,22 @@ rm(i, tmp)
 
 
 
-.Defunct2 <- function (new, old = as.character(sys.call(sys.parent()))[1L])
+defunctError <- function (new, package = NULL, msg, old = as.character(sys.call(sys.parent()))[1L])
 {
-    .Defunct(msg = gettextf(c("'%s' is defunct.\n", "Use '%s' instead.\n",
-        "See help(\"Defunct\")"), c(old, new, ""), domain = "R-base"))
+    msg <- if (missing(msg)) {
+        msg <- gettextf("'%s' is defunct.\n", old, domain = "R-base")
+        if (!missing(new))
+            msg <- c(msg, gettextf("Use '%s' instead.\n", new, domain = "R-base"))
+        c(msg, if (!is.null(package))
+            gettextf("See help(\"Defunct\") and help(\"%s-defunct\").", package, domain = "R-base")
+        else gettext("See help(\"Defunct\")", domain = "R-base"))
+    }
+    else as.character(msg)
+    msg <- paste(msg, collapse = "")
+    if (missing(new))
+        new <- NULL
+    errorCondition(msg, old = old, new = new, package = package,
+        class = "defunctError")
 }
 
 
@@ -160,7 +172,7 @@ shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
 
 
 normalized.shFILE <- function (...)
-.Defunct2("shFILE", old = "normalized.shFILE")
+stop(defunctError("shFILE", pkgname, old = "normalized.shFILE"))
 
 
 
@@ -214,13 +226,6 @@ delayedAssign("untitled", {
         else untitled_msvcrt
     }
 })
-delayedAssign("nchar_r.editor", {
-    if (gui.rgui) {
-        nchar(r.editor)
-    }
-})
-is.r.editor <- function (x)
-vapply(x, function(xx) any(endsWith(xx, r.editor)), NA)
 
 
 
@@ -895,15 +900,15 @@ rm(tmp)
 
 
 this.path2 <- function (...)
-.Defunct2("this.path(..., default = NULL)", old = "this.path2(...)")
+stop(defunctError("this.path(..., default = NULL)", pkgname, old = "this.path2(...)"))
 
 
 this.dir2 <- function (...)
-.Defunct2("this.dir(..., default = NULL)", old = "this.dir2(...)")
+stop(defunctError("this.dir(..., default = NULL)", pkgname, old = "this.dir2(...)"))
 
 
 this.dir3 <- function (...)
-.Defunct2("this.dir(..., default = getwd())", old = "this.dir3(...)")
+stop(defunctError("this.dir(..., default = getwd())", pkgname, old = "this.dir3(...)"))
 
 
 

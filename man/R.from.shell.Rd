@@ -85,15 +85,17 @@ programs by their basenames (\sQuote{R}, \sQuote{Rcmd}, \sQuote{Rscript}, and
 
 To add a new path to your \env{Path} environment variable:
 \enumerate{
-  \item{Open the \strong{Control Panel}}
-  \item{Open category \strong{User Accounts}}
-  \item{Open category \strong{User Accounts} (again)}
-  \item{Open \strong{Change my environment variables}}
-  \item{Click the variable \env{Path}}
-  \item{Click the button \strong{Edit...}}
-  \item{Click the button \strong{New}}
-  \item{Type (or paste) the full path of the directory where your \R executables
-are located, and press \strong{OK}}
+  \item Open the \strong{Control Panel}
+  \item Open category \strong{User Accounts}
+  \item Open category \strong{User Accounts} (again)
+  \item Open \strong{Change my environment variables}
+  \item Click the variable \env{Path}
+  \item Click the button \strong{Edit...}
+  \item Click the button \strong{New}
+  \item{
+Type (or paste) the full path of the directory where your \R executables are
+located, and press \strong{OK}
+  }
 }
 This will modify your environment variable \env{Path}, not the systems. If
 another user wishes to run \R from a shell, they will have to add the directory
@@ -102,13 +104,15 @@ to their \env{Path} environment variable as well.
 If you wish to modify the system environment variable \env{Path} (you will need
 admin permissions):
 \enumerate{
-  \item{Open the \strong{Control Panel}}
-  \item{Open category \strong{System and Security}}
-  \item{Open category \strong{System}}
-  \item{Open \strong{Advanced system settings}}
-  \item{Click the button \strong{Environment Variables...}}
-  \item{Modify \env{Path} same as before, just select \env{Path} in
-\strong{System variables} instead of \strong{User variables}}
+  \item Open the \strong{Control Panel}
+  \item Open category \strong{System and Security}
+  \item Open category \strong{System}
+  \item Open \strong{Advanced system settings}
+  \item Click the button \strong{Environment Variables...}
+  \item{
+Modify \env{Path} same as before, just select \env{Path} in
+\strong{System variables} instead of \strong{User variables}
+  }
 }
 
 To check that this worked correctly, open a shell and execute the following

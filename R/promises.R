@@ -281,7 +281,6 @@ delayedAssign("gui.jupyter",
 )
 
 
-# popular GUIs for which specific methods of this.path() are implemented
 delayedAssign("gui.aqua", os.unix    && .Platform$GUI == "AQUA" && !gui.rstudio && !gui.vscode && !gui.jupyter)
 delayedAssign("gui.rgui", os.windows && .Platform$GUI == "Rgui" && !gui.rstudio && !gui.vscode && !gui.jupyter)
 delayedAssign("gui.tk"  , os.unix    && .Platform$GUI == "Tk"   && !gui.rstudio && !gui.vscode && !gui.jupyter)
@@ -307,12 +306,11 @@ delayedAssign("os.windows.in.shell", os.windows.maybe.unembedded.shell && !gui.v
 delayedAssign("in.shell", os.unix.in.shell || os.windows.in.shell)
 
 
-delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.jupyter && !gui.rgui && !gui.aqua && !gui.tk && !console.radian)
+delayedAssign("unrecognized.manner", !in.shell && !gui.rstudio && !gui.vscode && !gui.jupyter && !gui.rgui && !gui.aqua && !gui.tk)
 
 
 delayedAssign("initwd", getwd())
 delayedAssign("ucrt"  , identical(R.version[["crt"]], "ucrt"))
-delayedAssign("utf8"  , identical(utils::localeToCharset()[1L], "UTF-8"))
 delayedAssign("GUI", if (in.shell) .Platform$GUI
                      else if (gui.rstudio) "RStudio"
                      else if (gui.vscode) "vscode"

@@ -1,18 +1,18 @@
 this.path News
 
-CHANGES IN this.path 1.2.0.16:
+CHANGES IN this.path devel:
 
   NEW FEATURES
 
-    * Added path.split(), path.split.1(), and path.unsplit().
+    * Added path.split(), path.split.1(), and path.unsplit() for
+      splitting and unsplitting paths into components.
 
     * this.path() now works inside box::use().
 
     * For logging purposes, this.path(for.msg = TRUE) will now return
       "Untitled" when appropriate.
 
-    * Added unset.this.path() to undo a call to set.this.path(),
-      allowing for multiple calls to set.this.path() within a function.
+    * Added unset.this.path() to undo a call to set.this.path().
 
     * this.path() now works in 'Jupyter'.
 
@@ -46,7 +46,7 @@ CHANGES IN this.path 1.2.0:
     * shFILE() now parses the command line arguments in the exact same
       manner as R itself, more accurately selecting argument FILE.
 
-    * A relative path returned by as.rel.path() / / relpath() will
+    * A relative path returned by relpath() / / as.rel.path() will
       always begin with "./" or "../".
 
   BUG FIXES
@@ -66,9 +66,8 @@ CHANGES IN this.path 1.1.0:
 
   NEW FEATURES
 
-    * this.path() now works inside knitr::knit(), fixing issue #4 at
-      BugReports URL. By extension, withArgs(knitr::knit()) now also
-      works.
+    * this.path() now works inside knitr::knit(). By extension,
+      withArgs(knitr::knit()) now also works.
 
     * this.path() now accepts arguments original and for.msg that
       return the original argument from source / / knit / / Rscript or
@@ -90,7 +89,7 @@ CHANGES IN this.path 1.1.0:
       top-level code environment.
 
     * Added wrap.source() and inside.source() for implementing
-      this.path() with any source-like function.
+      this.path() with any source()-like function.
 
     * Added LINENO() for determining the line number of the executing
       expression in the executing script.
@@ -121,9 +120,9 @@ CHANGES IN this.path 1.0.2:
 
   BUG FIXES
 
-    * See issue #3 at BugReports URL. Fixed this.path() when called
-      in a script run from a shell on Ubuntu installed on an Android
-      (where .Platform$GUI == "unknown", normally "unix").
+    * this.path() now works when called in a script run from a shell on Ubuntu
+      installed on an Android (where .Platform$GUI == "unknown", normally
+      "unix").
 
 CHANGES IN this.path 1.0.1:
 
@@ -183,7 +182,7 @@ CHANGES IN this.path 0.9.0:
 
   BUG FIXES:
 
-    * when source-ing a file URL, source("file:///path/to/file"),
+    * when source()-ing a file URL, source("file:///path/to/file"),
       this.path() no longer attempts to re-open a connection.
 
 CHANGES IN this.path 0.8.0:

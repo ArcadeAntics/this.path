@@ -23,7 +23,7 @@ file.URL.path.1 <- function (path)
 }
 
 
-extra.whitespace.pattern <- "^[\n\r]+|[\t\n\r ]+$"
+# extra.whitespace.pattern <- "^[\n\r]+|[\t\n\r ]+$"
 
 
 normalizeURL <- function (path)
@@ -84,12 +84,12 @@ normalizePath.and.URL.1 <- function (path, ...)
 }
 
 
-as.relative.path <- function (...)
-.Defunct2("rel2here", "as.relative.path")
+as.relative.path <- function (path)
+stop(defunctError("rel2here", pkgname, old = "as.relative.path"))
 
 
-as.rel.path <- function (...)
-.Defunct2("rel2here", "as.rel.path")
+as.rel.path <- function (path)
+stop(defunctError("rel2here", pkgname, old = "as.rel.path"))
 
 
 
@@ -111,11 +111,6 @@ delayedAssign("NET.USE.command", {
 
 windows.relpath <- function (path, relative.to = .this.dir())
 {
-    # path <- c("A:\\Users\\documents", "c:/users/andre/documents/\u03b4.r",
-    #     "//LOCALHOST/C$/Users/andre/Documents/test59.R")
-    # relative.to <- Sys.dir()
-
-
     if (length(path) <= 0L)
         return(character())
 
@@ -238,7 +233,7 @@ unix.relpath <- function (path, relative.to = .this.dir())
 rel2here <- function (path)
 {
     if (!is.character(path))
-        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
+        stop("a character vector argument expected", domain = "R")
     n <- length(path)
     if (n <= 0L) {
         character()
@@ -258,7 +253,7 @@ rel2here <- function (path)
 relpath <- function (path, relative.to = getwd())
 {
     if (!is.character(path))
-        stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
+        stop("a character vector argument expected", domain = "R")
     n <- length(path)
     if (n <= 0L) {
         character()
@@ -273,68 +268,3 @@ relpath <- function (path, relative.to = getwd())
         value
     }
 }
-
-
-
-
-
-# relative.to <- this.path:::abspath("~/this.path/testing/code")
-#
-#
-# path <- "C:\\Users\\andre\\Documents\\this.path\\testing\\this\\out"
-# # path <- "C:Users\\andre\\Documents\\this.path\\testing\\this\\out"
-# # path <- "test"
-# # path <- "./."
-# # path <- "\\\\LOCALHOST\\\\\\C$///////////////Users\\andre\\Documents\\this.path\\testing\\this\\out"
-#
-#
-# normalizePath2 <- function (path, winslash = "\\")
-# {
-#     x <- path
-#     p <- ""
-#     delayedAssign("returnx", return(x))
-#     repeat {
-#         tryCatch2({
-#             path <- normalizePath(path, winslash, TRUE)
-#         }, error = function(e) {
-#             b <- basename2(path)
-#             if (b == "")
-#                 returnx
-#             if (b != ".")
-#                 p <<- path.join(b, p)
-#             path <<- dirname2(path)
-#         }, else. = {
-#             return(path.join(path, p))
-#         })
-#     }
-# }
-# environment(normalizePath2) <- getNamespace("this.path")
-# normalizePath2 <- compiler::cmpfun(normalizePath2)
-#
-#
-# normalizePath2(path)
-# normalizePath2(relative.to)
-#
-#
-# # path <- "C:\\Users\\andre\\Desktop"
-#
-#
-#
-# xx           <- path.split.1(normalizePath2(path))
-# relative.to2 <- path.split.1(normalizePath2(relative.to))
-#
-#
-# len <- length(relative.to2)
-# len2 <- length(xx)
-# n <- min(len2, len)
-# n <- match(FALSE, xx[seq_len(n)] == relative.to2[seq_len(n)], n + 1L) - 1L
-# if (n == 0L) {
-#     path
-# } else {
-#     value <- c(rep("..", len - n), xx[seq.int(n + 1L, length.out = len2 - n)])
-#     if (length(value) <= 0L)
-#         "."
-#     else if (!(value[[1L]] %in% c(".", "..")))
-#         paste(c(".", value), collapse = "/")
-#     else paste(value, collapse = "/")
-# }

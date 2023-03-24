@@ -60,6 +60,10 @@ R_MB_CUR_MAX <- function ()
 .External2(C_R_MB_CUR_MAX)
 
 
+utf8 <- function ()
+switch(utils::localeToCharset()[1L], `UTF-8` = TRUE, FALSE)
+
+
 .onLoad <- function (libname, pkgname)
 .External2(C_onload, libname, pkgname)
 # {

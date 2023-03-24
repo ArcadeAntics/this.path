@@ -59,12 +59,12 @@
 #define do_pathsplit_body(windows, length1)                    \
     SEXP path = CAR(args);                                     \
     if (TYPEOF(path) != STRSXP)                                \
-        error(_("invalid '%s' argument"), "path");             \
+        error(_("a character vector argument expected"));      \
                                                                \
                                                                \
     int n = LENGTH(path);                                      \
     if ((length1) && n != 1)                                   \
-        error(_("invalid '%s' argument"), "path");             \
+        error(_("'%s' must be a character string"), "path");   \
                                                                \
                                                                \
     SEXP value = allocVector(VECSXP, n);                       \
@@ -334,7 +334,7 @@ SEXP do_pathsplit1 do_formals
             SEXP xptr = x;                                     \
             for (int i = 0; i < n; i++, xptr = CDR(xptr)) {    \
                 if (TYPEOF(CAR(xptr)) != STRSXP)               \
-                    error("invalid '%s' argument, elements must be character vectors", "..1");\
+                    error("%s, elements must be character vectors", _("invalid first argument"));\
             }                                                  \
         }                                                      \
         else if (isVectorList(x)) {                            \
@@ -343,7 +343,7 @@ SEXP do_pathsplit1 do_formals
             /* verify that each element is a character vector */\
             for (int i = 0; i < n; i++) {                      \
                 if (TYPEOF(VECTOR_ELT(x, i)) != STRSXP)        \
-                    error("invalid '%s' argument, elements must be character vectors", "..1");\
+                    error("%s, elements must be character vectors", _("invalid first argument"));\
             }                                                  \
         }                                                      \
         else if (TYPEOF(x) == STRSXP) {                        \

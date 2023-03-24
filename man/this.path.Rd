@@ -56,14 +56,12 @@ missing or a function to apply if there is an executing script. See
 \details{
 There are three ways in which \R code is typically run:
 \enumerate{
-  \item
-    in \sQuote{Rgui} / / \sQuote{RStudio} / / \sQuote{VSCode} / /
-    \sQuote{Jupyter} by running the current line / / selection with the
-    \strong{Run} button / / appropriate keyboard shortcut
-  \item
-    through a source call: a call to function \sourcesorlistlinks{}
-  \item
-    from a shell, such as the Windows command-line / / Unix terminal
+  \item{in \sQuote{Rgui} / / \sQuote{RStudio} / / \sQuote{VSCode} / / \sQuote{Jupyter}
+by running the current line / / selection with the \strong{Run} button / /
+appropriate keyboard shortcut
+  }
+  \item through a source call: a call to function \sourcesorlistlinks{}
+  \item from a shell, such as the Windows command-line / / Unix terminal
 }
 
 To retrieve the executing script's filename, first an attempt is made to find a
@@ -712,7 +710,7 @@ function for when one is specified.
 %
 %
 %
-\examples{\dontshow{.unload <- !vapply(c("testthat", "knitr", "box"), this.path:::isNamespaceLoaded, NA)}
+\examples{
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({
     this.path:::withAutoprint({
@@ -806,6 +804,4 @@ this.path::this.path(verbose = FALSE, default = "script.log",
         path
         # or you could use paste0(this.path::removeext(path), ".log")
     })
-\dontshow{unlink(FILE); invisible(lapply(names(which(.unload)), function(name) {
-    if (this.path:::isNamespaceLoaded(name)) unloadNamespace(name)
-}))}}
+\dontshow{unlink(FILE)}}

@@ -4,14 +4,11 @@ local({
         message("cannot 'chdir' as current directory is unknown")
         return(invisible())
     } else on.exit(setwd(owd), add = TRUE)
-    .unload <- !this.path:::isNamespaceLoaded("testthat")
-    if (.unload)
-        on.exit(if (this.path:::isNamespaceLoaded("testthat")) unloadNamespace("testthat"), add = TRUE)
 
 
     fun <- function(expr, envir = parent.frame()) {
         if (!is.environment(envir))
-            stop(gettextf("invalid '%s' argument", "envir", domain = "R"), domain = NA)
+            stop("not an environment", domain = "R")
         expr <- call("bquote", substitute(expr), as.symbol("envir"))
         expr <- eval(expr)
         # dep <- deparse1(expr, "\n", 60L)

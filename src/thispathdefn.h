@@ -209,7 +209,7 @@ typedef struct gzconn {
             Rconnection Rcon = R_GetConnection(ofile);         \
             if (Rcon->isGzcon) {                               \
                 Rcon = (((Rgzconn)(Rcon->private))->con);      \
-                if (Rcon->isGzcon) error("invalid connection; should never happen, please report!");\
+                if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\
             }                                                  \
             SEXP description = get_connection_description(Rcon);\
             const char *klass = get_connection_class(Rcon)
@@ -237,7 +237,7 @@ typedef struct gzconn {
 {                                                              \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
-            errorcall(call, "invalid '%s', must be a character string", EncodeChar(PRINTNAME(sym)));\
+            errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
         SEXP file = STRING_ELT(ofile, 0);                      \
         if (file == NA_STRING)                                 \
             errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
@@ -319,7 +319,7 @@ typedef struct gzconn {
     }                                                          \
     else {                                                     \
         if (character_only)                                    \
-            errorcall(call, "invalid '%s', must be a character string", EncodeChar(PRINTNAME(sym)));\
+            errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
         else if (!inherits(ofile, "connection"))               \
             errorcall(call, "invalid '%s', must be a string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \

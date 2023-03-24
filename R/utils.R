@@ -79,20 +79,20 @@ environment(isNamespaceLoaded) <- .BaseNamespaceEnv
 }
 
 
-.Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
-{
-    command <- path.join(R.home("bin"), if (os.windows)
-        "Rterm.exe"
-    else "R")
-    args <- c(command, options)
-    args <- c(shQuote(args), trailing)
-    command <- paste(args, collapse = " ")
-    if (dry.run)
-        return(command)
-    if (print.command)
-        cat(command, "\n", sep = "")
-    invisible(system(command = command, ...))
-}
+# .Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
+# {
+#     command <- path.join(R.home("bin"), if (os.windows)
+#         "Rterm.exe"
+#     else "R")
+#     args <- c(command, options)
+#     args <- c(shQuote(args), trailing)
+#     command <- paste(args, collapse = " ")
+#     if (dry.run)
+#         return(command)
+#     if (print.command)
+#         cat(command, "\n", sep = "")
+#     invisible(system(command = command, ...))
+# }
 
 
 build_this <- function(chdir = FALSE, file = here(), which = "tar") NULL
@@ -168,7 +168,7 @@ body(build_this) <- bquote({
 
     # check that 'file' is valid, and 'chdir' if required
     if (!is.character(file) || length(file) != 1L) {
-        stop("invalid 'file'")
+        stop(gettextf("'%s' must be a character string", "file", domain = "R"), domain = NA)
     } else if (grepl("^(ftp|ftps|http|https)://", file)) {
         stop("cannot 'build_this' on a URL")
     } else if (chdir && (path <- file) != ".") {

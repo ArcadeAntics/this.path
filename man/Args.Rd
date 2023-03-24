@@ -123,11 +123,11 @@ this.path::withArgs(
     letters[11:15], pi + 1i * exp(1)
 )
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE,
-    this.path::asArgs(letters[16:20], pi, as.POSIXct("2022-07-17 04:25"))))
+    this.path::asArgs(letters[16:20], pi, Sys.time())))
 # fileArgs() will be character(0) because there is no executing script
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
     rbind("-e", readLines(FILE)[-2L]),
-    this.path::asArgs(letters[16:20], pi, as.POSIXct("2022-07-17 04:25"))))
+    this.path::asArgs(letters[16:20], pi, Sys.time())))
 
 
 # with R >= 4.1.0, use the forward pipe operator '|>' to

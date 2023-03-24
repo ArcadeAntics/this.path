@@ -10,16 +10,32 @@ main <- function ()
         sprintf("R_PACKAGE_DIR: '%s'\n", encodeString(Sys.getenv("R_PACKAGE_DIR"), na.encode = FALSE)),
         sprintf("R_PACKAGE_NAME: '%s'\n", encodeString(Sys.getenv("R_PACKAGE_NAME"), na.encode = FALSE)),
         sep = ""
-        # , file = "~/temp8.txt", append = TRUE
     )
+
+
+    desc <- read.dcf("./DESCRIPTION", keep.white = c("Description", "Authors@R", "Author", "Built", "Packaged"))
+    if (nrow(desc) != 1L)
+        stop("contains a blank line", call. = FALSE)
+    desc <- desc[1L, ]
+    news <- readLines(con <- file("./NEWS", "rb", encoding = "")); close(con)
+    if (i <- match("CHANGES IN this.path devel:", news, 0L)) {
+        news[[i]] <- sprintf("CHANGES IN this.path %s:", desc["Version"])
+        writeLines(news, con <- file("./NEWS", "wb", encoding = "")); close(con)
+    }
+    news.rd <- readLines(con <- file("./inst/NEWS.Rd", "rb", encoding = "")); close(con)
+    if (i <- match("\\section{CHANGES IN VERSION devel}{", news.rd, 0L)) {
+        news.rd[[i]] <- sprintf("\\section{CHANGES IN VERSION %s}{", desc["Version"])
+        writeLines(news.rd, con <- file("./inst/NEWS.Rd", "wb", encoding = "")); close(con)
+    }
+    this.path.defunct.rd <- readLines(con <- file("./man/this.path-defunct.Rd", "rb", encoding = "")); close(con)
+    if (i <- match("# Defunct in devel", this.path.defunct.rd, 0L)) {
+        this.path.defunct.rd[[i]] <- sprintf("# Defunct in %s", desc["Version"])
+        writeLines(this.path.defunct.rd, con <- file("./man/this.path-defunct.Rd", "wb", encoding = "")); close(con)
+    }
 
 
     if (getRversion() < "3.2.0") {
         pkgname <- Sys.getenv("R_PACKAGE_NAME")
-        desc <- read.dcf("./DESCRIPTION", keep.white = c("Description", "Authors@R", "Author", "Built", "Packaged"))
-        if (nrow(desc) != 1L)
-            stop("contains a blank line", call. = FALSE)
-        desc <- desc[1L, ]
         if (!is.na(encoding <- desc["Encoding"])) {
             if (encoding %in% c("latin1", "UTF-8"))
                 Encoding(desc) <- encoding

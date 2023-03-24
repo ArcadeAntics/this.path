@@ -1,23 +1,23 @@
 
 
-URL.pattern <- "^((?:ftp|ftps|http|https)://[^/]+)(?:/+(.*))?$"
-#               ^                                            ^ start and end of the string
-#                    ^^^^^^^^^^^^^^^^^^^^^^^                   ftp:// or ftps:// or http:// or https://
-#                                           ^^^^^              series of non-slash characters
-#                ^                               ^             the root of the URL
-#                                                    ^^^^^^    more paths
-#                                                           ^  more paths are optional
+# URL.pattern <- "^((?:ftp|ftps|http|https)://[^/]+)(?:/+(.*))?$"
+# #               ^                                            ^ start and end of the string
+# #                    ^^^^^^^^^^^^^^^^^^^^^^^                   ftp:// or ftps:// or http:// or https://
+# #                                           ^^^^^              series of non-slash characters
+# #                ^                               ^             the root of the URL
+# #                                                    ^^^^^^    more paths
+# #                                                           ^  more paths are optional
 #                  ^^                              ^^          non-capturing groups
 
 
-UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
-#               ^                                 ^ start and end of the string
-#                    ^^                             two slashes
-#                      ^^^^^    ^^^^^               series of non-slash characters, the host and share name
-#                            ^^                     one or more slashes
-#                                         ^^^^^^    more paths
-#                                                ^  more paths are optional
-#                 ^^                    ^^          non-capturing groups
+# UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
+# #               ^                                 ^ start and end of the string
+# #                    ^^                             two slashes
+# #                      ^^^^^    ^^^^^               series of non-slash characters, the host and share name
+# #                            ^^                     one or more slashes
+# #                                         ^^^^^^    more paths
+# #                                                ^  more paths are optional
+# #                 ^^                    ^^          non-capturing groups
 
 
 # c(

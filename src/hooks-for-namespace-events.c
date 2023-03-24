@@ -158,19 +158,22 @@ SEXP do_onload do_formals
 #endif
 
 
-#define convert2activebinding(symbol)                          \
+#define convertclosure2activebinding(symbol)                   \
     do {                                                       \
         SEXP sym = (symbol);                                   \
         SEXP fun = getInFrame(sym, mynamespace, FALSE);        \
+        if (TYPEOF(fun) != CLOSXP)                             \
+            error(_("object '%s' of mode '%s' was not found"), EncodeChar(sym), "function");\
         R_removeVarFromFrame(sym, mynamespace);                \
         R_MakeActiveBinding(sym, fun, mynamespace);            \
     } while (0)
 
 
-    // convert2activebinding(install("utf8locale"));
-    convert2activebinding(install("mbcslocale"));
-    // convert2activebinding(install("latin1locale"));
-    convert2activebinding(install("R_MB_CUR_MAX"));
+    // convertclosure2activebinding(install("utf8locale"));
+    convertclosure2activebinding(install("mbcslocale"));
+    // convertclosure2activebinding(install("latin1locale"));
+    convertclosure2activebinding(install("R_MB_CUR_MAX"));
+    convertclosure2activebinding(install("utf8"));
 
 
     SEXP value = allocVector(VECSXP, 13);

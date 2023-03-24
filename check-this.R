@@ -1,4 +1,3 @@
-# unlink("~/temp8.txt")
 essentials:::check.this(  # this.path
     special = TRUE,
 
@@ -6,10 +5,9 @@ essentials:::check.this(  # this.path
 
     chdir = TRUE
 )
-# this.path:::cat.file("~/temp8.txt")
 
 
-if (FALSE) {
+if (FALSE) {  # for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
     essentials:::check.this(
         INSTALL = FALSE,
 
@@ -42,8 +40,8 @@ local({  # testing relpath() and rel2here()
         NA,
         "",
         ".",
-        "c:/users/andre/documents/\u03b4.r",
-        "//LOCALHOST/C$/Users/andre/Documents/this.path/inst/extdata/untitled_msvcrt.txt"
+        paste0(Sys.getenv("USERPROFILE"), "\\Documents\\\u03b4.R"),
+        paste0("//LOCALHOST/C$/Users/", Sys.info()[["user"]], "/Documents/this.path/inst/extdata/untitled_msvcrt.txt")
     )
     owd <- getwd()
     if (is.null(owd))
@@ -68,7 +66,7 @@ local({  # testing relpath() and rel2here()
 # unix.getFinalPathName <- function (path)
 # {
 #     if (!is.character(path))
-#         stop(gettextf("invalid '%s' argument", "path", domain = "R"), domain = NA)
+#         stop("a character vector argument expected", domain = "R")
 #     path <- this.path:::normpath(path)
 #     path.unsplit(lapply(path.split(path), function(p) {
 #         failure <- TRUE
@@ -111,7 +109,7 @@ local({  # testing relpath() and rel2here()
 #         path
 #     }, FUN.VALUE = "")
 # }
-# path <- "C:/Users/andre/Documents/this.path/symlink/../Downloads"
+# path <- paste0("C:/Users/", Sys.info()[["user"]], "/Documents/this.path/symlink/../Downloads")
 # realpath2(path)
 # normalizePath(path, "/", FALSE)
 
@@ -231,10 +229,10 @@ local({
                 n <- n + 1L
             }
 
-            bindings <- grep("^\\._this\\.path::.+_\\.$", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
+            bindings <- grep("^\\.this\\.path::", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
             stopifnot(vapply(bindings, bindingIsLocked, frame, FUN.VALUE = NA))
             getwd()
-            try(this.path:::PRINFO("._this.path::file_.", frame, inherits = FALSE))
+            try(this.path:::PRINFO(".this.path::file", frame, inherits = FALSE))
             # don't use as.list yet, will force the promises
             .this.path(for.msg = TRUE)
             .this.path(original = TRUE, for.msg = TRUE)
@@ -243,7 +241,7 @@ local({
             .this.path(original = TRUE, for.msg = TRUE)
             try(Encoding(.this.path(original = TRUE)))
             try(Encoding(.this.path(original = FALSE)))
-            try(this.path:::PRINFO("._this.path::file_.", frame, inherits = FALSE))
+            try(this.path:::PRINFO(".this.path::file", frame, inherits = FALSE))
             sapply(bindings, get, envir = frame, inherits = FALSE, simplify = FALSE)
             try(this.path::this.path())
         }, spaced = TRUE)
@@ -261,7 +259,7 @@ local({
     setwd(owd)
 
 
-    file <- this.path::rel2here(FILE, ".")
+    file <- this.path::rel2here(FILE)
     if (.Platform$OS.type == "windows")
         file <- chartr("/", "\\", file)
 
@@ -301,7 +299,7 @@ local({
         FILE2 <- tempfile("fil\u{00E9}", fileext = ".R")
         on.exit(unlink(FILE2, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
         file.copy(FILE, FILE2, copy.date = TRUE)
-        file2 <- this.path::rel2here(FILE2, ".")
+        file2 <- this.path::rel2here(FILE2)
         if (.Platform$OS.type == "windows")
             file2 <- chartr("/", "\\", file2)
         file2 <- iconv(file2, "UTF-8", "latin1")
@@ -327,7 +325,7 @@ local({
     on.exit(unlink(FILE4, force = TRUE, expand = FALSE), add = TRUE, after = FALSE)
 
 
-    file3 <- this.path::rel2here(FILE3, ".")
+    file3 <- this.path::rel2here(FILE3)
     if (.Platform$OS.type == "windows")
         file3 <- chartr("/", "\\", file3)
     fun(knitr::knit(.(file3), FILE4, quiet = TRUE))
@@ -381,6 +379,7 @@ local({
 
     file.edit <- get0("file.edit", globalenv(), mode = "function", ifnotfound = utils::file.edit)
     file.edit(SINKFILE)
+    invisible(SINKFILE)
 })
 
 
