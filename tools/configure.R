@@ -1,6 +1,6 @@
 main <- function ()
 {
-    # Sys.setenv(R_THIS_PATH_DEFINES = "TRUE"); warning("in ./tools/configure.R:\n comment out this line later", call. = FALSE, immediate. = TRUE)
+    # Sys.setenv(R_THIS_PATH_DEFINES = "TRUE"); warning("in './tools/configure.R':\n comment out this line later", call. = FALSE, immediate. = TRUE)
 
 
     cat("\n",
@@ -17,33 +17,72 @@ main <- function ()
     if (nrow(desc) != 1L)
         stop("contains a blank line", call. = FALSE)
     desc <- desc[1L, ]
-    news <- readLines(con <- file("./NEWS", "rb", encoding = "")); close(con)
-    if (i <- match("CHANGES IN this.path devel:", news, 0L)) {
-        news[[i]] <- sprintf("CHANGES IN this.path %s:", desc["Version"])
-        writeLines(news, con <- file("./NEWS", "wb", encoding = "")); close(con)
-    }
-    news.rd <- readLines(con <- file("./inst/NEWS.Rd", "rb", encoding = "")); close(con)
-    if (i <- match("\\section{CHANGES IN VERSION devel}{", news.rd, 0L)) {
-        news.rd[[i]] <- sprintf("\\section{CHANGES IN VERSION %s}{", desc["Version"])
-        writeLines(news.rd, con <- file("./inst/NEWS.Rd", "wb", encoding = "")); close(con)
-    }
-    this.path.defunct.rd <- readLines(con <- file("./man/this.path-defunct.Rd", "rb", encoding = "")); close(con)
-    if (i <- match("# Defunct in devel", this.path.defunct.rd, 0L)) {
-        this.path.defunct.rd[[i]] <- sprintf("# Defunct in %s", desc["Version"])
-        writeLines(this.path.defunct.rd, con <- file("./man/this.path-defunct.Rd", "wb", encoding = "")); close(con)
-    }
-
-
-    if (getRversion() < "3.2.0") {
-        pkgname <- Sys.getenv("R_PACKAGE_NAME")
+    if (getRversion() >= "3.4.0") {
+        if (!is.na(encoding <- desc["Encoding"])) {
+            if (encoding == "UTF-8") {
+                Encoding(desc) <- "UTF-8"
+                ind <- validUTF8(desc)
+                if (!all(ind)) {
+                    pos <- which(!ind)
+                    desc[pos] <- iconv(desc[pos], "UTF-8", "UTF-8", sub = "byte")
+                }
+            }
+            else if (encoding == "latin1")
+                Encoding(desc) <- "latin1"
+            else desc <- iconv(desc, encoding, "", sub = "byte")
+        }
+    } else {
         if (!is.na(encoding <- desc["Encoding"])) {
             if (encoding %in% c("latin1", "UTF-8"))
                 Encoding(desc) <- encoding
             else desc <- iconv(desc, encoding, "", sub = "byte")
         }
-        if (pkgname != desc["Package"])
-            stop(gettextf("DESCRIPTION file is for package '%s', not '%s'",
-                desc["Package"], pkgname))
+    }
+    pkgname <- Sys.getenv("R_PACKAGE_NAME")
+    if (pkgname != desc["Package"])
+        stop(gettextf("DESCRIPTION file is for package '%s', not '%s'",
+            desc["Package"], pkgname))
+
+
+    withclose <- function(conn, expr) {
+        conn  # force the promise
+        on.exit(close(conn))
+        expr
+    }
+
+
+    # replace 'devel' in files with the current package version
+    replace.devel.with.current.version <- function(file, old, new) {
+        withclose(conn <- file(file, "rb", encoding = ""), {
+            x <- readLines(conn)
+        })
+        if (i <- match(old, x, 0L)) {
+            x[[i]] <- sprintf(new, desc["Version"])
+            withclose(conn <- file(file, "wb", encoding = ""), {
+                writeLines(x, conn)
+            })
+        }
+    }
+
+
+    replace.devel.with.current.version(
+        "./NEWS",
+        "CHANGES IN this.path devel:",
+        "CHANGES IN this.path %s:"
+    )
+    replace.devel.with.current.version(
+        "./inst/NEWS.Rd",
+        "\\section{CHANGES IN VERSION devel}{",
+        "\\section{CHANGES IN VERSION %s}{"
+    )
+    replace.devel.with.current.version(
+        "./man/this.path-defunct.Rd",
+        "# Defunct in devel",
+        "# Defunct in %s"
+    )
+
+
+    if (getRversion() < "3.2.0") {
         fun <- function(x) {
             .fun <- function(x, include.hash = TRUE) {
                 paste0("rawToChar(as.raw(c(", paste0(as.integer(charToRaw(x)), "L", collapse = ", "), if (include.hash) ", as.null(\"#1\")", ")))")
@@ -61,11 +100,11 @@ main <- function ()
         Rdfiles <- list.files("./man", "\\.Rd$", all.files = TRUE, recursive = FALSE, full.names = TRUE, ignore.case = TRUE)
         for (Rdfile in Rdfiles) {
             x <- readLines(Rdfile, encoding = "UTF-8")
-            n <- grep("^\\\\description\\{", x) - 1L
+            n <- grep("^\\\\title\\{", x) - 1L
             if (length(n) > 1L)
-                stop(gettextf("in %s:\n multiple lines that start with \\description{", Rdfile))
+                stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile))
             if (length(n) < 1L)
-                stop(gettextf("in %s:\n no lines that start with \\description{", Rdfile))
+                stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile))
             x <- if (n) {
                 c(x[seq_len(n)], commonmacros, x[-seq_len(n)])
             } else c(commonmacros, x)
@@ -75,26 +114,26 @@ main <- function ()
     }
 
 
-    conn <- file("./src/defines.h", "wb", encoding = "")
-    on.exit(close(conn))
-    writeLines(con = conn, {
-        R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
-        if (is.na(R_THIS_PATH_DEFINES)) {
-            libname <- Sys.getenv("R_LIBRARY_DIR")
-            R_THIS_PATH_DEFINES <- !(
-                is.na(libname)                                            ||
-                !nzchar(libname)                                          ||
-                grepl("/this\\.path\\.Rcheck$", libname, useBytes = TRUE) ||
-                grepl("/CRAN", libname, fixed = TRUE, useBytes = TRUE)
-            )
-        }
-        if (R_THIS_PATH_DEFINES) {
-            c(
-                "#ifndef R_THIS_PATH_DEFINES",
-                "#define R_THIS_PATH_DEFINES",
-                "#endif"
-            )
-        } else character(0)
+    withclose(conn <- file("./src/defines.h", "wb", encoding = ""), {
+        writeLines(con = conn, {
+            R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
+            if (is.na(R_THIS_PATH_DEFINES)) {
+                libname <- Sys.getenv("R_LIBRARY_DIR")
+                R_THIS_PATH_DEFINES <- !(
+                    is.na(libname)                                            ||
+                        !nzchar(libname)                                          ||
+                        grepl("/this\\.path\\.Rcheck$", libname, useBytes = TRUE) ||
+                        grepl("/CRAN", libname, fixed = TRUE, useBytes = TRUE)
+                )
+            }
+            if (R_THIS_PATH_DEFINES) {
+                c(
+                    "#ifndef R_THIS_PATH_DEFINES",
+                    "#define R_THIS_PATH_DEFINES",
+                    "#endif"
+                )
+            } else character(0)
+        })
     })
 }
 

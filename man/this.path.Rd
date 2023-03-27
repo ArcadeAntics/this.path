@@ -3,7 +3,8 @@
 \alias{this.dir}
 \alias{Sys.path}
 \alias{Sys.dir}
-\title{Determine Executing Script's Filename
+\title{
+Determine Executing Script's Filename
 }
 \description{
 \code{this.path()} returns the \code{\link[base:normalizePath]{normalized}}

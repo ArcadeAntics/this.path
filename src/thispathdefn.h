@@ -450,7 +450,7 @@ typedef struct gzconn {
 
 
 #define sys_call(which, rho) eval(lang2(sys_callSymbol, (which)), (rho))
-#define getCurrentCall(rho) sys_call(lang1(sys_nframeSymbol), (rho))
+#define getCurrentCall(rho) eval(lang1(sys_callSymbol), (rho))
 
 
 /* doesn't work in general, for example sys.function() duplicates its return value */

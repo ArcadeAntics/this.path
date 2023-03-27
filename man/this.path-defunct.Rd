@@ -1,6 +1,8 @@
 \name{this.path-defunct}
 \alias{this.path-defunct}
-\title{Defunct Functions in Package \pkg{this.path}}
+\title{
+Defunct Functions in Package \pkg{this.path}
+}
 \alias{as.relative.path}
 \alias{as.rel.path}
 \alias{this.path2}

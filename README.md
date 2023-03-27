@@ -226,8 +226,8 @@ You could use `utils::getSrcFilename()`. Everywhere you would use
 use `utils::getSrcDirectory(function() NULL)` (again, quite lengthy).
 
 While this will work for R scripts uploaded to a website, this will not
-work in interactive use since you have to source your scripts. Also, it
-means you must have option 'keep.source' set to TRUE, once again,
+work in interactive use since you have to `source()` your scripts.
+Also, it means you must set option `keep.source` to `TRUE`; once again
 this may not be a big deal, but something that may cause issues. This
 means you could not run your R scripts from a shell ever again, making
 it an incredibly inconvenient substitute.

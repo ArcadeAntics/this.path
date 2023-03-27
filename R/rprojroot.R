@@ -39,13 +39,23 @@ evalq(envir = environment(find_root) <- new.env(), {
 .this.proj <- function (verbose = FALSE)
 {
     path <- .this.dir()
-    if (indx <- match(path, names(table), 0L))
-        table[[indx]]
-    else (table[[path]] <<- find_root(path, verbose))
+    if (indx <- match(path, names(x), 0L))
+        x[[indx]]
+    else (x[[path]] <<- find_root(path, verbose))
 }
 evalq(envir = environment(.this.proj) <- new.env(), {
-    table <- structure(character(), names = character())
+    x <- structure(character(0), names = character(0))
 })
+
+
+reset.this.proj <- function ()
+{
+    if (sys.nframe() != toplevel.context.number() + 1L)
+        stop(gettextf("'%s' can only be called from a top-level context",
+            "reset.this.proj"))
+    x <<- structure(character(0), names = character(0))
+}
+environment(reset.this.proj) <- environment(.this.proj)
 
 
 this.proj <- function (...)

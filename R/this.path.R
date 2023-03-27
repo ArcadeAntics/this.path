@@ -428,7 +428,7 @@ body(.this.path.toplevel) <- bquote({
             stop(thisPathNotExistsError(
                 ..(this_path_used_in_an_inappropriate_fashion),
                 "* R is being run from a shell and argument 'FILE' is missing",
-                call = sys.call(sys.nframe())))
+                call = sys.call()))
         })
         if (verbose) cat("Source: shell argument 'FILE'\n")
         return(value)

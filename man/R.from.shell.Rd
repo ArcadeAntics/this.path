@@ -1,6 +1,8 @@
 \name{R.from.shell}
 \alias{R.from.shell}
-\title{Using R From a Shell}
+\title{
+Using R From a Shell
+}
 \description{
 How to use \R from a shell (including the Windows command-line / / Unix
 terminal).

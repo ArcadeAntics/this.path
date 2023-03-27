@@ -1,3 +1,15 @@
+if (getRversion() < "3.6.0") {
+
+
+errorCondition <- function (message, ..., class = NULL, call = NULL)
+structure(list(message = as.character(message), call = call, ...),
+    class = c(class, "error", "condition"))
+environment(errorCondition) <- .BaseNamespaceEnv
+
+
+}
+
+
 if (getRversion() < "3.3.0") {
 
 

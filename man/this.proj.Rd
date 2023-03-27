@@ -1,5 +1,6 @@
 \name{this.proj}
 \alias{this.proj}
+\alias{reset.this.proj}
 \title{
 Construct Path to File, Beginning with Your Project Directory
 }
@@ -13,9 +14,16 @@ and will choose which project directory is appropriate based on
 whereas \code{here::here()} relies on the working directory being set within
 the project's directory when the package is loaded. Arguably, this makes it
 better than \code{here::here()}.
+
+\code{reset.this.proj()} will reset the paths saved by \code{this.proj()}. This
+can be useful if you created a new project in your \R session that you would
+like to be detected by \code{this.proj()} without the need to restart the \R
+session.
 }
 \usage{
 this.proj(...)
+
+reset.this.proj()
 }
 \arguments{
   \item{\dots}{
