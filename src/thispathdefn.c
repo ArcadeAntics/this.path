@@ -629,6 +629,7 @@ static Rboolean _init_tools_rstudio(void)
 
 
 #define assigninmynamespace(sym, val)                          \
+            INCREMENT_NAMED((val));                            \
             if (R_BindingIsLocked((sym), mynamespace)) {       \
                 R_unLockBinding((sym), mynamespace);           \
                 defineVar((sym), (val), mynamespace);          \

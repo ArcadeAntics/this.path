@@ -786,6 +786,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     )
 
 
+    INCREMENT_NAMED(fun_name);
     defineVar(insidesourcewashereSymbol, fun_name, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
     set_thispathn(sys_parent, frame);

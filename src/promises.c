@@ -348,7 +348,7 @@ SEXP do_setthispathjupyter do_formals
     else errorcall(call, _("invalid '%s' argument"), "path");
 
 
-    if (skipCheck || validJupyterRNotebook(path)) {}
+    if (skipCheck || STRING_ELT(path, 0) == NA_STRING || validJupyterRNotebook(path)) {}
     else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
 
 
@@ -378,6 +378,7 @@ SEXP do_setthispathjupyter do_formals
 
 
     /* define the variable and re-lock the binding */
+    INCREMENT_NAMED(path);
     defineVar(sym, path, env);
     R_LockBinding(sym, env);
 
