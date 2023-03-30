@@ -173,7 +173,8 @@ SEXP do_thispath do_formals
     SEXP thispathofile ,
          thispathfile  ,
          thispathformsg,
-         thispatherror ;
+         thispatherror ,
+         insidesourcewashere;
 
 
     int nprotect = 0;
@@ -216,11 +217,14 @@ SEXP do_thispath do_formals
         // PROTECT(frame);
         function = eval(getfunction, rho);
         PROTECT(function);
+/* the number of objects protected in each iteration (that must be unprotected
+   before moving to the next iteration) */
+#define nprotect_loop 1
         if (identical(function, source)) {
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, ofileSymbol);
                 if (ofile == R_UnboundValue) {
-                    UNPROTECT(1);
+                    UNPROTECT(nprotect_loop);
                     continue;
                 }
                 if (TYPEOF(ofile) == PROMSXP) {
@@ -271,7 +275,7 @@ SEXP do_thispath do_formals
             if (!file_only) {                                  \
                 /* if file_only is TRUE, thispathofile cannot be NULL */\
                 if (thispathofile == R_NilValue) {             \
-                    UNPROTECT(1);                              \
+                    UNPROTECT(nprotect_loop);                  \
                     continue;                                  \
                 }                                              \
             }                                                  \
@@ -284,11 +288,11 @@ SEXP do_thispath do_formals
                         thispathformsg = findVarInFrame(frame, thispathformsgSymbol);\
                         if (thispathformsg == R_UnboundValue)  \
                             error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));\
-                        UNPROTECT(nprotect + 1);               \
+                        UNPROTECT(nprotect + nprotect_loop);   \
                         return thispathformsg;                 \
                     }                                          \
                     else if (get_frame_number) {               \
-                        UNPROTECT(nprotect + 1);               \
+                        UNPROTECT(nprotect + nprotect_loop);   \
                         if (findVarInFrame(frame, thispathassocwfileSymbol) == R_UnboundValue)\
                             return ScalarInteger(NA_INTEGER);  \
                         return (which);                        \
@@ -298,22 +302,22 @@ SEXP do_thispath do_formals
                         PROTECT(thispatherror);                \
                         SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));\
                         stop(thispatherror);                   \
+                        UNPROTECT(1);  /* thispatherror */     \
                         /* should not reach here */            \
-                        UNPROTECT(1);                          \
-                        UNPROTECT(nprotect + 1);               \
+                        UNPROTECT(nprotect + nprotect_loop);   \
                         return R_NilValue;                     \
                     }                                          \
                 }                                              \
             }                                                  \
             if (get_frame_number) {                            \
-                UNPROTECT(nprotect + 1);                       \
+                UNPROTECT(nprotect + nprotect_loop);           \
                 return (which);                                \
             }                                                  \
             if (thispathofile == R_UnboundValue)               \
                 error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));\
             if (for_msg) {                                     \
                 if (original == TRUE) {                        \
-                    UNPROTECT(nprotect + 1);                   \
+                    UNPROTECT(nprotect + nprotect_loop);       \
                     return thispathofile;                      \
                 }                                              \
                 thispathfile = findVarInFrame(frame, thispathfileSymbol);\
@@ -324,11 +328,11 @@ SEXP do_thispath do_formals
                 if (promise_must_be_forced) {                  \
                     if (PRVALUE(thispathfile) == R_UnboundValue)\
                         error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));\
-                    UNPROTECT(nprotect + 1);                   \
+                    UNPROTECT(nprotect + nprotect_loop);       \
                     return PRVALUE(thispathfile);              \
                 }                                              \
                 else {                                         \
-                    UNPROTECT(nprotect + 1);                   \
+                    UNPROTECT(nprotect + nprotect_loop);       \
                     /* if thispathfile has already been evaluated, return it */\
                     /* otherwise, return the original file */  \
                     if (PRVALUE(thispathfile) == R_UnboundValue)\
@@ -366,7 +370,7 @@ SEXP do_thispath do_formals
                 }                                              \
             }                                                  \
             if (verbose) Rprintf("Source: call to function %s\n", fun_name);\
-            UNPROTECT(nprotect + 1);                           \
+            UNPROTECT(nprotect + nprotect_loop);               \
             return returnthis
 
 
@@ -389,7 +393,7 @@ SEXP do_thispath do_formals
                 if (TYPEOF(ofile) == PROMSXP) {
                     if (PRSEEN(ofile) == 1) {
                         /* if ofile is a promise already under evaluation */
-                        UNPROTECT(1);
+                        UNPROTECT(nprotect_loop);
                         continue;
                     }
                     if (PRVALUE(ofile) == R_UnboundValue)
@@ -448,7 +452,7 @@ SEXP do_thispath do_formals
                 if (TYPEOF(ofile) == PROMSXP) {
                     if (PRSEEN(ofile) == 1) {
                         /* if ofile is a promise already under evaluation */
-                        UNPROTECT(1);
+                        UNPROTECT(nprotect_loop);
                         continue;
                     }
                     if (PRVALUE(ofile) == R_UnboundValue)
@@ -507,7 +511,7 @@ SEXP do_thispath do_formals
                 if (TYPEOF(ofile) == PROMSXP) {
                     if (PRSEEN(ofile) == 1) {
                         /* if ofile is a promise already under evaluation */
-                        UNPROTECT(1);
+                        UNPROTECT(nprotect_loop);
                         continue;
                     }
                     if (PRVALUE(ofile) == R_UnboundValue)
@@ -554,7 +558,7 @@ SEXP do_thispath do_formals
                 /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
-                "source_file in package testthat"
+                "source_file from package testthat"
             );
         }
 
@@ -562,17 +566,17 @@ SEXP do_thispath do_formals
         else if (knitr_loaded && identical(function, knit)) {
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
-                    UNPROTECT(1);
+                    UNPROTECT(nprotect_loop);
                     continue;
                 }
                 /* missing(input) */
                 SEXP expr = lang2(missingSymbol, inputSymbol);
                 PROTECT(expr);
                 int missing_input = asLogical(eval(expr, frame));
-                UNPROTECT(1);
+                UNPROTECT(1);  /* expr */
                 if (missing_input) {
                     assign_null(frame);
-                    UNPROTECT(1);
+                    UNPROTECT(nprotect_loop);
                     continue;
                 }
                 ofile = getInFrame(inputSymbol, frame, FALSE);
@@ -614,14 +618,14 @@ SEXP do_thispath do_formals
                 /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ FALSE,
                 /* const char *fun_name       = */
-                "knit in package knitr"
+                "knit from package knitr"
             );
         }
 
 
         else if (identical(function, wrap_source)) {
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
-                UNPROTECT(1);
+                UNPROTECT(nprotect_loop);
                 continue;
             }
             returnfile(
@@ -630,7 +634,7 @@ SEXP do_thispath do_formals
                 /* SEXP which                 = */ getInFrame(thispathnSymbol, frame, FALSE),
                 /* int promise_must_be_forced = */ TRUE,
                 /* const char *fun_name       = */
-                "wrap.source in package this.path"
+                "wrap.source from package this.path"
             );
         }
 
@@ -645,7 +649,7 @@ SEXP do_thispath do_formals
                 );
                 PROTECT(expr);
                 SEXP ofile = eval(expr, frame);
-                UNPROTECT(1);
+                UNPROTECT(1);  /* expr */
                 PROTECT(ofile);
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
@@ -686,16 +690,20 @@ SEXP do_thispath do_formals
                 /* SEXP which                 = */ which,
                 /* int promise_must_be_forced = */ TRUE,
                 /* const char *fun_name       = */
-                "load_from_source in package box"
+                "load_from_source from package box"
             );
         }
 
 
-        else if (findVarInFrame(frame, insidesourcewashereSymbol) != R_UnboundValue) {
+        else if ((insidesourcewashere = findVarInFrame(frame, insidesourcewashereSymbol)) != R_UnboundValue) {
+            if (insidesourcewashere == R_MissingArg) {
+                UNPROTECT(nprotect_loop);
+                continue;
+            }
             SEXP thispathn = getInFrame(thispathnSymbol, frame, FALSE);
             /* this could happen with eval() or similar */
             if (iwhich[0] != asInteger(thispathn)) {
-                UNPROTECT(1);
+                UNPROTECT(nprotect_loop);
                 continue;
             }
             returnfile(
@@ -703,13 +711,12 @@ SEXP do_thispath do_formals
                 /* int file_only              = */ FALSE,
                 /* SEXP which                 = */ thispathn,
                 /* int promise_must_be_forced = */ TRUE,
-                /* const char *fun_name       = */
-                "inside.source in package this.path"
+                /* const char *fun_name       = */ CHAR(insidesourcewashere)
             );
         }
 
 
-        UNPROTECT(1);
+        UNPROTECT(nprotect_loop);
     }
 
 

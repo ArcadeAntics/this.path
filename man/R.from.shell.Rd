@@ -49,7 +49,8 @@ commonly, you will use:
 
 \command{R CMD build} will turn an \R package (specified by a directory) into
 tarball. This allows for easy sharing of \R packages with other people,
-including \href{https://cran.r-project.org/submit.html}{submitting a package to CRAN}.
+including
+\href{https://cran.r-project.org/submit.html}{submitting a package to CRAN}.
 \command{R CMD INSTALL} will install an \R package (specified by a directory
 or tarball), and is used by
 \code{\link[utils:install.packages]{utils::install.packages}()}.

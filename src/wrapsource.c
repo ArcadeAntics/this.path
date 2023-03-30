@@ -1,6 +1,11 @@
 #include "thispathdefn.h"
 
 
+#if R_version_less_than(3, 0, 0)
+#define XLENGTH LENGTH
+#endif
+
+
 static R_INLINE int asFlag(SEXP x, const char *name)
 {
     int val = asLogical(x);
@@ -531,7 +536,7 @@ SEXP do_wrapsource do_formals
 }
 
 
-SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rboolean unset)
+SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rboolean unset, SEXP backup)
 {
     int nprotect = 0;
 
@@ -642,6 +647,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
         R_removeVarFromFrame(insidesourcewashereSymbol, frame);
         R_removeVarFromFrame(thispathnSymbol          , frame);
 #endif
+        UNPROTECT(nprotect);
         set_R_Visible(0);
         return R_NilValue;
     }
@@ -657,6 +663,8 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     int missing_file = asFlag(eval(lang2(missingSymbol, fileSymbol), rho), "missing(file)");
     if (missing_file) {
         assign_null(frame);
+        defineVar(insidesourcewashereSymbol, R_MissingArg, frame);
+        R_LockBinding(insidesourcewashereSymbol, frame);
         set_thispathn(sys_parent, frame);
         set_R_Visible(1);
         UNPROTECT(nprotect);
@@ -666,6 +674,78 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     flag_declarations;
     flag_definitions;
+    SEXP Function = CAR(args); args = CDR(args);
+    SEXP fun_name;
+    switch (TYPEOF(Function)) {
+    case NILSXP:
+        fun_name = PRINTNAME(backup);
+        PROTECT(fun_name); nprotect++;
+        break;
+    case SYMSXP:
+        {
+            Function = PRINTNAME(Function);
+            if (Function == NA_STRING || Function == R_BlankString)
+                error(_("invalid '%s' argument"), "Function");
+            const char *tmp = EncodeChar(Function);
+            int pwidth = 1 + ((int) strlen(tmp)) + 2;
+            char buf[pwidth];
+            snprintf(buf, pwidth, "'%s'", tmp);
+            fun_name = mkChar(buf);
+            PROTECT(fun_name); nprotect++;
+        }
+        break;
+    case STRSXP:
+        {
+            switch (XLENGTH(Function)) {
+            case 1:
+                {
+                    if (STRING_ELT(Function, 0) == NA_STRING ||
+                        STRING_ELT(Function, 0) == R_BlankString)
+                    {
+                        error(_("invalid '%s' argument"), "Function");
+                    }
+                    const char *tmp = EncodeChar(STRING_ELT(Function, 0));
+                    int pwidth = 1 + ((int) strlen(tmp)) + 2;
+                    char buf[pwidth];
+                    snprintf(buf, pwidth, "'%s'", tmp);
+                    fun_name = mkChar(buf);
+                    PROTECT(fun_name); nprotect++;
+                }
+                break;
+            case 2:
+                {
+                    if (STRING_ELT(Function, 0) == NA_STRING ||
+                        STRING_ELT(Function, 0) == R_BlankString)
+                    {
+                        error(_("invalid '%s' value"), "Function[1]");
+                    }
+                    if (STRING_ELT(Function, 1) == NA_STRING ||
+                        STRING_ELT(Function, 1) == R_BlankString)
+                    {
+                        error(_("invalid '%s' value"), "Function[2]");
+                    }
+                    const char *tmp0 = EncodeChar(STRING_ELT(Function, 0));
+                    const char *tmp1 = EncodeChar(STRING_ELT(Function, 1));
+                    int pwidth = 1 + ((int) strlen(tmp0)) + 16 + ((int) strlen(tmp1)) + 2;
+                    char buf[pwidth];
+                    snprintf(buf, pwidth, "'%s' from package '%s'", tmp0, tmp1);
+                    fun_name = mkChar(buf);
+                    PROTECT(fun_name); nprotect++;
+                }
+                break;
+            default:
+                error("invalid '%s'; must be of length 1 or 2", "Function");
+            }
+        }
+        break;
+    default:
+        error("invalid '%s' argument of type %s", "Function", type2char(TYPEOF(Function)));
+    }
+    Rprintf("typeof(%s): '%s'\n", "fun_name", type2char(TYPEOF(fun_name)));
+    if (TYPEOF(fun_name) != CHARSXP) {
+        eval(lang2(install("print"), lang2(R_QuoteSymbol, fun_name)), R_BaseEnv);
+        error("%s must be of type '%s'", "fun_name", "CHARSXP");
+    }
 
 
     ofile = getInFrame(fileSymbol, rho, FALSE);
@@ -706,7 +786,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     )
 
 
-    defineVar(insidesourcewashereSymbol, R_NilValue, frame);
+    defineVar(insidesourcewashereSymbol, fun_name, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
     set_thispathn(sys_parent, frame);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
@@ -716,19 +796,31 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
 SEXP do_insidesource do_formals
 {
-    do_start("insidesource", 20);
+    do_start("insidesource", 21);
 
 
-    return insidesource(call, op, args, rho, "inside.source", FALSE);
+    static SEXP backup = NULL;
+    if (backup == NULL) {
+        backup = install("inside.source from package this.path");
+    }
+
+
+    return insidesource(call, op, args, rho, "inside.source", FALSE, backup);
 }
 
 
 SEXP do_setthispath do_formals
 {
-    do_start("setthispath", 20);
+    do_start("setthispath", 21);
 
 
-    return insidesource(call, op, args, rho, "set.this.path", FALSE);
+    static SEXP backup = NULL;
+    if (backup == NULL) {
+        backup = install("set.this.path from package this.path");
+    }
+
+
+    return insidesource(call, op, args, rho, "set.this.path", FALSE, backup);
 }
 
 
@@ -737,7 +829,7 @@ SEXP do_unsetthispath do_formals
     do_start("unsetthispath", 0);
 
 
-    return insidesource(call, op, args, rho, "unset.this.path", TRUE);
+    return insidesource(call, op, args, rho, "unset.this.path", TRUE, NULL);
 }
 
 

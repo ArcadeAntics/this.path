@@ -27,20 +27,23 @@ toplevel context, and \code{FALSE} otherwise.
 }
 \examples{
 FILES <- tempfile(c("file1_", "file2_"), fileext = ".R")
-this.path:::write.code(file = FILES[1], bquote(this.path:::withAutoprint({
-    from.shell()
-    is.main()
-    source(.(FILES[2]), echo = TRUE, verbose = FALSE,
-        prompt.echo = "file2> ", continue.echo = "file2+ ")
-}, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
-   prompt.echo = "file1> ", continue.echo = "file1+ ")))
 this.path:::write.code({
     from.shell()
     is.main()
 }, FILES[2])
+this.path:::write.code((
+    bquote(this.path:::withAutoprint({
+        from.shell()
+        is.main()
+        source(.(FILES[2]), echo = TRUE, verbose = FALSE,
+            prompt.echo = "file2> ", continue.echo = "file2+ ")
+    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
+       prompt.echo = "file1> ", continue.echo = "file1+ "))
+), FILES[1])
 
 
-this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILES[1]))
+this.path:::.Rscript(c("--default-packages=this.path",
+                       "--vanilla", FILES[1]))
 
 
 this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
@@ -48,7 +51,7 @@ this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
     "-e", "from.shell()",
     "-e", "cat(\\"\\n> is.main()\\\\n\\")",
     "-e", "is.main()",
-    "-e", "cat(\\"\\n> source(commandArgs(TRUE)[1L], verbose = FALSE)\\\\n\\")",
-    "-e", "source(commandArgs(TRUE)[1L], verbose = FALSE)",
+    "-e", "cat(\\"\\n> source(commandArgs(TRUE)[[1L]])\\\\n\\")",
+    "-e", "source(commandArgs(TRUE)[[1L]])",
     FILES[1]))
 \dontshow{unlink(FILES)}}

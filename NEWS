@@ -2,6 +2,12 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  SIGNIFICANT USER-VISIBLE CHANGES
+
+    * this.path() no longer throws an error when multiple '-f' 'FILE',
+      '--file=FILE' arguments are provided to a shell, and instead
+      returns the last 'FILE' (ignoring '-f' '-' and '--file=-').
+
   NEW FEATURES
 
     * Added path.split(), path.split.1(), and path.unsplit() for
@@ -14,9 +20,17 @@ CHANGES IN this.path devel:
 
     * Added unset.this.path() to undo a call to set.this.path().
 
-    * this.path() now works in 'Jupyter'.
+    * this.path() now works in 'Jupyter'. Added set.this.path.jupyter()
+      for explicitly declaring the path of the 'Jupyter' notebook.
 
-    * Added check.proj().
+    * Added check.proj() for checking that this.path() and this.proj()
+      are working correctly.
+
+    * Added reset.this.proj() to reset the paths saved by this.proj().
+
+    * inside.source() / / set.this.path() now accept argument Function
+      specifying the name of the function and package in which they are
+      called.
 
   DEPRECATED AND DEFUNCT
 
@@ -30,7 +44,8 @@ CHANGES IN this.path devel:
       returns NA_character_ when running from a shell instead of
       incorrectly throwing an error.
 
-    * this.path() now works when run in 'VSCode' with the 'radian' console.
+    * this.path() now works when run in 'VSCode' with the 'radian'
+      console.
 
 CHANGES IN this.path 1.2.0:
 
@@ -44,7 +59,7 @@ CHANGES IN this.path 1.2.0:
   SIGNIFICANT USER-VISIBLE CHANGES
 
     * shFILE() now parses the command line arguments in the exact same
-      manner as R itself, more accurately selecting argument FILE.
+      manner as R itself, more accurately selecting FILE.
 
     * A relative path returned by relpath() / / as.rel.path() will
       always begin with "./" or "../".
@@ -77,7 +92,7 @@ CHANGES IN this.path 1.1.0:
       file paths.
 
     * shFILE() also accepts argument original that returns the original
-      FILE argument from Rscript.
+      FILE from Rscript.
 
     * Added splitext(), removeext(), ext(), and ext<-() for
       manipulating paths with extensions.
@@ -112,17 +127,18 @@ CHANGES IN this.path 1.1.0:
     * check.path() and check.dir() now use path.join() instead of
       file.path().
 
-    * fileArgs(), progArgs(), from.shell(), and is.main() no longer force the
-      normalization of the source / / knit / / Rscript path, but instead save
-      it as a promise to be evaluated later if / / when desired.
+    * fileArgs(), progArgs(), from.shell(), and is.main() no longer
+      force the normalization of the source / / knit / / Rscript path,
+      but instead save it as a promise to be evaluated later if / /
+      when desired.
 
 CHANGES IN this.path 1.0.2:
 
   BUG FIXES
 
-    * this.path() now works when called in a script run from a shell on Ubuntu
-      installed on an Android (where .Platform$GUI == "unknown", normally
-      "unix").
+    * this.path() now works when called in a script run from a shell on
+      Ubuntu installed on an Android (where .Platform$GUI == "unknown",
+      normally "unix").
 
 CHANGES IN this.path 1.0.1:
 

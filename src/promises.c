@@ -302,14 +302,12 @@ SEXP do_setthispathjupyter do_formals
     SEXP path = CAR(args);
     if (TYPEOF(path) != STRSXP || LENGTH(path) != 1L)
         errorcall(call, _("'%s' must be a character string"), "path");
-    if (STRING_ELT(path, 0) == NA_STRING ||
+    if (STRING_ELT(path, 0) == NA_STRING) {}
 #ifdef _WIN32
-        is_abs_path_windows(CHAR(STRING_ELT(path, 0)))
+    else if (is_abs_path_windows(CHAR(STRING_ELT(path, 0)))) {}
 #else
-        is_abs_path_unix(CHAR(STRING_ELT(path, 0)))
+    else if (is_abs_path_unix(CHAR(STRING_ELT(path, 0)))) {}
 #endif
-        )
-    {}
     else errorcall(call, _("invalid '%s' argument"), "path");
 
 

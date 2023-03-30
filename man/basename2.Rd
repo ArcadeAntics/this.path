@@ -71,7 +71,6 @@ empty string.
 }
 \examples{
 path <- c("/usr/lib", "/usr/", "usr", "/", ".", "..")
-print(cbind(
-    path, dirname = dirname2(path), basename = basename2(path)),
-    quote = FALSE, print.gap = 3)
+x <- cbind(path, dirname = dirname2(path), basename = basename2(path))
+print(x, quote = FALSE, print.gap = 3)
 }

@@ -1,12 +1,3 @@
-if (getRversion() < "3.6.0") {
-    str2expression <- function(text) {
-        if (typeof(text) != "character")
-            stop("argument must be character", domain = "R")
-        parse(text = text, n = -1, keep.source = FALSE, srcfile = NULL)
-    }
-}
-
-
 all.char <- function ()
 {
     c(

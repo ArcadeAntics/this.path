@@ -49,14 +49,16 @@ this.path:::write.code({
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {
-            stop("since 'FILE' will be found, argument 'default' will not\\n",
-                " be evaluated, so this error will not be thrown! you can\\n",
-                " use this to your advantage in a similar manner, doing\\n",
-                " arbitrary things only if 'FILE' is not found")
+            stop("since 'FILE' will be found, argument 'default'\\n",
+                " will not be evaluated, so this error will not be\\n",
+                " thrown! you can use this to your advantage in a\\n",
+                " similar manner, doing arbitrary things only if\\n",
+                " 'FILE' is not found")
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE)
-this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE))
+this.path:::.Rscript(c("--default-packages=this.path",
+                       "--vanilla", FILE))
 
 
 for (expr in c("shFILE(original = TRUE)",
@@ -65,6 +67,7 @@ for (expr in c("shFILE(original = TRUE)",
                "shFILE(default = NULL)"))
 {
     cat("\\n\\n")
-    this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", "-e", expr))
+    this.path:::.Rscript(c(
+        "--default-packages=this.path", "--vanilla", "-e", expr))
 }
 \dontshow{unlink(FILE)}}

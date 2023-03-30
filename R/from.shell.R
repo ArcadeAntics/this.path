@@ -31,7 +31,7 @@ is.main <- function ()
 toplevel.context.number <- function ()
 {
     if (gui.jupyter) {
-        if (isNamespaceLoaded("IRkernel") && (identical2)(sys.function(1L), IRkernel::main))
+        if (isJupyterLoaded())
             sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 1L
         else 0L
     }

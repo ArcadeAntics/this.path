@@ -119,7 +119,16 @@ local({
     files <- files[!startsWith(files, "./.git/")]
     files <- files[!startsWith(files, "./.Rproj.user/")]
     files <- files[!startsWith(files, "./this.path.Rcheck/")]
+    Rdfiles <- files[grepl("\\.Rd$", basename(files), ignore.case = TRUE)]
     files
+    Rdfiles
+
+
+    x <- this.path:::readFiles(Rdfiles)
+    # x <- x[vapply(strsplit(x, "\n", fixed = TRUE, useBytes = TRUE),
+    #     \(xx) max(nchar(xx)) >= 80L, NA)]
+    x <- grep("(^|\n)\\\\examples\\{", x, value = TRUE)
+    x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
 
 

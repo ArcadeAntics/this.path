@@ -70,7 +70,8 @@ inside.source(file,
     ignore.clipboard = ignore.all,
     ignore.stdin = ignore.all,
     ignore.url = ignore.all,
-    ignore.file.uri = ignore.all)
+    ignore.file.uri = ignore.all,
+    Function = NULL)
 
 set.this.path(file,
     path.only = FALSE,
@@ -95,7 +96,8 @@ set.this.path(file,
     ignore.clipboard = ignore.all,
     ignore.stdin = ignore.all,
     ignore.url = ignore.all,
-    ignore.file.uri = ignore.all)
+    ignore.file.uri = ignore.all,
+    Function = NULL)
 
 unset.this.path()
 }
@@ -153,6 +155,10 @@ may \code{file} be a custom connection?
         ignore.url, ignore.file.uri}{
 ignore the special meaning of these types of strings, treating it as a path
 instead?
+  }
+  \item{Function}{
+character vector of length 1 or 2; the name of the function and package in
+which \code{inside.source()} / / \code{set.this.path()} is called.
   }
 }
 \details{
@@ -245,8 +251,8 @@ wrapper <- function(path, ...) {
     # input lines. changed in 3.1.2, source_file() uses
     # brio::read_lines() which normalizes 'path' before reading,
     # disregarding the special meaning of the strings listed above
-    path <- inside.source(path, path.only = TRUE,
-        ignore.all = as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
+    path <- inside.source(path, path.only = TRUE, ignore.all =
+        as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
     testthat::source_file(path = path, ...)
 }
 }
@@ -317,8 +323,9 @@ sourcelike <- function (file, envir = parent.frame())
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = file)
     # this prints nicely
-    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE, local = envir,
-        spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
+    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE,
+        local = envir, spaced = TRUE, verbose = FALSE,
+        width.cutoff = 60L)
     # you could alternatively do:
     # 'for (i in seq_along(exprs)) eval(exprs[i], envir)'
     # which does no pretty printing
@@ -338,15 +345,17 @@ sourcelike2 <- function (pathname, envir = globalenv())
              pathname, domain = "R-base"))
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = pathname)
-    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE, local = envir,
-        spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
+    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE,
+        local = envir, spaced = TRUE, verbose = FALSE,
+        width.cutoff = 60L)
 }
 
 
 # the above function is similar to sys.source(), and it
 # expects a character string referring to an existing file
 #
-# with the following, you should be able to use 'this.path()' within 'FILE':
+# with the following, you should be able
+# to use 'this.path()' within 'FILE':
 wrap.source(sourcelike2(FILE), path.only = TRUE)
 
 
@@ -357,7 +366,8 @@ wrap.source(sourcelike2(FILE), path.only = TRUE)
 
 # 'wrap.source' can recognize arguments by name, so they
 # do not need to appear in the same order as the formals
-wrap.source(sourcelike2(envir = new.env(), pathname = FILE), path.only = TRUE)
+wrap.source(sourcelike2(envir = new.env(), pathname = FILE),
+    path.only = TRUE)
 
 
 # it it much easier to define a new function to do this

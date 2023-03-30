@@ -17,9 +17,6 @@ initwd
 working directory is not available.
 }
 \examples{
-cat("initial working directory:\\n")
-getinitwd()
-
-cat("current working directory:\\n")
-getwd()
+cat("\\ninitial working directory:\\n"); getinitwd()
+cat("\\ncurrent working directory:\\n"); getwd()
 }

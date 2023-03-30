@@ -83,24 +83,9 @@ vector.
 for \code{withArgs()}, the result of evaluating the first argument.
 }
 \examples{
-this.path::asArgs(
-    NULL,
-    c(TRUE, FALSE, NA),
-    1:5,
-    pi,
-    exp(6i),
-    letters[1:5],
-    as.raw(0:4),
-    as.Date("1970-01-01"),
-    as.POSIXct("1970-01-01 00:00:00"),
-    list(
-        list(
-            list(
-                "lists are recursed"
-            )
-        )
-    )
-)
+this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
+    letters[1:5], as.raw(0:4), Sys.Date(), Sys.time(),
+    list(list(list("lists are recursed"))))
 
 
 FILE <- tempfile(fileext = ".R")
@@ -113,7 +98,7 @@ this.path:::write.code({
 }, FILE)
 
 
-# wrap your source call with a call to 'withArgs'
+# wrap your source call with a call to withArgs()
 this.path::withArgs(
     source(FILE, local = TRUE, verbose = FALSE),
     letters[6:10], pi, exp(1)
@@ -122,22 +107,20 @@ this.path::withArgs(
     sys.source(FILE, environment()),
     letters[11:15], pi + 1i * exp(1)
 )
-this.path:::.Rscript(c("--default-packages=this.path", "--vanilla", FILE,
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE,
     this.path::asArgs(letters[16:20], pi, Sys.time())))
 # fileArgs() will be character(0) because there is no executing script
-this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
     rbind("-e", readLines(FILE)[-2L]),
     this.path::asArgs(letters[16:20], pi, Sys.time())))
 
 
 # with R >= 4.1.0, use the forward pipe operator '|>' to
-# make calls to 'withArgs' more intuitive:
+# make calls to withArgs() more intuitive:
 # source(FILE, local = TRUE, verbose = FALSE) |> this.path::withArgs(
-#     letters[6:10], pi, exp(1)
-# )
+#     letters[6:10], pi, exp(1))
 # sys.source(FILE, environment()) |> this.path::withArgs(
-#     letters[11:15], pi + 1i * exp(1)
-# )
+#     letters[11:15], pi + 1i * exp(1))
 
 
 # withArgs() also works with inside.source() and wrap.source()

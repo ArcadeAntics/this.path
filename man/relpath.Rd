@@ -47,7 +47,8 @@ relpath(
 
 
         # paths which have no base in common return as themselves
-        "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
+        paste0("https://raw.githubusercontent.com/ArcadeAntics/",
+               "this.path/main/tests/this.path_w_URLs.R"),
         "//host-name/share-name/path/to/file",
 
 
@@ -70,7 +71,8 @@ relpath(
 
 
         # paths which have no base in common return as themselves
-        "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R",
+        paste0("https://raw.githubusercontent.com/ArcadeAntics/",
+               "this.path/main/tests/this.path_w_URLs.R"),
         "D:/",
         "//host-name/share-name/path/to/file",
 

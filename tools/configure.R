@@ -82,36 +82,41 @@ main <- function ()
     )
 
 
-    if (getRversion() < "3.2.0") {
-        fun <- function(x) {
-            .fun <- function(x, include.hash = TRUE) {
-                paste0("rawToChar(as.raw(c(", paste0(as.integer(charToRaw(x)), "L", collapse = ", "), if (include.hash) ", as.null(\"#1\")", ")))")
-            }
-            value <- .fun(gsub("([%{}\\])", "\\\\\\1", x, useBytes = TRUE))
-            if (Encoding(x) != "unknown")
-                value <- paste0("`Encoding<-`(", value, ", ", .fun(Encoding(x), include.hash = FALSE), ")")
-            value
+    # we need to add the common macros to the files which do not have access.
+    # for R < 3.2.0, this is ALL of the Rd files. otherwise, only
+    # './inst/NEWS.Rd' will need them.
+    fun <- function(x) {
+        .fun <- function(x, include.hash = TRUE) {
+            paste0("rawToChar(as.raw(c(", paste0(as.integer(charToRaw(x)), "L", collapse = ", "), if (include.hash) ", as.null(\"#1\")", ")))")
         }
-        commonmacros <- c(
-            readLines("./man/macros/commonmacros.Rd", encoding = "UTF-8"),
-            paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Author"])    , "}}"),
-            paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Maintainer"]), "}}")
-        )
-        Rdfiles <- list.files("./man", "\\.Rd$", all.files = TRUE, recursive = FALSE, full.names = TRUE, ignore.case = TRUE)
-        for (Rdfile in Rdfiles) {
-            x <- readLines(Rdfile, encoding = "UTF-8")
-            n <- grep("^\\\\title\\{", x) - 1L
-            if (length(n) > 1L)
-                stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile))
-            if (length(n) < 1L)
-                stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile))
-            x <- if (n) {
-                c(x[seq_len(n)], commonmacros, x[-seq_len(n)])
-            } else c(commonmacros, x)
-            writeLines(x, Rdfile, useBytes = TRUE)
-        }
-        unlink("./man/macros", recursive = TRUE, force = TRUE)
+        value <- .fun(gsub("([%{}\\])", "\\\\\\1", x, useBytes = TRUE))
+        if (Encoding(x) != "unknown")
+            value <- paste0("`Encoding<-`(", value, ", ", .fun(Encoding(x), include.hash = FALSE), ")")
+        value
     }
+    commonmacros <- c(
+        readLines("./man/macros/commonmacros.Rd", encoding = "UTF-8"),
+        paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Author"])    , "}}"),
+        paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Maintainer"]), "}}")
+    )
+    Rdfiles <- "./inst/NEWS.Rd"
+    if (getRversion() < "3.2.0")
+        Rdfiles <- c(Rdfiles, list.files("./man", "\\.Rd$", all.files = TRUE, recursive = FALSE, full.names = TRUE, ignore.case = TRUE))
+    for (Rdfile in Rdfiles) {
+        x <- readLines(Rdfile, encoding = "UTF-8")
+        # add the common macros directly before the title
+        n <- grep("^\\\\title\\{", x) - 1L
+        if (length(n) > 1L)
+            stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile))
+        if (length(n) < 1L)
+            stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile))
+        x <- if (n) {
+            c(x[seq_len(n)], commonmacros, x[-seq_len(n)])
+        } else c(commonmacros, x)
+        writeLines(x, Rdfile, useBytes = TRUE)
+    }
+    if (getRversion() < "3.2.0")
+        unlink("./man/macros", recursive = TRUE, force = TRUE)
 
 
     withclose(conn <- file("./src/defines.h", "wb", encoding = ""), {

@@ -17,7 +17,9 @@ wrap.source <- function (expr, path.only = FALSE, character.only = path.only,
 
 inside.source <- wrap.source
 names(formals(inside.source))[[1L]] <- "file"
+formals(inside.source) <- c(formals(inside.source), alist(Function = NULL))
 body(inside.source)[2L] <- alist(C_insidesource)
+body(inside.source) <- as.call(c(as.list(body(inside.source)), alist(Function)))
 
 
 set.this.path <- inside.source

@@ -30,7 +30,8 @@ should compression extensions \sQuote{.gz}, \sQuote{.bz2}, and \sQuote{.xz} be
 taken into account when removing/getting an extension?
   }
   \item{value}{
-a character vector, typically of length \code{1} or \code{length(path)}, or \code{NULL}.
+a character vector, typically of length \code{1} or \code{length(path)}, or
+\code{NULL}.
   }
 }
 \details{
@@ -57,14 +58,15 @@ splitext("")
 
 splitext("file.ext")
 
-splitext(c("file.tar.gz", "file.tar.bz2", "file.tar.xz"), compression = FALSE)
-splitext(c("file.tar.gz", "file.tar.bz2", "file.tar.xz"), compression = TRUE)
+path <- c("file.tar.gz", "file.tar.bz2", "file.tar.xz")
+splitext(path, compression = FALSE)
+splitext(path, compression = TRUE)
 
-x <- "this.path_1.0.0.tar.gz"
-ext(x) <- ".png"
-x
+path <- "this.path_1.0.0.tar.gz"
+ext(path) <- ".png"
+path
 
-x <- "this.path_1.0.0.tar.gz"
-ext(x, compression = TRUE) <- ".png"
-x
+path <- "this.path_1.0.0.tar.gz"
+ext(path, compression = TRUE) <- ".png"
+path
 }

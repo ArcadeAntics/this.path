@@ -101,16 +101,3 @@ cat.condition <- function (c)
     }
     else cat(conditionMessage(c), file = stderr(), sep = "")
 }
-
-
-if (getRversion() < "4.2.0") {
-
-
-gettext <- function (..., domain = NULL, trim = TRUE)
-{
-    gettext(..., domain = domain)
-}
-environment(gettext) <- .BaseNamespaceEnv
-
-
-}

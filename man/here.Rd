@@ -30,31 +30,6 @@ in Windows, Unix-alikes, and URL pathnames.
 A character vector of the arguments concatenated term-by-term, beginning with
 the executing script's directory.
 }
-% \examples{
-% this.path:::write.code(file = FILE <- tempfile(), {
-%
-%
-%     this.path:::withAutoprint({
-%
-%
-%         this.path::here()
-%         this.path::here(.. = 1)
-%         this.path::here(.. = 2)
-%
-%
-%         # use 'here' to read input from a file located nearby
-%         this.path::here(.. = 1, "input", "file1.csv")
-%
-%
-%         # or maybe to run another script
-%         this.path::here("script2.R")
-%
-%
-%     }, verbose = FALSE)
-% })
-% source(FILE, verbose = FALSE)
-% this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE))% essentials::Rscript(c("--default-packages=NULL", "--vanilla"), file = FILE)
-% \dontshow{unlink(FILE)}}
 \examples{
 FILE <- tempfile(fileext = ".R")
 this.path:::write.code({

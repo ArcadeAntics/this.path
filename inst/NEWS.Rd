@@ -2,6 +2,16 @@
 \title{\pkg{this.path} News}
 \encoding{UTF-8}
 \section{CHANGES IN VERSION devel}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item{
+\code{\link{this.path}()} no longer throws an error when multiple \option{-f}
+\option{FILE}, \option{--file=FILE} arguments are provided to a shell, and
+instead returns the last \option{FILE} (ignoring \option{-f} \option{-} and
+\option{--file=-}).
+      }
+    }
+  }
   \subsection{NEW FEATURES}{
     \itemize{
       \item{
@@ -20,7 +30,24 @@ For logging purposes, \code{\link{this.path}(for.msg = TRUE)} will now return
 Added \code{\link{unset.this.path}()} to undo a call to
 \code{\link{set.this.path}()}.
       }
-      \item \code{\link{this.path}()} now works in \sQuote{Jupyter}.
+      \item{
+\code{\link{this.path}()} now works in \sQuote{\Jupyter}. Added
+\code{\link{set.this.path.jupyter}()} for explicitly declaring the path of the
+\sQuote{\Jupyter} notebook.
+      }
+      \item{
+Added \code{\link{check.proj}()} for checking that \code{\link{this.path}()}
+and \code{\link{this.proj}()} are working correctly.
+      }
+      \item{
+Added \code{\link{reset.this.proj}()} to reset the paths saved by
+\code{\link{this.proj}()}.
+      }
+      \item{
+\code{\link{inside.source}()} / / \code{\link{set.this.path}()} now accept
+argument \code{Function} specifying the name of the function and package in
+which they are called.
+      }
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{
@@ -41,9 +68,8 @@ and should be replaced with \code{\link{rel2here}()}.
 incorrectly throwing an error.
       }
       \item{
-\code{\link{this.path}()} now works when run in
-\sQuote{\href{https://code.visualstudio.com/}{VSCode}} with the
-\sQuote{\href{https://github.com/randy3k/radian}{radian}} console.
+\code{\link{this.path}()} now works when run in \sQuote{\VSCode} with the
+\sQuote{\radian} console.
       }
     }
   }
@@ -65,7 +91,7 @@ variables.
     \itemize{
       \item{
 \code{\link{shFILE}()} now parses the command line arguments in the exact same
-manner as \R itself, more accurately selecting argument \option{FILE}.
+manner as \R itself, more accurately selecting \option{FILE}.
       }
       \item{
 A relative path returned by \code{\link{relpath}()} / /
@@ -84,7 +110,7 @@ C code no longer uses \code{sprintf()}, uses \code{snprintf()} instead.
       }
       \item{
 \pkg{this.path} does a much better job of determining if the \R session is
-running from \sQuote{\href{https://code.visualstudio.com/}{VSCode}}.
+running from \sQuote{\VSCode}.
       }
       \item{
 \pkg{this.path} does a much better job of determining the path of the executing
@@ -112,7 +138,7 @@ file paths.
       }
       \item{
 \code{\link{shFILE}()} also accepts argument \code{original} that returns the
-original \option{FILE} argument from \code{\link[utils]{Rscript}}.
+original \option{FILE} from \code{\link[utils]{Rscript}}.
       }
       \item{
 Added \code{\link{splitext}()}, \code{\link{removeext}()}, \code{\link{ext}()},
@@ -224,7 +250,7 @@ improvement overall.
     \itemize{
       \item{
 Added \code{\link{tryCatch2}()}, introducing argument \code{else.} similar to
-\code{try except} in \sQuote{\href{https://www.python.org/}{Python}}.
+\code{try except} in \sQuote{\Python}.
       }
       \item{
 Added \code{else.} argument to \code{\link{this.path}()},
@@ -265,8 +291,7 @@ directory.
   \subsection{NEW FEATURES}{
     \itemize{
       \item{
-\code{\link{this.path}()} and others now work in
-\sQuote{\href{https://code.visualstudio.com/}{VSCode}}.
+\code{\link{this.path}()} and others now work in \sQuote{\VSCode}.
       }
     }
   }

@@ -34,10 +34,8 @@ for \code{path.split.1()} and \code{path.unsplit()}, a character vector.
 path <- c(
     NA,
     "",
-    paste0(
-        "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES/",
-        "src/contrib/Archive/this.path/this.path_1.0.0.tar.gz"
-    ),
+    paste0("https://raw.githubusercontent.com/ArcadeAntics/PACKAGES/",
+           "src/contrib/Archive/this.path/this.path_1.0.0.tar.gz"),
     "\\\\\\\\host\\\\share\\\\path\\\\to\\\\file",
     "\\\\\\\\host\\\\share\\\\",
     "\\\\\\\\host\\\\share",
@@ -59,10 +57,8 @@ print(path.unsplit(x))
 path <- c(
     NA,
     "",
-    paste0(
-        "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES/",
-        "src/contrib/Archive/this.path/this.path_1.0.0.tar.gz"
-    ),
+    paste0("https://raw.githubusercontent.com/ArcadeAntics/PACKAGES/",
+           "src/contrib/Archive/this.path/this.path_1.0.0.tar.gz"),
     "//host/share/path/to/file",
     "//host/share/",
     "//host//share",

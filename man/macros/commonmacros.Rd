@@ -1,3 +1,9 @@
+\newcommand{\Jupyter}{\href{https://jupyter.org/}{Jupyter}}
+\newcommand{\Python}{\href{https://www.python.org/}{Python}}
+\newcommand{\radian}{\href{https://github.com/randy3k/radian}{radian}}
+\newcommand{\RStudio}{\href{https://posit.co/products/open-source/rstudio/}{RStudio}}
+\newcommand{\VSCode}{\href{https://code.visualstudio.com/}{VSCode}}
+
 \newcommand{\DebuggingWithRStudio}{\href{https://support.posit.co/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{#1}}
 
 \newcommand{\sourcelink}{\code{\link[base]{source}()}}
@@ -7,7 +13,7 @@
 % which only macros \var{} and \link{} are interpreted within text
 %
 % both are displayed using typewriter font where possible
-\newcommand{\debugSourcelink}{\command{\DebuggingWithRStudio{debugSource}()} in \sQuote{RStudio}}
+\newcommand{\debugSourcelink}{\command{\DebuggingWithRStudio{debugSource}()} in \sQuote{\RStudio}}
 \newcommand{\sourcefilelink}{\code{\link[testthat:source_file]{testthat::source_file}()}}
 \newcommand{\knitlink}{\code{\link[knitr:knit]{knitr::knit}()}}
 \newcommand{\boxuselink}{\code{\link[box:use]{box::use}()}}

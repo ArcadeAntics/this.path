@@ -7,87 +7,6 @@ rm.list.append <- function (...)
 rm.list.append("rm.list.append")
 
 
-if (getRversion() < "3.0.0") {
-
-
-parse <- function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"), ...)
-{
-    if (!missing(keep.source)) {
-        opt.keep.source <- getOption("keep.source")
-        if (isTRUE(keep.source) != isTRUE(opt.keep.source)) {
-            on.exit(options(keep.source = opt.keep.source))
-            options(keep.source = keep.source)
-        }
-    }
-    parse(file = file, n = n, text = text, prompt = prompt, ...)
-}
-environment(parse) <- .BaseNamespaceEnv
-
-
-}
-
-
-# str2lang() was added in R 3.6.0
-if (getRversion() < "3.6.0") {
-    rm.list.append("str2lang")
-    str2lang <- function(s) {
-        if (typeof(s) != "character")
-            stop("argument must be character", domain = "R")
-        if (length(s) != 1L)
-            stop("argument must be a character string", domain = "R")
-        ans <- parse(text = s, n = -1, keep.source = FALSE, srcfile = NULL)
-        if (length(ans) != 1L)
-            stop(gettextf("parsing result not of length one, but %d", length(ans), domain = "R"), domain = NA)
-        ans[[1L]]
-    }
-}
-
-
-# bquote(splice = TRUE) was added in R 4.1.0
-if (getRversion() < "4.1.0") {
-    bquote <- function(expr, where = parent.frame(), splice = FALSE) {
-        if (!is.environment(where))
-            where <- as.environment(where)
-        unquote <- function(e) {
-            if (is.pairlist(e))
-                as.pairlist(lapply(e, unquote))
-            else if (is.call(e)) {
-                if (typeof(e[[1L]]) == "symbol" && e[[1L]] == ".")
-                    eval(e[[2L]], where)
-                else if (splice) {
-                    if (typeof(e[[1L]]) == "symbol" && e[[1L]] == "..")
-                        stop("can only splice inside a call", call. = FALSE)
-                    else as.call(unquote.list(e))
-                }
-                else as.call(lapply(e, unquote))
-            }
-            else e
-        }
-        is.splice.macro <- function(e) is.call(e) && typeof(e[[1L]]) == "symbol" && e[[1L]] == ".."
-        unquote.list <- function(e) {
-            p <- Position(is.splice.macro, e, nomatch = NULL)
-            if (is.null(p))
-                lapply(e, unquote)
-            else {
-                n <- length(e)
-                head <- if (p == 1)
-                    NULL
-                else e[1:(p - 1)]
-                tail <- if (p == n)
-                    NULL
-                else e[(p + 1):n]
-                macro <- e[[p]]
-                mexp <- eval(macro[[2L]], where)
-                if (!is.vector(mexp) && !is.expression(mexp))
-                    stop("can only splice vectors")
-                c(lapply(head, unquote), mexp, as.list(unquote.list(tail)))
-            }
-        }
-        unquote(substitute(expr))
-    }
-}
-
-
 
 
 
@@ -410,6 +329,10 @@ getNamedElement <- function (x, names)
 # this.path(), this.dir(), and here() ----
 
 
+isJupyterLoaded <- function ()
+gui.jupyter && isNamespaceLoaded("IRkernel") && (identical2)(sys.function(1L), IRkernel::main)
+
+
 # `utils::getWindowsHandles` (Windows exclusive) returns a list of
 # external pointers containing the windows handles. the thing of
 # interest are the names of this list, these should be the names of the
@@ -564,7 +487,7 @@ body(.this.path.toplevel) <- bquote({
         }
 
 
-        if (!isNamespaceLoaded("IRkernel") || !(identical2)(sys.function(1L), IRkernel::main)) {
+        if (!isJupyterLoaded()) {
             if (for.msg)
                 return(NA_character_)
             else stop("Jupyter has not finished loading")
@@ -696,14 +619,18 @@ set.this.path.jupyter <- function (...)
     if (!gui.jupyter)
         stop(gettextf("'%s' can only be called in Jupyter",
             "set.this.path.jupyter"))
-    if (!isNamespaceLoaded("IRkernel") || !(identical2)(sys.function(1L), IRkernel::main))
+    if (!isJupyterLoaded())
         stop(gettextf("'%s' can only be called after Jupyter has finished loading",
             "set.this.path.jupyter"))
     n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
     if (sys.nframe() != n)
         stop(gettextf("'%s' can only be called from a top-level context",
             "set.this.path.jupyter"))
-    path <- path.join(...)
+    path <- if (missing(...) || ...length() == 1L && (is.null(..1) || is.atomic(..1) && length(..1) == 1L && is.na(..1)))
+        NA_character_
+    else if (is.null(initwd))
+        path.join(...)
+    else path.join(initwd, ...)
     .External2(C_setthispathjupyter, path)
 }
 
