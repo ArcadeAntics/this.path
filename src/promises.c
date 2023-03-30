@@ -148,7 +148,7 @@ SEXP do_getpromisewithoutwarning do_formals
     do_start("getpromisewithoutwarning", -1);
 
 
-    handles_nargs(rho, "C_getpromisewithoutwarning");
+    handles_nargs(ENCLOS(rho), "C_getpromisewithoutwarning");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
