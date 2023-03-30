@@ -333,6 +333,30 @@ isJupyterLoaded <- function ()
 gui.jupyter && isNamespaceLoaded("IRkernel") && (identical2)(sys.function(1L), IRkernel::main)
 
 
+validJupyterRNotebook <- function (path)
+{
+    contents <- tryCatch(getContents(path), error = identity)
+    if (!inherits(contents, "error")) {
+        contents <- tryCatch(jsonlite::parse_json(contents, simplifyVector = TRUE),
+            error = identity)
+        if (!inherits(contents, "error")) {
+            language <- getNamedElement(contents, c("metadata", "kernelspec", "language"))
+            name <- getNamedElement(contents, c("metadata", "language_info", "name"))
+            version <- getNamedElement(contents, c("metadata", "language_info", "version"))
+            source <- getNamedElement(contents, c("cells", "source"))
+            if (is.character(language) && length(language) == 1L && !is.na(language) && language == "R" &&
+                is.character(name)     && length(name)     == 1L && !is.na(name)     && name     == "R" &&
+                is.character(version)  && length(version)  == 1L && !is.na(version)  && version  == as.character(getRversion()) &&
+                is.list(source)        && length(source)         && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
+            {
+                return(TRUE)
+            }
+        }
+    }
+    FALSE
+}
+
+
 # `utils::getWindowsHandles` (Windows exclusive) returns a list of
 # external pointers containing the windows handles. the thing of
 # interest are the names of this list, these should be the names of the
@@ -543,7 +567,7 @@ body(.this.path.toplevel) <- bquote({
                             if (!inherits(exprs, "error")) {
                                 for (expr in exprs) {
                                     if (identical(expr, call)) {
-                                        .External2(C_setthispathjupyter, file)
+                                        .External2(C_setthispathjupyter, file, skipCheck = TRUE)
                                         if (verbose) cat("Source: document in Jupyter\n")
                                         if (original)
                                             return(.(as.symbol(thispathofilejupyter)))

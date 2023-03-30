@@ -735,13 +735,17 @@ SEXP do_inittoolsrstudio do_formals
 
 
     Rboolean skipCheck = FALSE;
-    int nargs = length(args);
-    if (nargs == 0) {
-    }
-    else if (nargs == 1) {
+    switch (length(args)) {
+    case 0:
+        break;
+    case 1:
         skipCheck = asLogical(CAR(args));
+        if (skipCheck == NA_LOGICAL)
+            errorcall(call, _("invalid '%s' argument"), "skipCheck");
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), "C_inittoolsrstudio", "0 or 1"));
     }
-    else errorcall(call, wrong_nargs_to_External(nargs, "C_inittoolsrstudio", "0 or 1"));
     return ScalarLogical(init_tools_rstudio(skipCheck));
 }
 

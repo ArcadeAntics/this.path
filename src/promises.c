@@ -285,12 +285,33 @@ SEXP do_prinfo do_formals
 
 
 
+Rboolean validJupyterRNotebook(SEXP path)
+{
+    static SEXP validJupyterRNotebookSymbol = NULL;
+    if (validJupyterRNotebookSymbol == NULL) {
+        validJupyterRNotebookSymbol = install("validJupyterRNotebook");
+    }
+
+
+    SEXP expr = allocList(2);
+    PROTECT(expr);
+    SET_TYPEOF(expr, LANGSXP);
+    SETCAR(expr, validJupyterRNotebookSymbol);
+    SETCADR(expr, path);
+    SEXP value = eval(expr, mynamespace);
+    if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL_ELT(value, 0) == NA_LOGICAL)
+        errorcall(expr, "invalid return value");
+    UNPROTECT(1);
+    return LOGICAL_ELT(value, 0);
+}
+
+
 #include "drivewidth.h"
 
 
 SEXP do_setthispathjupyter do_formals
 {
-    do_start("setthispathjupyter", 1);
+    do_start("setthispathjupyter", -1);
 
 
     static SEXP thispathtoplevelSymbol = NULL;
@@ -299,7 +320,23 @@ SEXP do_setthispathjupyter do_formals
     }
 
 
-    SEXP path = CAR(args);
+    SEXP path;
+    Rboolean skipCheck = FALSE;
+    switch (length(args)) {
+    case 1:
+        path = CAR(args);
+        break;
+    case 2:
+        path = CAR(args);
+        skipCheck = asLogical(CADR(args));
+        if (skipCheck == NA_LOGICAL)
+            errorcall(call, _("invalid '%s' argument"), "skipCheck");
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), "C_setthispathjupyter", "1 or 2"));
+    }
+
+
     if (TYPEOF(path) != STRSXP || LENGTH(path) != 1L)
         errorcall(call, _("'%s' must be a character string"), "path");
     if (STRING_ELT(path, 0) == NA_STRING) {}
@@ -311,25 +348,36 @@ SEXP do_setthispathjupyter do_formals
     else errorcall(call, _("invalid '%s' argument"), "path");
 
 
+    if (skipCheck || validJupyterRNotebook(path)) {}
+    else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
+
+
     SEXP sym, env = getInFrame(thispathtoplevelSymbol, mynamespace, FALSE);
     if (TYPEOF(env) != CLOSXP)
         errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(thispathtoplevelSymbol)));
     env = CLOENV(env);
 
 
+    /* attempt to get the promise */
     sym = thispathfilejupyterSymbol;
     SEXP e = findVarInFrame(env, sym);
     if (e == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(e) != PROMSXP)
         errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+
+
+    /* attempt to unlock the original file's binding */
+    sym = thispathofilejupyterSymbol;
+    R_unLockBinding(sym, env);
+
+
     /* restore the promise to its original state */
     SET_PRENV(e, env);
     SET_PRVALUE(e, R_UnboundValue);
 
 
-    sym = thispathofilejupyterSymbol;
-    R_unLockBinding(sym, env);
+    /* define the variable and re-lock the binding */
     defineVar(sym, path, env);
     R_LockBinding(sym, env);
 

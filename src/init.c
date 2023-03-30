@@ -134,7 +134,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"promiseisunevaluated"    , (DL_FUNC) &do_promiseisunevaluated    , -1},
     {"getpromisewithoutwarning", (DL_FUNC) &do_getpromisewithoutwarning, -1},
     {"prinfo"                  , (DL_FUNC) &do_prinfo                  , -1},
-    {"setthispathjupyter"      , (DL_FUNC) &do_setthispathjupyter      ,  1},
+    {"setthispathjupyter"      , (DL_FUNC) &do_setthispathjupyter      , -1},
 
 
     /* shfile.c */
