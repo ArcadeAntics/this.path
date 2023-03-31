@@ -47,6 +47,10 @@ extern void (ENSURE_NAMEDMAX)(SEXP x);
 #endif
 
 
+void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
+void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
+
+
 #if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
 extern Rboolean R_Visible;
 #define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
@@ -361,12 +365,10 @@ typedef struct gzconn {
                  */                                            \
                 if (allow_unz) {                               \
                     SEXP tmp = thisPathInZipFileError(R_NilValue, description);\
-                    INCREMENT_NAMED(tmp);                      \
-                    defineVar(thispatherrorSymbol, tmp, frame);\
+                    INCREMENT_NAMED_defineVar(thispatherrorSymbol, tmp, frame);\
                     R_LockBinding(thispatherrorSymbol, frame); \
                     tmp = ScalarString(description);           \
-                    INCREMENT_NAMED(tmp);                      \
-                    defineVar(thispathformsgSymbol, tmp, frame);\
+                    INCREMENT_NAMED_defineVar(thispathformsgSymbol, tmp, frame);\
                     R_LockBinding(thispathformsgSymbol, frame);\
                     defineVar(thispathassocwfileSymbol, R_NilValue, frame);\
                     R_LockBinding(thispathassocwfileSymbol, frame);\
@@ -429,12 +431,10 @@ typedef struct gzconn {
                        associated file                         \
                      */                                        \
                     SEXP tmp = thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary(Rcon, summary));\
-                    INCREMENT_NAMED(tmp);                      \
-                    defineVar(thispatherrorSymbol, tmp, frame);\
+                    INCREMENT_NAMED_defineVar(thispatherrorSymbol, tmp, frame);\
                     R_LockBinding(thispatherrorSymbol, frame); \
                     tmp = ScalarString(description);           \
-                    INCREMENT_NAMED(tmp);                      \
-                    defineVar(thispathformsgSymbol, tmp, frame);\
+                    INCREMENT_NAMED_defineVar(thispathformsgSymbol, tmp, frame);\
                     R_LockBinding(thispathformsgSymbol, frame);\
                     assign_done(frame);                        \
                 }                                              \

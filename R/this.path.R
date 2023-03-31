@@ -780,7 +780,7 @@ faster.subsequent.times.test <- function ()
 
 
 
-this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.)
+this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else., local = FALSE)
 tryCatch({
     .this.path(verbose, original, for.msg)
 }, function(c) default)
@@ -907,6 +907,46 @@ tryCatch(.shFILE(FALSE), error = function(e) .shFILE())
 
 try.this.path <- function ()
 tryCatch(.this.path(), error = function(e) .this.path(for.msg = TRUE))
+
+
+
+
+
+local.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.)
+{
+    if (missing(default)) {
+        if (missing(else.))
+            .External2(C_localpath, verbose, original, for.msg)
+        else stop("'local.path' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        if (missing(else.)) {
+            value <- .External2(C_localpath, verbose, original, for.msg)
+            if (!is.na(value))
+                value
+            else if (for.msg)
+                NA_character_
+            else default
+        }
+        else {
+            value <- .External2(C_localpath, verbose, original, for.msg)
+            if (!is.na(value))
+                (else.)(value)
+            else if (for.msg) {
+                value <- NA_character_
+                (else.)(value)
+            }
+            else default
+        }
+    }
+}
+
+
+body(this.path) <- bquote({
+    if (local)
+        .(`[[<-`(body(local.path), c(2, 3, 2, 4, 2), body(this.path)[[c(2, 3, 2, 4, 2)]]))
+    else .(body(this.path))
+})
 
 
 

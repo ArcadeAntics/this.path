@@ -13,6 +13,20 @@ const char *EncodeChar(SEXP x)
 }
 
 
+void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho)
+{
+    INCREMENT_NAMED(value);
+    defineVar(symbol, value, rho);
+}
+
+
+void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho)
+{
+    MARK_NOT_MUTABLE(value);
+    defineVar(symbol, value, rho);
+}
+
+
 #if R_version_less_than(3, 6, 0)
 SEXP R_shallow_duplicate_attr(SEXP x) { return shallow_duplicate(x); }
 #endif
@@ -476,8 +490,7 @@ void assign_done(SEXP frame)
 
 
 #define _assign(file, frame)                                   \
-    INCREMENT_NAMED((file));                                   \
-    defineVar(thispathofileSymbol, (file), (frame));           \
+    INCREMENT_NAMED_defineVar(thispathofileSymbol, (file), (frame));\
     R_LockBinding(thispathofileSymbol, (frame));               \
     /* this would be so much easier if we were given access to mkPROMISE */\
     SEXP expr = allocList(5);                                  \
@@ -629,13 +642,12 @@ static Rboolean _init_tools_rstudio(void)
 
 
 #define assigninmynamespace(sym, val)                          \
-            INCREMENT_NAMED((val));                            \
             if (R_BindingIsLocked((sym), mynamespace)) {       \
                 R_unLockBinding((sym), mynamespace);           \
-                defineVar((sym), (val), mynamespace);          \
+                INCREMENT_NAMED_defineVar((sym), (val), mynamespace);\
                 R_LockBinding((sym), mynamespace);             \
             }                                                  \
-            else defineVar((sym), (val), mynamespace)
+            else INCREMENT_NAMED_defineVar((sym), (val), mynamespace)
 
 
             assigninmynamespace(_rs_api_getActiveDocumentContextSymbol, _rs_api_getActiveDocumentContext);

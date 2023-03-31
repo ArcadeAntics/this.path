@@ -192,6 +192,7 @@ extern SEXP do_thispathinaquaerror                      do_formals;
 
 extern SEXP do_isclipboard      do_formals;
 extern SEXP do_thispath         do_formals;
+extern SEXP do_localpath        do_formals;
 extern SEXP do_inittoolsrstudio do_formals;
 extern SEXP do_thispathrgui     do_formals;
 

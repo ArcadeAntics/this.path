@@ -213,9 +213,7 @@ SEXP do_wrapsource do_formals
 
 #define set_thispathn(n, frame)                                \
     do {                                                       \
-        SEXP thispathn = ScalarInteger((n));                   \
-        INCREMENT_NAMED(thispathn);                            \
-        defineVar(thispathnSymbol, thispathn, (frame));        \
+        INCREMENT_NAMED_defineVar(thispathnSymbol, ScalarInteger((n)), (frame));\
         R_LockBinding(thispathnSymbol, (frame));               \
     } while (0)
 
@@ -741,11 +739,6 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     default:
         error("invalid '%s' argument of type %s", "Function", type2char(TYPEOF(Function)));
     }
-    Rprintf("typeof(%s): '%s'\n", "fun_name", type2char(TYPEOF(fun_name)));
-    if (TYPEOF(fun_name) != CHARSXP) {
-        eval(lang2(install("print"), lang2(R_QuoteSymbol, fun_name)), R_BaseEnv);
-        error("%s must be of type '%s'", "fun_name", "CHARSXP");
-    }
 
 
     ofile = getInFrame(fileSymbol, rho, FALSE);
@@ -786,8 +779,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     )
 
 
-    INCREMENT_NAMED(fun_name);
-    defineVar(insidesourcewashereSymbol, fun_name, frame);
+    INCREMENT_NAMED_defineVar(insidesourcewashereSymbol, fun_name, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
     set_thispathn(sys_parent, frame);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */

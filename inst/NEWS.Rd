@@ -20,6 +20,15 @@ Added \code{\link{path.split}()}, \code{\link{path.split.1}()}, and
 components.
       }
       \item{
+\code{\link{this.path}()} now works when run in \sQuote{\VSCode} with the
+\sQuote{\radian} console.
+      }
+      \item{
+\code{\link{this.path}()} now works in \sQuote{\Jupyter}. Added
+\code{\link{set.this.path.jupyter}()} for explicitly declaring the path of the
+\sQuote{\Jupyter} notebook.
+      }
+      \item{
 \code{\link{this.path}()} now works inside \code{\link[box:use]{box::use}()}.
       }
       \item{
@@ -27,13 +36,20 @@ For logging purposes, \code{\link{this.path}(for.msg = TRUE)} will now return
 \code{"Untitled"} when appropriate.
       }
       \item{
-Added \code{\link{unset.this.path}()} to undo a call to
-\code{\link{set.this.path}()}.
+\code{\link{inside.source}()} / / \code{\link{set.this.path}()} now accept
+argument \code{Function} specifying the name of the function and package in
+which they are called.
       }
       \item{
-\code{\link{this.path}()} now works in \sQuote{\Jupyter}. Added
-\code{\link{set.this.path.jupyter}()} for explicitly declaring the path of the
-\sQuote{\Jupyter} notebook.
+\code{\link{this.path}()} now accepts argument \code{local} to confine the
+search for the executing script to the local environment in which
+\code{\link{inside.source}()} / / \code{\link{set.this.path}()} was called.
+Also added \code{\link{local.path}()}, short for
+\code{\link{this.path}(local = TRUE)}.
+      }
+      \item{
+Added \code{\link{unset.this.path}()} to undo a call to
+\code{\link{inside.source}()} / / \code{\link{set.this.path}()}.
       }
       \item{
 Added \code{\link{check.proj}()} for checking that \code{\link{this.path}()}
@@ -42,11 +58,6 @@ and \code{\link{this.proj}()} are working correctly.
       \item{
 Added \code{\link{reset.this.proj}()} to reset the paths saved by
 \code{\link{this.proj}()}.
-      }
-      \item{
-\code{\link{inside.source}()} / / \code{\link{set.this.path}()} now accept
-argument \code{Function} specifying the name of the function and package in
-which they are called.
       }
     }
   }
@@ -66,10 +77,6 @@ and should be replaced with \code{\link{rel2here}()}.
 \code{\link{this.path}(for.msg = TRUE)} now returns
 \code{\link[base:NA]{NA_character_}} when running from a shell instead of
 incorrectly throwing an error.
-      }
-      \item{
-\code{\link{this.path}()} now works when run in \sQuote{\VSCode} with the
-\sQuote{\radian} console.
       }
     }
   }

@@ -118,31 +118,59 @@ SEXP do_isclipboard do_formals
 }
 
 
-SEXP do_thispath do_formals
+SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
+    Rboolean get_frame_number, Rboolean local, SEXP rho)
 {
-    do_start("thispath", 5);
+    static SEXP for_msgSymbol = NULL;
+    if (for_msgSymbol == NULL)
+        for_msgSymbol = install("for.msg");
+
+
+    if (verbose == NA_LOGICAL)
+        error(_("invalid '%s' value"), "verbose");
+    if (for_msg == NA_LOGICAL)
+        error(_("invalid '%s' value"), "for.msg");
+    if (N == NA_INTEGER || N < 0)
+        error(_("invalid '%s' argument"), "N");
+    if (get_frame_number == NA_LOGICAL)
+        error(_("invalid '%s' value"), "get.frame.number");
+    if (local == NA_LOGICAL)
+        error(_("invalid '%s' value"), "local");
 
 
     SEXP returnthis = NULL;
     SEXP returnvalue;  /* this is never used */
 
 
-    int verbose  = asFlag   (CAR(args), "verbose"); args = CDR(args);
-    int original = asLogical(CAR(args));            args = CDR(args);
-    int for_msg  = asFlag   (CAR(args), "for.msg"); args = CDR(args);
-    int N        = asInteger(CAR(args));            args = CDR(args);
-    if (N == NA_INTEGER || N < 0)
-        error(_("invalid '%s' argument"), "N");
-    int get_frame_number = asFlag(CAR(args), "get.frame.number"); args = CDR(args);
-
-
-    if (get_frame_number && (original || for_msg)) {
-        if (!for_msg)
-            error("'%s' must be FALSE when '%s' is TRUE", "original", "get.frame.number");
-        else if (!original)
-            error("'%s' must be FALSE when '%s' is TRUE", "for.msg", "get.frame.number");
-        else
-            error("'%s' and '%s' must be FALSE when '%s' is TRUE", "original", "for.msg", "get.frame.number");
+    if (get_frame_number) {
+        if (original) {
+            if (for_msg) {
+                if (local)
+                    error("'%s', '%s', and '%s' must be FALSE when '%s' is TRUE", "original", "for.msg", "local", "get.frame.number");
+                else
+                    error("'%s' and '%s' must be FALSE when '%s' is TRUE", "original", "for.msg", "get.frame.number");
+            }
+            else {
+                if (local)
+                    error("'%s' and '%s' must be FALSE when '%s' is TRUE", "original", "local", "get.frame.number");
+                else
+                    error("'%s' must be FALSE when '%s' is TRUE", "original", "get.frame.number");
+            }
+        }
+        else {
+            if (for_msg) {
+                if (local)
+                    error("'%s' and '%s' must be FALSE when '%s' is TRUE", "for.msg", "local", "get.frame.number");
+                else
+                    error("'%s' must be FALSE when '%s' is TRUE", "for.msg", "get.frame.number");
+            }
+            else {
+                if (local)
+                    error("'%s' must be FALSE when '%s' is TRUE", "local", "get.frame.number");
+                else
+                    ;
+            }
+        }
     }
 
 
@@ -150,6 +178,7 @@ SEXP do_thispath do_formals
 
 
 #define toplevel                                               \
+        if (local) error("'local.path' used in an inappropriate fashion");\
         if (get_frame_number) return ScalarInteger(0);         \
         SEXP expr;                                             \
         if (for_msg)                                           \
@@ -212,7 +241,13 @@ SEXP do_thispath do_formals
 
     SEXP frame, function;
     SEXP ofile;
-    for (iwhich[0] = N; iwhich[0] >= 1; iwhich[0]--) {
+
+
+    if (local) INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarLogical(for_msg), rho);
+    int to = ((local) ? N : 1);
+
+
+    for (iwhich[0] = N; iwhich[0] >= to; iwhich[0]--) {
         frame = eval(getframe, rho);
         // PROTECT(frame);
         function = eval(getfunction, rho);
@@ -221,6 +256,7 @@ SEXP do_thispath do_formals
    before moving to the next iteration) */
 #define nprotect_loop 1
         if (identical(function, source)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, ofileSymbol);
                 if (ofile == R_UnboundValue) {
@@ -298,6 +334,10 @@ SEXP do_thispath do_formals
                         return (which);                        \
                     }                                          \
                     else {                                     \
+                        if (local) {                           \
+                            UNPROTECT(nprotect + nprotect_loop);\
+                            return ScalarString(NA_STRING);    \
+                        }                                      \
                         thispatherror = duplicate(thispatherror);\
                         PROTECT(thispatherror);                \
                         SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));\
@@ -386,6 +426,7 @@ SEXP do_thispath do_formals
 
 
         else if (identical(function, sys_source)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -445,6 +486,7 @@ SEXP do_thispath do_formals
 
 
         else if (has_tools_rstudio && identical(function, debugSource)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
@@ -504,6 +546,7 @@ SEXP do_thispath do_formals
 
 
         else if (testthat_loaded && identical(function, source_file)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
@@ -564,6 +607,7 @@ SEXP do_thispath do_formals
 
 
         else if (knitr_loaded && identical(function, knit)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
                     UNPROTECT(nprotect_loop);
@@ -624,6 +668,7 @@ SEXP do_thispath do_formals
 
 
         else if (identical(function, wrap_source)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 UNPROTECT(nprotect_loop);
                 continue;
@@ -640,6 +685,7 @@ SEXP do_thispath do_formals
 
 
         else if (box_loaded && identical(function, load_from_source)) {
+            if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 /* info$source_path */
                 SEXP expr = lang3(
@@ -726,6 +772,40 @@ SEXP do_thispath do_formals
 
 #undef toplevel
 #undef returnfile
+}
+
+
+SEXP do_thispath do_formals
+{
+    do_start("thispath", 5);
+
+
+    Rboolean verbose          = asLogical(CAR(args)); args = CDR(args);
+    Rboolean original         = asLogical(CAR(args)); args = CDR(args);
+    Rboolean for_msg          = asLogical(CAR(args)); args = CDR(args);
+    int      N                = asInteger(CAR(args)); args = CDR(args);
+    Rboolean get_frame_number = asLogical(CAR(args)); args = CDR(args);
+    Rboolean local            = FALSE;
+
+
+    return thispath(verbose, original, for_msg, N, get_frame_number, local, rho);
+}
+
+
+SEXP do_localpath do_formals
+{
+    do_start("localpath", 3);
+
+
+    Rboolean verbose          = asLogical(CAR(args)); args = CDR(args);
+    Rboolean original         = asLogical(CAR(args)); args = CDR(args);
+    Rboolean for_msg          = asLogical(CAR(args)); args = CDR(args);
+    int      N                = asInteger(eval(lang1(sys_parentSymbol), rho));
+    Rboolean get_frame_number = FALSE;
+    Rboolean local            = TRUE;
+
+
+    return thispath(verbose, original, for_msg, N, get_frame_number, local, rho);
 }
 
 

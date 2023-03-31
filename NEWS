@@ -13,24 +13,33 @@ CHANGES IN this.path devel:
     * Added path.split(), path.split.1(), and path.unsplit() for
       splitting and unsplitting paths into components.
 
+    * this.path() now works when run in 'VSCode' with the 'radian'
+      console.
+
+    * this.path() now works in 'Jupyter'. Added set.this.path.jupyter()
+      for explicitly declaring the path of the 'Jupyter' notebook.
+
     * this.path() now works inside box::use().
 
     * For logging purposes, this.path(for.msg = TRUE) will now return
       "Untitled" when appropriate.
 
-    * Added unset.this.path() to undo a call to set.this.path().
+    * inside.source() / / set.this.path() now accept argument Function
+      specifying the name of the function and package in which they are
+      called.
 
-    * this.path() now works in 'Jupyter'. Added set.this.path.jupyter()
-      for explicitly declaring the path of the 'Jupyter' notebook.
+    * this.path() now accepts argument local to confine the search for
+      the executing script to the local environment in which
+      inside.source() / / set.this.path() was called. Also added
+      local.path(), short for this.path(local = TRUE).
+
+    * Added unset.this.path() to undo a call to inside.source() / /
+      set.this.path().
 
     * Added check.proj() for checking that this.path() and this.proj()
       are working correctly.
 
     * Added reset.this.proj() to reset the paths saved by this.proj().
-
-    * inside.source() / / set.this.path() now accept argument Function
-      specifying the name of the function and package in which they are
-      called.
 
   DEPRECATED AND DEFUNCT
 
@@ -43,9 +52,6 @@ CHANGES IN this.path devel:
       default, as intended. By extension, this.path(for.msg = TRUE) now
       returns NA_character_ when running from a shell instead of
       incorrectly throwing an error.
-
-    * this.path() now works when run in 'VSCode' with the 'radian'
-      console.
 
 CHANGES IN this.path 1.2.0:
 

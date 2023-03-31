@@ -378,8 +378,7 @@ SEXP do_setthispathjupyter do_formals
 
 
     /* define the variable and re-lock the binding */
-    INCREMENT_NAMED(path);
-    defineVar(sym, path, env);
+    INCREMENT_NAMED_defineVar(sym, path, env);
     R_LockBinding(sym, env);
 
 

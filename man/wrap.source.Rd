@@ -2,6 +2,7 @@
 \alias{wrap.source}
 \alias{inside.source}
 \alias{set.this.path}
+\alias{local.path}
 \alias{unset.this.path}
 \title{
 Implement \code{\link{this.path}()} For Arbitrary \sourcelink{}-Like Functions
@@ -16,6 +17,10 @@ Currently, \code{\link{this.path}()} is implemented to work with
 \code{this.path()} for any other \sourcelink{}-like functions.
 
 \code{set.this.path()} is just an alias for \code{inside.source()}.
+
+\code{local.path()} returns the path of the executing script, confining the
+search to the local environment in which \code{inside.source()} / /
+\code{set.this.path()} was called.
 
 \code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
 need to use this if you wish to call \code{set.this.path()} multiple times
@@ -99,6 +104,9 @@ set.this.path(file,
     ignore.file.uri = ignore.all,
     Function = NULL)
 
+local.path(verbose = getOption("verbose"), original = FALSE,
+    for.msg = FALSE, default, else.)
+
 unset.this.path()
 }
 \arguments{
@@ -159,6 +167,9 @@ instead?
   \item{Function}{
 character vector of length 1 or 2; the name of the function and package in
 which \code{inside.source()} / / \code{set.this.path()} is called.
+  }
+  \item{verbose, original, for.msg, default, else.}{
+See \code{?\link{this.path}()}
   }
 }
 \details{

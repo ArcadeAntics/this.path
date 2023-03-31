@@ -21,7 +21,7 @@ paths to files, starting with \code{this.dir()} or the project's directory.
 }
 \usage{
 this.path(verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, default, else.)
+    for.msg = FALSE, default, else., local = FALSE)
 this.dir (verbose = getOption("verbose"), default, else.)
 
 Sys.path()  # short for 'this.path(verbose = FALSE)'
@@ -52,6 +52,11 @@ if there is no executing script, this value is returned.
   \item{else.}{
 missing or a function to apply if there is an executing script. See
 \code{\link{tryCatch2}()} for inspiration.
+  }
+  \item{local}{
+\code{TRUE} or \code{FALSE}; should the search for the executing script be
+confined to the local environment in which \code{\link{inside.source}()} / /
+\code{\link{set.this.path}()} was called?
   }
 }
 \details{

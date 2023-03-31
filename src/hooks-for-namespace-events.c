@@ -107,20 +107,9 @@ SEXP do_onload do_formals
     getInFrame(install("initwd"), mynamespace, FALSE);
 
 
-    /* define a variable and increase its reference counter */
-#define defineVarInc(symbol, value, rho)                       \
-    do {                                                       \
-        SEXP val = (value);                                    \
-        PROTECT(val);                                          \
-        defineVar((symbol), val, (rho));                       \
-        INCREMENT_NAMED(val);                                  \
-        UNPROTECT(1);  /* val */                               \
-    } while (0)
-
-
     /* save libname and pkgname in the namespace */
-    defineVarInc(install("libname"), libname, mynamespace);
-    defineVarInc(install("pkgname"), pkgname, mynamespace);
+    INCREMENT_NAMED_defineVar(install("libname"), libname, mynamespace);
+    INCREMENT_NAMED_defineVar(install("pkgname"), pkgname, mynamespace);
 
 
     /* find and save libpath in the namespace */
@@ -131,8 +120,8 @@ SEXP do_onload do_formals
     SETCAR  (expr, install("getNamespaceInfo"));
     SETCADR (expr, install("pkgname"));
     SETCADDR(expr, mkString("path"));
-    defineVarInc(install("libpath"), eval(expr, rho), mynamespace);
-    UNPROTECT(1);  /* expr */
+    INCREMENT_NAMED_defineVar(install("libpath"), PROTECT(eval(expr, rho)), mynamespace);
+    UNPROTECT(2);  /* expr & value */
 
 
 #define R_THIS_PATH_DEFINE_SYMBOLS
@@ -142,20 +131,23 @@ SEXP do_onload do_formals
 
     /* save HAVE_AQUA and PATH_MAX in my namespace */
 #if defined(HAVE_AQUA)
-    defineVarInc(install("HAVE_AQUA"), ScalarLogical(TRUE), mynamespace);
+    INCREMENT_NAMED_defineVar(install("HAVE_AQUA"), PROTECT(ScalarLogical(TRUE)), mynamespace);
 #else
-    defineVarInc(install("HAVE_AQUA"), ScalarLogical(FALSE), mynamespace);
+    INCREMENT_NAMED_defineVar(install("HAVE_AQUA"), PROTECT(ScalarLogical(FALSE)), mynamespace);
 #endif
+    UNPROTECT(1);
 
 
-    defineVarInc(install("PATH_MAX"), ScalarInteger(PATH_MAX), mynamespace);
+    INCREMENT_NAMED_defineVar(install("PATH_MAX"), PROTECT(ScalarInteger(PATH_MAX)), mynamespace);
+    UNPROTECT(1);
 
 
 #if R_version_less_than(3, 0, 0)
-    defineVarInc(install("NAMEDMAX"), ScalarInteger(NA_INTEGER), mynamespace);
+    INCREMENT_NAMED_defineVar(install("NAMEDMAX"), PROTECT(ScalarInteger(NA_INTEGER)), mynamespace);
 #else
-    defineVarInc(install("NAMEDMAX"), ScalarInteger(NAMEDMAX), mynamespace);
+    INCREMENT_NAMED_defineVar(install("NAMEDMAX"), PROTECT(ScalarInteger(NAMEDMAX)), mynamespace);
 #endif
+    UNPROTECT(1);
 
 
 #define convertclosure2activebinding(symbol)                   \
@@ -327,8 +319,7 @@ SEXP do_onload do_formals
 #endif
 
 
-    MARK_NOT_MUTABLE(value);
-    defineVar(install("OS.type"), value, mynamespace);
+    MARK_NOT_MUTABLE_defineVar(install("OS.type"), value, mynamespace);
     UNPROTECT(1);  /* value */
 
 
