@@ -139,7 +139,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
     SEXP returnthis = NULL;
-    SEXP returnvalue;  /* this is never used */
+    SEXP returnvalue;  /* checkfile() creates a variable 'returnvalue' that is
+                          used in insidesource() (see ./src/wrapsource.c).
+                          not used elsewhere but must be declared */
 
 
     if (get_frame_number) {
@@ -212,23 +214,35 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
     init_tools_rstudio(FALSE);
 
 
-    int testthat_loaded, knitr_loaded, box_loaded;
+    SEXP source      = getInFrame(sourceSymbol    , R_BaseEnv, FALSE),
+         sys_source  = getInFrame(sys_sourceSymbol, R_BaseEnv, FALSE),
+         debugSource = get_debugSource,
+         wrap_source = getInFrame(wrap_sourceSymbol, mynamespace, FALSE);
 
 
-    SEXP source     = getInFrame(sourceSymbol    , R_BaseEnv, FALSE),
-         sys_source = getInFrame(sys_sourceSymbol, R_BaseEnv, FALSE),
-         debugSource,
-         source_file,
-         knit       ,
-         wrap_source,
-         load_from_source;
+    SEXP ns;
+    Rboolean testthat_loaded, knitr_loaded, box_loaded      , compiler_loaded;
+    SEXP     source_file    , knit        , load_from_source, loadcmp        ;
 
 
-    debugSource = get_debugSource;
-    source_file = get_source_file(testthat_loaded);
-    knit        = get_knit(knitr_loaded);
-    wrap_source = get_wrap_source,
-    load_from_source = get_load_from_source(box_loaded);
+    ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
+    testthat_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    source_file = (testthat_loaded ? getInFrame(source_fileSymbol, ns, FALSE) : R_UnboundValue);
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, knitrSymbol);
+    knitr_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    knit = (knitr_loaded ? getInFrame(knitSymbol, ns, FALSE) : R_UnboundValue);
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
+    box_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    load_from_source = (box_loaded ? getInFrame(load_from_sourceSymbol, ns, FALSE) : R_UnboundValue);
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
+    compiler_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    loadcmp = (compiler_loaded ? getInFrame(loadcmpSymbol, ns, FALSE) : R_UnboundValue);
 
 
     SEXP which = allocVector(INTSXP, 1);
@@ -737,6 +751,67 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 /* int promise_must_be_forced = */ TRUE,
                 /* const char *fun_name       = */
                 "load_from_source from package box"
+            );
+        }
+
+
+        else if (compiler_loaded && identical(function, loadcmp)) {
+            /* much the same as sys.source() */
+            if (local) error("'local.path' used in an inappropriate fashion");
+            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+                ofile = findVarInFrame(frame, fileSymbol);
+                if (ofile == R_UnboundValue)
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
+                if (TYPEOF(ofile) == PROMSXP) {
+                    if (PRSEEN(ofile) == 1) {
+                        /* if ofile is a promise already under evaluation */
+                        UNPROTECT(nprotect_loop);
+                        continue;
+                    }
+                    if (PRVALUE(ofile) == R_UnboundValue)
+                        ofile = eval(ofile, R_EmptyEnv);
+                    else
+                        ofile = PRVALUE(ofile);
+                }
+                checkfile(
+                    /* SEXP call                  = */ sys_call(which, rho),
+                    /* SEXP sym                   = */ fileSymbol,
+                    /* SEXP ofile                 = */ ofile,
+                    /* SEXP frame                 = */ frame,
+                    /* int forcepromise           = */ FALSE,
+                    /* int assign_returnvalue     = */ FALSE,
+                    /* int maybe_chdir            = */ TRUE,
+                    /* SEXP getowd                = */ findVarInFrame(frame, owdSymbol),
+                    /* int hasowd                 = */ ((owd) != R_UnboundValue),
+                    /* int character_only         = */ TRUE,
+                    /* int conv2utf8              = */ FALSE,
+                    /* int allow_blank_string     = */ FALSE,
+                    /* int allow_clipboard        = */ FALSE,
+                    /* int allow_stdin            = */ FALSE,
+                    /* int allow_url              = */ FALSE,
+                    /* int allow_file_uri         = */ FALSE,
+                    /* int allow_unz              = */ FALSE,
+                    /* int allow_pipe             = */ FALSE,
+                    /* int allow_terminal         = */ FALSE,
+                    /* int allow_textConnection   = */ FALSE,
+                    /* int allow_rawConnection    = */ FALSE,
+                    /* int allow_sockconn         = */ FALSE,
+                    /* int allow_servsockconn     = */ FALSE,
+                    /* int allow_customConnection = */ FALSE,
+                    /* int ignore_blank_string    = */ FALSE,
+                    /* int ignore_clipboard       = */ FALSE,
+                    /* int ignore_stdin           = */ FALSE,
+                    /* int ignore_url             = */ FALSE,
+                    /* int ignore_file_uri        = */ FALSE
+                )
+            }
+            returnfile(
+                /* int character_only         = */ TRUE,
+                /* int file_only              = */ TRUE,
+                /* SEXP which                 = */ which,
+                /* int promise_must_be_forced = */ FALSE,
+                /* const char *fun_name       = */
+                "loadcmp from package compiler"
             );
         }
 

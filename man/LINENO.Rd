@@ -33,6 +33,9 @@ be done. I am looking into a fix for such a thing.
 
 For \boxuselink{}, the \code{srcref} is always stored, so you do not need
 to do anything special before calling.
+
+For \compilerloadcmplink{}, the \code{srcref} is never stored for the compiled
+code, there is nothing that can be done.
 }
 \examples{
 FILE <- tempfile(fileext = ".R")

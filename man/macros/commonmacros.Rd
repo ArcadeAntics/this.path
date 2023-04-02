@@ -17,6 +17,7 @@
 \newcommand{\sourcefilelink}{\code{\link[testthat:source_file]{testthat::source_file}()}}
 \newcommand{\knitlink}{\code{\link[knitr:knit]{knitr::knit}()}}
 \newcommand{\boxuselink}{\code{\link[box:use]{box::use}()}}
+\newcommand{\compilerloadcmplink}{\code{\link[compiler:compile]{compiler::loadcmp}()}}
 
 \newcommand{\sourcenolink}{\code{source()}}
 \newcommand{\syssourcenolink}{\code{sys.source()}}
@@ -24,27 +25,32 @@
 \newcommand{\sourcefilenolink}{\code{testthat::source_file()}}
 \newcommand{\knitnolink}{\code{knitr::knit()}}
 \newcommand{\boxusenolink}{\code{box::use()}}
+\newcommand{\compilerloadcmpnolink}{\code{compiler::loadcmp()}}
 
-\newcommand{\sourceslistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, \boxuselink{}}
-\newcommand{\sourcesorlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, or \boxuselink{}}
-\newcommand{\sourcesandlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, and \boxuselink{}}
+\newcommand{\sourceslistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, \boxuselink{}, \compilerloadcmplink{}}
+\newcommand{\sourcesorlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, \boxuselink{}, or \compilerloadcmplink{}}
+\newcommand{\sourcesandlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, \boxuselink{}, and \compilerloadcmplink{}}
 
-\newcommand{\sourceslistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, \boxusenolink{}}
-\newcommand{\sourcesorlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, or \boxusenolink{}}
-\newcommand{\sourcesandlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, and \boxusenolink{}}
+\newcommand{\sourceslistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, \boxusenolink{}, \compilerloadcmpnolink{}}
+\newcommand{\sourcesorlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, \boxusenolink{}, or \compilerloadcmpnolink{}}
+\newcommand{\sourcesandlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, \boxusenolink{}, and \compilerloadcmpnolink{}}
 
-\newcommand{\sources1stargisfilelistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}}
-\newcommand{\sources1stargisfileorlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, or \knitlink{}}
-\newcommand{\sources1stargisfileandlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, and \knitlink{}}
+% only excludes box::use
+\newcommand{\sources1stargisfilelistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, \compilerloadcmplink{}}
+\newcommand{\sources1stargisfileorlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, or \compilerloadcmplink{}}
+\newcommand{\sources1stargisfileandlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}, and \compilerloadcmplink{}}
 
-\newcommand{\sources1stargisfilelistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}}
-\newcommand{\sources1stargisfileorlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, or \knitnolink{}}
-\newcommand{\sources1stargisfileandlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, and \knitnolink{}}
+\newcommand{\sources1stargisfilelistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, \compilerloadcmpnolink{}}
+\newcommand{\sources1stargisfileorlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, or \compilerloadcmpnolink{}}
+\newcommand{\sources1stargisfileandlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}, and \compilerloadcmpnolink{}}
 
-\newcommand{\sourcescompatiblewithwithArgslistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, \knitlink{}}
-\newcommand{\sourcescompatiblewithwithArgsorlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, or \knitlink{}}
-\newcommand{\sourcescompatiblewithwithArgsandlistlinks}{\sourcelink{}, \syssourcelink{}, \debugSourcelink{}, \sourcefilelink{}, and \knitlink{}}
+% currently, all source()-like functions in which the first argument is the
+% file are also compatible with withArgs(), so the commands are the same.
+% this may change in the future
+\newcommand{\sourcescompatiblewithwithArgslistlinks}{\sources1stargisfilelistlinks{}}
+\newcommand{\sourcescompatiblewithwithArgsorlistlinks}{\sources1stargisfileorlistlinks{}}
+\newcommand{\sourcescompatiblewithwithArgsandlistlinks}{\sources1stargisfileandlistlinks{}}
 
-\newcommand{\sourcescompatiblewithwithArgslistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, \knitnolink{}}
-\newcommand{\sourcescompatiblewithwithArgsorlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, or \knitnolink{}}
-\newcommand{\sourcescompatiblewithwithArgsandlistnolinks}{\sourcenolink{}, \syssourcenolink{}, \debugSourcenolink{}, \sourcefilenolink{}, and \knitnolink{}}
+\newcommand{\sourcescompatiblewithwithArgslistnolinks}{\sources1stargisfilelistnolinks{}}
+\newcommand{\sourcescompatiblewithwithArgsorlistnolinks}{\sources1stargisfileorlistnolinks{}}
+\newcommand{\sourcescompatiblewithwithArgsandlistnolinks}{\sources1stargisfileandlistnolinks{}}

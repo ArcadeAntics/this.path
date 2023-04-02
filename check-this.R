@@ -127,7 +127,7 @@ local({
     x <- this.path:::readFiles(Rdfiles)
     # x <- x[vapply(strsplit(x, "\n", fixed = TRUE, useBytes = TRUE),
     #     \(xx) max(nchar(xx)) >= 80L, NA)]
-    x <- grep("(^|\n)\\\\examples\\{", x, value = TRUE)
+    x <- grep("box", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
 
@@ -227,13 +227,10 @@ local({
 
 
     SINKFILE <- tempfile(fileext = ".txt")
+    writeLines(SINKFILE)
     withclose(SINKCONN <- file(SINKFILE, "w"), {
         withsink(SINKCONN, {
             withsink(SINKCONN, type = "message", {
-                .this.path <- this.path:::.this.path
-                debugSource <- this.path:::debugSource
-
-
                 bsubstitute <- function (expr, envir = parent.frame(),
                                          enclos = if (is.list(envir) || is.pairlist(envir))
                                                       parent.frame() else baseenv(),
@@ -289,16 +286,20 @@ local({
 
                 withunlink(FILE <- tempfile(fileext = ".R"), force = TRUE, expand = FALSE, {
                     this.path:::write.code(file = FILE, {
+                        # withAutoprint must be the first function called
                         withAutoprint({
+                            .this.path <- this.path:::.this.path
                             print(n <- .this.path(get.frame.number = TRUE))
                             if (is.na(n))
                                 stop("invalid traceback")
-                            if (!(identical(sys.function(n), source                ) ||
-                                  identical(sys.function(n), sys.source            ) ||
-                                  identical(sys.function(n), debugSource           ) ||
-                                  identical(sys.function(n), testthat::source_file ) ||
-                                  identical(sys.function(n), knitr::knit           ) ||
-                                  identical(sys.function(n), this.path::wrap.source)))
+                            if (!(identical(sys.function(n), source                 ) ||
+                                  identical(sys.function(n), sys.source             ) ||
+                                  identical(sys.function(n), this.path:::debugSource) ||
+                                  identical(sys.function(n), testthat::source_file  ) ||
+                                  identical(sys.function(n), knitr::knit            ) ||
+                                  identical(sys.function(n), this.path::wrap.source ) ||
+                                  identical(sys.function(n), box:::load_from_source ) ||
+                                  identical(sys.function(n), compiler::loadcmp      )))
                             {
                                 n <- n + 1L
                             }
@@ -423,6 +424,42 @@ local({
 
 
                         fun(wrap.source(sourcelike(.(FILE)), character.only = TRUE, file.only = TRUE))
+
+
+                        box.use <- function(file) {
+                            file  # force the promises
+
+
+                            # we have to use box::set_script_path() because {box}
+                            # does not allow us to import a module by its path
+                            script_path <- box::script_path()
+                            on.exit(box::set_script_path(script_path))
+                            box::set_script_path(normalizePath(file, "/", TRUE))
+
+
+                            eval(call("delayedAssign", "expr", bquote(
+                                box::use(module = ./.(as.symbol(
+                                    this.path::removeext(this.path::basename2(file))
+                                )))
+                            )))
+                            expr
+                            box::unload(module)
+                        }
+
+
+                        fun(box.use(.(file)))
+
+
+                        cmpfile.loadcmp <- function(file, envir = parent.frame()) {
+                            OUTFILE <- file
+                            ext(OUTFILE) <- ".Rc"
+                            on.exit(unlink(OUTFILE))
+                            compiler::cmpfile(file, OUTFILE)
+                            compiler::loadcmp(OUTFILE, envir)
+                        }
+
+
+                        fun(cmpfile.loadcmp(.(file)))
 
 
                         sourcelike2 <- function(file, envir = parent.frame()) {

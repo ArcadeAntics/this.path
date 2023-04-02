@@ -497,28 +497,7 @@ extern int maybe_unembedded_shell;
 
 
 #define get_debugSource                                        \
-    ((has_tools_rstudio) ? getInFrame(debugSourceSymbol, mynamespace, FALSE) : R_NilValue)
-
-
-#define get_source_file(name)                                  \
-    (((name) = (findVarInFrame(R_NamespaceRegistry, testthatSymbol) != R_UnboundValue)) ?\
-        (R_getNSValue(R_NilValue, testthatSymbol, source_fileSymbol, TRUE)) :\
-        (R_NilValue))
-
-
-#define get_knit(name)                                         \
-    (((name) = (findVarInFrame(R_NamespaceRegistry, knitrSymbol) != R_UnboundValue)) ?\
-        (R_getNSValue(R_NilValue, knitrSymbol, knitSymbol, TRUE)) :\
-        (R_NilValue))
-
-
-#define get_wrap_source (getInFrame(wrap_sourceSymbol, mynamespace, FALSE))
-
-
-#define get_load_from_source(name)                             \
-    (((name) = (findVarInFrame(R_NamespaceRegistry, boxSymbol) != R_UnboundValue)) ?\
-        (getInFrame(load_from_sourceSymbol, findVarInFrame(R_NamespaceRegistry, boxSymbol), FALSE)) :\
-        (R_NilValue))
+    ((has_tools_rstudio) ? getInFrame(debugSourceSymbol, mynamespace, FALSE) : R_UnboundValue)
 
 
 extern SEXP mynamespace;

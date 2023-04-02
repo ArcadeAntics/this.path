@@ -325,17 +325,21 @@ if (requireNamespace("box")) {
             script_path <- box::script_path()
             on.exit(box::set_script_path(script_path))
             box::set_script_path(.(normalizePath(FILE, "/")))
-            box::use(./.(as.symbol(this.path::removeext(
+            box::use(module = ./.(as.symbol(this.path::removeext(
                 this.path::basename2(FILE)
             ))))
-            box::unload(.(as.symbol(this.path::removeext(
-                this.path::basename2(FILE)
-            ))))
+            box::unload(module)
         }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
             prompt.echo = "FILE4> ", continue.echo = "FILE4+ ")
     }), FILE4)
     source(FILE4, verbose = FALSE)
     unlink(FILE4)
+}
+if (requireNamespace("compiler")) {
+    FILE5 <- tempfile(fileext = ".Rc")
+    compiler::cmpfile(FILE, FILE5)
+    compiler::loadcmp(FILE5)
+    unlink(FILE5)
 }
 
 

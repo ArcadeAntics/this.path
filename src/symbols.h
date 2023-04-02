@@ -62,6 +62,8 @@ extern0 SEXP0
     wrap_sourceSymbol                      INI_as(install("wrap.source")),
     boxSymbol                              INI_as(install("box")),
     load_from_sourceSymbol                 INI_as(install("load_from_source")),
+    compilerSymbol                         INI_as(install("compiler")),
+    loadcmpSymbol                          INI_as(install("loadcmp")),
     sys_callSymbol                         INI_as(install("sys.call")),
     sys_frameSymbol                        INI_as(install("sys.frame")),
     sys_functionSymbol                     INI_as(install("sys.function")),

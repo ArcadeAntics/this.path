@@ -1,6 +1,5 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
-\encoding{UTF-8}
 \section{CHANGES IN VERSION devel}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
@@ -30,6 +29,10 @@ components.
       }
       \item{
 \code{\link{this.path}()} now works inside \code{\link[box:use]{box::use}()}.
+      }
+      \item{
+\code{\link{this.path}()} now works inside
+\code{\link[compiler:compile]{compiler::loadcmp}()}.
       }
       \item{
 For logging purposes, \code{\link{this.path}(for.msg = TRUE)} will now return

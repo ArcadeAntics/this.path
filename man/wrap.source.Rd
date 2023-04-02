@@ -317,6 +317,14 @@ wrapper <- function(path, ...) {
 }
 }
   }
+  \item{\compilerloadcmpnolink{}}{
+\preformatted{
+wrapper <- function(file, ...) {
+    file <- inside.source(path.only = TRUE)
+    compiler::loadcmp(file = file, ...)
+}
+}
+  }
 }
 }
 \examples{

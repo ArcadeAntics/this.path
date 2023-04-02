@@ -21,6 +21,8 @@ CHANGES IN this.path devel:
 
     * this.path() now works inside box::use().
 
+    * this.path() now works inside compiler::loadcmp().
+
     * For logging purposes, this.path(for.msg = TRUE) will now return
       "Untitled" when appropriate.
 

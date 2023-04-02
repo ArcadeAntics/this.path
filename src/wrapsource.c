@@ -570,26 +570,36 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     }
 
 
-    int testthat_loaded;
-    SEXP source_file = get_source_file(testthat_loaded);
-    if (testthat_loaded && identical(function, source_file))
-        error("%s() cannot be called within source_file() in package testthat", name);
+    SEXP ns;
 
 
-    int knitr_loaded;
-    SEXP knit = get_knit(knitr_loaded);
-    if (knitr_loaded && identical(function, knit))
-        error("%s() cannot be called within knit() in package knitr", name);
+    ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
+    if (ns == R_UnboundValue ? FALSE : TRUE) {
+        if (identical(function, getInFrame(source_fileSymbol, ns, FALSE))) {
+            error("%s() cannot be called within source_file() from package testthat", name);
+        }
+    }
 
 
-    if (identical(function, get_wrap_source))
-        error("%s() cannot be called within wrap.source() in package this.path", name);
+    ns = findVarInFrame(R_NamespaceRegistry, knitrSymbol);
+    if (ns == R_UnboundValue ? FALSE : TRUE) {
+        if (identical(function, getInFrame(knitSymbol, ns, FALSE))) {
+            error("%s() cannot be called within knit() from package knitr", name);
+        }
+    }
 
 
-    int box_loaded;
-    SEXP load_from_source = get_load_from_source(box_loaded);
-    if (box_loaded && identical(function, load_from_source))
-        error("%s() cannot be called within load_from_source() in package box", name);
+    if (identical(function, getInFrame(wrap_sourceSymbol, mynamespace, FALSE))) {
+        error("%s() cannot be called within wrap.source() from package this.path", name);
+    }
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
+    if (ns == R_UnboundValue ? FALSE : TRUE) {
+        if (identical(function, getInFrame(load_from_sourceSymbol, ns, FALSE))) {
+            error("%s() cannot be called within load_from_source() from package box", name);
+        }
+    }
 
 
     UNPROTECT(2);  /* expr & function */
