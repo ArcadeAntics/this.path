@@ -2,15 +2,6 @@
 #include "drivewidth.h"
 
 
-static R_INLINE int asFlag(SEXP x, const char *name)
-{
-    int val = asLogical(x);
-    if (val == NA_LOGICAL)
-        error(_("invalid '%s' value"), name);
-    return val;
-}
-
-
 #define errorbody                                              \
     if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||      \
         STRING_ELT(CAR(args), 0) == NA_STRING)                 \
@@ -121,11 +112,6 @@ SEXP do_isclipboard do_formals
 SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
     Rboolean get_frame_number, Rboolean local, SEXP rho)
 {
-    static SEXP for_msgSymbol = NULL;
-    if (for_msgSymbol == NULL)
-        for_msgSymbol = install("for.msg");
-
-
     if (verbose == NA_LOGICAL)
         error(_("invalid '%s' value"), "verbose");
     if (for_msg == NA_LOGICAL)
@@ -184,13 +170,13 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
         if (get_frame_number) return ScalarInteger(0);         \
         SEXP expr;                                             \
         if (for_msg)                                           \
-            expr = lang4(this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original), ScalarLogical(for_msg));\
+            expr = lang4(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original), ScalarLogical(for_msg));\
         else if (original)                                     \
-            expr = lang3(this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original));\
+            expr = lang3(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original));\
         else if (verbose)                                      \
-            expr = lang2(this_path_toplevelSymbol, ScalarLogical(verbose));\
+            expr = lang2(_this_path_toplevelSymbol, ScalarLogical(verbose));\
         else                                                   \
-            expr = lang1(this_path_toplevelSymbol);            \
+            expr = lang1(_this_path_toplevelSymbol);            \
         PROTECT(expr);                                         \
         returnthis = eval(expr, mynamespace);                  \
         UNPROTECT(1);                                          \
@@ -702,18 +688,14 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
             if (local) error("'local.path' used in an inappropriate fashion");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 /* info$source_path */
-                SEXP expr = lang3(
-                    R_DollarSymbol,
-                    install("info"),
-                    install("source_path")
-                );
+                SEXP expr = lang3(R_DollarSymbol, infoSymbol, source_pathSymbol);
                 PROTECT(expr);
                 SEXP ofile = eval(expr, frame);
                 UNPROTECT(1);  /* expr */
                 PROTECT(ofile);
                 checkfile(
                     /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ install("info$source_path"),
+                    /* SEXP sym                   = */ info_source_pathSymbol,
                     /* SEXP ofile                 = */ ofile,
                     /* SEXP frame                 = */ frame,
                     /* int forcepromise           = */ TRUE,

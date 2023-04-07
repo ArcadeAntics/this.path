@@ -63,11 +63,10 @@ confined to the local environment in which \code{\link{inside.source}()} / /
 There are three ways in which \R code is typically run:
 \enumerate{
   \item{in \sQuote{Rgui} / / \sQuote{\RStudio} / / \sQuote{\VSCode} / /
-\sQuote{\Jupyter} by running the current line / / selection with the
-\strong{Run} button / / appropriate keyboard shortcut
-  }
-  \item through a source call: a call to function \sourcesorlistlinks{}
-  \item from a shell, such as the Windows command-line / / Unix terminal
+    \sQuote{\Jupyter} by running the current line / / selection with the
+    \strong{Run} button / / appropriate keyboard shortcut}
+  \item{through a source call: a call to function \sourcesorlistlinks{}}
+  \item{from a shell, such as the Windows command-line / / Unix terminal}
 }
 
 To retrieve the executing script's filename, first an attempt is made to find a
@@ -317,7 +316,7 @@ if (requireNamespace("knitr")) {
     unlink(c(FILE3, FILE2))
 }
 if (requireNamespace("box")) {
-    FILE4 <- tempfile(fileext = ".R")
+    FILE2 <- tempfile(fileext = ".R")
     this.path:::write.code(bquote({
         this.path:::withAutoprint({
             # we have to use box::set_script_path() because {box}
@@ -330,16 +329,16 @@ if (requireNamespace("box")) {
             ))))
             box::unload(module)
         }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
-            prompt.echo = "FILE4> ", continue.echo = "FILE4+ ")
-    }), FILE4)
-    source(FILE4, verbose = FALSE)
-    unlink(FILE4)
+            prompt.echo = "FILE2> ", continue.echo = "FILE2+ ")
+    }), FILE2)
+    source(FILE2, verbose = FALSE)
+    unlink(FILE2)
 }
 if (requireNamespace("compiler")) {
-    FILE5 <- tempfile(fileext = ".Rc")
-    compiler::cmpfile(FILE, FILE5)
-    compiler::loadcmp(FILE5)
-    unlink(FILE5)
+    FILE2 <- tempfile(fileext = ".Rc")
+    compiler::cmpfile(FILE, FILE2)
+    compiler::loadcmp(FILE2)
+    unlink(FILE2)
 }
 
 

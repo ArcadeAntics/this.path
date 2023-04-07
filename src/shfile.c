@@ -6,7 +6,7 @@
 
 void Rprint(SEXP x, SEXP rho)
 {
-    SEXP expr = lang2(install("print"), x);
+    SEXP expr = lang2(printSymbol, x);
     PROTECT(expr);
     eval(expr, rho);
     UNPROTECT(1);
@@ -563,7 +563,7 @@ SEXP do_shinfo do_formals
 #endif
 
 
-    char path[PATH_MAX + 1];
+    char path[PATH_MAX];
 
 
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406

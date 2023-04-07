@@ -1,10 +1,36 @@
-essentials:::check.this(  # this.path
-    special = TRUE,
+{
+    local({  # change the Date in the DESCRIPTION to the current date
+        path <- this.path::here("DESCRIPTION")
+        x <- local({
+            conn <- file(path, "rb", encoding = "")
+            on.exit(close(conn))
+            readLines(conn)
+        })
+        n <- grep("^Date: ", x)
+        if (length(n) > 1L)
+            stop(gettextf("in '%s':\n multiple lines that start with \"Date: \"", "./DESCRIPTION"))
+        if (length(n) < 1L) {}
+        else {
+            date <- format(Sys.time(), "Date: %Y-%m-%d", "UTC")
+            if (x[[n]] != date) {
+                x[[n]] <- date
+                local({
+                    conn <- file(path, "w", encoding = "")
+                    on.exit(close(conn))
+                    writeLines(x, conn, useBytes = TRUE)
+                })
+            }
+        }
+        invisible()
+    })
+    essentials:::check.this(  # this.path
+        special = TRUE,
 
-    check = TRUE, as.cran = TRUE,
+        check = TRUE, as.cran = TRUE,
 
-    chdir = TRUE
-)
+        chdir = TRUE
+    )
+}
 
 
 if (FALSE) {  # for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
@@ -127,7 +153,7 @@ local({
     x <- this.path:::readFiles(Rdfiles)
     # x <- x[vapply(strsplit(x, "\n", fixed = TRUE, useBytes = TRUE),
     #     \(xx) max(nchar(xx)) >= 80L, NA)]
-    x <- grep("box", x, value = TRUE)
+    x <- grep("\\\\(enumerate|itemize)\\{", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
 

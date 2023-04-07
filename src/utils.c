@@ -7,10 +7,6 @@ SEXP do_dotslength do_formals
     do_start("dotslength", 0);
 
 
-    static SEXP parent_frameSymbol = NULL;
-    if (parent_frameSymbol == NULL) {
-        parent_frameSymbol = install("parent.frame");
-    }
     SEXP expr = lang1(parent_frameSymbol);
     PROTECT(expr);
     SEXP env = eval(expr, rho);

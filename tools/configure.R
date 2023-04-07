@@ -57,7 +57,7 @@ main <- function ()
             x <- readLines(conn)
         })
         if (i <- match(old, x, 0L)) {
-            x[[i]] <- sprintf(new, desc["Version"])
+            x[[i]] <- new
             withclose(conn <- file(file, "wb", encoding = ""), {
                 writeLines(x, conn)
             })
@@ -68,17 +68,17 @@ main <- function ()
     replace.devel.with.current.version(
         "./NEWS",
         "CHANGES IN this.path devel:",
-        "CHANGES IN this.path %s:"
+        sprintf("CHANGES IN this.path %s (%s):", desc["Version"], desc["Date"])
     )
     replace.devel.with.current.version(
         "./inst/NEWS.Rd",
         "\\section{CHANGES IN VERSION devel}{",
-        "\\section{CHANGES IN VERSION %s}{"
+        sprintf("\\section{CHANGES IN VERSION %s (%s)}{", desc["Version"], desc["Date"])
     )
     replace.devel.with.current.version(
         "./man/this.path-defunct.Rd",
         "# Defunct in devel",
-        "# Defunct in %s"
+        sprintf("# Defunct in %s", desc["Version"])
     )
 
 

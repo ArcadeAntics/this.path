@@ -800,30 +800,14 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 SEXP do_insidesource do_formals
 {
     do_start("insidesource", 21);
-
-
-    static SEXP backup = NULL;
-    if (backup == NULL) {
-        backup = install("inside.source from package this.path");
-    }
-
-
-    return insidesource(call, op, args, rho, "inside.source", FALSE, backup);
+    return insidesource(call, op, args, rho, "inside.source", FALSE, insidesourcefrompackageSymbol);
 }
 
 
 SEXP do_setthispath do_formals
 {
     do_start("setthispath", 21);
-
-
-    static SEXP backup = NULL;
-    if (backup == NULL) {
-        backup = install("set.this.path from package this.path");
-    }
-
-
-    return insidesource(call, op, args, rho, "set.this.path", FALSE, backup);
+    return insidesource(call, op, args, rho, "set.this.path", FALSE, setthispathfrompackageSymbol);
 }
 
 

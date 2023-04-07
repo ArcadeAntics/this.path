@@ -62,6 +62,9 @@ extern0 SEXP0
     wrap_sourceSymbol                      INI_as(install("wrap.source")),
     boxSymbol                              INI_as(install("box")),
     load_from_sourceSymbol                 INI_as(install("load_from_source")),
+    infoSymbol                             INI_as(install("info")),
+    source_pathSymbol                      INI_as(install("source_path")),
+    info_source_pathSymbol                 INI_as(install("info$source_path")),
     compilerSymbol                         INI_as(install("compiler")),
     loadcmpSymbol                          INI_as(install("loadcmp")),
     sys_callSymbol                         INI_as(install("sys.call")),
@@ -78,7 +81,7 @@ extern0 SEXP0
     pathSymbol                             INI_as(install("path")),
     inputSymbol                            INI_as(install("input")),
     missingSymbol                          INI_as(install("missing")),
-    this_path_toplevelSymbol               INI_as(install(".this.path.toplevel")),
+    _this_path_toplevelSymbol              INI_as(install(".this.path.toplevel")),
     encodeStringSymbol                     INI_as(install("encodeString")),
     na_encodeSymbol                        INI_as(install("na.encode")),
     exprSymbol                             INI_as(install("expr")),
@@ -103,7 +106,22 @@ extern0 SEXP0
 #endif
     _asArgsSymbol                          INI_as(install(".asArgs")),
     commandArgsSymbol                      INI_as(install("commandArgs")),
-    maybe_unembedded_shellSymbol           INI_as(install("maybe.unembedded.shell"));
+    maybe_unembedded_shellSymbol           INI_as(install("maybe.unembedded.shell")),
+    insidesourcefrompackageSymbol          INI_as(install("inside.source from package this.path")),
+    setthispathfrompackageSymbol           INI_as(install("set.this.path from package this.path")),
+    printSymbol                            INI_as(install("print")),
+    _xDataSymbol                           INI_as(install(".xData")),
+    _DataSymbol                            INI_as(install(".Data")),
+    validJupyterRNotebookSymbol            INI_as(install("validJupyterRNotebook")),
+    R_LengthSymbol                         INI_as(install("length")),
+    file_infoSymbol                        INI_as(install("file.info")),
+    is_naSymbol                            INI_as(install("is.na")),
+    anySymbol                              INI_as(install("any")),
+    removeSymbol                           INI_as(install("remove")),
+    listSymbol                             INI_as(install("list")),
+    envirSymbol                            INI_as(install("envir")),
+    inheritsSymbol                         INI_as(install("inherits")),
+    for_msgSymbol                          INI_as(install("for.msg"));
 
 
 #undef extern0

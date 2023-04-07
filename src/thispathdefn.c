@@ -102,15 +102,6 @@ int IS_ASCII(SEXP x)
 #define R_THIS_PATH_USE_removeFromFrame
 void R_removeVarFromFrame(SEXP name, SEXP env)
 {
-    static SEXP removeSymbol   = NULL,
-                envirSymbol    = NULL,
-                inheritsSymbol = NULL;
-    if (removeSymbol == NULL) {
-        removeSymbol   = install("remove");
-        envirSymbol    = install("envir");
-        inheritsSymbol = install("inherits");
-    }
-
     if (TYPEOF(env) == NILSXP)
         error(_("use of NULL environment is defunct"));
 
@@ -137,17 +128,6 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
 
 void removeFromFrame(SEXP *names, SEXP env)
 {
-    static SEXP removeSymbol   = NULL,
-                listSymbol     = NULL,
-                envirSymbol    = NULL,
-                inheritsSymbol = NULL;
-    if (removeSymbol == NULL) {
-        removeSymbol   = install("remove");
-        listSymbol     = install("list");
-        envirSymbol    = install("envir");
-        inheritsSymbol = install("inherits");
-    }
-
     if (TYPEOF(env) == NILSXP)
         error(_("use of NULL environment is defunct"));
 

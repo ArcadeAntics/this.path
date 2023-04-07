@@ -11,14 +11,6 @@
 
 SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 {
-    static SEXP _xDataSymbol = NULL,
-                _DataSymbol  = NULL;
-    if (_xDataSymbol == NULL) {
-        _xDataSymbol = install(".xData");
-        _DataSymbol  = install(".Data");
-    }
-
-
     SEXP value = getAttrib(obj, _DataSymbol);
     if (value == R_NilValue)
         value = getAttrib(obj, _xDataSymbol);
@@ -287,12 +279,6 @@ SEXP do_prinfo do_formals
 
 Rboolean validJupyterRNotebook(SEXP path)
 {
-    static SEXP validJupyterRNotebookSymbol = NULL;
-    if (validJupyterRNotebookSymbol == NULL) {
-        validJupyterRNotebookSymbol = install("validJupyterRNotebook");
-    }
-
-
     SEXP expr = allocList(2);
     PROTECT(expr);
     SET_TYPEOF(expr, LANGSXP);
@@ -312,12 +298,6 @@ Rboolean validJupyterRNotebook(SEXP path)
 SEXP do_setthispathjupyter do_formals
 {
     do_start("setthispathjupyter", -1);
-
-
-    static SEXP thispathtoplevelSymbol = NULL;
-    if (thispathtoplevelSymbol == NULL) {
-        thispathtoplevelSymbol = install(".this.path.toplevel");
-    }
 
 
     SEXP path;
@@ -352,9 +332,9 @@ SEXP do_setthispathjupyter do_formals
     else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
 
 
-    SEXP sym, env = getInFrame(thispathtoplevelSymbol, mynamespace, FALSE);
+    SEXP sym, env = getInFrame(_this_path_toplevelSymbol, mynamespace, FALSE);
     if (TYPEOF(env) != CLOSXP)
-        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(thispathtoplevelSymbol)));
+        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_this_path_toplevelSymbol)));
     env = CLOENV(env);
 
 

@@ -56,6 +56,11 @@ SEXP do_onload do_formals
     do_start("onload", 2);
 
 
+#define R_THIS_PATH_DEFINE_SYMBOLS
+#include "symbols.h"
+#undef R_THIS_PATH_DEFINE_SYMBOLS
+
+
     /* these arguments are passed from .onLoad() */
     SEXP libname = CAR(args),
          pkgname = CADR(args);
@@ -96,7 +101,7 @@ SEXP do_onload do_formals
 
 
     /* get the function .this.path.toplevel and lock its environment and bindings */
-    LockCLOENV(install(".this.path.toplevel"), TRUE);
+    LockCLOENV(_this_path_toplevelSymbol, TRUE);
 
 
     // /* get the function eval.with.message and lock its environment */
@@ -124,12 +129,7 @@ SEXP do_onload do_formals
     UNPROTECT(2);  /* expr & value */
 
 
-#define R_THIS_PATH_DEFINE_SYMBOLS
-#include "symbols.h"
-#undef R_THIS_PATH_DEFINE_SYMBOLS
-
-
-    /* save HAVE_AQUA and PATH_MAX in my namespace */
+    /* save HAVE_AQUA, PATH_MAX, and NAMEDMAX in my namespace */
 #if defined(HAVE_AQUA)
     INCREMENT_NAMED_defineVar(install("HAVE_AQUA"), PROTECT(ScalarLogical(TRUE)), mynamespace);
 #else

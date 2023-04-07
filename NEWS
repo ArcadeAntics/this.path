@@ -55,7 +55,7 @@ CHANGES IN this.path devel:
       returns NA_character_ when running from a shell instead of
       incorrectly throwing an error.
 
-CHANGES IN this.path 1.2.0:
+CHANGES IN this.path 1.2.0 (2023-01-16):
 
   NEW FEATURES
 
@@ -85,7 +85,7 @@ CHANGES IN this.path 1.2.0:
     * 'this.path' does a much better job of determining the path of the
       executing script from 'Rgui'.
 
-CHANGES IN this.path 1.1.0:
+CHANGES IN this.path 1.1.0 (2022-12-01):
 
   NEW FEATURES
 
@@ -140,7 +140,7 @@ CHANGES IN this.path 1.1.0:
       but instead save it as a promise to be evaluated later if / /
       when desired.
 
-CHANGES IN this.path 1.0.2:
+CHANGES IN this.path 1.0.2 (2022-09-23):
 
   BUG FIXES
 
@@ -148,14 +148,14 @@ CHANGES IN this.path 1.0.2:
       Ubuntu installed on an Android (where .Platform$GUI == "unknown",
       normally "unix").
 
-CHANGES IN this.path 1.0.1:
+CHANGES IN this.path 1.0.1 (2022-09-22):
 
   BUG FIXES
 
     * Fixed path.join(), basename2(), and dirname2() not having a
       trailing nul-character.
 
-CHANGES IN this.path 1.0.0:
+CHANGES IN this.path 1.0.0 (2022-09-21):
 
   NEW FEATURES
 
@@ -171,7 +171,7 @@ CHANGES IN this.path 1.0.0:
       behaviour for some users and cases, but should be an
       improvement overall.
 
-CHANGES IN this.path 0.11.0:
+CHANGES IN this.path 0.11.0 (2022-09-03):
 
   NEW FEATURES
 
@@ -181,7 +181,7 @@ CHANGES IN this.path 0.11.0:
     * Added 'else.' argument to this.path(), this.dir(), shFILE(), and
       normalized.shFILE(), a function to act on the return value.
 
-CHANGES IN this.path 0.10.0:
+CHANGES IN this.path 0.10.0 (2022-07-17):
 
   NEW FEATURES
 
@@ -198,7 +198,7 @@ CHANGES IN this.path 0.10.0:
 
     * this.path::here() no longer uses dirname() on a UNC path.
 
-CHANGES IN this.path 0.9.0:
+CHANGES IN this.path 0.9.0 (2022-07-15):
 
   NEW FEATURES:
 
@@ -209,7 +209,7 @@ CHANGES IN this.path 0.9.0:
     * when source()-ing a file URL, source("file:///path/to/file"),
       this.path() no longer attempts to re-open a connection.
 
-CHANGES IN this.path 0.8.0:
+CHANGES IN this.path 0.8.0 (2022-07-08):
 
   SIGNIFICANT USER-VISIBLE CHANGES:
 

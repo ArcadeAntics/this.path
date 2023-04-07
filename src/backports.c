@@ -10,15 +10,12 @@
 
 R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
 {
-    static SEXP R_LengthSymbol = NULL;
     /*
      * if the object has a class attribute, call length(x)
      * we must call it in the user's environment in case they defined any
      * length methods in said environment
      */
     if (isObject(x)) {
-        if (R_LengthSymbol == NULL)
-            R_LengthSymbol = install("length");
         SEXP expr = allocList(2), expr2;
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);
@@ -315,11 +312,6 @@ SEXP do_direxists do_formals
     int n = LENGTH(fn);
 
 
-    static SEXP file_infoSymbol = NULL;
-    if (file_infoSymbol == NULL)
-        file_infoSymbol = install("file.info");
-
-
     SEXP expr = allocList(2);
     PROTECT(expr);
     SET_TYPEOF(expr, LANGSXP);
@@ -430,19 +422,11 @@ SEXP do_lengths do_formals
 
 Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
 {
-    static SEXP is_naSymbol = NULL,
-                anySymbol   = NULL;
-
-
     SEXPTYPE type = TYPEOF(x);
     Rboolean isList = (type == VECSXP || type == LISTSXP);
 
 
     if (OBJECT(x) || (isList && !recursive)) {
-        if (is_naSymbol == NULL) {
-            is_naSymbol = install("is.na");
-            anySymbol   = install("any");
-        }
         SEXP expr = allocList(2), expr2, expr3;
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);

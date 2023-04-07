@@ -3,18 +3,6 @@
 #include "this.path.h"
 
 
-/*
-I used to have some C functions called using .Call(.),
-but I switched entirely to .External2(.) instead,
-so now this array is empty.
-
-I could remove this, but it's not causing any harm
- */
-static const R_CallMethodDef callRoutines[] = {
-    {NULL, NULL, 0}
-};
-
-
 static const R_ExternalMethodDef externalRoutines[] = {
 
 
@@ -188,7 +176,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 void attribute_visible R_init_this_path(DllInfo *dll)
 {
-    R_registerRoutines(dll, NULL, callRoutines, NULL, externalRoutines);
+    R_registerRoutines(dll, NULL, NULL, NULL, externalRoutines);
     R_useDynamicSymbols(dll, FALSE);
 #if R_version_at_least(3, 0, 0)
     R_forceSymbols(dll, TRUE);

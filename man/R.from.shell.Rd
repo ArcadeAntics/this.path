@@ -12,10 +12,10 @@ For the purpose of running \R scripts, there are four ways to do it. Suppose
 our \R script has filename \option{script1.R}, we could write any of:
 
 \itemize{
-  \item \verb{R -f script1.R}
-  \item \verb{R --file=script1.R}
-  \item \verb{R CMD BATCH script1.R}
-  \item \verb{Rscript script1.R}
+  \item{\verb{R -f script1.R}}
+  \item{\verb{R --file=script1.R}}
+  \item{\verb{R CMD BATCH script1.R}}
+  \item{\verb{Rscript script1.R}}
 }
 
 The first two are different ways of writing equivalent statements. The third
@@ -27,9 +27,9 @@ fourth statement is the second statement plus options \option{--no-echo}
 \option{--no-restore}. You can try:
 
 \itemize{
-  \item \verb{R --help}
-  \item \verb{R CMD BATCH --help}
-  \item \verb{Rscript --help}
+  \item{\verb{R --help}}
+  \item{\verb{R CMD BATCH --help}}
+  \item{\verb{Rscript --help}}
 }
 
 for a help message that describes what these options mean. In general,
@@ -42,9 +42,9 @@ For the purpose of making packages, \command{R CMD} is what you will need. Most
 commonly, you will use:
 
 \itemize{
-  \item \verb{R CMD build}
-  \item \verb{R CMD INSTALL}
-  \item \verb{R CMD check}
+  \item{\verb{R CMD build}}
+  \item{\verb{R CMD INSTALL}}
+  \item{\verb{R CMD check}}
 }
 
 \command{R CMD build} will turn an \R package (specified by a directory) into
@@ -88,17 +88,15 @@ programs by their basenames (\sQuote{R}, \sQuote{Rcmd}, \sQuote{Rscript}, and
 
 To add a new path to your \env{Path} environment variable:
 \enumerate{
-  \item Open the \strong{Control Panel}
-  \item Open category \strong{User Accounts}
-  \item Open category \strong{User Accounts} (again)
-  \item Open \strong{Change my environment variables}
-  \item Click the variable \env{Path}
-  \item Click the button \strong{Edit...}
-  \item Click the button \strong{New}
-  \item{
-Type (or paste) the full path of the directory where your \R executables are
-located, and press \strong{OK}
-  }
+  \item{Open the \strong{Control Panel}}
+  \item{Open category \strong{User Accounts}}
+  \item{Open category \strong{User Accounts} (again)}
+  \item{Open \strong{Change my environment variables}}
+  \item{Click the variable \env{Path}}
+  \item{Click the button \strong{Edit...}}
+  \item{Click the button \strong{New}}
+  \item{Type (or paste) the full path of the directory where your \R
+    executables are located, and press \strong{OK}}
 }
 This will modify your environment variable \env{Path}, not the systems. If
 another user wishes to run \R from a shell, they will have to add the directory
@@ -107,23 +105,21 @@ to their \env{Path} environment variable as well.
 If you wish to modify the system environment variable \env{Path} (you will need
 admin permissions):
 \enumerate{
-  \item Open the \strong{Control Panel}
-  \item Open category \strong{System and Security}
-  \item Open category \strong{System}
-  \item Open \strong{Advanced system settings}
-  \item Click the button \strong{Environment Variables...}
-  \item{
-Modify \env{Path} same as before, just select \env{Path} in
-\strong{System variables} instead of \strong{User variables}
-  }
+  \item{Open the \strong{Control Panel}}
+  \item{Open category \strong{System and Security}}
+  \item{Open category \strong{System}}
+  \item{Open \strong{Advanced system settings}}
+  \item{Click the button \strong{Environment Variables...}}
+  \item{Modify \env{Path} same as before, just select \env{Path} in
+    \strong{System variables} instead of \strong{User variables}}
 }
 
 To check that this worked correctly, open a shell and execute the following
 commands:
 
 \itemize{
-  \item \verb{R --help}
-  \item \verb{R --version}
+  \item{\verb{R --help}}
+  \item{\verb{R --version}}
 }
 
 You should see that the first prints the usage message for the \R executable
