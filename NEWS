@@ -43,6 +43,10 @@ CHANGES IN this.path devel:
 
     * Added reset.this.proj() to reset the paths saved by this.proj().
 
+    * Added try.this.path() and try.shFILE() to get the normalized path
+      of the executing script, the original path if that fails, and
+      NA_character_ if that fails as well.
+
   DEPRECATED AND DEFUNCT
 
     * as.relative.path() and as.rel.path() are defunct and should be

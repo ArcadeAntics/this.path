@@ -1,5 +1,5 @@
 Package: this.path
-Version: 1.2.0.28
+Version: 1.2.0.29
 Date: 2023-04-08
 License: MIT + file LICENSE
 Title: Get Executing Script's Path, from 'Rgui', 'RStudio', 'VSCode',

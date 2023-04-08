@@ -48,7 +48,7 @@ local({  # testing this.path() with source(gzcon())
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE, after = FALSE)
     writeLines(c(
-        "sys.frame(-3)$ofile",
+        "sys.frame(this.path:::get.frame.number())$ofile",
         "this.path::this.path(original = TRUE)",
         "this.path::this.path()"
     ), FILE)

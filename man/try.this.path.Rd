@@ -35,6 +35,5 @@ try.shFILE()
 }
 \examples{
 try.this.path()
-
 try.shFILE()
 }

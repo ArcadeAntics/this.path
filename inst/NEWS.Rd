@@ -50,6 +50,10 @@
 
       \item{Added \code{\link{reset.this.proj}()} to reset the paths saved by
         \code{\link{this.proj}()}.}
+
+      \item{Added \code{\link{try.this.path}()} and \code{\link{try.shFILE}()}
+        to get the normalized path of the executing script, the original path
+        if that fails, and \code{NA_character_} if that fails as well.}
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{
