@@ -150,6 +150,11 @@ local({
     Rdfiles
 
 
+    x <- this.path:::readFiles(files)
+    x <- grep("(?i)(windows|unix)", x, value = TRUE)
+    x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
+
+
     x <- this.path:::readFiles(Rdfiles)
     # x <- x[vapply(strsplit(x, "\n", fixed = TRUE, useBytes = TRUE),
     #     \(xx) max(nchar(xx)) >= 80L, NA)]

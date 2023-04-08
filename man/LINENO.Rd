@@ -16,7 +16,7 @@ LINENO()
   run with \code{\link[utils]{Rscript}} do not store their \code{srcref}, even
   when \code{\link[base:options]{getOption}("keep.source")} is \code{TRUE}.
 
-  For \sourcelink{} or \syssourcelink{}, make sure to supply argumen
+  For \sourcelink{} or \syssourcelink{}, make sure to supply argument
   \code{keep.source = TRUE} directly, or set the options \code{"keep.source"}
   or \code{"keep.source.pkgs"} to \code{TRUE}.
 

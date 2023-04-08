@@ -7,7 +7,7 @@
 
 int get_drive_width_windows(const char *s, int nchar)
 {
-    /* there are three types of absolute paths in windows
+    /* there are three types of absolute paths on windows
      *
      * there are those beginning with d:/ or some other letter
      * we call these drives
@@ -20,7 +20,7 @@ int get_drive_width_windows(const char *s, int nchar)
      * those filenames with R_ExpandFileName(), but for path.join() we don't
      * want to modify the inputs
      *
-     * unlike unix, a path beginning with / is NOT an absolute path.
+     * unlike unix-alikes, a path beginning with / is NOT an absolute path.
      * try this for yourself:
 
 setwd("C:/")
@@ -169,9 +169,9 @@ normalizePath("/path/to/file")
 
 int get_drive_width_unix(const char *s, int nchar)
 {
-    /* similar to the above get_drive_width_windows() but specifically for unix,
-     * where a drivespec only really makes sense in terms of a network share
-     */
+    /* similar to the above get_drive_width_windows() but specifically for
+     * unix-alikes where a drivespec only really makes sense in terms of a
+     * network share */
 
 
     /* 5 characters is the minimum required for a network share

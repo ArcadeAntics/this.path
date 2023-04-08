@@ -112,7 +112,8 @@ The only equivalent to `this.path()` (that I have seen) is
     command line arguments. At least since R 2.5.0 (>= 15 years ago),
     Rscript directly calls R, so there should not be separate cases.
     Additionally, it does **NOT** take into account the differences
-    between the command line applications on Windows and Unix-alikes.
+    between the command line applications on Windows and under
+    Unix-alikes.
 
 2.  It checks for uses of `knitr::knit()` after checking the entire
     call stack for `source()` and after checking the command line
