@@ -1,21 +1,23 @@
 Package: this.path
-Version: 1.2.0.26
-Date: 2023-04-07
+Version: 1.2.0.27
+Date: 2023-04-08
 License: MIT + file LICENSE
 Title: Get Executing Script's Path, from 'Rgui', 'RStudio', 'VSCode',
-    'Jupyter', 'source()', and 'Rscript' (Shells Including Windows
-    Command Line / / Unix Terminal)
+        'Jupyter', 'source()', and 'Rscript' (Shells Including Windows
+        Command Line / / Unix Terminal)
 Description: Determine the path of the executing script. Works when
-    running a line or selection in 'Rgui', 'RStudio', 'VSCode', and
-    'Jupyter', when using 'source()', 'sys.source()', 'debugSource()'
-    in 'RStudio', 'testthat::source_file()', 'knitr::knit()',
-    'box::use()', and 'compiler::load.cmp()', and when running from a
-    shell.
+        running a line or selection in 'Rgui', 'RStudio', 'VSCode', and
+        'Jupyter', when using 'source()', 'sys.source()',
+        'debugSource()' in 'RStudio', 'testthat::source_file()',
+        'knitr::knit()', 'box::use()', and 'compiler::load.cmp()', and
+        when running from a shell.
 Author: Iris Simmons
 Maintainer: Iris Simmons <ikwsimmo@gmail.com>
 Suggests: utils, microbenchmark
 Enhances: box, compiler, IRkernel, jsonlite, knitr, rprojroot,
-    rstudioapi, testthat
+        rstudioapi, testthat
 URL: https://github.com/ArcadeAntics/this.path
 BugReports: https://github.com/ArcadeAntics/this.path/issues
+ByteCompile: TRUE
 Biarch: TRUE
+Type: Package

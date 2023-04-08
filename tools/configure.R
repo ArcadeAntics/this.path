@@ -9,6 +9,7 @@ main <- function ()
         sprintf("R_LIBRARY_DIR: '%s'\n", encodeString(Sys.getenv("R_LIBRARY_DIR"), na.encode = FALSE)),
         sprintf("R_PACKAGE_DIR: '%s'\n", encodeString(Sys.getenv("R_PACKAGE_DIR"), na.encode = FALSE)),
         sprintf("R_PACKAGE_NAME: '%s'\n", encodeString(Sys.getenv("R_PACKAGE_NAME"), na.encode = FALSE)),
+        # file = "./inst/configure-info.txt",
         sep = ""
     )
 
@@ -67,8 +68,8 @@ main <- function ()
 
     replace.devel.with.current.version(
         "./NEWS",
-        "CHANGES IN this.path devel:",
-        sprintf("CHANGES IN this.path %s (%s):", desc["Version"], desc["Date"])
+        sprintf("CHANGES IN %s devel:", desc["Package"]),
+        sprintf("CHANGES IN %s %s (%s):", desc["Package"], desc["Version"], desc["Date"])
     )
     replace.devel.with.current.version(
         "./inst/NEWS.Rd",
@@ -95,7 +96,7 @@ main <- function ()
         value
     }
     commonmacros <- c(
-        readLines("./man/macros/commonmacros.Rd", encoding = "UTF-8"),
+        unlist(lapply(list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE), readLines)),
         paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Author"])    , "}}"),
         paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Maintainer"]), "}}")
     )
@@ -103,7 +104,7 @@ main <- function ()
     if (getRversion() < "3.2.0")
         Rdfiles <- c(Rdfiles, list.files("./man", "\\.Rd$", all.files = TRUE, recursive = FALSE, full.names = TRUE, ignore.case = TRUE))
     for (Rdfile in Rdfiles) {
-        x <- readLines(Rdfile, encoding = "UTF-8")
+        x <- readLines(Rdfile)
         # add the common macros directly before the title
         n <- grep("^\\\\title\\{", x) - 1L
         if (length(n) > 1L)

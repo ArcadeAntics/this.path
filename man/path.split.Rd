@@ -2,11 +2,10 @@
 \alias{path.split}
 \alias{path.split.1}
 \alias{path.unsplit}
-\title{
-Split File Path Into Individual Components
-}
+\title{Split File Path Into Individual Components}
 \description{
-Split the path to a file into components in a platform-\strong{DEPENDENT} way.
+  Split the path to a file into components in a platform-\strong{DEPENDENT}
+  way.
 }
 \usage{
 path.split(path)
@@ -14,20 +13,17 @@ path.split.1(path)
 path.unsplit(...)
 }
 \arguments{
-  \item{path}{
-character vector.
-  }
-  \item{\dots}{
-character vectors, or one list of character vectors.
-  }
+  \item{path}{character vector.}
+
+  \item{\dots}{character vectors, or one list of character vectors.}
 }
 \value{
-for \code{path.split()}, a list of character vectors.
+  for \code{path.split()}, a list of character vectors.
 
-for \code{path.split.1()} and \code{path.unsplit()}, a character vector.
+  for \code{path.split.1()} and \code{path.unsplit()}, a character vector.
 }
 \note{
-\code{path.unsplit()} is \strong{NOT} the same as \code{\link{path.join}()}.
+  \code{path.unsplit()} is \strong{NOT} the same as \code{\link{path.join}()}.
 }
 #ifdef windows
 \examples{

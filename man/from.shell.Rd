@@ -1,29 +1,27 @@
 \name{from.shell}
 \alias{from.shell}
 \alias{is.main}
-\title{
-Top-Level Code Environment
-}
+\title{Top-Level Code Environment}
 \description{
-Determine if a program is the main program, or if an \R script was run from a
-shell.
+  Determine if a program is the main program, or if an \R script was run from a
+  shell.
 }
 \usage{
 from.shell()
 is.main()
 }
 \details{
-When an \R script is run from a shell, \code{from.shell()} and \code{is.main()}
-will both be \code{TRUE}. If that script sources another \R script,
-\code{from.shell()} and \code{is.main()} will both be \code{FALSE} for the
-duration of the second script.
+  When an \R script is run from a shell, \code{from.shell()} and
+  \code{is.main()} will both be \code{TRUE}. If that script sources another \R
+  script, \code{from.shell()} and \code{is.main()} will both be \code{FALSE}
+  for the duration of the second script.
 
-Otherwise, \code{from.shell()} will be \code{FALSE}. \code{is.main()} will be
-\code{TRUE} when there is no executing script or when source-ing a script in a
-toplevel context, and \code{FALSE} otherwise.
+  Otherwise, \code{from.shell()} will be \code{FALSE}. \code{is.main()} will be
+  \code{TRUE} when there is no executing script or when source-ing a script in
+  a toplevel context, and \code{FALSE} otherwise.
 }
 \value{
-\code{TRUE} or \code{FALSE}.
+  \code{TRUE} or \code{FALSE}.
 }
 \examples{
 FILES <- tempfile(c("file1_", "file2_"), fileext = ".R")

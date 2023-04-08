@@ -248,8 +248,10 @@ if (getRversion() < "3.0.0") {
     set.this.path.jupyter                    <- fix.External2(set.this.path.jupyter                   )
     .this.path                               <- fix.External2(.this.path                              )
     get.frame.number                         <- fix.External2(get.frame.number                        )
+    this.path                                <- fix.External2(this.path                               )
     here                                     <- fix.External2(here                                    )
     ici                                      <- fix.External2(ici                                     )
+    local.path                               <- fix.External2(local.path                              )
 
 
     # utils.R

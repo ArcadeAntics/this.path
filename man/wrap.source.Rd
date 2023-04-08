@@ -4,27 +4,27 @@
 \alias{set.this.path}
 \alias{local.path}
 \alias{unset.this.path}
-\title{
-Implement \code{\link{this.path}()} For Arbitrary \sourcelink{}-Like Functions
-}
+\title{Implement \code{\link{this.path}()} For Arbitrary \sourcelink{}-Like
+  Functions}
 \description{
-A \sourcelink{}-like function is any function which evaluates code from a file.
+  A \sourcelink{}-like function is any function which evaluates code from a
+  file.
 
-Currently, \code{\link{this.path}()} is implemented to work with
-\sourcesandlistlinks{}.
+  Currently, \code{\link{this.path}()} is implemented to work with
+  \sourcesandlistlinks{}.
 
-\code{wrap.source()} and \code{inside.source()} can be used to implement
-\code{this.path()} for any other \sourcelink{}-like functions.
+  \code{wrap.source()} and \code{inside.source()} can be used to implement
+  \code{this.path()} for any other \sourcelink{}-like functions.
 
-\code{set.this.path()} is just an alias for \code{inside.source()}.
+  \code{set.this.path()} is just an alias for \code{inside.source()}.
 
-\code{local.path()} returns the path of the executing script, confining the
-search to the local environment in which \code{inside.source()} / /
-\code{set.this.path()} was called.
+  \code{local.path()} returns the path of the executing script, confining the
+  search to the local environment in which \code{inside.source()} / /
+  \code{set.this.path()} was called.
 
-\code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
-need to use this if you wish to call \code{set.this.path()} multiple times
-within a function.
+  \code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
+  need to use this if you wish to call \code{set.this.path()} multiple times
+  within a function.
 }
 \usage{
 wrap.source(expr,
@@ -110,154 +110,127 @@ local.path(verbose = getOption("verbose"), original = FALSE,
 unset.this.path()
 }
 \arguments{
-  \item{expr}{
-an (unevaluated) call to a \sourcenolink{}-like function.
-  }
-  \item{file}{
-a \code{\link[base:connections]{connection}} or a character string giving the
-pathname of the file or URL to read from.
-  }
-  \item{path.only}{
-must \code{file} be an existing path? This implies \code{character.only} and
-\code{file.only} are \code{TRUE} and implies \code{allow.file.uri} and
-\code{allow.unz} are \code{FALSE}, though these can be manually changed.
-  }
-  \item{character.only}{
-must \code{file} be a character string?
-  }
-  \item{file.only}{
-must \code{file} refer to an existing file?
-  }
-  \item{conv2utf8}{
-if \code{file} is a character string, should it be converted to UTF-8?
-  }
-  \item{allow.blank.string}{
-may \code{file} be a blank string, i.e. \code{""}?
-  }
-  \item{allow.clipboard}{
-may \code{file} be \code{"clipboard"} or a clipboard connection?
-  }
-  \item{allow.stdin}{
-may \code{file} be \code{"stdin"}? Note that \code{"stdin"} refers to the
-C-level \sQuote{standard input} of the process, differing from
-\code{\link[base:showConnections]{stdin}()} which refers to the R-level
-\sQuote{standard input}.
-  }
-  \item{allow.url}{
-may \code{file} be a URL pathname or a connection of class \code{"url-libcurl"}
-/ / \code{"url-wininet"}?
-  }
-  \item{allow.file.uri}{
-may \code{file} be a \samp{file://} URI?
-  }
+  \item{expr}{an (unevaluated) call to a \sourcenolink{}-like function.}
+
+  \item{file}{a \code{\link[base:connections]{connection}} or a character
+    string giving the pathname of the file or URL to read from.}
+
+  \item{path.only}{must \code{file} be an existing path? This implies
+    \code{character.only} and \code{file.only} are \code{TRUE} and implies
+    \code{allow.file.uri} and \code{allow.unz} are \code{FALSE}, though these
+    can be manually changed.}
+
+  \item{character.only}{must \code{file} be a character string?}
+
+  \item{file.only}{must \code{file} refer to an existing file?}
+
+  \item{conv2utf8}{if \code{file} is a character string, should it be converted
+    to UTF-8?}
+
+  \item{allow.blank.string}{may \code{file} be a blank string, i.e. \code{""}?}
+
+  \item{allow.clipboard}{may \code{file} be \code{"clipboard"} or a clipboard
+    connection?}
+
+  \item{allow.stdin}{may \code{file} be \code{"stdin"}? Note that
+    \code{"stdin"} refers to the C-level \sQuote{standard input} of the
+    process, differing from \code{\link[base:showConnections]{stdin}()} which
+    refers to the R-level \sQuote{standard input}.}
+
+  \item{allow.url}{may \code{file} be a URL pathname or a connection of class
+    \code{"url-libcurl"} / / \code{"url-wininet"}?}
+
+  \item{allow.file.uri}{may \code{file} be a \samp{file://} URI?}
+
   \item{allow.unz, allow.pipe, allow.terminal, allow.textConnection,
-        allow.rawConnection, allow.sockconn, allow.servsockconn}{
-may \code{file} be a connection of class \code{\link[base:connections]{"unz"}}
-/ / \code{"pipe"} / / \code{"terminal"} / / \code{"textConnection"} / /
-\code{"rawConnection"} / / \code{"sockconn"} / / \code{"servsockconn"}?
-  }
-  \item{allow.customConnection}{
-may \code{file} be a custom connection?
-  }
+        allow.rawConnection, allow.sockconn, allow.servsockconn}{may
+    \code{file} be a connection of class \code{"\link[base:connections]{unz}"}
+    / / \code{"pipe"} / / \code{"terminal"} / / \code{"textConnection"} / /
+    \code{"rawConnection"} / / \code{"sockconn"} / / \code{"servsockconn"}?}
+
+  \item{allow.customConnection}{may \code{file} be a custom connection?}
+
   \item{ignore.all, ignore.blank.string, ignore.clipboard, ignore.stdin,
-        ignore.url, ignore.file.uri}{
-ignore the special meaning of these types of strings, treating it as a path
-instead?
-  }
-  \item{Function}{
-character vector of length 1 or 2; the name of the function and package in
-which \code{inside.source()} / / \code{set.this.path()} is called.
-  }
-  \item{verbose, original, for.msg, default, else.}{
-See \code{?\link{this.path}()}
-  }
+        ignore.url, ignore.file.uri}{ignore the special meaning of these types
+    of strings, treating it as a path instead?}
+
+  \item{Function}{character vector of length 1 or 2; the name of the function
+    and package in which \code{inside.source()} / / \code{set.this.path()} is
+    called.}
+
+  \item{verbose, original, for.msg, default, else.}{See
+    \code{?\link{this.path}()}}
 }
 \details{
-\code{inside.source()} should be added to the body of your \sourcenolink{}-like
-function before reading / / evaluating the expressions.
+  \code{inside.source()} should be added to the body of your
+  \sourcenolink{}-like function before reading / / evaluating the expressions.
 
-\code{wrap.source()}, unlike \code{inside.source()}, does not accept an
-argument \code{file}. Instead, an attempt is made to extract the file from
-\code{expr}, after which \code{expr} is evaluated. It is assumed that the file
-is the first argument of the function, as is the case with
-\sources1stargisfileandlistnolinks{}. The function of the call is evaluated,
-its \code{\link[base]{formals}()} are retrieved, and then the arguments of
-\code{expr} are searched for a name matching the name of the first formal
-argument. If a match cannot be found by name, the first unnamed argument is
-taken instead. If no such argument exists, the file is assumed missing.
+  \code{wrap.source()}, unlike \code{inside.source()}, does not accept an
+  argument \code{file}. Instead, an attempt is made to extract the file from
+  \code{expr}, after which \code{expr} is evaluated. It is assumed that the
+  file is the first argument of the function, as is the case with
+  \sources1stargisfileandlistnolinks{}. The function of the call is evaluated,
+  its \code{\link[base]{formals}()} are retrieved, and then the arguments of
+  \code{expr} are searched for a name matching the name of the first formal
+  argument. If a match cannot be found by name, the first unnamed argument is
+  taken instead. If no such argument exists, the file is assumed missing.
 
-\code{wrap.source()} does non-standard evaluation and does some guess work to
-determine the file. As such, it is less desirable than \code{inside.source()}
-when the option is available. I can think of exactly one scenario in which
-\code{wrap.source()} might be preferable: suppose there is a
-\sourcenolink{}-like function \code{sourcelike()} in a foreign package (a
-package for which you do not have write permission). Suppose that you write
-your own function in which the formals are \code{(\dots)} to wrap
-\code{sourcelike()}:
-
-\preformatted{wrapper <- function (...)
+  \code{wrap.source()} does non-standard evaluation and does some guess work to
+  determine the file. As such, it is less desirable than \code{inside.source()}
+  when the option is available. I can think of exactly one scenario in which
+  \code{wrap.source()} might be preferable: suppose there is a
+  \sourcenolink{}-like function \code{sourcelike()} in a foreign package (a
+  package for which you do not have write permission). Suppose that you write
+  your own function in which the formals are \code{(\dots)} to wrap
+  \code{sourcelike()}: \preformatted{wrapper <- function (...)
 {
     # possibly more args to wrap.source()
     wrap.source(sourcelike(...))
 }}
 
-This is the only scenario in which \code{wrap.source()} is preferable, since
-extracting the file from the \code{\dots} list would be a pain. Then again,
-you could simply change the formals of \code{wrapper()} from \code{(\dots)} to
-\code{(file, \dots)}. If this does not describe your exact scenario, use
-\code{inside.source()} instead.
+  This is the only scenario in which \code{wrap.source()} is preferable, since
+  extracting the file from the \code{\dots} list would be a pain. Then again,
+  you could simply change the formals of \code{wrapper()} from \code{(\dots)}
+  to \code{(file, \dots)}. If this does not describe your exact scenario, use
+  \code{inside.source()} instead.
 }
 \value{
-for \code{wrap.source()}, the result of evaluating \code{expr}.
+  for \code{wrap.source()}, the result of evaluating \code{expr}.
 
-for \code{inside.source()}, if \code{file} is a path, then the normalized path
-with the same attributes, otherwise \code{file} itself. The return value of
-\code{inside.source()} should be assigned to a variable before use, something
-like:
-
-\preformatted{
-{
+  for \code{inside.source()}, if \code{file} is a path, then the normalized
+  path with the same attributes, otherwise \code{file} itself. The return value
+  of \code{inside.source()} should be assigned to a variable before use,
+  something like: \preformatted{{
     file <- inside.source(file, ...)
     sourcelike(file)
-}
-}
+}}
 }
 \note{
-Both functions should only be called within another function.
+  Both functions should only be called within another function.
 
-Suppose that the functions \sourcesandlistnolinks{} were not implemented with
-\code{this.path()}. You could use \code{inside.source()} to implement each of
-them as follows:
+  Suppose that the functions \sourcesandlistnolinks{} were not implemented with
+  \code{this.path()}. You could use \code{inside.source()} to implement each of
+  them as follows:
 
-\describe{
-  \item{\sourcenolink{}}{
-\preformatted{
-wrapper <- function(file, ...) {
+  \describe{
+
+    \item{\sourcenolink{}}{\preformatted{wrapper <- function(file, ...) {
     file <- inside.source(file)
     source(file = file, ...)
-}
-}
-  }
-  \item{\syssourcenolink{}}{
-\preformatted{
-wrapper <- function(file, ...) {
+}}}
+
+    \item{\syssourcenolink{}}{\preformatted{wrapper <- function(file, ...) {
     file <- inside.source(file, path.only = TRUE)
     sys.source(file = file, ...)
-}
-}
-  }
-  \item{\debugSourcenolink{}}{
-\preformatted{
-wrapper <- function(fileName, ...) {
+}}}
+
+    \item{\debugSourcenolink{}}{\preformatted{wrapper <- function(fileName, ...) {
     fileName <- inside.source(fileName, character.only = TRUE,
         conv2utf8 = TRUE, allow.blank.string = TRUE)
     debugSource(fileName = fileName, ...)
-}
-}
-  }
-  \item{\sourcefilenolink{}}{
-\preformatted{
-wrapper <- function(path, ...) {
+}}}
+
+    \item{\sourcefilenolink{}}{\preformatted{wrapper <- function(path, ...) {
     # before testthat_3.1.2, source_file() used readLines() to read the
     # input lines. changed in 3.1.2, source_file() uses
     # brio::read_lines() which normalizes 'path' before reading,
@@ -265,21 +238,15 @@ wrapper <- function(path, ...) {
     path <- inside.source(path, path.only = TRUE, ignore.all =
         as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
     testthat::source_file(path = path, ...)
-}
-}
-  }
-  \item{\knitnolink{}}{
-\preformatted{
-wrapper <- function(input, ...) {
+}}}
+
+    \item{\knitnolink{}}{\preformatted{wrapper <- function(input, ...) {
     # this works for the most part, but will not work in child mode
     input <- inside.source(input)
     knitr::knit(input = input, ...)
-}
-}
-  }
-  \item{\boxusenolink{}}{
-\preformatted{
-# 'box' is structured to be an incredible pain in the ass,
+}}}
+
+    \item{\boxusenolink{}}{\preformatted{# 'box' is structured to be an incredible pain in the ass,
 # so this solution is not exactly ideal, but it works so whatever
 wrapper <- function(path, ...) {
     p <- this.path::path.split.1(path.expand(path))
@@ -306,7 +273,7 @@ wrapper <- function(path, ...) {
     spec <- list(name = name, prefix = prefix, attach = NULL,
         alias = name, explicit = FALSE)
     class(spec) <- c("box$mod_spec", "box$spec")
-    path <- this.path::set.this.path(path, path.only = TRUE)
+    path <- set.this.path(path, path.only = TRUE)
     info <- list(name = name, source_path =
         if (.Platform$OS.type == "windows")
         chartr("/", "\\\\", path) else path)
@@ -314,18 +281,13 @@ wrapper <- function(path, ...) {
     caller <- parent.frame()
     box:::load_and_register(spec, info, caller)
     invisible()
-}
-}
-  }
-  \item{\compilerloadcmpnolink{}}{
-\preformatted{
-wrapper <- function(file, ...) {
-    file <- inside.source(path.only = TRUE)
+}}}
+
+    \item{\compilerloadcmpnolink{}}{\preformatted{wrapper <- function(file, ...) {
+    file <- inside.source(file, path.only = TRUE)
     compiler::loadcmp(file = file, ...)
-}
-}
+}}}
   }
-}
 }
 \examples{
 FILE <- tempfile(fileext = ".R")

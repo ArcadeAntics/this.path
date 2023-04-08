@@ -285,10 +285,10 @@ Rboolean validJupyterRNotebook(SEXP path)
     SETCAR(expr, validJupyterRNotebookSymbol);
     SETCADR(expr, path);
     SEXP value = eval(expr, mynamespace);
-    if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL_ELT(value, 0) == NA_LOGICAL)
+    if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL(value)[0] == NA_LOGICAL)
         errorcall(expr, "invalid return value");
     UNPROTECT(1);
-    return LOGICAL_ELT(value, 0);
+    return LOGICAL(value)[0];
 }
 
 

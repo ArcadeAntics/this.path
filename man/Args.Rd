@@ -4,20 +4,18 @@
 \alias{fileArgs}
 \alias{progArgs}
 \alias{withArgs}
-\title{
-Providing Arguments to a Script
-}
+\title{Providing Arguments to a Script}
 \description{
-\code{withArgs()} allows you to \sourcelink{} an \R script while providing
-arguments. As opposed to running with \code{\link[utils]{Rscript}}, the code
-will be evaluated in the same session, in an environment of your choosing.
+  \code{withArgs()} allows you to \sourcelink{} an \R script while providing
+  arguments. As opposed to running with \code{\link[utils]{Rscript}}, the code
+  will be evaluated in the same session, in an environment of your choosing.
 
-\code{fileArgs()} / / \code{progArgs()} are generalized versions of
-\code{\link[base]{commandArgs}(trailingOnly = TRUE)}, allowing you to access
-the script's arguments whether it was sourced or run from a shell.
+  \code{fileArgs()} / / \code{progArgs()} are generalized versions of
+  \code{\link[base]{commandArgs}(trailingOnly = TRUE)}, allowing you to access
+  the script's arguments whether it was sourced or run from a shell.
 
-\code{asArgs()} coerces \R objects into a character vector, for use with
-command line applications and \code{withArgs()}.
+  \code{asArgs()} coerces \R objects into a character vector, for use with
+  command line applications and \code{withArgs()}.
 }
 \usage{
 asArgs(...)
@@ -26,61 +24,59 @@ progArgs()
 withArgs(...)
 }
 \arguments{
-  \item{\dots}{
-\R objects to turn into scripts arguments; typically
-\code{\link[base]{logical}}, \code{\link[base]{numeric}},
-\code{\link[base]{character}}, \code{\link[base:Dates]{Date}}, and
-\code{\link[base:DateTimeClasses]{POSIXt}} vectors.
+  \item{\dots}{\R objects to turn into scripts arguments; typically
+    \code{\link[base]{logical}}, \code{\link[base]{numeric}},
+    \code{\link[base]{character}}, \code{\link[base:Dates]{Date}}, and
+    \code{\link[base:DateTimeClasses]{POSIXt}} vectors.
 
-for \code{withArgs()}, the first argument should be an (unevaluated) call to
-\sourcescompatiblewithwithArgslistlinks{}, or a \sourcenolink{}-like function
-containing \code{\link{wrap.source}()} / / \code{\link{inside.source}()} / /
-\code{\link{set.this.path}()}.
-  }
+    for \code{withArgs()}, the first argument should be an (unevaluated) call
+    to \sourcescompatiblewithwithArgslistlinks{}, or a \sourcenolink{}-like
+    function containing \code{\link{wrap.source}()} / /
+    \code{\link{inside.source}()} / / \code{\link{set.this.path}()}.}
 }
 \details{
-\code{fileArgs()} will return the arguments associated with the executing
-script, or \code{character(0)} when there is no executing script.
+  \code{fileArgs()} will return the arguments associated with the executing
+  script, or \code{character(0)} when there is no executing script.
 
-\code{progArgs()} will return the arguments associated with the executing
-script, or \code{commandArgs(trailingOnly = TRUE)} when there is no executing
-script.
+  \code{progArgs()} will return the arguments associated with the executing
+  script, or \code{commandArgs(trailingOnly = TRUE)} when there is no executing
+  script.
 
-\code{asArgs()} coerces objects into command-line arguments. \code{\dots} is
-first put into a list, and then each non-list element is converted to
-character. They are converted as follows:
-\describe{
-  \item{Factors (class \code{"factor"})}{
-using \code{\link[base:character]{as.character.factor}()}
+  \code{asArgs()} coerces objects into command-line arguments. \code{\dots} is
+  first put into a list, and then each non-list element is converted to
+  character. They are converted as follows:
+
+  \describe{
+    \item{Factors (class \code{"factor"})}{using
+      \code{\link[base:character]{as.character.factor}()}}
+
+    \item{Date-Times (class \code{"POSIXct"} and \code{"POSIXlt"})}{using
+      format \code{"\%Y-\%m-\%d \%H:\%M:\%OS6"} (retains as much precision as
+      possible)}
+
+    \item{Numbers (class \code{"numeric"} and \code{"complex"})}{with 17
+      significant digits (retains as much precision as possible) and \code{"."}
+      as the decimal point character.}
+
+    \item{Raw Bytes (class \code{"raw"})}{using
+      \code{\link[base]{sprintf}("0x\%02x", )} (can easily convert back to raw
+      with \code{\link[base:raw]{as.raw}()} or
+      \code{\link[base:vector]{as.vector}(, "raw")})}
   }
-  \item{Date-Times (class \code{"POSIXct"} and \code{"POSIXlt"})}{
-using format \code{"\%Y-\%m-\%d \%H:\%M:\%OS6"} (retains as much precision as
-possible)
-  }
-  \item{Numbers (class \code{"numeric"} and \code{"complex"})}{
-with 17 significant digits (retains as much precision as possible) and
-\code{"."} as the decimal point character.
-  }
-  \item{Raw Bytes (class \code{"raw"})}{
-using \code{\link[base]{sprintf}("0x\%02x", )} (can easily convert back to raw
-with \code{\link[base:raw]{as.raw}()} or
-\code{\link[base:vector]{as.vector}(, "raw")})
-  }
-}
-All others will be converted to character using
-\code{\link[base:character]{as.character}()} and its methods.
 
-The arguments will then be unlisted, and all attributes will be removed.
-Arguments that are \code{NA_character_} after conversion will be converted to
-\code{"NA"} (since the command-line arguments also never have missing strings).
+  All others will be converted to character using
+  \code{\link[base:character]{as.character}()} and its methods.
 
-
+  The arguments will then be unlisted, and all attributes will be removed.
+  Arguments that are \code{NA_character_} after conversion will be converted to
+  \code{"NA"} (since the command-line arguments also never have missing
+  strings).
 }
 \value{
-for \code{asArgs()}, \code{fileArgs()}, and \code{progArgs()}, a character
-vector.
+  for \code{asArgs()}, \code{fileArgs()}, and \code{progArgs()}, a character
+  vector.
 
-for \code{withArgs()}, the result of evaluating the first argument.
+  for \code{withArgs()}, the result of evaluating the first argument.
 }
 \examples{
 this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),

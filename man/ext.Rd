@@ -3,17 +3,15 @@
 \alias{removeext}
 \alias{ext}
 \alias{ext<-}
-\title{
-File Extensions
-}
+\title{File Extensions}
 \description{
-\code{splitext()} splits an extension from a path.
+  \code{splitext()} splits an extension from a path.
 
-\code{removeext()} removes an extension from a path.
+  \code{removeext()} removes an extension from a path.
 
-\code{ext()} gets the extension of a path.
+  \code{ext()} gets the extension of a path.
 
-\code{ext<-()} sets the extension of a path.
+  \code{ext<-()} sets the extension of a path.
 }
 \usage{
 splitext(path, compression = FALSE)
@@ -22,35 +20,32 @@ ext(path, compression = FALSE)
 ext(path, compression = FALSE) <- value
 }
 \arguments{
-  \item{path}{
-character vector, containing path names.
-  }
-  \item{compression}{
-should compression extensions \sQuote{.gz}, \sQuote{.bz2}, and \sQuote{.xz} be
-taken into account when removing/getting an extension?
-  }
-  \item{value}{
-a character vector, typically of length \code{1} or \code{length(path)}, or
-\code{NULL}.
-  }
+  \item{path}{character vector, containing path names.}
+
+  \item{compression}{should compression extensions \sQuote{.gz}, \sQuote{.bz2},
+    and \sQuote{.xz} be taken into account when removing/getting an extension?}
+
+  \item{value}{a character vector, typically of length \code{1} or
+    \code{length(path)}, or \code{NULL}.}
 }
 \details{
-\code{\link[base:path.expand]{tilde expansion}} of the path will be performed.
+  \code{\link[base:path.expand]{tilde expansion}} of the path will be
+  performed.
 
-Trailing path separators are removed before dissecting the path.
+  Trailing path separators are removed before dissecting the path.
 
-Except for \code{path <- NA_character_}, it will always be true that
-\code{path == paste0(removeext(path), ext(path))}.
+  Except for \code{path <- NA_character_}, it will always be true that
+  \code{path == paste0(removeext(path), ext(path))}.
 }
 \value{
-for \code{splitext()}, a matrix with 2 rows and \code{length(path)} columns.
-The first row will be the roots of the paths, the second row will be the
-extensions of the paths.
+  for \code{splitext()}, a matrix with 2 rows and \code{length(path)} columns.
+  The first row will be the roots of the paths, the second row will be the
+  extensions of the paths.
 
-for \code{removeext()} and \code{ext()}, a character vector the same length as
-\code{path}.
+  for \code{removeext()} and \code{ext()}, a character vector the same length
+  as \code{path}.
 
-for \code{ext<-()}, the updated object.
+  for \code{ext<-()}, the updated object.
 }
 \examples{
 splitext(character(0))

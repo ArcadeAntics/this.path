@@ -1,29 +1,25 @@
 \name{path.join}
 \alias{path.join}
-\title{
-Construct Path to File
-}
+\title{Construct Path to File}
 \description{
-Construct the path to a file from components/paths in a
-platform-\strong{DEPENDENT} way.
+  Construct the path to a file from components/paths in a
+  platform-\strong{DEPENDENT} way.
 }
 \usage{
 path.join(...)
 }
 \arguments{
-  \item{\dots}{
-character vectors.
-  }
+  \item{\dots}{character vectors.}
 }
 \details{
-When constructing a path to a file, the last absolute path is selected and all
-trailing components are appended. This is different from
-\code{\link[base]{file.path}()} where all trailing paths are treated as
-components.
+  When constructing a path to a file, the last absolute path is selected and
+  all trailing components are appended. This is different from
+  \code{\link[base]{file.path}()} where all trailing paths are treated as
+  components.
 }
 \value{
-A character vector of the arguments concatenated term-by-term and separated by
-\code{"/"}.
+  A character vector of the arguments concatenated term-by-term and separated
+  by \code{"/"}.
 }
 \examples{
 #ifdef unix

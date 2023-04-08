@@ -1,34 +1,29 @@
 \name{here}
 \alias{here}
 \alias{ici}
-\title{
-Construct Path to File, Beginning with \code{\link{this.dir}()}
-}
+\title{Construct Path to File, Starting with \code{\link{this.dir}()}}
 \description{
-Construct the path to a file from components/paths in a
-platform-\strong{DEPENDENT} way, starting with \code{\link{this.dir}()}.
+  Construct the path to a file from components/paths in a
+  platform-\strong{DEPENDENT} way, starting with \code{\link{this.dir}()}.
 }
 \usage{
 here(..., .. = 0)
 ici(..., .. = 0)
 }
 \arguments{
-  \item{\dots}{
-further arguments passed to \code{\link{path.join}()}.
-  }
-  \item{..}{
-the number of directories to go back.
-  }
+  \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
+
+  \item{..}{the number of directories to go back.}
 }
 \details{
-The path to a file begins with a base. The base is \code{..} number of
-directories back from the executing script's directory (\code{this.dir()}). The
-argument is named \code{..} because \code{".."} refers to the parent directory
-in Windows, Unix-alikes, and URL pathnames.
+  The path to a file begins with a base. The base is \code{..} number of
+  directories back from the executing script's directory (\code{this.dir()}).
+  The argument is named \code{..} because \code{".."} refers to the parent
+  directory on Windows, under Unix-alikes, and for URL pathnames.
 }
 \value{
-A character vector of the arguments concatenated term-by-term, beginning with
-the executing script's directory.
+  A character vector of the arguments concatenated term-by-term, starting with
+  the executing script's directory.
 }
 \examples{
 FILE <- tempfile(fileext = ".R")
