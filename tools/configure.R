@@ -48,25 +48,18 @@ main <- function ()
             desc["Package"], pkgname))
 
 
-    withclose <- function(conn, expr) {
-        conn  # force the promise
-        on.exit(close(conn))
-        expr
-    }
-
-
     readLines2 <- function(description, ...) {
-        withclose(conn <- file(description, "rb", encoding = ""), {
-            readLines(con = conn, ...)
-        })
+        conn <- file(description, "rb", encoding = "")
+        on.exit(close(conn))
+        readLines(con = conn, ...)
     }
 
 
     # "w" will use the native line end, "wb" will use Unix (LF)
     writeLines2 <- function(text, description, mode = "w", useBytes = TRUE) {
-        withclose(conn <- file(description, mode, encoding = ""), {
-            writeLines(text, conn, useBytes = useBytes)
-        })
+        conn <- file(description, mode, encoding = "")
+        on.exit(close(conn))
+        writeLines(text, conn, useBytes = useBytes)
     }
 
 

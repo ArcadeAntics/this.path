@@ -182,6 +182,21 @@ lengths <- function (x, use.names = TRUE)
 # file.info() did not have argument extra_cols at this time
 file.mtime <- function (...)
 file.info(...)$mtime
+environment(file.mtime) <- .BaseNamespaceEnv
+
+
+file.info <- function (..., extra_cols = TRUE)
+{
+    if (extra_cols)
+        file.info(...)
+    else file.info(...)[1:6]
+}
+environment(file.info) <- .BaseNamespaceEnv
+
+
+is.dir <- function (...)
+file.info(...)$isdir
+environment(is.dir) <- .BaseNamespaceEnv
 
 
 } else {
@@ -190,6 +205,10 @@ file.info(...)$mtime
 isNamespaceLoaded <- function (name)
 isNamespaceLoaded(name)
 environment(isNamespaceLoaded) <- .BaseNamespaceEnv
+
+
+is.dir <- function (...)
+file.info(..., extra_cols = FALSE)$isdir
 
 
 }

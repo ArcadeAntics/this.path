@@ -487,10 +487,10 @@ void assign_done(SEXP frame)
     SEXP e = findVarInFrame((frame), thispathfileSymbol)
 
 
-void assign_default(SEXP file, SEXP frame)
+void assign_default(SEXP file, SEXP frame, Rboolean check_not_directory)
 {
     _assign(file, frame);
-    SET_PRCODE(e, lang2(_normalizePathSymbol, file));
+    SET_PRCODE(e, lang2(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol, file));
     SET_PRENV(e, mynamespace);
 }
 
@@ -512,7 +512,7 @@ void assign_chdir(SEXP file, SEXP owd, SEXP frame)
 }
 
 
-void assign_file_uri(SEXP ofile, SEXP file, SEXP frame)
+void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, Rboolean check_not_directory)
 {
     _assign(ofile, frame);
 
@@ -544,12 +544,12 @@ void assign_file_uri(SEXP ofile, SEXP file, SEXP frame)
 #endif
 
 
-    SET_PRCODE(e, lang2(_normalizePathSymbol, ScalarString(mkCharCE(url, ienc))));
+    SET_PRCODE(e, lang2(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol, ScalarString(mkCharCE(url, ienc))));
     SET_PRENV(e, mynamespace);
 }
 
 
-void assign_file_uri2(SEXP description, SEXP frame)
+void assign_file_uri2(SEXP description, SEXP frame, Rboolean check_not_directory)
 {
     char _buf[7 + strlen(CHAR(description)) + 1];
     char *buf = _buf;
@@ -562,7 +562,7 @@ void assign_file_uri2(SEXP description, SEXP frame)
 
 
     _assign(ofile, frame);
-    SET_PRCODE(e, lang2(_normalizePathSymbol, ScalarString(description)));
+    SET_PRCODE(e, lang2(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol, ScalarString(description)));
     SET_PRENV(e, mynamespace);
 }
 

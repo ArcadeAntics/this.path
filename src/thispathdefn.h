@@ -180,11 +180,11 @@ extern void stop(SEXP cond);
 
 
 extern void assign_done(SEXP frame);
-extern void assign_default(SEXP file, SEXP frame);
+extern void assign_default(SEXP file, SEXP frame, Rboolean check_not_directory);
 extern void assign_null(SEXP frame);
 extern void assign_chdir(SEXP file, SEXP owd, SEXP frame);
-extern void assign_file_uri(SEXP ofile, SEXP file, SEXP frame);
-extern void assign_file_uri2(SEXP description, SEXP frame);
+extern void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, Rboolean check_not_directory);
+extern void assign_file_uri2(SEXP description, SEXP frame, Rboolean check_not_directory);
 extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
 
 
@@ -228,8 +228,8 @@ typedef struct gzconn {
 #endif
 
 
-#define checkfile(call, sym, ofile, frame, forcepromise,       \
-    assign_returnvalue,                                        \
+#define checkfile(call, sym, ofile, frame, check_not_directory,\
+    forcepromise, assign_returnvalue,                          \
     maybe_chdir, getowd, hasowd,                               \
     character_only, conv2utf8, allow_blank_string,             \
     allow_clipboard, allow_stdin, allow_url, allow_file_uri,   \
@@ -293,7 +293,7 @@ typedef struct gzconn {
         }                                                      \
         else if (!ignore_file_uri && strncmp(url, "file://", 7) == 0) {\
             if (allow_file_uri) {                              \
-                assign_file_uri(ofile, file, frame);           \
+                assign_file_uri(ofile, file, frame, check_not_directory);\
                 if (assign_returnvalue) {                      \
                     returnvalue = PROTECT(shallow_duplicate(ofile));\
                     SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(thispathfileSymbol, frame, FALSE), 0));\
@@ -310,9 +310,9 @@ typedef struct gzconn {
                 if (hasowd)                                    \
                     assign_chdir(ofile, owd, frame);           \
                 else                                           \
-                    assign_default(ofile, frame);              \
+                    assign_default(ofile, frame, check_not_directory);\
             }                                                  \
-            else assign_default(ofile, frame);                 \
+            else assign_default(ofile, frame, check_not_directory);\
             if (assign_returnvalue) {                          \
                 returnvalue = PROTECT(shallow_duplicate(ofile));\
                 SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(thispathfileSymbol, frame, FALSE), 0));\
@@ -334,7 +334,7 @@ typedef struct gzconn {
                 streql(klass, "xzfile") ||                     \
                 streql(klass, "fifo"  ))                       \
             {                                                  \
-                assign_file_uri2(description, frame);          \
+                assign_file_uri2(description, frame, check_not_directory);\
                 if (forcepromise) getInFrame(thispathfileSymbol, frame, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \

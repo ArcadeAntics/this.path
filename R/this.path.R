@@ -718,6 +718,15 @@ identical(x, y)
 normalizePath(path, winslash, mustWork)
 
 
+.normalizeNotDirectory <- function (path, winslash = "/", mustWork = TRUE)
+{
+    x <- normalizePath(path, winslash, mustWork)
+    if (!is.na(isdir <- is.dir(x)) && !isdir)
+        x
+    else stop(sprintf("'%s' is not a regular file", path), domain = NA)
+}
+
+
 .normalizeAgainst <- function (ofile, owd)
 {
     cwd <- getwd()

@@ -41,6 +41,7 @@ extern0 SEXP0
     insidesourcewashereSymbol              INI_as(install(".this.path::inside.source() was here")),
     thispathnSymbol                        INI_as(install(".this.path::n")),
     _normalizePathSymbol                   INI_as(install(".normalizePath")),
+    _normalizeNotDirectorySymbol                 INI_as(install(".normalizeNotDirectory")),
     _normalizeAgainstSymbol                INI_as(install(".normalizeAgainst")),
     stopSymbol                             INI_as(install("stop")),
     delayedAssignSymbol                    INI_as(install("delayedAssign")),
