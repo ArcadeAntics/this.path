@@ -16,7 +16,7 @@ this.dir2(...)
 this.dir3(...)
 normalized.shFILE(default, else.)
 
-# Defunct in devel
+# Defunct in 1.3.0
 as.rel.path(path)        # use 'rel2here(path)' instead
 as.relative.path(path)   # use 'rel2here(path)' instead
 }

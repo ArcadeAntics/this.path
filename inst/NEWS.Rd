@@ -1,6 +1,6 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
-\section{CHANGES IN VERSION devel}{
+\section{CHANGES IN VERSION 1.3.0 (2023-04-08)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item{\code{\link{this.path}()} no longer throws an error when multiple
