@@ -70,9 +70,9 @@ SEXP do_wrapsource do_formals
     if (nframe < 2)
         context_number = 1;
     else {
-        int isys_parent = sys_parent(1, rho);
-        Rprintf("\nsys.parent(): %d\n", isys_parent);
-        if (nframe - 1 != isys_parent)
+        int sys_parent = get_sys_parent(1, rho);
+        // Rprintf("\nsys.parent(): %d\n", sys_parent);
+        if (nframe - 1 != sys_parent)
             /* this will happen for something like:
                wrapper <- function(...) {
                    force(wrap.source(sourcelike(...)))
@@ -85,7 +85,7 @@ SEXP do_wrapsource do_formals
              */
             context_number = nframe;
         else {
-            SEXP tmp = lang2(sys_functionSymbol, ScalarInteger(isys_parent));
+            SEXP tmp = lang2(sys_functionSymbol, ScalarInteger(sys_parent));
             PROTECT(tmp);
             SEXP function = eval(tmp, rho);
             PROTECT(function);
@@ -94,7 +94,7 @@ SEXP do_wrapsource do_formals
             else if (identical(function, getInFrame(withArgsSymbol, mynamespace, FALSE)))
                 context_number = nframe;
             else
-                context_number = isys_parent;
+                context_number = sys_parent;
             UNPROTECT(2);
         }
     }
@@ -540,12 +540,12 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     int nprotect = 0;
 
 
-    int isys_parent = sys_parent(1, rho);
-    if (isys_parent < 1)
+    int sys_parent = get_sys_parent(1, rho);
+    if (sys_parent < 1)
         error("%s() cannot be used within the global environment", name);
 
 
-    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(isys_parent));
+    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(sys_parent));
     PROTECT(expr);
     SEXP function = eval(expr, rho);
     UNPROTECT(1);  /* expr */
@@ -691,7 +691,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
         assign_null(frame);
         defineVar(insidesourcewashereSymbol, R_MissingArg, frame);
         R_LockBinding(insidesourcewashereSymbol, frame);
-        set_thispathn(isys_parent, frame);
+        set_thispathn(sys_parent, frame);
         set_R_Visible(1);
         UNPROTECT(nprotect);
         return R_MissingArg;
@@ -810,7 +810,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     INCREMENT_NAMED_defineVar(insidesourcewashereSymbol, fun_name, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
-    set_thispathn(isys_parent, frame);
+    set_thispathn(sys_parent, frame);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
     return returnvalue;
 }

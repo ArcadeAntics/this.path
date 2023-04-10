@@ -509,8 +509,8 @@ extern SEXP mynamespace;
                      (nargs), (name), (expected_nargs)
 
 
-extern SEXP sys_parents(SEXP rho);
-extern int sys_parent(int n, SEXP rho);
+extern SEXP get_sys_parents(SEXP rho);
+extern int get_sys_parent(int n, SEXP rho);
 
 
 #endif /* #ifndef THISPATHDEFN_H */

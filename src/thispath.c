@@ -188,8 +188,6 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
             error("%s() cannot be used within a package environment", name);
         else if (R_IsNamespaceEnv(frame))
             error("%s() cannot be used within a namespace environment", name);
-        else if (R_EnvironmentIsLocked(frame))
-            error("%s() cannot be used within a locked environment", name);
 
 
         if (findVarInFrame(frame, insidesourcewashereSymbol) == R_UnboundValue)
@@ -931,7 +929,7 @@ SEXP do_localpath do_formals
     Rboolean verbose          = asLogical(CAR(args)); args = CDR(args);
     Rboolean original         = asLogical(CAR(args)); args = CDR(args);
     Rboolean for_msg          = asLogical(CAR(args)); args = CDR(args);
-    int      N                = sys_parent(1, rho);
+    int      N                = get_sys_parent(1, rho);
     Rboolean get_frame_number = FALSE;
     Rboolean local            = TRUE;
 

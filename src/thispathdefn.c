@@ -667,7 +667,7 @@ Rboolean init_tools_rstudio(Rboolean skipCheck)
 int maybe_unembedded_shell = -1;
 
 
-SEXP sys_parents(SEXP rho)
+SEXP get_sys_parents(SEXP rho)
 {
     /* this function PROTECTs value and does not UNPROTECT at the end.
      * UNPROTECT it yourself when necessary */
@@ -687,9 +687,9 @@ SEXP sys_parents(SEXP rho)
 }
 
 
-int sys_parent(int n, SEXP rho)
+int get_sys_parent(int n, SEXP rho)
 {
-    SEXP value = sys_parents(rho);
+    SEXP value = get_sys_parents(rho);
     int N = LENGTH(value);
     if (n == NA_INTEGER || n < 1 || n > N)
         error(_("invalid '%s' value"), "n");
