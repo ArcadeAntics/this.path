@@ -1,5 +1,12 @@
 this.path News
 
+CHANGES IN this.path devel:
+
+  BUG FIXES
+
+    * inside.source() / / set.this.path() / / local.path() more
+      rigorously check that they are called from a valid context.
+
 CHANGES IN this.path 1.3.0 (2023-04-08):
 
   SIGNIFICANT USER-VISIBLE CHANGES

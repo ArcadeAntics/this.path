@@ -1,8 +1,8 @@
 \name{this.path-package}
 \alias{this.path-package}
 \docType{package}
-\title{Get Executing Script's Path, from \sQuote{Rgui}, \sQuote{\RStudio},
-  \sQuote{\VSCode}, \sQuote{\Jupyter}, \sourcelink{}, and
+\title{Get Executing Script's Path, from \sQuote{Rgui}, \sQuote{RStudio},
+  \sQuote{VSCode}, \sQuote{Jupyter}, \sourcelink{}, and
   \code{\link[utils]{Rscript}} (Shells Including Windows Command-Line / / Unix
   Terminal)}
 \description{

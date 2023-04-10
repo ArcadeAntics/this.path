@@ -70,22 +70,22 @@ SEXP do_wrapsource do_formals
     if (nframe < 2)
         context_number = 1;
     else {
-        int sys_parent = asInteger(eval(lang1(sys_parentSymbol), rho));
-        // Rprintf("sys.parent() = %d\n", sys_parent);
-        /* this will happen for something like:
-           wrapper <- function(...) {
-               force(wrap.source(sourcelike(...)))
-           }
+        int isys_parent = sys_parent(1, rho);
+        Rprintf("\nsys.parent(): %d\n", isys_parent);
+        if (nframe - 1 != isys_parent)
+            /* this will happen for something like:
+               wrapper <- function(...) {
+                   force(wrap.source(sourcelike(...)))
+               }
 
-           but won't for something like this:
-           wrapper <- function(...) {
-               wrap.source(sourcelike(...))
-           }
-         */
-        if (nframe - 1 != sys_parent)
+               but won't for something like this:
+               wrapper <- function(...) {
+                   wrap.source(sourcelike(...))
+               }
+             */
             context_number = nframe;
         else {
-            SEXP tmp = lang2(sys_functionSymbol, ScalarInteger(sys_parent));
+            SEXP tmp = lang2(sys_functionSymbol, ScalarInteger(isys_parent));
             PROTECT(tmp);
             SEXP function = eval(tmp, rho);
             PROTECT(function);
@@ -94,7 +94,7 @@ SEXP do_wrapsource do_formals
             else if (identical(function, getInFrame(withArgsSymbol, mynamespace, FALSE)))
                 context_number = nframe;
             else
-                context_number = sys_parent;
+                context_number = isys_parent;
             UNPROTECT(2);
         }
     }
@@ -540,14 +540,15 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     int nprotect = 0;
 
 
-    int sys_parent = asInteger(eval(lang1(sys_parentSymbol), rho));
-    if (sys_parent < 1)
+    int isys_parent = sys_parent(1, rho);
+    if (isys_parent < 1)
         error("%s() cannot be used within the global environment", name);
 
 
-    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(sys_parent));
+    SEXP expr = lang2(sys_functionSymbol, ScalarInteger(isys_parent));
     PROTECT(expr);
     SEXP function = eval(expr, rho);
+    UNPROTECT(1);  /* expr */
     PROTECT(function);
     if (TYPEOF(function) != CLOSXP)
         error("%s() cannot be used within a '%s', possible errors with eval?",
@@ -556,9 +557,11 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     /* ensure 'inside.source()' is not called from one of the source-like functions */
     if (identical(function, getInFrame(sourceSymbol, R_BaseEnv, FALSE)))
-        error("%s() cannot be called within source()", name);
+        error("%s() cannot be called within %s()",
+              name, EncodeChar(PRINTNAME(sourceSymbol)));
     else if (identical(function, getInFrame(sys_sourceSymbol, R_BaseEnv, FALSE)))
-        error("%s() cannot be called within sys.source()", name);
+        error("%s() cannot be called within %s()",
+              name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
 
 
     init_tools_rstudio(FALSE);
@@ -566,7 +569,8 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     if (has_tools_rstudio) {
         if (identical(function, get_debugSource)) {
-            error("%s() cannot be called within debugSource() in RStudio", name);
+            error("%s() cannot be called within %s() in RStudio",
+                  name, EncodeChar(PRINTNAME(debugSourceSymbol)));
         }
     }
 
@@ -577,7 +581,8 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
     if (ns == R_UnboundValue ? FALSE : TRUE) {
         if (identical(function, getInFrame(source_fileSymbol, ns, FALSE))) {
-            error("%s() cannot be called within source_file() from package testthat", name);
+            error("%s() cannot be called within %s() from package %s",
+                  name, EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
         }
     }
 
@@ -585,25 +590,37 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
     ns = findVarInFrame(R_NamespaceRegistry, knitrSymbol);
     if (ns == R_UnboundValue ? FALSE : TRUE) {
         if (identical(function, getInFrame(knitSymbol, ns, FALSE))) {
-            error("%s() cannot be called within knit() from package knitr", name);
+            error("%s() cannot be called within %s() from package %s",
+                  name, EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
         }
     }
 
 
     if (identical(function, getInFrame(wrap_sourceSymbol, mynamespace, FALSE))) {
-        error("%s() cannot be called within wrap.source() from package this.path", name);
+        error("%s() cannot be called within %s() from package %s",
+              name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
     }
 
 
     ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
     if (ns == R_UnboundValue ? FALSE : TRUE) {
         if (identical(function, getInFrame(load_from_sourceSymbol, ns, FALSE))) {
-            error("%s() cannot be called within load_from_source() from package box", name);
+            error("%s() cannot be called within %s() from package %s",
+                  name, EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
         }
     }
 
 
-    UNPROTECT(2);  /* expr & function */
+    ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
+    if (ns == R_UnboundValue ? FALSE : TRUE) {
+        if (identical(function, getInFrame(loadcmpSymbol, ns, FALSE))) {
+            error("%s() cannot be called within %s() from package %s",
+                  name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+        }
+    }
+
+
+    UNPROTECT(1);  /* function */
 
 
     SEXP ofile, frame;
@@ -674,7 +691,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
         assign_null(frame);
         defineVar(insidesourcewashereSymbol, R_MissingArg, frame);
         R_LockBinding(insidesourcewashereSymbol, frame);
-        set_thispathn(sys_parent, frame);
+        set_thispathn(isys_parent, frame);
         set_R_Visible(1);
         UNPROTECT(nprotect);
         return R_MissingArg;
@@ -793,7 +810,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     INCREMENT_NAMED_defineVar(insidesourcewashereSymbol, fun_name, frame);
     R_LockBinding(insidesourcewashereSymbol, frame);
-    set_thispathn(sys_parent, frame);
+    set_thispathn(isys_parent, frame);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
     return returnvalue;
 }

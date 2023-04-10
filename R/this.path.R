@@ -921,12 +921,14 @@ tryCatch(.this.path(), error = function(e) .this.path(for.msg = TRUE))
 
 
 
-local.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.)
-{
+body.local.path <- function(funname) bquote({
+    # cat("\n> sys.parent()\n"); print(sys.parent())
+    # cat("\n> sys.parents()\n"); print(sys.parents())
+    # cat("\n> sys.parents()[[sys.nframe() - 1L]]\n"); print(sys.parents()[[sys.nframe() - 1L]])
     if (missing(default)) {
         if (missing(else.))
             .External2(C_localpath, verbose, original, for.msg)
-        else stop("'local.path' with 'else.' but not 'default' makes no sense")
+        else stop(.(sprintf("'%s' with 'else.' but not 'default' makes no sense", funname)))
     }
     else {
         if (missing(else.)) {
@@ -948,14 +950,21 @@ local.path <- function (verbose = getOption("verbose"), original = FALSE, for.ms
             else default
         }
     }
-}
+})
+
+
+local.path <- function(verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, default, else.) NULL
+body(local.path) <- body.local.path("local.path")
 
 
 body(this.path) <- bquote({
     if (local)
-        .(`[[<-`(body(local.path), c(2, 3, 2, 4, 2), body(this.path)[[c(2, 3, 2, 4, 2)]]))
+        .(body.local.path("this.path"))
     else .(body(this.path))
 })
+
+
+rm(body.local.path)
 
 
 

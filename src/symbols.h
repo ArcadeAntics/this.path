@@ -72,7 +72,6 @@ extern0 SEXP0
     sys_frameSymbol                        INI_as(install("sys.frame")),
     sys_functionSymbol                     INI_as(install("sys.function")),
     sys_nframeSymbol                       INI_as(install("sys.nframe")),
-    sys_parentSymbol                       INI_as(install("sys.parent")),
     sys_parentsSymbol                      INI_as(install("sys.parents")),
     ofileSymbol                            INI_as(install("ofile")),
     owdSymbol                              INI_as(install("owd")),

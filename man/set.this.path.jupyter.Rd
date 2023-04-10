@@ -1,6 +1,6 @@
 \name{set.this.path.jupyter}
 \alias{set.this.path.jupyter}
-\title{Declare Executing \sQuote{\Jupyter} Notebook's Filename}
+\title{Declare Executing \sQuote{Jupyter} Notebook's Filename}
 \description{
   \code{\link{this.path}()} does some guess work to determine the path of the
   executing notebook in \sQuote{\Jupyter}. This involves listing all the files

@@ -124,41 +124,88 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
         error(_("invalid '%s' value"), "local");
 
 
+    if (get_frame_number) {
+        if (original) {
+            if (for_msg) {
+                if (local)
+                    error("'%s', '%s', and '%s' must be FALSE when '%s' is TRUE",
+                          "original", "for.msg", "local", "get.frame.number");
+                else
+                    error("'%s' and '%s' must be FALSE when '%s' is TRUE",
+                          "original", "for.msg", "get.frame.number");
+            }
+            else {
+                if (local)
+                    error("'%s' and '%s' must be FALSE when '%s' is TRUE",
+                          "original", "local", "get.frame.number");
+                else
+                    error("'%s' must be FALSE when '%s' is TRUE",
+                          "original", "get.frame.number");
+            }
+        }
+        else {
+            if (for_msg) {
+                if (local)
+                    error("'%s' and '%s' must be FALSE when '%s' is TRUE",
+                          "for.msg", "local", "get.frame.number");
+                else
+                    error("'%s' must be FALSE when '%s' is TRUE",
+                          "for.msg", "get.frame.number");
+            }
+            else {
+                if (local)
+                    error("'%s' must be FALSE when '%s' is TRUE",
+                          "local", "get.frame.number");
+                else;
+            }
+        }
+    }
+
+
     SEXP returnthis = NULL;
     SEXP returnvalue;  /* checkfile() creates a variable 'returnvalue' that is
                           used in insidesource() (see ./src/wrapsource.c).
                           not used elsewhere but must be declared */
 
 
-    if (get_frame_number) {
-        if (original) {
-            if (for_msg) {
-                if (local)
-                    error("'%s', '%s', and '%s' must be FALSE when '%s' is TRUE", "original", "for.msg", "local", "get.frame.number");
-                else
-                    error("'%s' and '%s' must be FALSE when '%s' is TRUE", "original", "for.msg", "get.frame.number");
-            }
-            else {
-                if (local)
-                    error("'%s' and '%s' must be FALSE when '%s' is TRUE", "original", "local", "get.frame.number");
-                else
-                    error("'%s' must be FALSE when '%s' is TRUE", "original", "get.frame.number");
-            }
-        }
-        else {
-            if (for_msg) {
-                if (local)
-                    error("'%s' and '%s' must be FALSE when '%s' is TRUE", "for.msg", "local", "get.frame.number");
-                else
-                    error("'%s' must be FALSE when '%s' is TRUE", "for.msg", "get.frame.number");
-            }
-            else {
-                if (local)
-                    error("'%s' must be FALSE when '%s' is TRUE", "local", "get.frame.number");
-                else
-                    ;
-            }
-        }
+    if (local) {
+        const char *name = "local.path";
+
+
+        if (N <= 0) error("%s() cannot be used within the global environment", name);
+        SEXP frame = eval(lang1(parent_frameSymbol), rho);
+        PROTECT(frame);
+
+
+        /* ensure 'inside.source()' isn't evaluated in an invalid environment */
+        if (frame == R_GlobalEnv)
+            error("%s() cannot be used within the global environment", name);
+        else if (frame == R_BaseEnv)
+            error("%s() cannot be used within the base environment", name);
+        else if (frame == R_EmptyEnv)
+            error("%s() cannot be used within the empty environment", name);
+        else if (R_IsPackageEnv(frame))
+            error("%s() cannot be used within a package environment", name);
+        else if (R_IsNamespaceEnv(frame))
+            error("%s() cannot be used within a namespace environment", name);
+        else if (R_EnvironmentIsLocked(frame))
+            error("%s() cannot be used within a locked environment", name);
+
+
+        if (findVarInFrame(frame, insidesourcewashereSymbol) == R_UnboundValue)
+            error("%s() cannot be called within this environment", name);
+        if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
+            error("%s() cannot be called within this environment", name);
+
+
+        UNPROTECT(1);  /* frame */
+
+
+        SEXP function = eval(PROTECT(lang2(sys_functionSymbol, ScalarInteger(N))), rho);
+        if (TYPEOF(function) != CLOSXP)
+            error("%s() cannot be used within a '%s', possible errors with eval?",
+                  "local.path", type2char(TYPEOF(function)));
+        UNPROTECT(1);
     }
 
 
@@ -166,7 +213,7 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
 #define toplevel                                               \
-        if (local) error("'local.path' used in an inappropriate fashion");\
+        if (local) error("%s() cannot be used within the global environment", "local.path");\
         if (get_frame_number) return ScalarInteger(0);         \
         SEXP expr;                                             \
         if (for_msg)                                           \
@@ -255,8 +302,12 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 /* the number of objects protected in each iteration (that must be unprotected
    before moving to the next iteration) */
 #define nprotect_loop 1
+
+
         if (identical(function, source)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s()",
+                      "local.path", EncodeChar(PRINTNAME(sourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, ofileSymbol);
                 if (ofile == R_UnboundValue) {
@@ -427,7 +478,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
         else if (identical(function, sys_source)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s()",
+                      "local.path", EncodeChar(PRINTNAME(sys_sourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -488,7 +541,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
         else if (has_tools_rstudio && identical(function, debugSource)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s() in RStudio",
+                      "local.path", EncodeChar(PRINTNAME(debugSourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
@@ -549,7 +604,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
         else if (testthat_loaded && identical(function, source_file)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s() from package %s",
+                      "local.path", EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
@@ -611,7 +668,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
         else if (knitr_loaded && identical(function, knit)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s() from package %s",
+                      "local.path", EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
                     UNPROTECT(nprotect_loop);
@@ -673,7 +732,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
         else if (identical(function, wrap_source)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s() from package %s",
+                      "local.path", EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 UNPROTECT(nprotect_loop);
                 continue;
@@ -690,7 +751,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
         else if (box_loaded && identical(function, load_from_source)) {
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s() from package %s",
+                      "local.path", EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 /* info$source_path */
                 SEXP expr = lang3(R_DollarSymbol, infoSymbol, source_pathSymbol);
@@ -745,7 +808,9 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
         else if (compiler_loaded && identical(function, loadcmp)) {
             /* much the same as sys.source() */
-            if (local) error("'local.path' used in an inappropriate fashion");
+            if (local)
+                error("%s() cannot be called within %s() from package %s",
+                      "local.path", EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -810,9 +875,11 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 UNPROTECT(nprotect_loop);
                 continue;
             }
-            SEXP thispathn = getInFrame(thispathnSymbol, frame, FALSE);
+            SEXP thispathn = findVarInFrame(frame, thispathnSymbol);
+            if (TYPEOF(thispathn) != INTSXP || LENGTH(thispathn) != 1)
+                error(_("invalid '%s' value"), EncodeChar(PRINTNAME(thispathnSymbol)));
             /* this could happen with eval() or similar */
-            if (iwhich[0] != asInteger(thispathn)) {
+            if (iwhich[0] != INTEGER(thispathn)[0]) {
                 UNPROTECT(nprotect_loop);
                 continue;
             }
@@ -864,7 +931,7 @@ SEXP do_localpath do_formals
     Rboolean verbose          = asLogical(CAR(args)); args = CDR(args);
     Rboolean original         = asLogical(CAR(args)); args = CDR(args);
     Rboolean for_msg          = asLogical(CAR(args)); args = CDR(args);
-    int      N                = asInteger(eval(lang1(sys_parentSymbol), rho));
+    int      N                = sys_parent(1, rho);
     Rboolean get_frame_number = FALSE;
     Rboolean local            = TRUE;
 

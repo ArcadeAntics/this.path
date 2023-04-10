@@ -1,5 +1,15 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
+\section{CHANGES IN VERSION devel}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{\code{\link{inside.source}()} / /
+        \code{\link{set.this.path}()} / / \code{\link{local.path}()}
+        more rigorously check that they are called from a valid
+        context.}
+    }
+  }
+}
 \section{CHANGES IN VERSION 1.3.0 (2023-04-08)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
