@@ -924,10 +924,13 @@ tryCatch(.shFILE(FALSE), error = function(e) .shFILE())
 
 
 try.this.path <- function (contents = FALSE)
-tryCatch(.External2(C_thispath, FALSE, FALSE, FALSE, FALSE, contents),
-    error = function(e) {
-        .External2(C_thispath, FALSE, FALSE, TRUE, FALSE, contents)
-    })
+{
+    contents  ## force the promise before proceeding
+    tryCatch(.External2(C_thispath, FALSE, FALSE, FALSE, FALSE, contents),
+        error = function(e) {
+            .External2(C_thispath, FALSE, FALSE, TRUE, FALSE, contents)
+        })
+}
 
 
 
