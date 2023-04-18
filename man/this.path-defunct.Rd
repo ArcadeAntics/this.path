@@ -23,7 +23,7 @@ normalized.shFILE(default, else.)
 as.rel.path(path)
 as.relative.path(path)
 
-# Defunct in devel
+# Defunct in 1.4.0
 local.path(verbose = getOption("verbose"), original = FALSE,
     for.msg = FALSE, contents = FALSE, default, else.)
 Sys.path()

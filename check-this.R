@@ -28,7 +28,7 @@
 
         # INSTALL = TRUE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE,
+        check = TRUE, as.cran = TRUE,
 
         chdir = TRUE
     )
@@ -52,7 +52,7 @@ local({  # testing this.path() with source(gzcon())
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE, after = FALSE)
     writeLines(c(
-        "sys.frame(this.path:::get.frame.number())$ofile",
+        "sys.frame(.External2(this.path:::C_getframenumber))$ofile",
         "this.path::this.path(original = TRUE)",
         "this.path::this.path()"
     ), FILE)
@@ -156,7 +156,8 @@ local({
 
     x <- this.path:::readFiles(files)
     # x <- grep("(?i)(windows|unix)", x, value = TRUE)
-    x <- grep("(?i)(load\\.cmp)", x, value = TRUE)
+    # x <- grep("(?i)(load\\.cmp)", x, value = TRUE)
+    x <- grep("(?i)tryCatch", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

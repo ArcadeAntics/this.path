@@ -10,7 +10,7 @@ tryCatch2 <- function (expr, ..., else., finally)
 
 
     else if (...length() <= 0L)
-        # if we don't want to generate an error here, could instead do:
+        # ## if we don't want to generate an error here, could instead do:
         # tryCatch({
         #     expr
         #     else.
@@ -23,8 +23,8 @@ tryCatch2 <- function (expr, ..., else., finally)
         do_else <- FALSE
 
 
-        # if we catch a condition, we need to know whether it would
-        # automatically print
+        ## if we catch a condition, we need to know whether it would
+        ## automatically print
         x <- withVisible(tryCatch(expr = {
             expr
             do_else <- TRUE
@@ -42,7 +42,7 @@ tryCatch2 <- function (expr, ..., else., finally)
             #
             # tryCatch({
             #     piece.of.code.that.should.be.protected.from.conditions
-            #     other.code.that.follows.that.shouldnt.be.protected.from.conditions
+            #     other.code.that.follows.that.should.not.be.protected.from.conditions
             # }, <handlers>)
             #
             # would become:

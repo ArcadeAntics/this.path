@@ -3,7 +3,7 @@
 \newcommand{\commandorsQuote}{\ifelse{text}{\sQuote{#1}}{\command{#1}}}
 \newcommand{\codeorsQuote}{\ifelse{text}{\sQuote{#1}}{\code{#1}}}
 \newcommand{\optionorsQuote}{\ifelse{text}{\sQuote{#1}}{\option{#1}}}
-\section{CHANGES IN VERSION devel}{
+\section{CHANGES IN VERSION 1.4.0 (2023-04-18)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} now accepts argument \codeorsQuote{contents}
