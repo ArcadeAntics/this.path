@@ -74,6 +74,7 @@ SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
         break;                                                 \
     default:                                                   \
         errorcall(call, wrong_nargs_to_External(length(args), (name), "1, 2, or 3"));\
+        return R_NilValue;                                     \
     }
 
 
@@ -88,7 +89,7 @@ SEXP do_isunevaluatedpromise do_formals
      */
 
 
-    do_start("isunevaluatedpromise", -1);
+    do_start_no_op("isunevaluatedpromise", -1);
 
 
     handles_nargs(rho, "C_isunevaluatedpromise");
@@ -109,7 +110,7 @@ SEXP do_promiseisunevaluated do_formals
     /* similar to do_isunevaluatedpromise, but the binding MUST be a promise */
 
 
-    do_start("promiseisunevaluated", -1);
+    do_start_no_op("promiseisunevaluated", -1);
 
 
     handles_nargs(ENCLOS(rho), "C_promiseisunevaluated");
@@ -137,7 +138,7 @@ SEXP do_getpromisewithoutwarning do_formals
      */
 
 
-    do_start("getpromisewithoutwarning", -1);
+    do_start_no_op("getpromisewithoutwarning", -1);
 
 
     handles_nargs(ENCLOS(rho), "C_getpromisewithoutwarning");
@@ -225,7 +226,7 @@ SEXP PRINFO(SEXP e)
 
 SEXP do_prinfo do_formals
 {
-    do_start("prinfo", -1);
+    do_start_no_op("prinfo", -1);
 
 
     int nargs = length(args);
@@ -256,6 +257,7 @@ SEXP do_prinfo do_formals
         break;
     default:
         errorcall(call, wrong_nargs_to_External(nargs, "C_prinfo", "1, 2, or 3"));
+        return R_NilValue;
     }
 
 
@@ -297,7 +299,7 @@ Rboolean validJupyterRNotebook(SEXP path)
 
 SEXP do_setthispathjupyter do_formals
 {
-    do_start("setthispathjupyter", -1);
+    do_start_no_op_rho("setthispathjupyter", -1);
 
 
     SEXP path;
@@ -314,6 +316,7 @@ SEXP do_setthispathjupyter do_formals
         break;
     default:
         errorcall(call, wrong_nargs_to_External(length(args), "C_setthispathjupyter", "1 or 2"));
+        return R_NilValue;
     }
 
 
@@ -362,6 +365,6 @@ SEXP do_setthispathjupyter do_formals
     R_LockBinding(sym, env);
 
 
-    set_R_Visible(0);
+    set_R_Visible(FALSE);
     return path;
 }

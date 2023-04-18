@@ -17,8 +17,8 @@ set.this.path.jupyter(...)
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}. If no
     arguments are provided or exactly one argument is provided that is
-    \code{\link[base]{NA}} or \code{\link[base]{NULL}}, the \sQuote{Jupyter}
-    path is unset.}
+    \codelink2{base}{NA} or \codelink2{base}{NULL}, the \sQuote{Jupyter} path
+    is unset.}
 }
 \details{
   This function may only be called from a top-level context in
@@ -30,10 +30,10 @@ set.this.path.jupyter(...)
   character string, invisibly; the declared path for \sQuote{Jupyter}.
 }
 \examples{
-# if you opened the file "~/file50b816a24ec1.ipynb", the initial
-# working directory should be "~". You can write:
+# ## if you opened the file "~/file50b816a24ec1.ipynb", the initial
+# ## working directory should be "~". You can write:
 #
 # set.this.path.jupyter("file50b816a24ec1.ipynb")
 #
-# and then this.path() will return "~/file50b816a24ec1.ipynb"
+# ## and then this.path() will return "~/file50b816a24ec1.ipynb"
 }

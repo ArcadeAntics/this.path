@@ -17,8 +17,8 @@ is.main()
   for the duration of the second script.
 
   Otherwise, \code{from.shell()} will be \code{FALSE}. \code{is.main()} will be
-  \code{TRUE} when there is no executing script or when source-ing a script in
-  a toplevel context, and \code{FALSE} otherwise.
+  \code{TRUE} when there is no executing script or when \sourcenolink-ing a
+  script in a toplevel context, and \code{FALSE} otherwise.
 }
 \value{
   \code{TRUE} or \code{FALSE}.
@@ -40,11 +40,12 @@ this.path:::write.code((
 ), FILES[1])
 
 
-this.path:::.Rscript(c("--default-packages=this.path",
-                       "--vanilla", FILES[1]))
+this.path:::Rscript(
+    c("--default-packages=this.path", "--vanilla", FILES[1])
+)
 
 
-this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
+this.path:::Rscript(c("--default-packages=this.path", "--vanilla",
     "-e", "cat(\\"\\n> from.shell()\\\\n\\")",
     "-e", "from.shell()",
     "-e", "cat(\\"\\n> is.main()\\\\n\\")",
@@ -52,4 +53,7 @@ this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
     "-e", "cat(\\"\\n> source(commandArgs(TRUE)[[1L]])\\\\n\\")",
     "-e", "source(commandArgs(TRUE)[[1L]])",
     FILES[1]))
-\dontshow{unlink(FILES)}}
+
+
+unlink(FILES)
+}

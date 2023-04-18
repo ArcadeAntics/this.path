@@ -19,12 +19,13 @@ rel2here(path)
     \code{path} relative to.}
 }
 \details{
-  Tilde-expansion (see \code{\link[base]{path.expand}()}) is first done on
+  Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) is first done on
   \code{path} and \code{relative.to}.
 
-  If \code{path} and \code{relative.to} are equivalent, \code{"."} will be
+  If \code{path} and \code{relative.to} are equivalent, \string{.} will be
   returned. If \code{path} and \code{relative.to} have no base in common, the
-  \code{\link[base:normalizePath]{normalized}} \code{path} will be returned.
+  \ifelse{html}{\code{\link[base:normalizePath]{normalized}}}{normalized}
+  \code{path} will be returned.
 }
 \value{
   character vector of the same length as \code{path}.
@@ -38,11 +39,11 @@ rel2here(path)
 \dontrun{
 relpath(
     c(
-        # paths which are equivalent will return "."
+        ## paths which are equivalent will return "."
         "/home/effective_user/Documents/this.path/man",
 
 
-        # paths which have no base in common return as themselves
+        ## paths which have no base in common return as themselves
         paste0("https://raw.githubusercontent.com/ArcadeAntics/",
                "this.path/main/tests/this.path_w_URLs.R"),
         "//host-name/share-name/path/to/file",
@@ -62,11 +63,11 @@ relpath(
 \dontrun{
 relpath(
     c(
-        # paths which are equivalent will return "."
+        ## paths which are equivalent will return "."
         "C:/Users/effective_user/Documents/this.path/man",
 
 
-        # paths which have no base in common return as themselves
+        ## paths which have no base in common return as themselves
         paste0("https://raw.githubusercontent.com/ArcadeAntics/",
                "this.path/main/tests/this.path_w_URLs.R"),
         "D:/",

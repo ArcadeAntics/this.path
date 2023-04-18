@@ -143,10 +143,10 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"thispathinaquaerror"                     , (DL_FUNC) &do_thispathinaquaerror                     , 1},
 
     {"isclipboard"     , (DL_FUNC) &do_isclipboard     ,  1},
-    {"thispath"        , (DL_FUNC) &do_thispath        ,  5},
-    {"localpath"       , (DL_FUNC) &do_localpath       ,  3},
+    {"thispath"        , (DL_FUNC) &do_thispath        , -1},
+    {"getframenumber"  , (DL_FUNC) &do_getframenumber  ,  0},
     {"inittoolsrstudio", (DL_FUNC) &do_inittoolsrstudio, -1},
-    {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  6},
+    {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  7},
 
 
     /* utils.c */

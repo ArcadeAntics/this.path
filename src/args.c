@@ -24,7 +24,7 @@ SEXP do_asargs do_formals
      */
 
 
-    do_start("asargs", -1);
+    do_start_no_op("asargs", -1);
 
 
     int nprotect = 0;
@@ -42,7 +42,10 @@ SEXP do_asargs do_formals
         if (n == NA_INTEGER || n < 0)
             errorcall(call, _("argument must be coercible to non-negative integer"));
     }
-    else errorcall(call, wrong_nargs_to_External(nargs, "C_asargs", "0 or 1"));
+    else {
+        errorcall(call, wrong_nargs_to_External(nargs, "C_asargs", "0 or 1"));
+        return R_NilValue;
+    }
 
 
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);

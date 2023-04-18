@@ -16,6 +16,11 @@
         #if !defined(R_CONNECTIONS_VERSION)
         #elif R_CONNECTIONS_VERSION == 1
             #define R_CONNECTIONS_VERSION_1
+            /* R_GetConnection() is not part of the R API. it should not be
+               used unless you are fully aware of what you are doing. it is
+               subject to change without notice nor back-compatibility.
+               currently, this is only used in the development version of the
+               package; the release version on CRAN does not use this. */
             extern Rconnection R_GetConnection(SEXP sConn);
         #endif
     #endif
@@ -26,17 +31,23 @@
 
 
 #if R_version_less_than(3, 1, 0)
+
+
 #if R_version_less_than(3, 0, 0)
 #define NAMEDMAX 2
 #define NO_REFERENCES(x) (NAMED(x) == 0)
 #define MAYBE_REFERENCED(x) (! NO_REFERENCES(x))
 #define MARK_NOT_MUTABLE(x) SET_NAMED(x, NAMEDMAX)
 #endif
+
+
 #define INCREMENT_NAMED(x) do {                                \
     SEXP _x_ = (x);                                            \
     if (NAMED(_x_) != NAMEDMAX)                                \
         SET_NAMED(_x_, NAMED(_x_) + 1);                        \
 } while (0)
+
+
 #endif
 
 
@@ -52,6 +63,10 @@ void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
 
 
 #if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
+/* R_Visible is not part of the R API. DO NOT USE OR MODIFY IT unless you are
+   absolutely certain it is what you wish to do. it is subject to change
+   without notice nor back-compatibility. only the development version of this
+   package uses this variable. */
 extern Rboolean R_Visible;
 #define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
 #else
@@ -66,7 +81,7 @@ extern SEXP installTrChar(SEXP x);
 #define streql(str1, str2) (strcmp((str1), (str2)) == 0)
 
 
-extern SEXP findFun3(SEXP symbol, SEXP rho, SEXP call);
+extern SEXP findFunction(SEXP symbol, SEXP rho, SEXP call);
 extern Rboolean pmatch(SEXP, SEXP, Rboolean);
 
 
@@ -78,7 +93,7 @@ extern void SET_PRVALUE(SEXP x, SEXP v);
 
 // extern int IS_BYTES(SEXP x);
 #define IS_BYTES(x) (getCharCE((x)) == CE_BYTES)
-extern int IS_LATIN1(SEXP x);
+// extern int IS_LATIN1(SEXP x);
 extern int IS_ASCII(SEXP x);
 
 
@@ -101,14 +116,6 @@ extern int IS_UTF8(SEXP x);
 #else
 #define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
 #endif
-
-
-extern int ENC_KNOWN(SEXP x);
-extern int SET_CACHED(SEXP x);
-extern int IS_CACHED(SEXP x);
-
-
-extern SEXP R_getNSValue(SEXP call, SEXP ns, SEXP name, int exported);
 
 
 extern const char *EncodeChar(SEXP x);
@@ -210,6 +217,9 @@ typedef struct gzconn {
     Rconnection con;
 } *Rgzconn;
 #define get_description_and_class                              \
+            /* as I said before, R_GetConnection() is not a part of the R API.\
+               DO NOT USE IT unless you are certain of what you are doing and\
+               accept the potential consequences and drawbacks */\
             Rconnection Rcon = R_GetConnection(ofile);         \
             if (Rcon->isGzcon) {                               \
                 Rcon = (((Rgzconn)(Rcon->private))->con);      \
@@ -228,6 +238,10 @@ typedef struct gzconn {
 #endif
 
 
+/* it is undesirable to have this as a #define but we also cannot
+   evaluate all the arguments. used in thispath(), do_wrapsource(), and
+   insidesource()
+ */
 #define checkfile(call, sym, ofile, frame, check_not_directory,\
     forcepromise, assign_returnvalue,                          \
     maybe_chdir, getowd, hasowd,                               \
@@ -238,7 +252,7 @@ typedef struct gzconn {
     allow_servsockconn, allow_customConnection,                \
     ignore_blank_string, ignore_clipboard, ignore_stdin,       \
     ignore_url, ignore_file_uri)                               \
-{                                                              \
+do {                                                           \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
@@ -445,8 +459,8 @@ typedef struct gzconn {
         }                                                      \
         if (assign_returnvalue) returnvalue = PROTECT(ofile);  \
     }                                                          \
-    set_R_Visible(1);                                          \
-}
+    set_R_Visible(TRUE);                                       \
+} while (0)
 
 
 #define sys_call(which, rho) eval(lang2(sys_callSymbol, (which)), (rho))

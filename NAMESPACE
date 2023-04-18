@@ -1,86 +1,86 @@
 useDynLib(this.path, .registration = TRUE, .fixes = "C_")
 
 
-# all.char.R                 ----
+# all.char.R                   ----
 
 
 export(Sys.putenv)
 
 
-# Args.R                     ----
+# Args.R                       ----
 
 
 export(asArgs  , fileArgs, progArgs, withArgs)
 
 
-# basename2.R                ----
+# basename2.R                  ----
 
 
 export(basename2, dirname2 )
 
 
-# check.path.R               ----
+# check.path.R                 ----
 
 
 export(check.path, check.dir , check.proj)
 
 
-# ext.R                      ----
+# ext.R                        ----
 
 
 export(splitext , removeext, ext      , "ext<-"  )
 
 
-# from.shell.R               ----
+# from.shell.R                 ----
 
 
 export(from.shell, is.main   )
 
 
-# hooks-for-namespace-events ----
+# hooks-for-namespace-events.R ----
 
 
 export(OS.type)
 
 
-# LINENO.R                   ----
+# LINENO.R                     ----
 
 
 export(LINENO)
 
 
-# path.join.R                ----
+# path.join.R                  ----
 
 
 export(path.join)
 
 
-# path.split.R               ----
+# path.split.R                 ----
 
 
 export(path.split  , path.split.1, path.unsplit)
 
 
-# promises.R                 ----
+# promises.R                   ----
 
 
 export(initwd   , getinitwd)
 
 
-# relpath.R                  ----
+# relpath.R                    ----
 
 
 export(as.relative.path, as.rel.path     , rel2here        ,
        relpath         )
 
 
-# rprojroot.R                ----
+# rprojroot.R                  ----
 
 
 export(this.proj      , reset.this.proj)
 
 
-# this.path.R                ----
+# this.path.R                  ----
 
 
 export(shFILE               , normalized.shFILE    ,
@@ -93,13 +93,13 @@ export(shFILE               , normalized.shFILE    ,
        local.path           )
 
 
-# tryCatch2.R                ----
+# tryCatch2.R                  ----
 
 
 export(tryCatch2)
 
 
-# wrapsource.R               ----
+# wrapsource.R                 ----
 
 
 export(wrap.source    , inside.source  , set.this.path  ,

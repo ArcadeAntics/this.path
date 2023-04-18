@@ -18,10 +18,10 @@ LINENO <- function ()
 {
     failure <- TRUE
     tryCatch({
-        cntxt.number <- get.frame.number()
+        cntxt.number <- .External2(C_getframenumber)
         if (cntxt.number == 0L)
             return(NA_integer_)
-        path <- .this.path()
+        path <- .External2(C_thispath)
         failure <- FALSE
     }, error = function(e) NULL)
     if (failure)

@@ -2,26 +2,35 @@
 #include "drivewidth.h"
 
 
+#if R_version_less_than(3, 0, 0)
+#define XLENGTH LENGTH
+#endif
+
+
 #define errorbody                                              \
     if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||      \
         STRING_ELT(CAR(args), 0) == NA_STRING)                 \
     {                                                          \
         errorcall(call, _("invalid first argument"));          \
     }                                                          \
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0)); args = CDR(args);                                          \
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0)); args = CDR(args);\
     SEXP call2 = CAR(args); args = CDR(args);                  \
     ENSURE_NAMEDMAX(call2)
 
 
 SEXP do_thispathunrecognizedconnectionclasserror do_formals
 {
-    do_start("thispathunrecognizedconnectionclasserror", 2);
+    do_start_no_call_op_rho("thispathunrecognizedconnectionclasserror", 2);
 
 
     SEXP call2 = CAR(args); args = CDR(args);
     ENSURE_NAMEDMAX(call2);
 #if defined(R_CONNECTIONS_VERSION_1)
-    return thisPathUnrecognizedConnectionClassError(call2, R_GetConnection(CAR(args)));
+    return thisPathUnrecognizedConnectionClassError(call2,
+        /* as I said before, R_GetConnection() is not a part of the R API.
+           DO NOT USE IT unless you are certain of what you are doing and
+           accept the potential consequences and drawbacks */
+        R_GetConnection(CAR(args)));
 #else
     return thisPathUnrecognizedConnectionClassError(call2, summaryconnection(CAR(args)));
 #endif
@@ -30,18 +39,17 @@ SEXP do_thispathunrecognizedconnectionclasserror do_formals
 
 SEXP do_thispathunrecognizedmannererror do_formals
 {
-    do_start("thispathunrecognizedmannererror", 1);
+    do_start_no_call_op_rho("thispathunrecognizedmannererror", 1);
 
 
-    op = CAR(args);
-    ENSURE_NAMEDMAX(op);
-    return thisPathUnrecognizedMannerError(op);
+    ENSURE_NAMEDMAX(CAR(args));
+    return thisPathUnrecognizedMannerError(CAR(args));
 }
 
 
 SEXP do_thispathnotimplementederror do_formals
 {
-    do_start("thispathnotimplementederror", 2);
+    do_start_no_op_rho("thispathnotimplementederror", 2);
 
 
     errorbody;
@@ -51,7 +59,7 @@ SEXP do_thispathnotimplementederror do_formals
 
 SEXP do_thispathnotexistserror do_formals
 {
-    do_start("thispathnotexistserror", 2);
+    do_start_no_op_rho("thispathnotexistserror", 2);
 
 
     errorbody;
@@ -61,7 +69,7 @@ SEXP do_thispathnotexistserror do_formals
 
 SEXP do_thispathinzipfileerror do_formals
 {
-    do_start("thispathinzipfileerror", 2);
+    do_start_no_op_rho("thispathinzipfileerror", 2);
 
 
     SEXP call2 = CAR(args); args = CDR(args);
@@ -77,7 +85,7 @@ SEXP do_thispathinzipfileerror do_formals
 
 SEXP do_thispathinaquaerror do_formals
 {
-    do_start("thispathinaquaerror", 1);
+    do_start_no_call_op_rho("thispathinaquaerror", 1);
 
 
     return thisPathInAQUAError(lazy_duplicate(CAR(args)));
@@ -89,7 +97,7 @@ SEXP do_thispathinaquaerror do_formals
 
 SEXP do_isclipboard do_formals
 {
-    do_start("isclipboard", 1);
+    do_start_no_call_op_rho("isclipboard", 1);
 
 
     SEXP file = CAR(args);
@@ -109,57 +117,108 @@ SEXP do_isclipboard do_formals
 }
 
 
-SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
-    Rboolean get_frame_number, Rboolean local, SEXP rho)
+SEXP _thispath(Rboolean verbose         , Rboolean original        ,
+               Rboolean for_msg         , Rboolean get_frame_number,
+               Rboolean local           , Rboolean contents        ,
+               int N                    , SEXP rho                 )
 {
     if (verbose == NA_LOGICAL)
         error(_("invalid '%s' value"), "verbose");
+    /* original is allowed to be NA */
     if (for_msg == NA_LOGICAL)
         error(_("invalid '%s' value"), "for.msg");
-    if (N == NA_INTEGER || N < 0)
-        error(_("invalid '%s' argument"), "N");
     if (get_frame_number == NA_LOGICAL)
         error(_("invalid '%s' value"), "get.frame.number");
     if (local == NA_LOGICAL)
         error(_("invalid '%s' value"), "local");
+    if (contents == NA_LOGICAL)
+        error(_("invalid '%s' value"), "contents");
+
+
+    if (N == NA_INTEGER || N < 0)
+        error(_("invalid '%s' argument"), "N");
+
+
+#define one   "'%s' must be FALSE when '%s' is TRUE"
+#define two   "'%s' and '%s' must be FALSE when '%s' is TRUE"
+#define three "'%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
+#define four  "'%s', '%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
 
 
     if (get_frame_number) {
         if (original) {
             if (for_msg) {
-                if (local)
-                    error("'%s', '%s', and '%s' must be FALSE when '%s' is TRUE",
-                          "original", "for.msg", "local", "get.frame.number");
-                else
-                    error("'%s' and '%s' must be FALSE when '%s' is TRUE",
-                          "original", "for.msg", "get.frame.number");
+                if (contents) {
+                    if (local)
+                        error(four, "original", "for.msg", "contents", "local", "get.frame.number");
+                    else
+                        error(three, "original", "for.msg", "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(three, "original", "for.msg", "local", "get.frame.number");
+                    else
+                        error(two, "original", "for.msg", "get.frame.number");
+                }
             }
             else {
-                if (local)
-                    error("'%s' and '%s' must be FALSE when '%s' is TRUE",
-                          "original", "local", "get.frame.number");
-                else
-                    error("'%s' must be FALSE when '%s' is TRUE",
-                          "original", "get.frame.number");
+                if (contents) {
+                    if (local)
+                        error(three, "original", "contents", "local", "get.frame.number");
+                    else
+                        error(two, "original", "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(two, "original", "local", "get.frame.number");
+                    else
+                        error(one, "original", "get.frame.number");
+                }
             }
         }
         else {
             if (for_msg) {
-                if (local)
-                    error("'%s' and '%s' must be FALSE when '%s' is TRUE",
-                          "for.msg", "local", "get.frame.number");
-                else
-                    error("'%s' must be FALSE when '%s' is TRUE",
-                          "for.msg", "get.frame.number");
+                if (contents) {
+                    if (local)
+                        error(three "for.msg", "contents", "local", "get.frame.number");
+                    else
+                        error(two, "for.msg", "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(two, "for.msg", "local", "get.frame.number");
+                    else
+                        error(one, "for.msg", "get.frame.number");
+                }
             }
             else {
-                if (local)
-                    error("'%s' must be FALSE when '%s' is TRUE",
-                          "local", "get.frame.number");
-                else;
+                if (contents) {
+                    if (local)
+                        error(two, "contents", "local", "get.frame.number");
+                    else
+                        error(one, "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(one, "local", "get.frame.number");
+                    else
+                        ;
+                }
             }
         }
     }
+
+
+    if (contents) {
+        if (original)
+            error(one, "original", "contents");
+    }
+
+
+#undef four
+#undef three
+#undef two
+#undef one
 
 
     SEXP returnthis = NULL;
@@ -169,31 +228,31 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
     if (local) {
-        const char *name = "local.path";
+        const char *name = "this.path(local = TRUE)";
 
 
-        if (N <= 0) error("%s() cannot be used within the global environment", name);
+        if (N <= 0) error("%s cannot be used within the global environment", name);
         SEXP frame = eval(lang1(parent_frameSymbol), rho);
         PROTECT(frame);
 
 
         /* ensure 'inside.source()' isn't evaluated in an invalid environment */
         if (frame == R_GlobalEnv)
-            error("%s() cannot be used within the global environment", name);
+            error("%s cannot be used within the global environment", name);
         else if (frame == R_BaseEnv)
-            error("%s() cannot be used within the base environment", name);
+            error("%s cannot be used within the base environment", name);
         else if (frame == R_EmptyEnv)
-            error("%s() cannot be used within the empty environment", name);
+            error("%s cannot be used within the empty environment", name);
         else if (R_IsPackageEnv(frame))
-            error("%s() cannot be used within a package environment", name);
+            error("%s cannot be used within a package environment", name);
         else if (R_IsNamespaceEnv(frame))
-            error("%s() cannot be used within a namespace environment", name);
+            error("%s cannot be used within a namespace environment", name);
 
 
         if (findVarInFrame(frame, insidesourcewashereSymbol) == R_UnboundValue)
-            error("%s() cannot be called within this environment", name);
+            error("%s cannot be called within this environment", name);
         if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
-            error("%s() cannot be called within this environment", name);
+            error("%s cannot be called within this environment", name);
 
 
         UNPROTECT(1);  /* frame */
@@ -201,27 +260,38 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
         SEXP function = eval(PROTECT(lang2(sys_functionSymbol, ScalarInteger(N))), rho);
         if (TYPEOF(function) != CLOSXP)
-            error("%s() cannot be used within a '%s', possible errors with eval?",
-                  "local.path", type2char(TYPEOF(function)));
+            error("%s cannot be used within a '%s', possible errors with eval?",
+                  name, type2char(TYPEOF(function)));
         UNPROTECT(1);
     }
+
+
+    // Rprintf("\nverbose: %s\noriginal: %s\nfor.msg: %s\nget.frame.number: %s\nlocal: %s\ncontents: %s\nN: %d\n",
+    //         (verbose          == NA_LOGICAL) ? "NA" : (verbose          ? "TRUE" : "FALSE"),
+    //         (original         == NA_LOGICAL) ? "NA" : (original         ? "TRUE" : "FALSE"),
+    //         (for_msg          == NA_LOGICAL) ? "NA" : (for_msg          ? "TRUE" : "FALSE"),
+    //         (get_frame_number == NA_LOGICAL) ? "NA" : (get_frame_number ? "TRUE" : "FALSE"),
+    //         (local            == NA_LOGICAL) ? "NA" : (local            ? "TRUE" : "FALSE"),
+    //         (contents         == NA_LOGICAL) ? "NA" : (contents         ? "TRUE" : "FALSE"),
+    //         N);
 
 
     if (N <= 0) {
 
 
 #define toplevel                                               \
-        if (local) error("%s() cannot be used within the global environment", "local.path");\
         if (get_frame_number) return ScalarInteger(0);         \
         SEXP expr;                                             \
-        if (for_msg)                                           \
+        if (contents)                                          \
+            expr = lang5(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original), ScalarLogical(for_msg), ScalarLogical(contents));\
+        else if (for_msg)                                      \
             expr = lang4(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original), ScalarLogical(for_msg));\
         else if (original)                                     \
             expr = lang3(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original));\
         else if (verbose)                                      \
             expr = lang2(_this_path_toplevelSymbol, ScalarLogical(verbose));\
         else                                                   \
-            expr = lang1(_this_path_toplevelSymbol);            \
+            expr = lang1(_this_path_toplevelSymbol);           \
         PROTECT(expr);                                         \
         returnthis = eval(expr, mynamespace);                  \
         UNPROTECT(1);                                          \
@@ -232,11 +302,8 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
     }
 
 
-    SEXP thispathofile ,
-         thispathfile  ,
-         thispathformsg,
-         thispatherror ,
-         insidesourcewashere;
+    SEXP thispathofile      , thispathfile       , thispathformsg     ,
+         thispatherror      , insidesourcewashere;
 
 
     int nprotect = 0;
@@ -288,7 +355,6 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
     SEXP ofile;
 
 
-    if (local) INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarLogical(for_msg), rho);
     int to = ((local) ? N : 1);
 
 
@@ -304,8 +370,8 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
         if (identical(function, source)) {
             if (local)
-                error("%s() cannot be called within %s()",
-                      "local.path", EncodeChar(PRINTNAME(sourceSymbol)));
+                error("%s cannot be called within %s()",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(sourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, ofileSymbol);
                 if (ofile == R_UnboundValue) {
@@ -319,37 +385,37 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ ofileSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ FALSE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ TRUE,
-                    /* SEXP getowd                = */ findVarInFrame(frame, owdSymbol),
-                    /* int hasowd                 = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                    /* int character_only         = */ FALSE,
-                    /* int conv2utf8              = */ FALSE,
-                    /* int allow_blank_string     = */ FALSE,
-                    /* int allow_clipboard        = */ TRUE,
-                    /* int allow_stdin            = */ TRUE,
-                    /* int allow_url              = */ TRUE,
-                    /* int allow_file_uri         = */ TRUE,
-                    /* int allow_unz              = */ TRUE,
-                    /* int allow_pipe             = */ TRUE,
-                    /* int allow_terminal         = */ TRUE,
-                    /* int allow_textConnection   = */ TRUE,
-                    /* int allow_rawConnection    = */ TRUE,
-                    /* int allow_sockconn         = */ TRUE,
-                    /* int allow_servsockconn     = */ TRUE,
-                    /* int allow_customConnection = */ TRUE,
-                    /* int ignore_blank_string    = */ FALSE,
-                    /* int ignore_clipboard       = */ FALSE,
-                    /* int ignore_stdin           = */ FALSE,
-                    /* int ignore_url             = */ FALSE,
-                    /* int ignore_file_uri        = */ FALSE
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ ofileSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ findVarInFrame(frame, owdSymbol),
+                    /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* character_only         */ FALSE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ TRUE,
+                    /* allow_stdin            */ TRUE,
+                    /* allow_url              */ TRUE,
+                    /* allow_file_uri         */ TRUE,
+                    /* allow_unz              */ TRUE,
+                    /* allow_pipe             */ TRUE,
+                    /* allow_terminal         */ TRUE,
+                    /* allow_textConnection   */ TRUE,
+                    /* allow_rawConnection    */ TRUE,
+                    /* allow_sockconn         */ TRUE,
+                    /* allow_servsockconn     */ TRUE,
+                    /* allow_customConnection */ TRUE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
             }
 
 
@@ -371,6 +437,10 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 /* if there is an error which needs to be thrown */\
                 if (thispatherror != R_UnboundValue) {         \
                     if (for_msg) {                             \
+                        if (contents) {                        \
+                            UNPROTECT(nprotect + nprotect_loop);\
+                            return ScalarString(NA_STRING);    \
+                        }                                      \
                         thispathformsg = findVarInFrame(frame, thispathformsgSymbol);\
                         if (thispathformsg == R_UnboundValue)  \
                             error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));\
@@ -384,10 +454,6 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                         return (which);                        \
                     }                                          \
                     else {                                     \
-                        if (local) {                           \
-                            UNPROTECT(nprotect + nprotect_loop);\
-                            return ScalarString(NA_STRING);    \
-                        }                                      \
                         thispatherror = duplicate(thispatherror);\
                         PROTECT(thispatherror);                \
                         SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));\
@@ -465,20 +531,19 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
             returnfile(
-                /* int character_only         = */ FALSE,
-                /* int file_only              = */ FALSE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ FALSE,
-                /* const char *fun_name       = */
-                "source"
+                /* character_only         */ FALSE,
+                /* file_only              */ FALSE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ FALSE,
+                /* fun_name               */ "source"
             );
         }
 
 
         else if (identical(function, sys_source)) {
             if (local)
-                error("%s() cannot be called within %s()",
-                      "local.path", EncodeChar(PRINTNAME(sys_sourceSymbol)));
+                error("%s cannot be called within %s()",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(sys_sourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -495,53 +560,52 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ fileSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ FALSE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ TRUE,
-                    /* SEXP getowd                = */ findVarInFrame(frame, owdSymbol),
-                    /* int hasowd                 = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                    /* int character_only         = */ TRUE,
-                    /* int conv2utf8              = */ FALSE,
-                    /* int allow_blank_string     = */ FALSE,
-                    /* int allow_clipboard        = */ FALSE,
-                    /* int allow_stdin            = */ FALSE,
-                    /* int allow_url              = */ FALSE,
-                    /* int allow_file_uri         = */ FALSE,
-                    /* int allow_unz              = */ FALSE,
-                    /* int allow_pipe             = */ FALSE,
-                    /* int allow_terminal         = */ FALSE,
-                    /* int allow_textConnection   = */ FALSE,
-                    /* int allow_rawConnection    = */ FALSE,
-                    /* int allow_sockconn         = */ FALSE,
-                    /* int allow_servsockconn     = */ FALSE,
-                    /* int allow_customConnection = */ FALSE,
-                    /* int ignore_blank_string    = */ FALSE,
-                    /* int ignore_clipboard       = */ FALSE,
-                    /* int ignore_stdin           = */ FALSE,
-                    /* int ignore_url             = */ FALSE,
-                    /* int ignore_file_uri        = */ FALSE
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ fileSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ findVarInFrame(frame, owdSymbol),
+                    /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
             }
             returnfile(
-                /* int character_only         = */ TRUE,
-                /* int file_only              = */ TRUE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ FALSE,
-                /* const char *fun_name       = */
-                "sys.source"
+                /* character_only         */ TRUE,
+                /* file_only              */ TRUE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ FALSE,
+                /* fun_name               */ "sys.source"
             );
         }
 
 
         else if (has_tools_rstudio && identical(function, debugSource)) {
             if (local)
-                error("%s() cannot be called within %s() in RStudio",
-                      "local.path", EncodeChar(PRINTNAME(debugSourceSymbol)));
+                error("%s cannot be called within %s() in RStudio",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(debugSourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
@@ -558,53 +622,52 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ fileNameSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ FALSE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ FALSE,
-                    /* SEXP getowd                = */ NULL,
-                    /* int hasowd                 = */ FALSE,
-                    /* int character_only         = */ TRUE,
-                    /* int conv2utf8              = */ TRUE,
-                    /* int allow_blank_string     = */ TRUE,
-                    /* int allow_clipboard        = */ TRUE,
-                    /* int allow_stdin            = */ TRUE,
-                    /* int allow_url              = */ TRUE,
-                    /* int allow_file_uri         = */ TRUE,
-                    /* int allow_unz              = */ FALSE,
-                    /* int allow_pipe             = */ FALSE,
-                    /* int allow_terminal         = */ FALSE,
-                    /* int allow_textConnection   = */ FALSE,
-                    /* int allow_rawConnection    = */ FALSE,
-                    /* int allow_sockconn         = */ FALSE,
-                    /* int allow_servsockconn     = */ FALSE,
-                    /* int allow_customConnection = */ FALSE,
-                    /* int ignore_blank_string    = */ FALSE,
-                    /* int ignore_clipboard       = */ FALSE,
-                    /* int ignore_stdin           = */ FALSE,
-                    /* int ignore_url             = */ FALSE,
-                    /* int ignore_file_uri        = */ FALSE
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ fileNameSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ FALSE,
+                    /* getowd                 */ NULL,
+                    /* hasowd                 */ FALSE,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ TRUE,
+                    /* allow_blank_string     */ TRUE,
+                    /* allow_clipboard        */ TRUE,
+                    /* allow_stdin            */ TRUE,
+                    /* allow_url              */ TRUE,
+                    /* allow_file_uri         */ TRUE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
             }
             returnfile(
-                /* int character_only         = */ TRUE,
-                /* int file_only              = */ FALSE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ FALSE,
-                /* const char *fun_name       = */
-                "debugSource in RStudio"
+                /* character_only         */ TRUE,
+                /* file_only              */ FALSE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ FALSE,
+                /* fun_name               */ "debugSource in RStudio"
             );
         }
 
 
         else if (testthat_loaded && identical(function, source_file)) {
             if (local)
-                error("%s() cannot be called within %s() from package %s",
-                      "local.path", EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
+                error("%s cannot be called within %s() from package %s",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
@@ -622,53 +685,52 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 }
                 int ignore_all = asLogical(eval(lang1(testthat_uses_brioSymbol), mynamespace));
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ pathSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ FALSE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ TRUE,
-                    /* SEXP getowd                = */ findVarInFrame(frame, old_dirSymbol),
-                    /* int hasowd                 = */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                    /* int character_only         = */ TRUE,
-                    /* int conv2utf8              = */ FALSE,
-                    /* int allow_blank_string     = */ FALSE,
-                    /* int allow_clipboard        = */ FALSE,
-                    /* int allow_stdin            = */ FALSE,
-                    /* int allow_url              = */ FALSE,
-                    /* int allow_file_uri         = */ FALSE,
-                    /* int allow_unz              = */ FALSE,
-                    /* int allow_pipe             = */ FALSE,
-                    /* int allow_terminal         = */ FALSE,
-                    /* int allow_textConnection   = */ FALSE,
-                    /* int allow_rawConnection    = */ FALSE,
-                    /* int allow_sockconn         = */ FALSE,
-                    /* int allow_servsockconn     = */ FALSE,
-                    /* int allow_customConnection = */ FALSE,
-                    /* int ignore_blank_string    = */ ignore_all,
-                    /* int ignore_clipboard       = */ ignore_all,
-                    /* int ignore_stdin           = */ ignore_all,
-                    /* int ignore_url             = */ ignore_all,
-                    /* int ignore_file_uri        = */ ignore_all
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ pathSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ findVarInFrame(frame, old_dirSymbol),
+                    /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ ignore_all,
+                    /* ignore_clipboard       */ ignore_all,
+                    /* ignore_stdin           */ ignore_all,
+                    /* ignore_url             */ ignore_all,
+                    /* ignore_file_uri        */ ignore_all
+                );
             }
             returnfile(
-                /* int character_only         = */ TRUE,
-                /* int file_only              = */ TRUE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ FALSE,
-                /* const char *fun_name       = */
-                "source_file from package testthat"
+                /* character_only         */ TRUE,
+                /* file_only              */ TRUE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ FALSE,
+                /* fun_name               */ "source_file from package testthat"
             );
         }
 
 
         else if (knitr_loaded && identical(function, knit)) {
             if (local)
-                error("%s() cannot be called within %s() from package %s",
-                      "local.path", EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
+                error("%s cannot be called within %s() from package %s",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
                     UNPROTECT(nprotect_loop);
@@ -686,72 +748,70 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 }
                 ofile = getInFrame(inputSymbol, frame, FALSE);
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ inputSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ FALSE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ TRUE,
-                    /* SEXP getowd                = */ eval(lang1(knitr_output_dirSymbol), mynamespace),
-                    /* int hasowd                 = */ ((owd) != R_NilValue),
-                    /* int character_only         = */ FALSE,
-                    /* int conv2utf8              = */ FALSE,
-                    /* int allow_blank_string     = */ FALSE,
-                    /* int allow_clipboard        = */ TRUE,
-                    /* int allow_stdin            = */ TRUE,
-                    /* int allow_url              = */ TRUE,
-                    /* int allow_file_uri         = */ TRUE,
-                    /* int allow_unz              = */ TRUE,
-                    /* int allow_pipe             = */ TRUE,
-                    /* int allow_terminal         = */ TRUE,
-                    /* int allow_textConnection   = */ TRUE,
-                    /* int allow_rawConnection    = */ TRUE,
-                    /* int allow_sockconn         = */ TRUE,
-                    /* int allow_servsockconn     = */ TRUE,
-                    /* int allow_customConnection = */ TRUE,
-                    /* int ignore_blank_string    = */ FALSE,
-                    /* int ignore_clipboard       = */ FALSE,
-                    /* int ignore_stdin           = */ FALSE,
-                    /* int ignore_url             = */ FALSE,
-                    /* int ignore_file_uri        = */ FALSE
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ inputSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ eval(lang1(knitr_output_dirSymbol), mynamespace),
+                    /* hasowd                 */ ((owd) != R_NilValue),
+                    /* character_only         */ FALSE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ TRUE,
+                    /* allow_stdin            */ TRUE,
+                    /* allow_url              */ TRUE,
+                    /* allow_file_uri         */ TRUE,
+                    /* allow_unz              */ TRUE,
+                    /* allow_pipe             */ TRUE,
+                    /* allow_terminal         */ TRUE,
+                    /* allow_textConnection   */ TRUE,
+                    /* allow_rawConnection    */ TRUE,
+                    /* allow_sockconn         */ TRUE,
+                    /* allow_servsockconn     */ TRUE,
+                    /* allow_customConnection */ TRUE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
             }
             returnfile(
-                /* int character_only         = */ FALSE,
-                /* int file_only              = */ FALSE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ FALSE,
-                /* const char *fun_name       = */
-                "knit from package knitr"
+                /* character_only         */ FALSE,
+                /* file_only              */ FALSE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ FALSE,
+                /* fun_name               */ "knit from package knitr"
             );
         }
 
 
         else if (identical(function, wrap_source)) {
             if (local)
-                error("%s() cannot be called within %s() from package %s",
-                      "local.path", EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
+                error("%s cannot be called within %s() from package %s",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 UNPROTECT(nprotect_loop);
                 continue;
             }
             returnfile(
-                /* int character_only         = */ FALSE,
-                /* int file_only              = */ FALSE,
-                /* SEXP which                 = */ getInFrame(thispathnSymbol, frame, FALSE),
-                /* int promise_must_be_forced = */ TRUE,
-                /* const char *fun_name       = */
-                "wrap.source from package this.path"
+                /* character_only         */ FALSE,
+                /* file_only              */ FALSE,
+                /* which                  */ getInFrame(thispathnSymbol, frame, FALSE),
+                /* promise_must_be_forced */ TRUE,
+                /* fun_name               */ "wrap.source from package this.path"
             );
         }
 
 
         else if (box_loaded && identical(function, load_from_source)) {
             if (local)
-                error("%s() cannot be called within %s() from package %s",
-                      "local.path", EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
+                error("%s cannot be called within %s() from package %s",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 /* info$source_path */
                 SEXP expr = lang3(R_DollarSymbol, infoSymbol, source_pathSymbol);
@@ -760,46 +820,45 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 UNPROTECT(1);  /* expr */
                 PROTECT(ofile);
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ info_source_pathSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ TRUE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ FALSE,
-                    /* SEXP getowd                = */ NULL,
-                    /* int hasowd                 = */ FALSE,
-                    /* int character_only         = */ TRUE,
-                    /* int conv2utf8              = */ FALSE,
-                    /* int allow_blank_string     = */ FALSE,
-                    /* int allow_clipboard        = */ FALSE,
-                    /* int allow_stdin            = */ FALSE,
-                    /* int allow_url              = */ FALSE,
-                    /* int allow_file_uri         = */ FALSE,
-                    /* int allow_unz              = */ FALSE,
-                    /* int allow_pipe             = */ FALSE,
-                    /* int allow_terminal         = */ FALSE,
-                    /* int allow_textConnection   = */ FALSE,
-                    /* int allow_rawConnection    = */ FALSE,
-                    /* int allow_sockconn         = */ FALSE,
-                    /* int allow_servsockconn     = */ FALSE,
-                    /* int allow_customConnection = */ FALSE,
-                    /* int ignore_blank_string    = */ FALSE,
-                    /* int ignore_clipboard       = */ FALSE,
-                    /* int ignore_stdin           = */ FALSE,
-                    /* int ignore_url             = */ FALSE,
-                    /* int ignore_file_uri        = */ FALSE
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ info_source_pathSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ TRUE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ FALSE,
+                    /* getowd                 */ NULL,
+                    /* hasowd                 */ FALSE,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
                 UNPROTECT(1);  /* ofile */
             }
             returnfile(
-                /* int character_only         = */ TRUE,
-                /* int file_only              = */ TRUE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ TRUE,
-                /* const char *fun_name       = */
-                "load_from_source from package box"
+                /* character_only         */ TRUE,
+                /* file_only              */ TRUE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ TRUE,
+                /* fun_name               */ "load_from_source from package box"
             );
         }
 
@@ -807,8 +866,8 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
         else if (compiler_loaded && identical(function, loadcmp)) {
             /* much the same as sys.source() */
             if (local)
-                error("%s() cannot be called within %s() from package %s",
-                      "local.path", EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+                error("%s cannot be called within %s() from package %s",
+                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -825,50 +884,50 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                         ofile = PRVALUE(ofile);
                 }
                 checkfile(
-                    /* SEXP call                  = */ sys_call(which, rho),
-                    /* SEXP sym                   = */ fileSymbol,
-                    /* SEXP ofile                 = */ ofile,
-                    /* SEXP frame                 = */ frame,
-                    /* int check_not_directory    = */ FALSE,
-                    /* int forcepromise           = */ FALSE,
-                    /* int assign_returnvalue     = */ FALSE,
-                    /* int maybe_chdir            = */ TRUE,
-                    /* SEXP getowd                = */ findVarInFrame(frame, owdSymbol),
-                    /* int hasowd                 = */ ((owd) != R_UnboundValue),
-                    /* int character_only         = */ TRUE,
-                    /* int conv2utf8              = */ FALSE,
-                    /* int allow_blank_string     = */ FALSE,
-                    /* int allow_clipboard        = */ FALSE,
-                    /* int allow_stdin            = */ FALSE,
-                    /* int allow_url              = */ FALSE,
-                    /* int allow_file_uri         = */ FALSE,
-                    /* int allow_unz              = */ FALSE,
-                    /* int allow_pipe             = */ FALSE,
-                    /* int allow_terminal         = */ FALSE,
-                    /* int allow_textConnection   = */ FALSE,
-                    /* int allow_rawConnection    = */ FALSE,
-                    /* int allow_sockconn         = */ FALSE,
-                    /* int allow_servsockconn     = */ FALSE,
-                    /* int allow_customConnection = */ FALSE,
-                    /* int ignore_blank_string    = */ FALSE,
-                    /* int ignore_clipboard       = */ FALSE,
-                    /* int ignore_stdin           = */ FALSE,
-                    /* int ignore_url             = */ FALSE,
-                    /* int ignore_file_uri        = */ FALSE
-                )
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ fileSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ findVarInFrame(frame, owdSymbol),
+                    /* hasowd                 */ ((owd) != R_UnboundValue),
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
             }
             returnfile(
-                /* int character_only         = */ TRUE,
-                /* int file_only              = */ TRUE,
-                /* SEXP which                 = */ which,
-                /* int promise_must_be_forced = */ FALSE,
-                /* const char *fun_name       = */
-                "loadcmp from package compiler"
+                /* character_only         */ TRUE,
+                /* file_only              */ TRUE,
+                /* which                  */ which,
+                /* promise_must_be_forced */ FALSE,
+                /* fun_name               */ "loadcmp from package compiler"
             );
         }
 
 
         else if ((insidesourcewashere = findVarInFrame(frame, insidesourcewashereSymbol)) != R_UnboundValue) {
+            // Rprintf("\nhere\n");
             if (insidesourcewashere == R_MissingArg) {
                 UNPROTECT(nprotect_loop);
                 continue;
@@ -882,11 +941,11 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
                 continue;
             }
             returnfile(
-                /* int character_only         = */ FALSE,
-                /* int file_only              = */ FALSE,
-                /* SEXP which                 = */ thispathn,
-                /* int promise_must_be_forced = */ TRUE,
-                /* const char *fun_name       = */ CHAR(insidesourcewashere)
+                /* character_only         */ FALSE,
+                /* file_only              */ FALSE,
+                /* which                  */ thispathn,
+                /* promise_must_be_forced */ TRUE,
+                /* fun_name               */ CHAR(insidesourcewashere)
             );
         }
 
@@ -896,6 +955,21 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 
 
     UNPROTECT(nprotect);
+
+
+    if (local) {
+        if (for_msg) return ScalarString(NA_STRING);
+        const char *msg = "no associated path";
+        SEXP call = getCurrentCall(rho);
+        PROTECT(call);
+        SEXP cond = thisPathNotExistsError(msg, call);
+        PROTECT(cond);
+        stop(cond);
+        UNPROTECT(2);
+        return R_NilValue;
+    }
+
+
     toplevel;
 
 
@@ -904,43 +978,126 @@ SEXP thispath(Rboolean verbose, Rboolean original, Rboolean for_msg, int N,
 }
 
 
-SEXP do_thispath do_formals
+SEXP thispath(Rboolean verbose         , Rboolean original        ,
+              Rboolean for_msg         , Rboolean get_frame_number,
+              Rboolean local           , Rboolean contents        ,
+              int N                    , SEXP rho                 )
 {
-    do_start("thispath", 5);
-
-
-    Rboolean verbose          = asLogical(CAR(args)); args = CDR(args);
-    Rboolean original         = asLogical(CAR(args)); args = CDR(args);
-    Rboolean for_msg          = asLogical(CAR(args)); args = CDR(args);
-    int      N                = asInteger(CAR(args)); args = CDR(args);
-    Rboolean get_frame_number = asLogical(CAR(args)); args = CDR(args);
-    Rboolean local            = FALSE;
-
-
-    return thispath(verbose, original, for_msg, N, get_frame_number, local, rho);
+    SEXP value = _thispath(verbose         , original        ,
+                           for_msg         , get_frame_number,
+                           local           , contents        ,
+                           N               , rho             );
+    if (!contents)
+        return value;
+    if (TYPEOF(value) == VECSXP) {
+        if (XLENGTH(value) == 1) {
+            SEXP names = getAttrib(value, R_NamesSymbol);
+            if (TYPEOF(names) == STRSXP && XLENGTH(names) == 1 && STRING_ELT(names, 0) == mkChar("contents")) {
+                value = VECTOR_ELT(value, 0);
+                if (TYPEOF(value) != STRSXP)
+                    error("internal error; invalid '%s' value", "_thispath()");
+            }
+        }
+        return value;
+    }
+    if (TYPEOF(value) == STRSXP) {
+        if (XLENGTH(value) != 1)
+            error("internal error; invalid '%s' value", "_thispath()");
+        if (STRING_ELT(value, 0) == NA_STRING)
+            return R_NilValue;
+        PROTECT(value);
+        SEXP expr = lang2(getContentsSymbol, value);
+        PROTECT(expr);
+        value = eval(expr, mynamespace);
+        UNPROTECT(2);
+        return value;
+    }
+    error("internal error; invalid '%s' value", "_thispath()");
+    return R_NilValue;
 }
 
 
-SEXP do_localpath do_formals
+SEXP do_thispath do_formals
 {
-    do_start("localpath", 3);
+    do_start_no_op("thispath", -1);
 
 
-    Rboolean verbose          = asLogical(CAR(args)); args = CDR(args);
-    Rboolean original         = asLogical(CAR(args)); args = CDR(args);
-    Rboolean for_msg          = asLogical(CAR(args)); args = CDR(args);
-    int      N                = get_sys_parent(1, rho);
-    Rboolean get_frame_number = FALSE;
-    Rboolean local            = TRUE;
+    Rboolean verbose         , original        , for_msg         ,
+             get_frame_number, local           , contents        ;
+    int N;
 
 
-    return thispath(verbose, original, for_msg, N, get_frame_number, local, rho);
+    switch (length(args)) {
+    case 0:
+        verbose          = FALSE;
+        original         = FALSE;
+        for_msg          = FALSE;
+        get_frame_number = FALSE;
+        local            = FALSE;
+        contents         = FALSE;
+        N                = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+        break;
+    case 1:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = FALSE;
+        for_msg          = FALSE;
+        get_frame_number = FALSE;
+        local            = FALSE;
+        contents         = FALSE;
+        N                = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+        break;
+    case 5:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = asLogical(CAR(args)); args = CDR(args);
+        for_msg          = asLogical(CAR(args)); args = CDR(args);
+        get_frame_number = FALSE;
+        local            = asLogical(CAR(args)); args = CDR(args);
+        contents         = asLogical(CAR(args)); args = CDR(args);
+        if (local)
+            N = get_sys_parent(1, rho);
+        else
+            N = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), "C_thispath", "0, 1, or 5"));
+        return R_NilValue;
+    }
+
+
+    return thispath(verbose         , original        , for_msg         ,
+                    get_frame_number, local           , contents        ,
+                    N               , rho             );
+}
+
+
+SEXP do_getframenumber do_formals
+{
+    do_start_no_call_op("getframenumber", 0);
+
+
+    Rboolean verbose         , original        , for_msg         ,
+             get_frame_number, local           , contents        ;
+    int N;
+
+
+    verbose          = FALSE;
+    original         = FALSE;
+    for_msg          = FALSE;
+    get_frame_number = TRUE;
+    contents         = FALSE;
+    local            = FALSE;
+    N                = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+
+
+    return thispath(verbose         , original        , for_msg         ,
+                    get_frame_number, local           , contents        ,
+                    N               , rho             );
 }
 
 
 SEXP do_inittoolsrstudio do_formals
 {
-    do_start("inittoolsrstudio", -1);
+    do_start_no_op_rho("inittoolsrstudio", -1);
 
 
     Rboolean skipCheck = FALSE;
@@ -961,11 +1118,11 @@ SEXP do_inittoolsrstudio do_formals
 
 SEXP do_thispathrgui do_formals
 {
-    do_start("thispathrgui", 6);
+    do_start_no_op("thispathrgui", 7);
 
 
     SEXP wintitle, untitled, r_editor;
-    Rboolean verbose, original, for_msg;
+    Rboolean verbose , original, for_msg , contents;
 
 
     /* titles of the windows in RGui */
@@ -1001,6 +1158,11 @@ SEXP do_thispathrgui do_formals
         errorcall(call, _("invalid '%s' value"), "for.msg");
 
 
+    contents = asLogical(CAR(args)); args = CDR(args);
+    if (contents == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "contents");
+
+
     Rboolean active = TRUE;
     int n = LENGTH(wintitle);
     int length_untitled = LENGTH(untitled);
@@ -1020,7 +1182,12 @@ SEXP do_thispathrgui do_formals
             if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
             // if (wintitle0 == untitled0) {
             if (!strcmp(title, CHAR(untitled0))) {
-                if (for_msg) return mkString(_RGui("Untitled"));
+                if (for_msg) {
+                    if (contents)
+                        return ScalarString(NA_STRING);
+                    else
+                        return mkString(_RGui("Untitled"));
+                }
                 error("%s%s",
                     this_path_used_in_an_inappropriate_fashion,
                     (active) ? "* active document in Rgui does not exist" :

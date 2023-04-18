@@ -50,7 +50,7 @@ SEXP do_shfile do_formals
      */
 
 
-    do_start("shfile", 2);
+    do_start_no_call_op("shfile", 2);
 
 
     /* see ?shFILE */
@@ -87,7 +87,7 @@ SEXP do_shfile do_formals
         get_and_check(var, sym);                               \
         if (PRVALUE(var) == R_UnboundValue) {                  \
             /* unlike a normal promise, we DO NOT want to */   \
-            /* raise a warning if var is re-evaluated     */   \
+            /* throw a warning if var is re-evaluated     */   \
             if (PRSEEN(var)) {                                 \
                 if (PRSEEN(var) == 1) {}                       \
                 else SET_PRSEEN(var, 0);                       \
@@ -332,16 +332,16 @@ SEXP do_shinfo do_formals
      */
 
 
-    do_start("shinfo", 0);
+    do_start_no_op_rho("shinfo", 0);
 
 
     if (!is_maybe_unembedded_shell) {
 
 
 #ifdef debug
-#define debugRprint(x, rho) Rprint((x), (rho))
+#define debugRprint(x, env) Rprint((x), (env))
 #else
-#define debugRprint(x, rho) do {} while (0)
+#define debugRprint(x, env) do {} while (0)
 #endif
 
 
@@ -625,7 +625,7 @@ SEXP do_shinfo do_formals
 
 
 #ifdef debug
-    set_R_Visible(1);
+    set_R_Visible(TRUE);
     Rprintf("\n");
 #endif
 

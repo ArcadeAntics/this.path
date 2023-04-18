@@ -106,7 +106,7 @@ SEXP lengths_real(SEXP x, R_xlen_t len, SEXP rho)
 
 SEXP do_strrep do_formals
 {
-    do_start("strrep", 2);
+    do_start_no_call_op_rho("strrep", 2);
 
 
     SEXP x = CAR(args); args = CDR(args);
@@ -279,7 +279,7 @@ SEXP do_strrep do_formals
 
 SEXP do_startsWith do_formals
 {
-    do_start("startsWith", 2);
+    do_start_no_call_op_rho("startsWith", 2);
 
 
     do_startsWith_body(TRUE);
@@ -288,7 +288,7 @@ SEXP do_startsWith do_formals
 
 SEXP do_endsWith do_formals
 {
-    do_start("endsWith", 2);
+    do_start_no_call_op_rho("endsWith", 2);
 
 
     do_startsWith_body(FALSE);
@@ -303,7 +303,7 @@ SEXP do_endsWith do_formals
 
 SEXP do_direxists do_formals
 {
-    do_start("direxists", 1);
+    do_start_no_call_op_rho("direxists", 1);
 
 
     SEXP fn = CAR(args);
@@ -318,7 +318,7 @@ SEXP do_direxists do_formals
     SETCAR(expr, file_infoSymbol);
     SETCADR(expr, fn);
     SEXP value = eval(expr, R_BaseEnv);
-    UNPROTECT(1);
+    UNPROTECT(1);  /* expr */
     PROTECT(value);
 
 
@@ -348,7 +348,7 @@ SEXP do_direxists do_formals
 
 SEXP do_lengths do_formals
 {
-    do_start("lengths", 2);
+    do_start_no_call_op("lengths", 2);
 
 
     SEXP x = CAR(args), value;
@@ -530,11 +530,12 @@ Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
 
 SEXP do_anyNA do_formals
 {
-    do_start("anyNA", -1);
+    do_start_no_op("anyNA", -1);
 
 
     SEXP x;
     Rboolean recursive = FALSE;
+
 
     switch (length(args)) {
     case 2:
@@ -544,6 +545,7 @@ SEXP do_anyNA do_formals
         break;
     default:
         errorcall(call, wrong_nargs_to_External(length(args), "C_anyNA", "1 or 2"));
+        return R_NilValue;
     }
 
 

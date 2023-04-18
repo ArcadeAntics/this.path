@@ -645,7 +645,7 @@
 
 SEXP do_windowssplitext do_formals
 {
-    do_start("windowssplitext", 2);
+    do_start_no_op("windowssplitext", 2);
     if (debug) Rprintf("in do_windowssplitext\n\n");
     ext(1, SPLITEXT);
 }
@@ -653,7 +653,7 @@ SEXP do_windowssplitext do_formals
 
 SEXP do_unixsplitext do_formals
 {
-    do_start("unixsplitext", 2);
+    do_start_no_op("unixsplitext", 2);
     if (debug) Rprintf("in do_unixsplitext\n\n");
     ext(0, SPLITEXT);
 }
@@ -661,7 +661,7 @@ SEXP do_unixsplitext do_formals
 
 SEXP do_splitext do_formals
 {
-    do_start("splitext", 2);
+    do_start_no_op("splitext", 2);
     if (debug) Rprintf("in do_splitext\n\n");
 #ifdef _WIN32
     ext(1, SPLITEXT);
@@ -676,7 +676,7 @@ SEXP do_splitext do_formals
 
 SEXP do_windowsremoveext do_formals
 {
-    do_start("windowsremoveext", 2);
+    do_start_no_op("windowsremoveext", 2);
     if (debug) Rprintf("in do_windowsremoveext\n\n");
     ext(1, REMOVEEXT);
 }
@@ -684,7 +684,7 @@ SEXP do_windowsremoveext do_formals
 
 SEXP do_unixremoveext do_formals
 {
-    do_start("unixremoveext", 2);
+    do_start_no_op("unixremoveext", 2);
     if (debug) Rprintf("in do_unixremoveext\n\n");
     ext(0, REMOVEEXT);
 }
@@ -692,7 +692,7 @@ SEXP do_unixremoveext do_formals
 
 SEXP do_removeext do_formals
 {
-    do_start("removeext", 2);
+    do_start_no_op("removeext", 2);
     if (debug) Rprintf("in do_removeext\n\n");
 #ifdef _WIN32
     ext(1, REMOVEEXT);
@@ -707,7 +707,7 @@ SEXP do_removeext do_formals
 
 SEXP do_windowsext do_formals
 {
-    do_start("windowsext", 2);
+    do_start_no_op("windowsext", 2);
     if (debug) Rprintf("in do_windowsext\n\n");
     ext(1, EXT);
 }
@@ -715,7 +715,7 @@ SEXP do_windowsext do_formals
 
 SEXP do_unixext do_formals
 {
-    do_start("unixext", 2);
+    do_start_no_op("unixext", 2);
     if (debug) Rprintf("in do_unixext\n\n");
     ext(0, EXT);
 }
@@ -723,7 +723,7 @@ SEXP do_unixext do_formals
 
 SEXP do_ext do_formals
 {
-    do_start("ext", 2);
+    do_start_no_op("ext", 2);
     if (debug) Rprintf("in do_ext\n\n");
 #ifdef _WIN32
     ext(1, EXT);
@@ -738,7 +738,7 @@ SEXP do_ext do_formals
 
 SEXP do_windowsextgets do_formals
 {
-    do_start("windowsextgets", 3);
+    do_start_no_op("windowsextgets", 3);
     if (debug) Rprintf("in do_windowsextgets\n\n");
     ext(1, EXTGETS);
 }
@@ -746,7 +746,7 @@ SEXP do_windowsextgets do_formals
 
 SEXP do_unixextgets do_formals
 {
-    do_start("unixextgets", 3);
+    do_start_no_op("unixextgets", 3);
     if (debug) Rprintf("in do_unixextgets\n\n");
     ext(0, EXTGETS);
 }
@@ -754,7 +754,7 @@ SEXP do_unixextgets do_formals
 
 SEXP do_extgets do_formals
 {
-    do_start("extgets", 3);
+    do_start_no_op("extgets", 3);
     if (debug) Rprintf("in do_extgets\n\n");
 #ifdef _WIN32
     ext(1, EXTGETS);

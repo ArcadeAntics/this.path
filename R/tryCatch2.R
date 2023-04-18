@@ -33,7 +33,7 @@ tryCatch2 <- function (expr, ..., else., finally)
 
         if (do_else)
             # if a condition was caught, 'do_else' will be FALSE
-            # if an error was raised but not caught, execution will stop before
+            # if an error was thrown but not caught, execution will stop before
             # here either way, 'else.' is not evaluated, as expected
             #
             # also, I would argue that 'else.' should be returned because that

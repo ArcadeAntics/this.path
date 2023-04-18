@@ -430,7 +430,7 @@ SEXP basename2(SEXP path)
 
 SEXP do_windowsbasename2 do_formals
 {
-    do_start("windowsbasename2", 1);
+    do_start_no_call_op_rho("windowsbasename2", 1);
     if (debug) Rprintf("in do_windowsbasename2\n\n");
     return windowsbasename2(CAR(args));
 }
@@ -438,7 +438,7 @@ SEXP do_windowsbasename2 do_formals
 
 SEXP do_unixbasename2 do_formals
 {
-    do_start("unixbasename2", 1);
+    do_start_no_call_op_rho("unixbasename2", 1);
     if (debug) Rprintf("in do_unixbasename2\n\n");
     return unixbasename2(CAR(args));
 }
@@ -446,7 +446,7 @@ SEXP do_unixbasename2 do_formals
 
 SEXP do_basename2 do_formals
 {
-    do_start("basename2", 1);
+    do_start_no_call_op_rho("basename2", 1);
     if (debug) Rprintf("in do_basename2\n\n");
     return basename2(CAR(args));
 }
@@ -507,12 +507,15 @@ SEXP dirname2(SEXP path, int times)
         if (times == NA_INTEGER || times < 0)                  \
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");\
     }                                                          \
-    else errorcall(call, wrong_nargs_to_External(nargs, (name), "1 or 2"))
+    else {                                                     \
+        errorcall(call, wrong_nargs_to_External(nargs, (name), "1 or 2"));\
+        return R_NilValue;                                     \
+    }
 
 
 SEXP do_windowsdirname2 do_formals
 {
-    do_start("windowsdirname2", -1);
+    do_start_no_op_rho("windowsdirname2", -1);
     if (debug) Rprintf("in do_windowsdirname2\n\n");
     do_dirname2_check_nargs("C_windowsdirname2");
     return windowsdirname2(path, times);
@@ -521,7 +524,7 @@ SEXP do_windowsdirname2 do_formals
 
 SEXP do_unixdirname2 do_formals
 {
-    do_start("unixdirname2", -1);
+    do_start_no_op_rho("unixdirname2", -1);
     if (debug) Rprintf("in do_unixdirname2\n\n");
     do_dirname2_check_nargs("C_unixdirname2");
     return unixdirname2(path, times);
@@ -530,7 +533,7 @@ SEXP do_unixdirname2 do_formals
 
 SEXP do_dirname2 do_formals
 {
-    do_start("dirname2", -1);
+    do_start_no_op_rho("dirname2", -1);
     if (debug) Rprintf("in do_dirname2\n\n");
     do_dirname2_check_nargs("C_dirname2");
     return dirname2(path, times);

@@ -6,3 +6,5 @@
 /*.Rcheck/**
 /this.path*.tar.gz
 /this.path*.zip
+/man/short.R
+/man/short.Rd

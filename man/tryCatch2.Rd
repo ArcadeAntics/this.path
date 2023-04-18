@@ -2,7 +2,7 @@
 \alias{tryCatch2}
 \title{Condition Handling and Recovery}
 \description{
-  A variant of \code{\link[base:conditions]{tryCatch}()} that accepts an
+  A variant of \codelink3{base:conditions}{tryCatch}{()} that accepts an
   \code{else.} argument, similar to \code{try except} in \sQuote{\Python}.
 }
 \usage{

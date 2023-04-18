@@ -2,10 +2,8 @@
 \alias{wrap.source}
 \alias{inside.source}
 \alias{set.this.path}
-\alias{local.path}
 \alias{unset.this.path}
-\title{Implement \code{\link{this.path}()} For Arbitrary \sourcelink{}-Like
-  Functions}
+\title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
   A \sourcelink{}-like function is any function which evaluates code from a
   file.
@@ -18,9 +16,9 @@
 
   \code{set.this.path()} is just an alias for \code{inside.source()}.
 
-  \code{local.path()} returns the path of the executing script, confining the
-  search to the local environment in which \code{inside.source()} / /
-  \code{set.this.path()} was called.
+  See \code{?\link{this.path}(local = TRUE)} which returns the path of the
+  executing script, confining the search to the local environment in which
+  \code{inside.source()} / / \code{set.this.path()} was called.
 
   \code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
   need to use this if you wish to call \code{set.this.path()} multiple times
@@ -104,16 +102,14 @@ set.this.path(file,
     ignore.file.uri = ignore.all,
     Function = NULL)
 
-local.path(verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, default, else.)
-
 unset.this.path()
 }
 \arguments{
   \item{expr}{an (unevaluated) call to a \sourcenolink{}-like function.}
 
-  \item{file}{a \code{\link[base:connections]{connection}} or a character
-    string giving the pathname of the file or URL to read from.}
+  \item{file}{a
+    \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
+    character string giving the pathname of the file or URL to read from.}
 
   \item{path.only}{must \code{file} be an existing path? This implies
     \code{character.only} and \code{file.only} are \code{TRUE} and implies
@@ -127,26 +123,28 @@ unset.this.path()
   \item{conv2utf8}{if \code{file} is a character string, should it be converted
     to UTF-8?}
 
-  \item{allow.blank.string}{may \code{file} be a blank string, i.e. \code{""}?}
+  \item{allow.blank.string}{may \code{file} be a blank string, i.e.
+    \string{}?}
 
-  \item{allow.clipboard}{may \code{file} be \code{"clipboard"} or a clipboard
+  \item{allow.clipboard}{may \code{file} be \string{clipboard} or a clipboard
     connection?}
 
-  \item{allow.stdin}{may \code{file} be \code{"stdin"}? Note that
-    \code{"stdin"} refers to the C-level \sQuote{standard input} of the
-    process, differing from \code{\link[base:showConnections]{stdin}()} which
+  \item{allow.stdin}{may \code{file} be \string{stdin}? Note that
+    \string{stdin} refers to the C-level \sQuote{standard input} of the
+    process, differing from \codelink3{base:showConnections}{stdin}{()} which
     refers to the R-level \sQuote{standard input}.}
 
   \item{allow.url}{may \code{file} be a URL pathname or a connection of class
-    \code{"url-libcurl"} / / \code{"url-wininet"}?}
+    \string{url-libcurl} / / \string{url-wininet}?}
 
   \item{allow.file.uri}{may \code{file} be a \samp{file://} URI?}
 
   \item{allow.unz, allow.pipe, allow.terminal, allow.textConnection,
         allow.rawConnection, allow.sockconn, allow.servsockconn}{may
-    \code{file} be a connection of class \code{"\link[base:connections]{unz}"}
-    / / \code{"pipe"} / / \code{"terminal"} / / \code{"textConnection"} / /
-    \code{"rawConnection"} / / \code{"sockconn"} / / \code{"servsockconn"}?}
+    \code{file} be a connection of class
+    \ifelse{html}{\code{"\link[base:connections]{unz}"}}{\string{unz}}
+    / / \string{pipe} / / \string{terminal} / / \string{textConnection} / /
+    \string{rawConnection} / / \string{sockconn} / / \string{servsockconn}?}
 
   \item{allow.customConnection}{may \code{file} be a custom connection?}
 
@@ -154,12 +152,9 @@ unset.this.path()
         ignore.url, ignore.file.uri}{ignore the special meaning of these types
     of strings, treating it as a path instead?}
 
-  \item{Function}{character vector of length 1 or 2; the name of the function
-    and package in which \code{inside.source()} / / \code{set.this.path()} is
-    called.}
-
-  \item{verbose, original, for.msg, default, else.}{See
-    \code{?\link{this.path}()}}
+  \item{Function}{character vector of length \ifelse{text}{1}{\code{1}} or
+    \ifelse{text}{2}{\code{2}}; the name of the function and package in which
+    \code{inside.source()} / / \code{set.this.path()} is called.}
 }
 \details{
   \code{inside.source()} should be added to the body of your
@@ -184,7 +179,7 @@ unset.this.path()
   your own function in which the formals are \code{(\dots)} to wrap
   \code{sourcelike()}: \preformatted{wrapper <- function (...)
 {
-    # possibly more args to wrap.source()
+    ## possibly more args to wrap.source()
     wrap.source(sourcelike(...))
 }}
 
@@ -224,30 +219,30 @@ unset.this.path()
     sys.source(file = file, ...)
 }}}
 
-    \item{\debugSourcenolink{}}{\preformatted{wrapper <- function(fileName, ...) {
+    \item{\debugSourceinRStudionolink}{\preformatted{wrapper <- function(fileName, ...) {
     fileName <- inside.source(fileName, character.only = TRUE,
         conv2utf8 = TRUE, allow.blank.string = TRUE)
     debugSource(fileName = fileName, ...)
 }}}
 
-    \item{\sourcefilenolink{}}{\preformatted{wrapper <- function(path, ...) {
-    # before testthat_3.1.2, source_file() used readLines() to read the
-    # input lines. changed in 3.1.2, source_file() uses
-    # brio::read_lines() which normalizes 'path' before reading,
-    # disregarding the special meaning of the strings listed above
+    \item{\testthatsourcefilenolink}{\preformatted{wrapper <- function(path, ...) {
+    ## before testthat_3.1.2, source_file() used readLines() to read
+    ## the input lines. changed in 3.1.2, source_file() uses
+    ## brio::read_lines() which normalizes 'path' before reading,
+    ## disregarding the special meaning of the strings listed above
     path <- inside.source(path, path.only = TRUE, ignore.all =
         as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
     testthat::source_file(path = path, ...)
 }}}
 
-    \item{\knitnolink{}}{\preformatted{wrapper <- function(input, ...) {
-    # this works for the most part, but will not work in child mode
+    \item{\knitrknitnolink}{\preformatted{wrapper <- function(input, ...) {
+    ## this works for the most part, but will not work in child mode
     input <- inside.source(input)
     knitr::knit(input = input, ...)
 }}}
 
-    \item{\boxusenolink{}}{\preformatted{# 'box' is structured to be an incredible pain in the ass,
-# so this solution is not exactly ideal, but it works so whatever
+    \item{\boxusenolink{}}{\preformatted{## 'box' is structured to be an incredible pain in the ass,
+## so this solution is not exactly ideal, but it works so whatever
 wrapper <- function(path, ...) {
     p <- this.path::path.split.1(path.expand(path))
     n <- length(p)
@@ -296,20 +291,20 @@ this.path:::write.code({
 }, FILE)
 
 
-# here we have a source-like function, suppose this
-# function is in a package for which you have write permission
+## here we have a source-like function, suppose this
+## function is in a package for which you have write permission
 sourcelike <- function (file, envir = parent.frame())
 {
     file <- inside.source(file)
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = file)
-    # this prints nicely
+    ## this prints nicely
     this.path:::withAutoprint(exprs = exprs, evaluated = TRUE,
         local = envir, spaced = TRUE, verbose = FALSE,
         width.cutoff = 60L)
-    # you could alternatively do:
-    # 'for (i in seq_along(exprs)) eval(exprs[i], envir)'
-    # which does no pretty printing
+    # ## you could alternatively do:
+    # for (i in seq_along(exprs)) eval(exprs[i], envir)
+    # ## which does no pretty printing
 }
 
 
@@ -317,8 +312,8 @@ sourcelike(FILE)
 sourcelike(con <- file(FILE)); close(con)
 
 
-# here we have another source-like function, suppose this function
-# is in a foreign package for which you do not have write permission
+## here we have another source-like function, suppose this function
+## is in a foreign package for which you do not have write permission
 sourcelike2 <- function (pathname, envir = globalenv())
 {
     if (!(is.character(pathname) && file.exists(pathname)))
@@ -332,45 +327,45 @@ sourcelike2 <- function (pathname, envir = globalenv())
 }
 
 
-# the above function is similar to sys.source(), and it
-# expects a character string referring to an existing file
-#
-# with the following, you should be able
-# to use 'this.path()' within 'FILE':
+## the above function is similar to sys.source(), and it
+## expects a character string referring to an existing file
+##
+## with the following, you should be able
+## to use 'this.path()' within 'FILE':
 wrap.source(sourcelike2(FILE), path.only = TRUE)
 
 
-# with R >= 4.1.0, use the forward pipe operator '|>' to
-# make calls to 'wrap.source' more intuitive:
+# ## with R >= 4.1.0, use the forward pipe operator '|>' to
+# ## make calls to 'wrap.source' more intuitive:
 # sourcelike2(FILE) |> wrap.source(path.only = TRUE)
 
 
-# 'wrap.source' can recognize arguments by name, so they
-# do not need to appear in the same order as the formals
+## 'wrap.source' can recognize arguments by name, so they
+## do not need to appear in the same order as the formals
 wrap.source(sourcelike2(envir = new.env(), pathname = FILE),
     path.only = TRUE)
 
 
-# it it much easier to define a new function to do this
+## it it much easier to define a new function to do this
 sourcelike3 <- function (...)
 wrap.source(sourcelike2(...), path.only = TRUE)
 
 
-# the same as before
+## the same as before
 sourcelike3(FILE)
 
 
-# however, this is preferable:
+## however, this is preferable:
 sourcelike4 <- function (pathname, ...)
 {
-    # pathname is now normalized
+    ## pathname is now normalized
     pathname <- inside.source(pathname, path.only = TRUE)
     sourcelike2(pathname = pathname, ...)
 }
 sourcelike4(FILE)
 
 
-# perhaps you wish to run several scripts in the same function
+## perhaps you wish to run several scripts in the same function
 fun <- function (paths, ...)
 {
     for (pathname in paths) {

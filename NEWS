@@ -2,10 +2,29 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  NEW FEATURES
+
+    * this.path() now accepts argument 'contents' that returns the
+      contents of the executing script.
+
+    * try.this.path() now accepts argument 'contents' to get the
+      contents of the executing script, 'NULL' if that fails.
+
+  DEPRECATED AND DEFUNCT
+
+    * local.path() is defunct and should be replaced with
+      this.path(local = TRUE).
+
+    * Sys.path() and Sys.dir() are defunct and should be replaced with
+      this.path(verbose = FALSE) and this.dir(verbose = FALSE).
+
   BUG FIXES
 
-    * inside.source() / / set.this.path() / / local.path() more
-      rigorously check that they are called from a valid context.
+    * inside.source() / / set.this.path() / / this.path(local = TRUE)
+      more rigorously check that they are called from a valid context.
+
+    * Fixed display issues in HTML docs when using 'Run example'
+      button.
 
 CHANGES IN this.path 1.3.0 (2023-04-08):
 
@@ -26,19 +45,19 @@ CHANGES IN this.path 1.3.0 (2023-04-08):
     * this.path() now works in 'Jupyter'. Added set.this.path.jupyter()
       for explicitly declaring the path of the 'Jupyter' notebook.
 
-    * this.path() now works inside box::use().
-
     * this.path() now works inside compiler::loadcmp().
+
+    * this.path() now works inside box::use().
 
     * For logging purposes, this.path(for.msg = TRUE) will now return
       "Untitled" when appropriate.
 
-    * inside.source() / / set.this.path() now accept argument Function
-      specifying the name of the function and package in which they are
-      called.
+    * inside.source() / / set.this.path() now accept argument
+      'Function' specifying the name of the function and package in
+      which they are called.
 
-    * this.path() now accepts argument local to confine the search for
-      the executing script to the local environment in which
+    * this.path() now accepts argument 'local' to confine the search
+      for the executing script to the local environment in which
       inside.source() / / set.this.path() was called. Also added
       local.path(), short for this.path(local = TRUE).
 
@@ -51,8 +70,8 @@ CHANGES IN this.path 1.3.0 (2023-04-08):
     * Added reset.this.proj() to reset the paths saved by this.proj().
 
     * Added try.this.path() and try.shFILE() to get the normalized path
-      of the executing script, the original path if that fails, and
-      NA_character_ if that fails as well.
+      of the executing script, the original path if that fails,
+      'NA_character_' if that fails as well.
 
   DEPRECATED AND DEFUNCT
 
@@ -62,11 +81,19 @@ CHANGES IN this.path 1.3.0 (2023-04-08):
   BUG FIXES
 
     * shFILE(for.msg = TRUE, default = <...>) now does not evaluate
-      default, as intended. By extension, this.path(for.msg = TRUE) now
-      returns NA_character_ when running from a shell instead of
+      'default', as intended. By extension, this.path(for.msg = TRUE)
+      now returns 'NA_character_' when running from a shell instead of
       incorrectly throwing an error.
 
 CHANGES IN this.path 1.2.0 (2023-01-16):
+
+  SIGNIFICANT USER-VISIBLE CHANGES
+
+    * shFILE() now parses the command line arguments in the exact same
+      manner as R itself, more accurately selecting 'FILE'.
+
+    * A relative path returned by relpath() / / as.rel.path() will
+      always start with "./" or "../".
 
   NEW FEATURES
 
@@ -74,14 +101,6 @@ CHANGES IN this.path 1.2.0 (2023-01-16):
 
     * Added Sys.putenv(), an alternate method for setting environment
       variables.
-
-  SIGNIFICANT USER-VISIBLE CHANGES
-
-    * shFILE() now parses the command line arguments in the exact same
-      manner as R itself, more accurately selecting FILE.
-
-    * A relative path returned by relpath() / / as.rel.path() will
-      always begin with "./" or "../".
 
   BUG FIXES
 
@@ -103,15 +122,17 @@ CHANGES IN this.path 1.1.0 (2022-12-01):
     * this.path() now works inside knitr::knit(). By extension,
       withArgs(knitr::knit()) now also works.
 
-    * this.path() now accepts arguments original and for.msg that
-      return the original argument from source / / knit / / Rscript or
-      return a character string that can be used in diagnostic messages
-      / / warnings / / errors. It should be noted that
+    * this.path() now accepts argument 'original' that returns the
+      executing script's original (unnormalized) path.
+
+    * this.path() now accepts argument 'for.msg' that returns a
+      character string that can be used in diagnostic messages / /
+      warnings / / errors. It should be noted that
       this.path(for.msg = TRUE) should not be used for constructing
       file paths.
 
-    * shFILE() also accepts argument original that returns the original
-      FILE from Rscript.
+    * shFILE() also accepts argument 'original' that returns the
+      original 'FILE' from the command line arguments.
 
     * Added splitext(), removeext(), ext(), and ext<-() for
       manipulating paths with extensions.
@@ -131,7 +152,7 @@ CHANGES IN this.path 1.1.0 (2022-12-01):
     * Added relpath(), a version of as.rel.path() with different
       default argument values.
 
-    * Added OS.type, a list of TRUE/FALSE values giving more details
+    * Added 'OS.type', a list of 'TRUE' / / 'FALSE' values giving more details
       about the operating system.
 
   DEPRECATED AND DEFUNCT:
@@ -168,19 +189,19 @@ CHANGES IN this.path 1.0.1 (2022-09-22):
 
 CHANGES IN this.path 1.0.0 (2022-09-21):
 
-  NEW FEATURES
-
-    * Added path.join(), basename2(), and dirname2() for constructing
-      and manipulating paths to files. These are based on file.path(),
-      basename(), and dirname(), but behave differently with network
-      shares and a few important edge cases.
-
   SIGNIFICANT USER-VISIBLE CHANGES
 
     * this.dir(), here(), and this.proj() all use path.join() and
       dirname2() instead of file.path() and dirname(), this may change
       behaviour for some users and cases, but should be an
       improvement overall.
+
+  NEW FEATURES
+
+    * Added path.join(), basename2(), and dirname2() for constructing
+      and manipulating paths to files. These are based on file.path(),
+      basename(), and dirname(), but behave differently with network
+      shares and a few important edge cases.
 
 CHANGES IN this.path 0.11.0 (2022-09-03):
 

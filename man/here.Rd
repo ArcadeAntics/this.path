@@ -1,9 +1,9 @@
 \name{here}
 \alias{here}
 \alias{ici}
-\title{Construct Path to File, Starting with \code{\link{this.dir}()}}
+\title{Construct Path to File, Starting with 'this.dir()'}
 \description{
-  Construct the path to a file from components/paths in a
+  Construct the path to a file from components / / paths in a
   platform-\strong{DEPENDENT} way, starting with \code{\link{this.dir}()}.
 }
 \usage{
@@ -16,9 +16,9 @@ ici(..., .. = 0)
   \item{..}{the number of directories to go back.}
 }
 \details{
-  The path to a file begins with a base. The base is \code{..} number of
+  The path to a file starts with a base. The base is \code{..} number of
   directories back from the executing script's directory (\code{this.dir()}).
-  The argument is named \code{..} because \code{".."} refers to the parent
+  The argument is named \code{..} because \string{..} refers to the parent
   directory on Windows, under Unix-alikes, and for URL pathnames.
 }
 \value{
@@ -35,11 +35,11 @@ this.path:::write.code({
     this.path::here(.. = 2)
 
 
-    # use 'here' to read input from a file located nearby
+    ## use 'here' to read input from a file located nearby
     this.path::here(.. = 1, "input", "file1.csv")
 
 
-    # or maybe to run another script
+    ## or maybe to run another script
     this.path::here("script2.R")
 
 

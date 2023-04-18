@@ -1,6 +1,6 @@
 \name{shFILE}
 \alias{shFILE}
-\title{Get Argument \option{FILE} Provided to \R by a Shell}
+\title{Get \option{FILE} Provided to \R by a Shell}
 \description{
   Look through the command line arguments, extracting \option{FILE} from either
   of the following: \option{-f} \option{FILE} or \option{--file=FILE}
@@ -22,7 +22,8 @@ shFILE(original = FALSE, for.msg = FALSE, default, else.)
   \item{default}{if \option{FILE} is not found, this value is returned.}
 
   \item{else.}{missing or a function to apply if \option{FILE} is found. See
-    \code{\link{tryCatch2}()} for inspiration.}
+    \ifelse{html}{\code{\link{tryCatch2}()}}{\code{tryCatch2()}} for
+    inspiration.}
 }
 \value{
   character string, or \code{default} if \option{FILE} was not found.
@@ -31,7 +32,8 @@ shFILE(original = FALSE, for.msg = FALSE, default, else.)
   The original and the normalized path are saved; this makes them faster when
   called subsequent times.
 
-  On Windows, the normalized path will use / as the file separator.
+  On Windows, the normalized path will use \ifelse{text}{/}{\code{/}} as the
+  file separator.
 }
 \seealso{
   \code{\link{this.path}()}, \code{\link{here}()}
@@ -51,8 +53,10 @@ this.path:::write.code({
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE)
-this.path:::.Rscript(c("--default-packages=this.path",
-                       "--vanilla", FILE))
+this.path:::Rscript(
+    c("--default-packages=this.path", "--vanilla", FILE)
+)
+unlink(FILE)
 
 
 for (expr in c("shFILE(original = TRUE)",
@@ -61,7 +65,8 @@ for (expr in c("shFILE(original = TRUE)",
                "shFILE(default = NULL)"))
 {
     cat("\\n\\n")
-    this.path:::.Rscript(c(
-        "--default-packages=this.path", "--vanilla", "-e", expr))
+    this.path:::Rscript(
+        c("--default-packages=this.path", "--vanilla", "-e", expr)
+    )
 }
-\dontshow{unlink(FILE)}}
+}

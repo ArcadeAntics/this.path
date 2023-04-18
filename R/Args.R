@@ -59,7 +59,7 @@ asArgs <- function (...)
 
 fileArgs <- function ()
 {
-    n <- get.frame.number()
+    n <- .External2(C_getframenumber)
     if (n) {
         if (n == 1L) {
             if (has.shFILE)
@@ -78,7 +78,7 @@ fileArgs <- function ()
 
 progArgs <- function ()
 {
-    n <- get.frame.number()
+    n <- .External2(C_getframenumber)
     if (n) {
         if (n == 1L) {
             if (has.shFILE)

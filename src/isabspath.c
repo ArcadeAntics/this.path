@@ -30,21 +30,21 @@
 
 SEXP do_windowsisabspath do_formals
 {
-    do_start("windowsisabspath", 1);
+    do_start_no_call_op_rho("windowsisabspath", 1);
     do_isabspath_body(TRUE);
 }
 
 
 SEXP do_unixisabspath do_formals
 {
-    do_start("unixisabspath", 1);
+    do_start_no_call_op_rho("unixisabspath", 1);
     do_isabspath_body(FALSE);
 }
 
 
 SEXP do_isabspath do_formals
 {
-    do_start("isabspath", 1);
+    do_start_no_call_op_rho("isabspath", 1);
 #ifdef _WIN32
     do_isabspath_body(TRUE);
 #else

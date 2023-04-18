@@ -17,7 +17,7 @@ static R_INLINE int asFlag(SEXP x, const char *name)
 
 SEXP do_setprseen2 do_formals
 {
-    do_start("setprseen2", 1);
+    do_start_no_op_rho("setprseen2", 1);
 
 
     SEXP ptr = CAR(args);
@@ -48,7 +48,7 @@ SEXP do_setprseen2 do_formals
 
 SEXP do_wrapsource do_formals
 {
-    do_start("wrapsource", 20);
+    do_start_no_call_op("wrapsource", 20);
 
 
     SEXP expr = findVarInFrame(rho, exprSymbol);
@@ -258,7 +258,7 @@ SEXP do_wrapsource do_formals
 
     if (length(expr) < 2) {
         assign_null(frame);
-        set_R_Visible(1);
+        set_R_Visible(TRUE);
         set_prvalues_then_return(eval(PRCODE(promise), env));
     }
 
@@ -271,7 +271,7 @@ SEXP do_wrapsource do_formals
     SEXP fun     = CAR(expr),
          funargs = CDR(expr);
     if (TYPEOF(fun) == SYMSXP)
-        fun = findFun3(fun, env, expr);
+        fun = findFunction(fun, env, expr);
     else
         fun = eval(fun, env);
     PROTECT(fun); nprotect++;
@@ -435,7 +435,7 @@ SEXP do_wrapsource do_formals
     }
     if (s == NULL) {
         assign_null(frame);
-        set_R_Visible(1);
+        set_R_Visible(TRUE);
         set_prvalues_then_return(eval(expr, env));
     }
 
@@ -495,37 +495,37 @@ SEXP do_wrapsource do_formals
 #define checkfile_call R_NilValue
 #endif
     checkfile(
-        /* SEXP call                  = */ checkfile_call,
-        /* SEXP sym                   = */ fileSymbol,
-        /* SEXP ofile                 = */ ofile,
-        /* SEXP frame                 = */ frame,
-        /* int check_not_directory    = */ TRUE,
-        /* int forcepromise           = */ TRUE,
-        /* int assign_returnvalue     = */ FALSE,
-        /* int maybe_chdir            = */ FALSE,
-        /* SEXP getowd                = */ NULL,
-        /* int hasowd                 = */ FALSE,
-        /* int character_only         = */ character_only,
-        /* int conv2utf8              = */ conv2utf8,
-        /* int allow_blank_string     = */ allow_blank_string,
-        /* int allow_clipboard        = */ allow_clipboard,
-        /* int allow_stdin            = */ allow_stdin,
-        /* int allow_url              = */ allow_url,
-        /* int allow_file_uri         = */ allow_file_uri,
-        /* int allow_unz              = */ allow_unz,
-        /* int allow_pipe             = */ allow_pipe,
-        /* int allow_terminal         = */ allow_terminal,
-        /* int allow_textConnection   = */ allow_textConnection,
-        /* int allow_rawConnection    = */ allow_rawConnection,
-        /* int allow_sockconn         = */ allow_sockconn,
-        /* int allow_servsockconn     = */ allow_servsockconn,
-        /* int allow_customConnection = */ allow_customConnection,
-        /* int ignore_blank_string    = */ ignore_blank_string,
-        /* int ignore_clipboard       = */ ignore_clipboard,
-        /* int ignore_stdin           = */ ignore_stdin,
-        /* int ignore_url             = */ ignore_url,
-        /* int ignore_file_uri        = */ ignore_file_uri
-    )
+        /* call                   */ checkfile_call,
+        /* sym                    */ fileSymbol,
+        /* ofile                  */ ofile,
+        /* frame                  */ frame,
+        /* check_not_directory    */ TRUE,
+        /* forcepromise           */ TRUE,
+        /* assign_returnvalue     */ FALSE,
+        /* maybe_chdir            */ FALSE,
+        /* getowd                 */ NULL,
+        /* hasowd                 */ FALSE,
+        /* character_only         */ character_only,
+        /* conv2utf8              */ conv2utf8,
+        /* allow_blank_string     */ allow_blank_string,
+        /* allow_clipboard        */ allow_clipboard,
+        /* allow_stdin            */ allow_stdin,
+        /* allow_url              */ allow_url,
+        /* allow_file_uri         */ allow_file_uri,
+        /* allow_unz              */ allow_unz,
+        /* allow_pipe             */ allow_pipe,
+        /* allow_terminal         */ allow_terminal,
+        /* allow_textConnection   */ allow_textConnection,
+        /* allow_rawConnection    */ allow_rawConnection,
+        /* allow_sockconn         */ allow_sockconn,
+        /* allow_servsockconn     */ allow_servsockconn,
+        /* allow_customConnection */ allow_customConnection,
+        /* ignore_blank_string    */ ignore_blank_string,
+        /* ignore_clipboard       */ ignore_clipboard,
+        /* ignore_stdin           */ ignore_stdin,
+        /* ignore_url             */ ignore_url,
+        /* ignore_file_uri        */ ignore_file_uri
+    );
 
 
     set_prvalues_then_return(eval(expr, env));
@@ -535,7 +535,7 @@ SEXP do_wrapsource do_formals
 }
 
 
-SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rboolean unset, SEXP backup)
+SEXP insidesource(SEXP args, SEXP rho, const char *name, Rboolean unset, SEXP backup)
 {
     int nprotect = 0;
 
@@ -673,8 +673,8 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
         R_removeVarFromFrame(insidesourcewashereSymbol, frame);
         R_removeVarFromFrame(thispathnSymbol          , frame);
 #endif
+        set_R_Visible(FALSE);
         UNPROTECT(nprotect);
-        set_R_Visible(0);
         return R_NilValue;
     }
 
@@ -692,7 +692,7 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
         defineVar(insidesourcewashereSymbol, R_MissingArg, frame);
         R_LockBinding(insidesourcewashereSymbol, frame);
         set_thispathn(sys_parent, frame);
-        set_R_Visible(1);
+        set_R_Visible(TRUE);
         UNPROTECT(nprotect);
         return R_MissingArg;
     }
@@ -761,11 +761,13 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
                 break;
             default:
                 error("invalid '%s'; must be of length 1 or 2", "Function");
+                return R_NilValue;
             }
         }
         break;
     default:
         error("invalid '%s' argument of type %s", "Function", type2char(TYPEOF(Function)));
+        return R_NilValue;
     }
 
 
@@ -775,37 +777,37 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
     SEXP returnvalue = R_NilValue;
     checkfile(
-        /* SEXP call                  = */ checkfile_call,
-        /* SEXP sym                   = */ fileSymbol,
-        /* SEXP ofile                 = */ ofile,
-        /* SEXP frame                 = */ frame,
-        /* int check_not_directory    = */ TRUE,
-        /* int forcepromise           = */ TRUE,
-        /* int assign_returnvalue     = */ TRUE,
-        /* int maybe_chdir            = */ FALSE,
-        /* SEXP getowd                = */ NULL,
-        /* int hasowd                 = */ FALSE,
-        /* int character_only         = */ character_only,
-        /* int conv2utf8              = */ conv2utf8,
-        /* int allow_blank_string     = */ allow_blank_string,
-        /* int allow_clipboard        = */ allow_clipboard,
-        /* int allow_stdin            = */ allow_stdin,
-        /* int allow_url              = */ allow_url,
-        /* int allow_file_uri         = */ allow_file_uri,
-        /* int allow_unz              = */ allow_unz,
-        /* int allow_pipe             = */ allow_pipe,
-        /* int allow_terminal         = */ allow_terminal,
-        /* int allow_textConnection   = */ allow_textConnection,
-        /* int allow_rawConnection    = */ allow_rawConnection,
-        /* int allow_sockconn         = */ allow_sockconn,
-        /* int allow_servsockconn     = */ allow_servsockconn,
-        /* int allow_customConnection = */ allow_customConnection,
-        /* int ignore_blank_string    = */ ignore_blank_string,
-        /* int ignore_clipboard       = */ ignore_clipboard,
-        /* int ignore_stdin           = */ ignore_stdin,
-        /* int ignore_url             = */ ignore_url,
-        /* int ignore_file_uri        = */ ignore_file_uri
-    )
+        /* call                   */ checkfile_call,
+        /* sym                    */ fileSymbol,
+        /* ofile                  */ ofile,
+        /* frame                  */ frame,
+        /* check_not_directory    */ TRUE,
+        /* forcepromise           */ TRUE,
+        /* assign_returnvalue     */ TRUE,
+        /* maybe_chdir            */ FALSE,
+        /* getowd                 */ NULL,
+        /* hasowd                 */ FALSE,
+        /* character_only         */ character_only,
+        /* conv2utf8              */ conv2utf8,
+        /* allow_blank_string     */ allow_blank_string,
+        /* allow_clipboard        */ allow_clipboard,
+        /* allow_stdin            */ allow_stdin,
+        /* allow_url              */ allow_url,
+        /* allow_file_uri         */ allow_file_uri,
+        /* allow_unz              */ allow_unz,
+        /* allow_pipe             */ allow_pipe,
+        /* allow_terminal         */ allow_terminal,
+        /* allow_textConnection   */ allow_textConnection,
+        /* allow_rawConnection    */ allow_rawConnection,
+        /* allow_sockconn         */ allow_sockconn,
+        /* allow_servsockconn     */ allow_servsockconn,
+        /* allow_customConnection */ allow_customConnection,
+        /* ignore_blank_string    */ ignore_blank_string,
+        /* ignore_clipboard       */ ignore_clipboard,
+        /* ignore_stdin           */ ignore_stdin,
+        /* ignore_url             */ ignore_url,
+        /* ignore_file_uri        */ ignore_file_uri
+    );
 
 
     INCREMENT_NAMED_defineVar(insidesourcewashereSymbol, fun_name, frame);
@@ -818,24 +820,24 @@ SEXP insidesource(SEXP call, SEXP op, SEXP args, SEXP rho, const char *name, Rbo
 
 SEXP do_insidesource do_formals
 {
-    do_start("insidesource", 21);
-    return insidesource(call, op, args, rho, "inside.source", FALSE, insidesourcefrompackageSymbol);
+    do_start_no_call_op("insidesource", 21);
+    return insidesource(args, rho, "inside.source", FALSE, insidesourcefrompackageSymbol);
 }
 
 
 SEXP do_setthispath do_formals
 {
-    do_start("setthispath", 21);
-    return insidesource(call, op, args, rho, "set.this.path", FALSE, setthispathfrompackageSymbol);
+    do_start_no_call_op("setthispath", 21);
+    return insidesource(args, rho, "set.this.path", FALSE, setthispathfrompackageSymbol);
 }
 
 
 SEXP do_unsetthispath do_formals
 {
-    do_start("unsetthispath", 0);
+    do_start_no_call_op("unsetthispath", 0);
 
 
-    return insidesource(call, op, args, rho, "unset.this.path", TRUE, NULL);
+    return insidesource(args, rho, "unset.this.path", TRUE, NULL);
 }
 
 

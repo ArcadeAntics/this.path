@@ -14,6 +14,25 @@
 }
 
 
+Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, intern = TRUE, show.output.on.console = print.command, ...)
+{
+    command <- path.join(R.home("bin"), if (os.windows)
+        "Rscript.exe"
+    else "Rscript")
+    args <- c(command, options)
+    args <- c(shQuote(args), trailing)
+    command <- paste(args, collapse = " ")
+    if (dry.run)
+        return(command)
+    if (print.command)
+        cat(command, "\n", sep = "")
+    value <- suppressWarnings(system(command = command, intern = intern, ...))
+    if (show.output.on.console)
+        writeLines(value)
+    invisible(value)
+}
+
+
 # .Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
 # {
 #     command <- path.join(R.home("bin"), if (os.windows)
@@ -122,9 +141,9 @@ body(build_this) <- bquote({
     # on.exit(options(op), add = TRUE)
 
 
-    # look for the appropriate applications to create archives
-    # if all are unavailable, raise an error
-    # if some are unavailable, raise a warning and continue with the rest
+    ## look for the appropriate applications to create archives
+    ## if all are unavailable, throw an error
+    ## if some are unavailable, throw a warning and continue with the rest
     val <- Sys.which(which)
     i <- is.na(val) | val == ""
     if (any(i)) {
@@ -137,7 +156,7 @@ body(build_this) <- bquote({
     }
 
 
-    # check for file "DESCRIPTION"
+    ## check for file "DESCRIPTION"
     DESCRIPTION <- path.join(file, "DESCRIPTION")
     cat("* checking for file '", DESCRIPTION, "' ... ", sep = "")
     if (!file.exists(DESCRIPTION)) {
@@ -544,7 +563,7 @@ write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
     if (is.null(file))
         x
     else {
-        writeLines(x, file, useBytes = !utf8)
+        writeLines(x, file, useBytes = !utf8locale)
         invisible(x)
     }
 }

@@ -257,21 +257,21 @@
 
 SEXP do_windowspathsplit do_formals
 {
-    do_start("windowspathsplit", 1);
+    do_start_no_call_op_rho("windowspathsplit", 1);
     do_pathsplit_body(TRUE, FALSE);
 }
 
 
 SEXP do_unixpathsplit do_formals
 {
-    do_start("unixpathsplit", 1);
+    do_start_no_call_op_rho("unixpathsplit", 1);
     do_pathsplit_body(FALSE, FALSE);
 }
 
 
 SEXP do_pathsplit do_formals
 {
-    do_start("pathsplit", 1);
+    do_start_no_call_op_rho("pathsplit", 1);
 #ifdef _WIN32
     do_pathsplit_body(TRUE, FALSE);
 #else
@@ -282,21 +282,21 @@ SEXP do_pathsplit do_formals
 
 SEXP do_windowspathsplit1 do_formals
 {
-    do_start("windowspathsplit1", 1);
+    do_start_no_call_op_rho("windowspathsplit1", 1);
     do_pathsplit_body(TRUE, TRUE);
 }
 
 
 SEXP do_unixpathsplit1 do_formals
 {
-    do_start("unixpathsplit1", 1);
+    do_start_no_call_op_rho("unixpathsplit1", 1);
     do_pathsplit_body(FALSE, TRUE);
 }
 
 
 SEXP do_pathsplit1 do_formals
 {
-    do_start("pathsplit1", 1);
+    do_start_no_call_op_rho("pathsplit1", 1);
 #ifdef _WIN32
     do_pathsplit_body(TRUE, TRUE);
 #else
@@ -351,7 +351,10 @@ SEXP do_pathsplit1 do_formals
             PROTECT(x);                                        \
             n = 1;                                             \
         }                                                      \
-        else error(_("unimplemented type '%s' in '%s'"), type2char(TYPEOF(x)), "path.unsplit");\
+        else {                                                 \
+            error(_("unimplemented type '%s' in '%s'"), type2char(TYPEOF(x)), "path.unsplit");\
+            return R_NilValue;                                 \
+        }                                                      \
     } else {                                                   \
         n = dots_length;                                       \
         x = allocVector(VECSXP, n);                            \
@@ -480,21 +483,21 @@ SEXP do_pathsplit1 do_formals
 
 SEXP do_windowspathunsplit do_formals
 {
-    do_start("windowspathunsplit", 0);
+    do_start_no_call_op("windowspathunsplit", 0);
     do_pathunsplit_body(TRUE);
 }
 
 
 SEXP do_unixpathunsplit do_formals
 {
-    do_start("unixpathunsplit", 0);
+    do_start_no_call_op("unixpathunsplit", 0);
     do_pathunsplit_body(FALSE);
 }
 
 
 SEXP do_pathunsplit do_formals
 {
-    do_start("pathunsplit", 0);
+    do_start_no_call_op("pathunsplit", 0);
 #ifdef _WIN32
     do_pathunsplit_body(TRUE);
 #else

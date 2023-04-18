@@ -1,7 +1,7 @@
 \name{this.proj}
 \alias{this.proj}
 \alias{reset.this.proj}
-\title{Construct Path to File, Beginning with Your Project Directory}
+\title{Construct Path to File, Starting with the Project's Directory}
 \description{
   \code{this.proj()} behaves very similarly to \code{here::here()},
   constructing a path to a file starting with your project's directory.
@@ -27,7 +27,7 @@ reset.this.proj()
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
 }
 \value{
-  A character vector of the arguments concatenated term-by-term, beginning with
+  A character vector of the arguments concatenated term-by-term, starting with
   the project directory.
 }
 \seealso{

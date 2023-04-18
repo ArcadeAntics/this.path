@@ -370,7 +370,7 @@ if (sys.nframe() != 0L) {
                 # so we will do raw comparisons instead to avoid translations
                 r.editor <- vapply(r.editor, function(str) {
                     bytes <- charToRaw(str)
-                    # all "R Editor" strings must begin with this prefix
+                    # all "R Editor" strings must start with this prefix
                     prefix <- c(charToRaw(tmpR), charToRaw(" - "))
                     if (length(bytes) < length(prefix) ||
                         any(bytes[seq_along(prefix)] != prefix))

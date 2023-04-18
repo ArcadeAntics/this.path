@@ -308,7 +308,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
         char *buf = _buf;
 
 
-        /* points to the beginning of the string */
+        /* points to the start of the string */
         const char *cbuf = buf;
 
 
@@ -526,7 +526,7 @@ void unixpathjoin(SEXP x, int x_length, int commonLength, SEXP value)
         char *buf = _buf;
 
 
-        /* points to the beginning of the string */
+        /* points to the start of the string */
         const char *cbuf = buf;
 
 
@@ -700,7 +700,7 @@ void pathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
 SEXP do_windowspathjoin do_formals
 {
-    do_start("windowspathjoin", 0);
+    do_start_no_op("windowspathjoin", 0);
     if (debug) Rprintf("in do_windowspathjoin\n\n");
     do_pathjoin_body("windows.path.join", windowspathjoin);
 }
@@ -708,7 +708,7 @@ SEXP do_windowspathjoin do_formals
 
 SEXP do_unixpathjoin do_formals
 {
-    do_start("unixpathjoin", 0);
+    do_start_no_op("unixpathjoin", 0);
     if (debug) Rprintf("in do_unixpathjoin\n\n");
     do_pathjoin_body("unix.path.join", unixpathjoin);
 }
@@ -716,7 +716,7 @@ SEXP do_unixpathjoin do_formals
 
 SEXP do_pathjoin do_formals
 {
-    do_start("pathjoin", 0);
+    do_start_no_op("pathjoin", 0);
     if (debug) Rprintf("in do_pathjoin\n\n");
     do_pathjoin_body("path.join", pathjoin);
 }

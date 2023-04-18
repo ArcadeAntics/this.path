@@ -157,7 +157,7 @@ just no longer fits my use-cases.
 
 1.  `here::here()` returns the initial working directory when it cannot
     find the project's directory. If the project's directory cannot be
-    found, there is something wrong and an error should be raised, but
+    found, there is something wrong and an error should be thrown, but
     it doesn't, and this leads to incorrect / / unexpected behaviour.
 
 2.  **here** does not work when the initial working directory is set

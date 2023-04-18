@@ -26,14 +26,18 @@
     essentials:::check.this(  # this.path
         special = TRUE,
 
-        check = TRUE, as.cran = TRUE,
+        # INSTALL = TRUE, # html = TRUE, latex = TRUE,
+
+        check = FALSE, as.cran = TRUE,
 
         chdir = TRUE
     )
 }
 
 
-if (FALSE) {  # for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
+local({  # for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
+    file.create(FILE <- "./tools/for-r-mac-builder")
+    on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
     essentials:::check.this(
         INSTALL = FALSE,
 
@@ -41,7 +45,7 @@ if (FALSE) {  # for submitting to R Mac Builder https://mac.r-project.org/macbui
 
         chdir = TRUE
     )
-}
+})
 
 
 local({  # testing this.path() with source(gzcon())
@@ -151,14 +155,20 @@ local({
 
 
     x <- this.path:::readFiles(files)
-    x <- grep("(?i)(windows|unix)", x, value = TRUE)
+    # x <- grep("(?i)(windows|unix)", x, value = TRUE)
+    x <- grep("(?i)(load\\.cmp)", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
     x <- this.path:::readFiles(Rdfiles)
     # x <- x[vapply(strsplit(x, "\n", fixed = TRUE, useBytes = TRUE),
     #     \(xx) max(nchar(xx)) >= 80L, NA)]
-    x <- grep("\\\\(enumerate|itemize)\\{", x, value = TRUE)
+    # x <- grep("\\\\(enumerate|itemize)\\{", x, value = TRUE)
+    # x <- grep("\\\\codelink\\{", x, value = TRUE)
+    # x <- grep("\\\\string\\{", x, value = TRUE)
+    # x <- grep("\\\\link2\\{", x, value = TRUE)
+    # x <- grep("\\\\DebuggingWithRStudio\\{", x, value = TRUE)
+    x <- grep("\\\\encoding\\{", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
 

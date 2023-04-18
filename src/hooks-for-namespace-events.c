@@ -9,9 +9,16 @@
 SEXP mynamespace = NULL;
 
 
-// LibExtern Rboolean utf8locale;
 LibExtern Rboolean mbcslocale;
+// LibExtern Rboolean utf8locale;
 // LibExtern Rboolean latin1locale;
+
+
+SEXP do_mbcslocale do_formals
+{
+    do_start_no_call_op_rho("mbcslocale", 0);
+    return ScalarLogical(mbcslocale);
+}
 
 
 // SEXP do_utf8locale do_formals
@@ -19,13 +26,6 @@ LibExtern Rboolean mbcslocale;
 //     do_start("utf8locale", 0);
 //     return ScalarLogical(utf8locale);
 // }
-
-
-SEXP do_mbcslocale do_formals
-{
-    do_start("mbcslocale", 0);
-    return ScalarLogical(mbcslocale);
-}
 
 
 // SEXP do_latin1locale do_formals
@@ -39,13 +39,13 @@ SEXP do_mbcslocale do_formals
 LibExtern int R_MB_CUR_MAX;
 SEXP do_R_MB_CUR_MAX do_formals
 {
-    do_start("R_MB_CUR_MAX", 0);
+    do_start_no_call_op_rho("R_MB_CUR_MAX", 0);
     return ScalarInteger(R_MB_CUR_MAX);
 }
 #else
 SEXP do_R_MB_CUR_MAX do_formals
 {
-    do_start("R_MB_CUR_MAX", 0);
+    do_start_no_call_op_rho("R_MB_CUR_MAX", 0);
     return ScalarInteger(MB_CUR_MAX);
 }
 #endif
@@ -53,7 +53,7 @@ SEXP do_R_MB_CUR_MAX do_formals
 
 SEXP do_onload do_formals
 {
-    do_start("onload", 2);
+    do_start_no_call_op("onload", 2);
 
 
 #define R_THIS_PATH_DEFINE_SYMBOLS
@@ -161,11 +161,11 @@ SEXP do_onload do_formals
     } while (0)
 
 
-    // convertclosure2activebinding(install("utf8locale"));
     convertclosure2activebinding(install("mbcslocale"));
-    // convertclosure2activebinding(install("latin1locale"));
+    convertclosure2activebinding(install("utf8locale"));
+    convertclosure2activebinding(install("latin1locale"));
     convertclosure2activebinding(install("R_MB_CUR_MAX"));
-    convertclosure2activebinding(install("utf8"));
+    // convertclosure2activebinding(install("utf8"));
 
 
     SEXP value = allocVector(VECSXP, 13);
@@ -329,7 +329,7 @@ SEXP do_onload do_formals
 
 SEXP do_onunload do_formals
 {
-    do_start("onunload", 1);
+    do_start_no_call_op_rho("onunload", 1);
 
 
     // SEXP libpath = CAR(args);

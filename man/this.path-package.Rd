@@ -1,15 +1,14 @@
 \name{this.path-package}
 \alias{this.path-package}
 \docType{package}
-\title{Get Executing Script's Path, from \sQuote{Rgui}, \sQuote{RStudio},
-  \sQuote{VSCode}, \sQuote{Jupyter}, \sourcelink{}, and
-  \code{\link[utils]{Rscript}} (Shells Including Windows Command-Line / / Unix
-  Terminal)}
+\title{Get Executing Script's Path}
 \description{
-  Determine the path of the executing script. Works when running a line or
-  selection in \sQuote{Rgui}, \sQuote{\RStudio}, \sQuote{\VSCode}, and
-  \sQuote{\Jupyter}, when using \sourcesandlistlinks{}, and when running from a
-  shell.
+  Determine the path of the executing script. Compatible with a few
+  popular GUIs: \sQuote{Rgui}, \sQuote{\RStudio}, \sQuote{\VSCode},
+  \sQuote{\Jupyter}, and
+  \ifelse{html}{\sQuote{\code{\link[utils]{Rscript}}}}{ifelse{text}{\code{Rscript}}{\sQuote{\code{Rscript}}}}
+  (shell). Compatible with several functions and packages:
+  \sourcesandlistlinks.
 }
 \details{
   The most important functions from \pkg{this.path} are
@@ -36,8 +35,8 @@
   \itemize{
     \item{\code{\link{path.join}()}, \code{\link{basename2}()}, and
       \code{\link{dirname2}()} are drop in replacements for
-      \code{\link[base]{file.path}()}, \code{\link[base]{basename}()}, and
-      \code{\link[base:basename]{dirname}()} which better handle drives and
+      \codelink3{base}{file.path}{()}, \codelink3{base}{basename}{()}, and
+      \codelink3{base:basename}{dirname}{()} which better handle drives and
       network shares.}
 
     \item{\code{\link{splitext}()}, \code{\link{removeext}()},
@@ -75,7 +74,7 @@
 
   If you like this package, please consider upvoting my answer so that more
   people will see it! If you have an issue with this package, please use
-  \code{\link[utils:bug.report]{utils::bug.report}(package = "this.path")} to
+  \codelink3{utils:bug.report}{utils::bug.report}{(package = "this.path")} to
   report your issue.
 }
 \author{
@@ -85,7 +84,7 @@
 }
 \keyword{ package }
 \seealso{
-  \sourceslistlinks{}
+  \sourceslistlinks
 
   \code{\link{R.from.shell}}
 }

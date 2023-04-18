@@ -1,6 +1,6 @@
 from.shell <- function ()
 {
-    n <- get.frame.number()
+    n <- .External2(C_getframenumber)
     if (is.na(n))
         NA
     else if (n)
@@ -11,7 +11,7 @@ from.shell <- function ()
 
 is.main <- function ()
 {
-    n <- get.frame.number()
+    n <- .External2(C_getframenumber)
     if (is.na(n))
         NA
     else if (n) {

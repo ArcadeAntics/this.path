@@ -4,7 +4,7 @@
 #if R_version_less_than(3, 5, 0)
 SEXP do_dotslength do_formals
 {
-    do_start("dotslength", 0);
+    do_start_no_call_op("dotslength", 0);
 
 
     SEXP expr = lang1(parent_frameSymbol);
@@ -40,7 +40,7 @@ SEXP checkNSname(SEXP call, SEXP name)
 
 SEXP do_isRegisteredNamespace do_formals
 {
-    do_start("isRegisteredNamespace", 1);
+    do_start_no_op_rho("isRegisteredNamespace", 1);
 
 
     SEXP name = checkNSname(call, PROTECT(coerceVector(CAR(args), SYMSXP)));

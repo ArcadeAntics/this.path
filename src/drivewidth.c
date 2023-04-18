@@ -9,18 +9,18 @@ int get_drive_width_windows(const char *s, int nchar)
 {
     /* there are three types of absolute paths on windows
      *
-     * there are those beginning with d:/ or some other letter
+     * there are those starting with d:/ or some other letter
      * we call these drives
      *
-     * there are those beginning with //host/share
+     * there are those starting with //host/share
      * we call these network shares (for accessing remote data)
      *
-     * and specifically for R, there are those beginning with ~
+     * and specifically for R, there are those starting with ~
      * for functions such as dirname() and basename(), we would normally expand
      * those filenames with R_ExpandFileName(), but for path.join() we don't
      * want to modify the inputs
      *
-     * unlike unix-alikes, a path beginning with / is NOT an absolute path.
+     * unlike unix-alikes, a path starting with / is NOT an absolute path.
      * try this for yourself:
 
 setwd("C:/")

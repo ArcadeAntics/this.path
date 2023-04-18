@@ -2,7 +2,7 @@ all.char <- function ()
 {
     c(
         local({
-            value <- vapply(as.raw(1:255), rawToChar, "")
+            value <- rawToChar(as.raw(1:255), multiple = TRUE)
             Encoding(value) <- "latin1"
             value <- enc2utf8(value)
             names(value) <- sprintf("0x%02x", 1:255)

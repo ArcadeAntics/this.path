@@ -40,7 +40,7 @@ path <- c(
     "path\\\\to\\\\file",
     "\\\\path\\\\to\\\\file",
     "~\\\\path\\\\to\\\\file",
-    # paths with character encodings
+    ## paths with character encodings
     `Encoding<-`("path/to/fil\\xe9", "latin1"),
     "C:/Users/iris/Documents/\\u03b4.R"
 )
@@ -61,7 +61,7 @@ path <- c(
     "/path/to/file",
     "~/path/to/file",
     "path/to/file",
-    # paths with character encodings
+    ## paths with character encodings
     `Encoding<-`("path/to/fil\\xe9", "latin1"),
     "/home/iris/Documents/\\u03b4.R"
 )

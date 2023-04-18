@@ -1,29 +1,24 @@
 \name{this.path}
 \alias{this.path}
 \alias{this.dir}
-\alias{Sys.path}
-\alias{Sys.dir}
 \title{Determine Executing Script's Filename}
 \description{
-  \code{this.path()} returns the \code{\link[base:normalizePath]{normalized}}
-  path of the executing script.
+  \code{this.path()} returns the
+  \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} path of
+  the executing script.
 
-  \code{this.dir()} returns the \code{\link[base:normalizePath]{normalized}}
-  path of the directory in which the executing script is located.
-
-  \code{Sys.path()} and \code{Sys.dir()} are versions of \code{this.path()} and
-  \code{this.dir()} that takes no arguments.
+  \code{this.dir()} returns the
+  \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} path of
+  the directory in which the executing script is located.
 
   See also \code{\link{here}()} and \code{\link{this.proj}()} for constructing
   paths to files, starting with \code{this.dir()} or the project's directory.
 }
 \usage{
 this.path(verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, default, else., local = FALSE)
-this.dir (verbose = getOption("verbose"), default, else.)
-
-Sys.path()  # short for 'this.path(verbose = FALSE)'
-Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
+    for.msg = FALSE, local = FALSE, contents = FALSE,
+    default, else.)
+this.dir(verbose = getOption("verbose"), default, else.)
 }
 \arguments{
   \item{verbose}{\code{TRUE} or \code{FALSE}; should the method in which the
@@ -36,21 +31,33 @@ Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
 
   \item{for.msg}{\code{TRUE} or \code{FALSE}; do you want the path for the
     purpose of printing a diagnostic message / / warning / / error? This will
-    return \code{\link[base:NA]{NA_character_}} in most cases where an error
+    return \codelink2{base:NA}{NA_character_} in most cases where an error
     would have been thrown.
 
     \code{for.msg = TRUE} will ignore \code{original = FALSE}, and will use
     \code{original = NA} instead.}
 
-  \item{default}{if there is no executing script, this value is returned.}
-
-  \item{else.}{missing or a function to apply if there is an executing script.
-    See \code{\link{tryCatch2}()} for inspiration.}
-
   \item{local}{\code{TRUE} or \code{FALSE}; should the search for the executing
     script be confined to the local environment in which
     \code{\link{inside.source}()} / / \code{\link{set.this.path}()} was
     called?}
+
+  \item{contents}{\code{TRUE} or \code{FALSE}; should the contents of the
+    executing script be returned instead? In \sQuote{Jupyter}, a list of
+    character vectors will be returned, the contents separated into cells.
+    Otherwise, if \code{for.msg} is \code{TRUE} and the executing script cannot
+    be determined, \code{NULL} will be returned. Otherwise, a character vector
+    will be returned. You could use
+    \ifelse{html}{\code{\link[base:character]{as.character}(\link[base]{unlist}(this.path(contents = TRUE)))}}{\code{as.character(unlist(this.path(contents = TRUE)))}}
+    if you require a character vector.
+
+    This is intended for logging purposes. This is useful in \sQuote{RStudio}
+    and \sQuote{VSCode} when the source document has contents but no path.}
+
+  \item{default}{if there is no executing script, this value is returned.}
+
+  \item{else.}{missing or a function to apply if there is an executing script.
+    See \code{\link{tryCatch2}()} for inspiration.}
 }
 \details{
   There are three ways in which \R code is typically run:
@@ -137,19 +144,19 @@ Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
 }
 \note{
   The first time \code{this.path()} is called within a script, it will
-  \code{\link[base:normalizePath]{normalize}} the script's path, checking that
-  the script exists (throwing an error if it does not), and save it in the
-  appropriate environment. When \code{this.path()} is called subsequent times
-  within the same script, it returns the saved path. This will be faster than
-  the first time, will not check for file existence, and will be independent of
-  the working directory.
+  \ifelse{html}{\codelink2{base:normalizePath}{normalize}}{\code{normalize}}
+  the script's path, checking that the script exists (throwing an error if it
+  does not), and save it in the appropriate environment. When
+  \code{this.path()} is called subsequent times within the same script, it
+  returns the saved path. This will be faster than the first time, will not
+  check for file existence, and will be independent of the working directory.
 
   As a side effect, this means that a script can delete itself using
-  \code{\link[base:files]{file.remove}()} or \code{\link[base]{unlink}()} but
+  \codelink3{base:files}{file.remove}{()} or \codelink3{base}{unlink}{()} but
   still know its own path for the remainder of the script.
 
   Within a script that contains calls to both \code{this.path()} and
-  \code{\link[base:getwd]{setwd}()}, \code{this.path()} \emph{MUST} be used
+  \codelink3{base:getwd}{setwd}{()}, \code{this.path()} \emph{MUST} be used
   \emph{AT LEAST} once before the first call to \code{setwd()}. This is not
   always necessary; if you ran a script using its absolute path as opposed to
   its relative path, changing the working directory has no effect. However, it
@@ -166,13 +173,13 @@ Sys.dir ()  # short for 'this.dir (verbose = FALSE)'
 
   Please \strong{DO NOT} use \code{this.path()} inside the site-wide startup
   profile file, the user profile, nor the function \code{.First()} (see
-  \code{?\link[base]{Startup}}). This has inconsistent results dependent on the
-  GUI, and often incorrect. For example:
+  \codelink4{?}{base}{Startup}{}). This has inconsistent results dependent on
+  the GUI, and often incorrect. For example:
 
   \describe{
 #ifdef unix
-    \item{in \sQuote{X11}}{in all three cases, it returns the command line
-      argument \option{FILE}: \preformatted{
+    \item{in \sQuote{X11}}{in all three cases, it returns \option{FILE} from
+      the command line arguments: \preformatted{
 > this.path(original = TRUE)
 Source: shell argument 'FILE'
 [1] "./file569c63d647ba.R"
@@ -181,8 +188,8 @@ Source: shell argument 'FILE'
 [1] "/tmp/RtmpGMmR3A/file569c63d647ba.R"}}
 #endif
 #ifdef windows
-    \item{in \sQuote{Rterm}}{in all three cases, it returns the command line
-      argument \option{FILE}: \preformatted{> this.path(original = TRUE)
+    \item{in \sQuote{Rterm}}{in all three cases, it returns \option{FILE} from
+      the command line arguments: \preformatted{> this.path(original = TRUE)
 Source: shell argument 'FILE'
 [1] "./file569c63d647ba.R"
 
@@ -226,8 +233,8 @@ Source: call to function source
 Error in .this.path.toplevel(FALSE, TRUE) :
   Jupyter has not finished loading}}}
 
-  Sometimes it returns the command line argument \option{FILE}, sometimes it
-  returns the path of the user profile, and other times it throws an error.
+  Sometimes it returns \option{FILE} from the command line arguments, sometimes
+  it returns the path of the user profile, and other times it throws an error.
   Alternatively, you could use \code{\link{shFILE}()}, supplying a
   \code{default} argument when no \option{FILE} is specificed, and supplying an
   \code{else.} function for when one is specified.
@@ -274,11 +281,27 @@ if (requireNamespace("knitr")) {
     FILE3.md <- tempfile(fileext = ".md")
     writeLines(c(
         "```{r}",
-        # same expression as above
+        ## same expression as above
         deparse(parse(FILE1.R)[[c(1L, 2L, 2L)]]),
         "```"
     ), FILE2.Rmd)
-    knitr::knit(FILE2.Rmd, output = FILE3.md, quiet = TRUE)
+
+
+    # knitr::knit(FILE2.Rmd, output = FILE3.md, quiet = FALSE)
+    ## the above does not work when using the 'Run examples' button in
+    ## the HTML documentation. {knitr} cannot knit a document inside
+    ## another document, pretty embarassing oversight, so we have to
+    ## launch a new R session and knit the document from there
+    FILE4.R <- tempfile(fileext = ".R")
+    this.path:::write.code(bquote(knitr::knit(.(FILE2.Rmd),
+        output = .(FILE3.md), quiet = TRUE)), FILE4.R)
+    this.path:::Rscript(
+        c("--default-packages=NULL", "--vanilla", FILE4.R),
+        print.command = FALSE
+    )
+    unlink(FILE4.R)
+
+
     this.path:::cat.file(FILE2.Rmd, number.nonblank = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE,
         print.command = TRUE)
@@ -286,25 +309,6 @@ if (requireNamespace("knitr")) {
         squeeze.blank = TRUE, show.tabs = TRUE,
         print.command = TRUE)
     unlink(c(FILE3.md, FILE2.Rmd))
-}
-if (requireNamespace("box")) {
-    FILE2.R <- tempfile(fileext = ".R")
-    this.path:::write.code(bquote({
-        this.path:::withAutoprint({
-            # we have to use box::set_script_path() because {box}
-            # does not allow us to import a module by its path
-            script_path <- box::script_path()
-            on.exit(box::set_script_path(script_path))
-            box::set_script_path(.(normalizePath(FILE1.R, "/")))
-            box::use(module = ./.(as.symbol(this.path::removeext(
-                this.path::basename2(FILE1.R)
-            ))))
-            box::unload(module)
-        }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
-            prompt.echo = "FILE2.R> ", continue.echo = "FILE2.R+ ")
-    }), FILE2.R)
-    source(FILE2.R, verbose = FALSE)
-    unlink(FILE2.R)
 }
 if (requireNamespace("compiler")) {
     FILE2.Rc <- tempfile(fileext = ".Rc")
@@ -314,14 +318,31 @@ if (requireNamespace("compiler")) {
     options(oopt2)
     unlink(FILE2.Rc)
 }
+if (requireNamespace("box")) {
+    FILE2.R <- tempfile(fileext = ".R")
+    this.path:::write.code(bquote({
+        ## we have to use box::set_script_path() because {box}
+        ## does not allow us to import a module by its path
+        script_path <- box::script_path()
+        on.exit(box::set_script_path(script_path))
+        box::set_script_path(.(normalizePath(FILE1.R, "/")))
+        box::use(module = ./.(as.symbol(this.path::removeext(
+            this.path::basename2(FILE1.R)
+        ))))
+        box::unload(module)
+    }), FILE2.R)
+    source(FILE2.R, echo = TRUE, spaced = FALSE, verbose = FALSE,
+        prompt.echo = "FILE2.R> ", continue.echo = "FILE2.R+ ")
+    unlink(FILE2.R)
+}
 
 
-this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
+this.path:::Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
 options(oopt)
 
 
-# this.path also works when source-ing a URL
-# (included tryCatch in case an internet connection is not available)
+## this.path also works when source-ing a URL
+## (included tryCatch in case an internet connection is not available)
 tryCatch({
     source(paste0("https://raw.githubusercontent.com/ArcadeAntics/",
                   "this.path/main/tests/this.path_w_URLs.R"))
@@ -335,18 +356,20 @@ for (expr in c("this.path()",
                "this.dir(default = getwd())"))
 {
     cat("\\n\\n")
-    suppressWarnings(this.path:::.Rscript(
-        c("--default-packages=this.path", "--vanilla", "-e", expr)
-    ))
+    this.path:::Rscript(c("--default-packages=this.path",
+                          "--vanilla", "-e", expr))
 }
 
 
-# an example from R package 'logr'
+## an example from R package 'logr'
 this.path::this.path(verbose = FALSE, default = "script.log",
     else. = function(path) {
-        # replace extension (probably .R) with .log
+        ## replace extension (probably .R) with .log
         this.path::ext(path) <- ".log"
         path
-        # or you could use paste0(this.path::removeext(path), ".log")
+        ## or you could use paste0(this.path::removeext(path), ".log")
     })
-\dontshow{unlink(FILE1.R)}}
+
+
+unlink(FILE1.R)
+}

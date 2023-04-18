@@ -22,15 +22,15 @@ ext(path, compression = FALSE) <- value
 \arguments{
   \item{path}{character vector, containing path names.}
 
-  \item{compression}{should compression extensions \sQuote{.gz}, \sQuote{.bz2},
-    and \sQuote{.xz} be taken into account when removing/getting an extension?}
+  \item{compression}{should compression extensions \string{.gz}, \string{.bz2},
+    and \string{.xz} be taken into account when removing / / getting an
+    extension?}
 
-  \item{value}{a character vector, typically of length \code{1} or
-    \code{length(path)}, or \code{NULL}.}
+  \item{value}{a character vector, typically of length
+    \ifelse{text}{1}{\code{1}} or \code{length(path)}, or \code{NULL}.}
 }
 \details{
-  \code{\link[base:path.expand]{tilde expansion}} of the path will be
-  performed.
+  \codelink2{base:path.expand}{tilde expansion} of the path will be performed.
 
   Trailing path separators are removed before dissecting the path.
 
@@ -38,9 +38,9 @@ ext(path, compression = FALSE) <- value
   \code{path == paste0(removeext(path), ext(path))}.
 }
 \value{
-  for \code{splitext()}, a matrix with 2 rows and \code{length(path)} columns.
-  The first row will be the roots of the paths, the second row will be the
-  extensions of the paths.
+  for \code{splitext()}, a matrix with \ifelse{text}{2}{\code{2}} rows and
+  \code{length(path)} columns. The first row will be the roots of the paths,
+  the second row will be the extensions of the paths.
 
   for \code{removeext()} and \code{ext()}, a character vector the same length
   as \code{path}.

@@ -22,8 +22,8 @@
   The first two are different ways of writing equivalent statements. The third
   statement is the first statement plus options \option{--restore}
   \option{--save} (plus option \option{--no-readline} under Unix-alikes), and
-  it also saves the \code{\link[base:showConnections]{stdout}} and
-  \code{\link[base:showConnections]{stderr}} in a file of your choosing. The
+  it also saves the \codelink2{base:showConnections}{stdout} and
+  \codelink2{base:showConnections}{stderr} in a file of your choosing. The
   fourth statement is the second statement plus options \option{--no-echo}
   \option{--no-restore}. You can try:
 
@@ -38,7 +38,7 @@
   for a help message that describes what these options mean. In general,
   \command{Rscript} is the one you want to use. It should be noted that
   \command{Rscript} has some exclusive
-  \code{\link[base:EnvVar]{environment variables}} (not used by the other
+  \codelink2{base:EnvVar}{environment variables} (not used by the other
   executables) that will make its behaviour different from \command{R}.
 
   For the purpose of making packages, \command{R CMD} is what you will need.
@@ -58,7 +58,7 @@
   \href{https://cran.r-project.org/submit.html}{submitting a package to CRAN}.
   \command{R CMD INSTALL} will install an \R package (specified by a directory
   or tarball), and is used by
-  \code{\link[utils:install.packages]{utils::install.packages}()}.
+  \codelink3{utils:install.packages}{utils::install.packages}{()}.
   \command{R CMD check} will check an \R package (specified by a tarball) for
   possible errors in code, documentation, tests, and much more.
 
@@ -154,10 +154,10 @@
   the following command:
 
 #ifdef unix
-  \verb{cat(sQuote(R.home("bin")), "\n")}
+  \verb{cat(sQuote(R.home("bin")), "\\n")}
 #endif
 #ifdef windows
-  \verb{cat(sQuote(normalizePath(R.home("bin"))), "\n")}
+  \verb{cat(sQuote(normalizePath(R.home("bin"))), "\\n")}
 #endif
 
   For me, this is:
@@ -166,6 +166,6 @@
   \file{\verb{/usr/lib/R/bin}}
 #endif
 #ifdef windows
-  \file{\verb{C:\Program Files\R\R-}\Sexpr[stage=render]{getRversion()}\verb{\bin\x64}}
+  \file{\verb{C:\\Program Files\\R\\R-}\Sexpr[stage=render]{getRversion()}\verb{\\bin\\x64}}
 #endif
 }
