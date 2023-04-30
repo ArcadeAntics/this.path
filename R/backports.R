@@ -1,7 +1,7 @@
 if (getRversion() < "4.2.0") {
 
 
-# gettext(trim = TRUE) was added in R 4.2.0
+## gettext(trim = TRUE) was added in R 4.2.0
 gettext <- function (..., domain = NULL, trim = TRUE)
 {
     gettext(..., domain = domain)
@@ -15,7 +15,7 @@ environment(gettext) <- .BaseNamespaceEnv
 if (getRversion() < "4.1.0") {
 
 
-# bquote(splice = TRUE) was added in R 4.1.0
+## bquote(splice = TRUE) was added in R 4.1.0
 bquote <- function (expr, where = parent.frame(), splice = FALSE)
 {
     if (!is.environment(where))
@@ -179,7 +179,7 @@ lengths <- function (x, use.names = TRUE)
 .External2(C_lengths, x, use.names)
 
 
-# file.info() did not have argument extra_cols at this time
+## file.info() did not have argument 'extra_cols' at this time
 file.mtime <- function (...)
 file.info(...)$mtime
 environment(file.mtime) <- .BaseNamespaceEnv
@@ -253,6 +253,17 @@ parse <- function (file = "", n = NULL, text = NULL, prompt = "?", keep.source =
     else parse(file = file, n = n, text = text, prompt = prompt, srcfile = srcfile, encoding = encoding)
 }
 environment(parse) <- .BaseNamespaceEnv
+
+
+}
+
+
+if (getRversion() < "2.15.0") {
+
+
+paste0 <- function (..., collapse = NULL)
+paste(..., sep = "", collapse = collapse)
+environment(paste0) <- .BaseNamespaceEnv
 
 
 }

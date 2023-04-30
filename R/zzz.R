@@ -132,7 +132,7 @@ if (getRversion() < "3.0.0") {
     }
 
 
-    # Args.R                       ----
+    ## Args.R                       ----
 
 
     fileArgs <- fix.External2(fileArgs)
@@ -140,7 +140,7 @@ if (getRversion() < "3.0.0") {
     withArgs <- fix.External2(withArgs)
 
 
-    # backports.R                  ----
+    ## backports.R                  ----
 
 
     if (getRversion() < "3.3.0") {
@@ -160,7 +160,7 @@ if (getRversion() < "3.0.0") {
     }
 
 
-    # basename2.R                  ----
+    ## basename2.R                  ----
 
 
     windows.basename2 <- fix.External2(windows.basename2)
@@ -171,14 +171,14 @@ if (getRversion() < "3.0.0") {
     dirname2          <- fix.External2(dirname2         )
 
 
-    # check.path.R                 ----
+    ## check.path.R                 ----
 
 
     check.path <- fix.External2(check.path)
     check.proj <- fix.External2(check.proj)
 
 
-    # ext.R                        ----
+    ## ext.R                        ----
 
 
     windows.splitext  <- fix.External2(windows.splitext )
@@ -195,14 +195,14 @@ if (getRversion() < "3.0.0") {
     `ext<-`           <- fix.External2(`ext<-`          )
 
 
-    # from.shell.R                 ----
+    ## from.shell.R                 ----
 
 
     from.shell <- fix.External2(from.shell)
     is.main    <- fix.External2(is.main   )
 
 
-    # hooks-for-namespace-events.R ----
+    ## hooks-for-namespace-events.R ----
 
 
     # utf8locale   <- fix.External2(utf8locale  )
@@ -215,13 +215,13 @@ if (getRversion() < "3.0.0") {
     .onUnload <- fix.External2(.onUnload)
 
 
-    # LINENO.R                     ----
+    ## LINENO.R                     ----
 
 
     LINENO <- fix.External2(LINENO)
 
 
-    # path.join.R                  ----
+    ## path.join.R                  ----
 
 
     windows.path.join <- fix.External2(windows.path.join)
@@ -229,7 +229,7 @@ if (getRversion() < "3.0.0") {
     path.join         <- fix.External2(path.join        )
 
 
-    # path.split.R                 ----
+    ## path.split.R                 ----
 
 
     windows.path.split   <- fix.External2(windows.path.split  )
@@ -243,7 +243,7 @@ if (getRversion() < "3.0.0") {
     path.unsplit         <- fix.External2(path.unsplit        )
 
 
-    # promises.R                   ----
+    ## promises.R                   ----
 
 
     fix.External2.promise(bindings = c("shINFO", "gui.rstudio"))
@@ -251,7 +251,13 @@ if (getRversion() < "3.0.0") {
     PRINFO               <- fix.External2(PRINFO              )
 
 
-    # this.path.R                  ----
+    ## rprojroot.R                  ----
+
+
+    reset.this.proj <- fix.External2(reset.this.proj)
+
+
+    ## this.path.R                  ----
 
 
     .shFILE                                  <- fix.External2(.shFILE                                 )
@@ -280,7 +286,7 @@ if (getRversion() < "3.0.0") {
     # local.path                               <- fix.External2(local.path                              )
 
 
-    # utils.R                      ----
+    ## utils.R                      ----
 
 
     if (getRversion() < "3.5.0") {
@@ -291,7 +297,7 @@ if (getRversion() < "3.0.0") {
     }
 
 
-    # wrapsource.R                 ----
+    ## wrapsource.R                 ----
 
 
     wrap.source     <- fix.External2(wrap.source    )

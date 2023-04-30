@@ -103,134 +103,17 @@ toupper.ASCII <- function (x)
 chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
 
 
+casefold.ASCII <- function (x, upper = FALSE)
+if (upper) toupper.ASCII(x) else tolower.ASCII(x)
+
+
 delayedAssign("NET.USE.command", {
     if (os.windows)
         paste(shQuote(paste0(Sys.getenv("windir"), "\\System32\\net.exe")), "USE")
 })
 
 
-windows.relpath <- function (path, relative.to = .this.dir())
-{
-    if (length(path) <= 0L)
-        return(character())
-
-
-    path <- normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
-    if (!missing(relative.to)) {
-        if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
-        relative.to <- normalizePath.and.URL.1(relative.to,
-            winslash = "/", mustWork = TRUE)
-    }
-
-
-    path <- c(relative.to, path)
-    path <- sub("^[/\\\\][/\\\\](LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
-                "\\2:/", path, ignore.case = TRUE)
-    p <- path.split(path)
-
-
-    multiple.drives <- {
-        u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
-        if (length(u) == 1L)
-            FALSE
-        else if (!any(i <- grepl("^[abcdefghijklmnopqrstuvwxyz]:/$", u)))
-            TRUE
-        else {
-            u[i] <- toupper.ASCII(u[i])
-            length(unique(u)) != 1L
-        }
-    }
-    if (multiple.drives) {
-        x <- system(NET.USE.command, intern = TRUE)
-        m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *$", x)
-        keep <- !vapply(m, function(mm) length(mm) == 1L && mm == -1L, FUN.VALUE = NA)
-        if (any(keep)) {
-            x <- regmatches(x[keep], m[keep])
-            local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
-            local <- tolower.ASCII(local)
-            local <- paste0(local, "/")
-            remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
-            if (any(i <- grepl("^[/\\\\]{2}", remote)))
-                remote[i] <- chartr("\\", "/", remote[i])
-            remote <- paste0(remote, "/")
-            fix.local <- function(p) {
-                if (indx <- match(tolower.ASCII(p[[1L]]), local, 0L)) {
-                    c(remote[[indx]], p[-1L])
-                } else p
-            }
-        }
-        else fix.local <- identity
-    }
-    else fix.local <- identity
-
-
-    r <- p[[1L]]
-    p <- p[-1L]
-    r <- fix.local(r)
-    ignore.case <- !grepl("^(http|https)://", r[[1L]])
-    fix.case <- if (ignore.case) tolower.ASCII else identity
-    r <- fix.case(r)
-    len <- length(r)
-    path.unsplit(lapply(p, function(p) {
-        len2 <- length(p)
-        n <- min(len2, len)
-        q <- fix.case(fix.local(p))
-        n <- match(FALSE, q[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
-        if (n == 0L)
-            return(p)
-        value <- c(
-            rep("..", len - n),
-            p[seq.int(n + 1L, length.out = len2 - n)]
-        )
-        if (length(value) <= 0L)
-            "."
-        else if (!(value[[1L]] %in% c(".", "..")))
-            c(".", value)
-        else value
-    }))
-}
-
-
-unix.relpath <- function (path, relative.to = .this.dir())
-{
-    if (length(path) <= 0L)
-        return(character())
-
-
-    path <- normalizePath.and.URL(path, winslash = "/", mustWork = FALSE)
-    if (!missing(relative.to)) {
-        if (!is.character(relative.to) || length(relative.to) != 1L)
-            stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
-        relative.to <- normalizePath.and.URL.1(relative.to,
-            winslash = "/", mustWork = TRUE)
-    }
-
-
-    path <- c(relative.to, path)
-    p <- path.split(path)
-    r <- p[[1L]]
-    len <- length(r)
-    path.unsplit(lapply(p[-1L], function(p) {
-        len2 <- length(p)
-        n <- min(len2, len)
-        n <- match(FALSE, p[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
-        if (n == 0L)
-            return(p)
-        value <- c(
-            rep("..", len - n),
-            p[seq.int(n + 1L, length.out = len2 - n)]
-        )
-        if (length(value) <= 0L)
-            "."
-        else if (!(value[[1L]] %in% c(".", "..")))
-            c(".", value)
-        else value
-    }))
-}
-
-
-rel2here <- function (path)
+.relpath <- function (path, relative.to = getwd(), type = "relpath")
 {
     if (!is.character(path))
         stop("a character vector argument expected", domain = "R")
@@ -241,9 +124,105 @@ rel2here <- function (path)
         value <- character(n)
         value[] <- path
         if (any(i <- !(is.na(value) | value == ""))) {
-            value[i] <- if (os.windows)
-                windows.relpath(value[i])
-            else unix.relpath(value[i])
+            path <- value[i]
+            path <- normalizePath.and.URL(path, "/", FALSE)
+            switch (type, relpath = {
+                if (!is.character(relative.to) || length(relative.to) != 1L)
+                    stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
+                relative.to <- normalizePath.and.URL.1(relative.to, "/", TRUE)
+            }, rel2here = {
+                relative.to <- .this.dir()
+            }, rel2proj = {
+                relative.to <- .this.proj()
+            }, {
+                stop(gettextf("invalid '%s' argument", "type", domain = "R"))
+            })
+            path <- c(relative.to, path)
+            value[i] <- if (os.windows) {
+                ## replace //LOCALHOST/C$/
+                ## with    C:/
+                path <- sub("(?i)^[/\\\\][/\\\\](?:LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
+                            "\\1:/", path)
+                p <- path.split(path)
+
+
+                ## get the first element of each path, the drive,
+                ## and then keep all the unique ones
+                u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
+                ## by drives I mean both network shares "//host/share/"
+                ## and letter drives "d:"
+                singular.drive <- if (length(u) == 1L) {
+                    TRUE
+                } else if (any(j <- grepl("^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:/$", u))) {
+                    u[j] <- toupper.ASCII(u[j])
+                    length(unique(u)) == 1L
+                } else FALSE
+                if (singular.drive) {
+                    fix.local <- identity
+                } else {
+                    x <- system(NET.USE.command, intern = TRUE)
+                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *$", x)
+                    ## one for the whole match, another two for the parenthesized sub-expressions
+                    if (any(keep <- lengths(m) == 3L)) {
+                        x <- regmatches(x[keep], m[keep])
+                        local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
+                        local <- tolower.ASCII(local)
+                        local <- paste0(local, "/")
+                        remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
+                        if (any(j <- grepl("^[/\\\\]{2}", remote)))
+                            remote[j] <- chartr("\\", "/", remote[j])
+                        remote <- paste0(remote, "/")
+                        fix.local <- function(p) {
+                            if (indx <- match(tolower.ASCII(p[[1L]]), local, 0L)) {
+                                c(remote[[indx]], p[-1L])
+                            } else p
+                        }
+                    } else fix.local <- identity
+                }
+
+
+                r <- p[[1L]]
+                p <- p[-1L]
+                r <- fix.local(r)
+                ignore.case <- !grepl("^(http|https)://", r[[1L]])
+                fix.case <- if (ignore.case) tolower.ASCII else identity
+                r <- fix.case(r)
+                len <- length(r)
+                path.unsplit(lapply(p, function(p) {
+                    n <- min(len, length(p))
+                    q <- fix.case(fix.local(p))
+                    n <- match(FALSE, q[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
+                    if (n == 0L) {
+                        p
+                    } else {
+                        value <- c(rep("..", len - n), p[-seq_len(n)])
+                        if (length(value) <= 0L)
+                            "."
+                        else if (!value[[1L]] %in% c(".", ".."))
+                            c(".", value)
+                        else value
+                    }
+                }))
+            }
+            else {
+                p <- path.split(path)
+                r <- p[[1L]]
+                len <- length(r)
+                path.unsplit(lapply(p[-1L], function(p) {
+                    n <- min(len, length(p))
+                    n <- match(FALSE, p[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
+                    if (n == 0L) {
+                        p
+                    } else {
+                        value <- c(rep("..", len - n), p[-seq_len(n)])
+                        if (length(value) <= 0L)
+                            "."
+                        else if (!value[[1L]] %in% c(".", ".."))
+                            c(".", value)
+                        else value
+                    }
+                }))
+            }
         }
         value
     }
@@ -251,20 +230,12 @@ rel2here <- function (path)
 
 
 relpath <- function (path, relative.to = getwd())
-{
-    if (!is.character(path))
-        stop("a character vector argument expected", domain = "R")
-    n <- length(path)
-    if (n <= 0L) {
-        character()
-    } else {
-        value <- character(n)
-        value[] <- path
-        if (any(i <- !(is.na(value) | value == ""))) {
-            value[i] <- if (os.windows)
-                windows.relpath(value[i], relative.to)
-            else unix.relpath(value[i], relative.to)
-        }
-        value
-    }
-}
+.relpath(path, relative.to)
+
+
+rel2here <- function (path)
+.relpath(path, type = "rel2here")
+
+
+rel2proj <- function (path)
+.relpath(path, type = "rel2proj")

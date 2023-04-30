@@ -1,16 +1,18 @@
 \name{relpath}
 \alias{relpath}
 \alias{rel2here}
+\alias{rel2proj}
 \title{Make a Path Relative to Another Path}
 \description{
   When working with \pkg{this.path}, you will be dealing with a lot of absolute
   paths. These paths are no good for saving within files, so you will need to
-  use \code{relpath()} and \code{rel2here()} to turn your absolute paths into
-  relative paths.
+  use \code{relpath()} / / \code{rel2here()} / / \code{rel2proj()} to turn your
+  absolute paths into relative paths.
 }
 \usage{
 relpath(path, relative.to = getwd())
 rel2here(path)
+rel2proj(path)
 }
 \arguments{
   \item{path}{character vector of file / / URL pathnames.}
@@ -31,8 +33,9 @@ rel2here(path)
   character vector of the same length as \code{path}.
 }
 \note{
-  \code{rel2here()} is a variant of \code{relpath()} in which
-  \code{relative.to} is \code{\link{here}()}.
+  \code{rel2here()} / / \code{rel2proj()} are variants of \code{relpath()} in
+  which \code{relative.to} is \code{\link{here}()} / /
+  \code{\link{this.proj}()}.
 }
 #ifdef unix
 \examples{
@@ -83,3 +86,4 @@ relpath(
 }
 }
 #endif
+

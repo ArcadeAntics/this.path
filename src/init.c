@@ -21,6 +21,11 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* backports.c */
 
 
+#if R_version_less_than(3, 5, 0)
+    {"dotslength", (DL_FUNC) &do_dotslength, 0},
+#endif
+
+
 #if R_version_less_than(3, 3, 0)
     {"strrep"    , (DL_FUNC) &do_strrep    , 2},
     {"startsWith", (DL_FUNC) &do_startsWith, 2},
@@ -29,8 +34,9 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
 #if R_version_less_than(3, 2, 0)
-    {"direxists", (DL_FUNC) &do_direxists, 1},
-    {"lengths"  , (DL_FUNC) &do_lengths  , 2},
+    {"direxists"            , (DL_FUNC) &do_direxists            , 1},
+    {"lengths"              , (DL_FUNC) &do_lengths              , 2},
+    {"isRegisteredNamespace", (DL_FUNC) &do_isRegisteredNamespace, 1},
 #endif
 
 
@@ -125,6 +131,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"setthispathjupyter"      , (DL_FUNC) &do_setthispathjupyter      , -1},
 
 
+    /* rprojroot.c */
+
+
+    {"resetthisproj", (DL_FUNC) &do_resetthisproj, 0},
+
+
     /* shfile.c */
 
 
@@ -147,17 +159,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"getframenumber"  , (DL_FUNC) &do_getframenumber  ,  0},
     {"inittoolsrstudio", (DL_FUNC) &do_inittoolsrstudio, -1},
     {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  7},
-
-
-    /* utils.c */
-
-
-#if R_version_less_than(3, 5, 0)
-    {"dotslength", (DL_FUNC) &do_dotslength, 0},
-#endif
-#if R_version_less_than(3, 2, 0)
-    {"isRegisteredNamespace", (DL_FUNC) &do_isRegisteredNamespace, 1},
-#endif
 
 
     /* wrapsource.c */

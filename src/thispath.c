@@ -212,6 +212,8 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
     if (contents) {
         if (original)
             error(one, "original", "contents");
+        else
+            ;
     }
 
 
@@ -266,16 +268,6 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
     }
 
 
-    // Rprintf("\nverbose: %s\noriginal: %s\nfor.msg: %s\nget.frame.number: %s\nlocal: %s\ncontents: %s\nN: %d\n",
-    //         (verbose          == NA_LOGICAL) ? "NA" : (verbose          ? "TRUE" : "FALSE"),
-    //         (original         == NA_LOGICAL) ? "NA" : (original         ? "TRUE" : "FALSE"),
-    //         (for_msg          == NA_LOGICAL) ? "NA" : (for_msg          ? "TRUE" : "FALSE"),
-    //         (get_frame_number == NA_LOGICAL) ? "NA" : (get_frame_number ? "TRUE" : "FALSE"),
-    //         (local            == NA_LOGICAL) ? "NA" : (local            ? "TRUE" : "FALSE"),
-    //         (contents         == NA_LOGICAL) ? "NA" : (contents         ? "TRUE" : "FALSE"),
-    //         N);
-
-
     if (N <= 0) {
 
 
@@ -309,7 +301,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
     int nprotect = 0;
 
 
-    init_tools_rstudio(FALSE);
+    init_tools_rstudio(/* skipCheck */ FALSE);
 
 
     SEXP source      = getInFrame(sourceSymbol    , R_BaseEnv, FALSE),
@@ -319,8 +311,8 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
 
 
     SEXP ns;
-    Rboolean testthat_loaded, knitr_loaded, box_loaded      , compiler_loaded;
-    SEXP     source_file    , knit        , load_from_source, loadcmp        ;
+    Rboolean testthat_loaded, knitr_loaded, compiler_loaded, box_loaded      ;
+    SEXP     source_file    , knit        , loadcmp        , load_from_source;
 
 
     ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
@@ -422,8 +414,8 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
 #define returnfile(character_only, file_only, which,           \
     promise_must_be_forced, fun_name)                          \
             thispathofile = findVarInFrame(frame, thispathofileSymbol);\
-            /* don't check right away that this is missing, in case another */\
-            /* error must be thrown or the user requests the frame number   */\
+            /* don't check right away that this is missing, in case another\
+               error must be thrown or the frame number is requested */\
             if (!file_only) {                                  \
                 /* if file_only is TRUE, thispathofile cannot be NULL */\
                 if (thispathofile == R_NilValue) {             \

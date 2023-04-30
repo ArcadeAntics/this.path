@@ -691,5 +691,8 @@ SEXP get_sys_parents(SEXP rho)
 
 int get_sys_parent(int n, SEXP rho)
 {
-    return asInteger(eval(lang2(findVarInFrame(R_BaseEnv, sys_parentSymbol), ScalarInteger(n)), rho));
+    SEXP N = PROTECT(ScalarInteger(n));
+    int value = asInteger(eval(lang2(findVarInFrame(R_BaseEnv, sys_parentSymbol), N), rho));
+    UNPROTECT(1);
+    return value;
 }

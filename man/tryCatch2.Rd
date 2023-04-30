@@ -40,3 +40,4 @@ for (FILE in FILES) {
 }
 unlink(FILES)
 }
+

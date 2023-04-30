@@ -53,9 +53,8 @@ reset.this.proj <- function ()
     if (sys.nframe() != toplevel.context.number() + 1L)
         stop(gettextf("'%s' can only be called from a top-level context",
             "reset.this.proj"))
-    x <<- structure(character(0), names = character(0))
+    .External2(C_resetthisproj)
 }
-environment(reset.this.proj) <- environment(.this.proj)
 
 
 this.proj <- function (...)

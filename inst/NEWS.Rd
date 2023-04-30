@@ -1,8 +1,22 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
-\newcommand{\commandorsQuote}{\ifelse{text}{\sQuote{#1}}{\command{#1}}}
-\newcommand{\codeorsQuote}{\ifelse{text}{\sQuote{#1}}{\code{#1}}}
-\newcommand{\optionorsQuote}{\ifelse{text}{\sQuote{#1}}{\option{#1}}}
+\section{CHANGES IN VERSION devel}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{Added \code{rel2proj()} for turning absolute paths into relative
+        paths against the executing project's directory.}
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{Fixed display issues in LaTeX and plain text documentation.}
+
+      \item{\code{reset.this.proj()} now has environment
+        \code{<environment: namespace:this.path>} as do all other exported
+        functions.}
+    }
+  }
+}
 \section{CHANGES IN VERSION 1.4.0 (2023-04-18)}{
   \subsection{NEW FEATURES}{
     \itemize{
@@ -10,8 +24,8 @@
         that returns the contents of the executing script.}
 
       \item{\code{try.this.path()} now accepts argument \codeorsQuote{contents}
-        to get the contents of the executing script, \codeorsQuote{NULL} if
-        that fails.}
+        that returns the contents of the executing script, \codeorsQuote{NULL}
+        if that fails.}
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{
@@ -40,7 +54,7 @@
     \itemize{
       \item{\code{this.path()} no longer throws an error when multiple
         \optionorsQuote{-f} \optionorsQuote{FILE}, \optionorsQuote{--file=FILE}
-        arguments are provided to a shell, and instead returns the last
+        arguments are provided to a shell, instead returning the last
         \optionorsQuote{FILE} (ignoring \optionorsQuote{-f} \optionorsQuote{-},
         \optionorsQuote{--file=-}).}
     }
@@ -51,23 +65,25 @@
         \code{path.unsplit()} for splitting and unsplitting paths into
         components.}
 
-      \item{\code{this.path()} now works when run in \sQuote{\VSCode} with the
-        \sQuote{\radian} console.}
+      \item{\code{this.path()} is now compatible with GUI \sQuote{\VSCode} with
+        the \sQuote{\radian} console.}
 
-      \item{\code{this.path()} now works in \sQuote{\Jupyter}. Added
-        \code{set.this.path.jupyter()} for explicitly declaring the path of the
-        \sQuote{\Jupyter} notebook.}
+      \item{\code{this.path()} is now compatible with GUI \sQuote{\Jupyter}.
+        Added \code{set.this.path.jupyter()} for explicitly declaring the path
+        of the \sQuote{\Jupyter} notebook.}
 
-      \item{\code{this.path()} now works inside \code{compiler::loadcmp()}.}
+      \item{\code{this.path()} is now compatible with function
+        \code{compiler::loadcmp()}.}
 
-      \item{\code{this.path()} now works inside \code{box::use()}.}
+      \item{\code{this.path()} is now compatible with function
+        \code{box::use()}.}
 
       \item{For logging purposes, \code{this.path(for.msg = TRUE)} will now
-        return \code{"Untitled"} when appropriate.}
+        return \string{Untitled} when appropriate.}
 
-      \item{\code{inside.source()} / / \code{set.this.path()} now accept
-        argument \codeorsQuote{Function} specifying the name of the function
-        and package in which they are called.}
+      \item{\code{inside.source()} / / \code{set.this.path()} accept argument
+        \codeorsQuote{Function} specifying the name of the function and package
+        in which they are called.}
 
       \item{\code{this.path()} now accepts argument \codeorsQuote{local} to
         confine the search for the executing script to the local environment in
@@ -97,24 +113,22 @@
   }
   \subsection{BUG FIXES}{
     \itemize{
-      \item{\code{shFILE(for.msg = TRUE, default = <...>)} now does not
-        evaluate \codeorsQuote{default}, as intended. By extension,
-        \code{this.path(for.msg = TRUE)} now returns
-        \codeorsQuote{NA_character_} when running from a shell instead of
-        incorrectly throwing an error.}
+      \item{\code{shFILE(for.msg = TRUE, default = <...>)} does not evaluate
+        \codeorsQuote{default}, as intended. By extension,
+        \code{this.path(for.msg = TRUE)} returns \codeorsQuote{NA_character_}
+        when running from a shell instead of incorrectly throwing an error.}
     }
   }
 }
 \section{CHANGES IN VERSION 1.2.0 (2023-01-16)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
-      \item{\code{shFILE()} now parses the command line arguments in the exact
-        same manner as \R itself, more accurately selecting
-        \optionorsQuote{FILE}.}
+      \item{\code{shFILE()} parses the command line arguments in the exact same
+        manner as \R itself, more accurately extracting \optionorsQuote{FILE}.}
 
       \item{A relative path returned by \code{relpath()} / /
-        \code{as.rel.path()} will always start with \code{"./"} or
-        \code{"../"}.}
+        \code{as.rel.path()} will always start with \string{./} or
+        \string{../}.}
     }
   }
   \subsection{NEW FEATURES}{
@@ -145,8 +159,8 @@
 \section{CHANGES IN VERSION 1.1.0 (2022-12-01)}{
   \subsection{NEW FEATURES}{
     \itemize{
-      \item{\code{this.path()} now works inside \code{knitr::knit()}. By
-        extension, \code{withArgs(knitr::knit())} now also works.}
+      \item{\code{this.path()} is now compatible with function
+        \code{knitr::knit()}.}
 
       \item{\code{this.path()} now accepts argument \codeorsQuote{original}
         that returns the executing script's original (unnormalized) path.}
@@ -157,8 +171,8 @@
         \code{this.path(for.msg = TRUE)} should not be used for constructing
         file paths.}
 
-      \item{\code{shFILE()} also accepts argument \codeorsQuote{original} that
-        returns the original \optionorsQuote{FILE} from the command line
+      \item{\code{shFILE()} also now accepts argument \codeorsQuote{original}
+        that returns the original \optionorsQuote{FILE} from the command line
         arguments.}
 
       \item{Added \code{splitext()}, \code{removeext()}, \code{ext()}, and
@@ -196,8 +210,8 @@
   }
   \subsection{BUG FIXES}{
     \itemize{
-      \item{\code{check.path()} and \code{check.dir()} now use
-        \code{path.join()} instead of \code{file.path()}.}
+      \item{\code{check.path()} and \code{check.dir()} use \code{path.join()}
+        instead of \code{file.path()}.}
 
       \item{\code{fileArgs()}, \code{progArgs()}, \code{from.shell()}, and
         \code{is.main()} no longer force the normalization of the executing
@@ -209,9 +223,9 @@
 \section{CHANGES IN VERSION 1.0.2 (2022-09-23)}{
   \subsection{BUG FIXES}{
     \itemize{
-      \item{\code{this.path()} now works when called in a script from a shell
-        on Ubuntu installed on an Android (where
-        \code{.Platform$GUI == "unknown"}, normally \code{"unix"}).}
+      \item{\code{this.path()} works when called in a script from a shell on
+        Ubuntu installed on an Android (where
+        \code{.Platform$GUI == "unknown"}, normally \string{unix}).}
     }
   }
 }
@@ -238,83 +252,6 @@
         for constructing and manipulating paths to files. These are based on
         \code{file.path()}, \code{basename()}, and \code{dirname()}, but behave
         differently with network shares and a few important edge cases.}
-    }
-  }
-}
-\section{CHANGES IN VERSION 0.11.0 (2022-09-03)}{
-  \subsection{NEW FEATURES}{
-    \itemize{
-      \item{Added \code{tryCatch2()}, introducing argument \codeorsQuote{else.}
-        similar to \codeorsQuote{try except} in \sQuote{\Python}.}
-
-      \item{Added \codeorsQuote{else.} argument to \code{this.path()},
-        \code{this.dir()}, \code{shFILE()}, and \code{normalized.shFILE()}, a
-        function to act on the return value.}
-    }
-  }
-}
-\section{CHANGES IN VERSION 0.10.0 (2022-07-17)}{
-  \subsection{NEW FEATURES}{
-    \itemize{
-      \item{Added \code{asArgs()}, \code{fileArgs()}, and \code{withArgs()} to
-        more easily provide arguments to a script.}
-
-      \item{Added \code{from.shell()} to determine if a script was run from a
-        shell.}
-
-      \item{Added \code{this.proj(...)}, similar to \code{here::here(...)},
-        except that \code{this.proj()} supports multiple projects in one \R
-        session and is independent of working directory.}
-    }
-  }
-  \subsection{BUG FIXES}{
-    \itemize{
-      \item{\code{this.path::here()} no longer uses \code{dirname()} on a UNC
-        path.}
-    }
-  }
-}
-\section{CHANGES IN VERSION 0.9.0 (2022-07-15)}{
-  \subsection{NEW FEATURES}{
-    \itemize{
-      \item{\code{this.path()} and others now work in \sQuote{\VSCode}.}
-    }
-  }
-  \subsection{BUG FIXES}{
-    \itemize{
-      \item{when \code{source()}-ing a file URL,
-        \code{source("file:///path/to/file")}, \code{this.path()} no longer
-        attempts to re-open a connection.}
-    }
-  }
-}
-\section{CHANGES IN VERSION 0.8.0 (2022-07-08)}{
-  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
-    \itemize{
-      \item{All previously defunct functions were removed entirely.}
-    }
-  }
-  \subsection{NEW FEATURES}{
-    \itemize{
-      \item{\code{this.path()}, \code{this.dir()}, \code{shFILE()}, and
-        \code{normalized.shFILE()} were given a new argument \codeorsQuote{default}
-        that will be evaluated and returned if there is no executing script or
-        command line argument \optionorsQuote{FILE} was not found.}
-    }
-  }
-  \subsection{DEPRECATED AND DEFUNCT}{
-    \itemize{
-      \item{\code{this.path2()}, \code{this.dir2()}, and \code{this.dir3()} are
-        deprecated and should be replaced with
-        \code{this.path(default = NULL)}, \code{this.dir(default = NULL)}, and
-        \code{this.dir(default = getwd())}, respectively.}
-    }
-  }
-  \subsection{BUG FIXES}{
-    \itemize{
-      \item{\code{normalized.shFILE()} no longer sets attribute
-        \code{"this.path.from.shell"}, that is now handled by
-        \code{this.path()}.}
     }
   }
 }

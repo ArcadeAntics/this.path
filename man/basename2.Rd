@@ -17,7 +17,8 @@ dirname2(path)
   \item{path}{character vector, containing path names.}
 }
 \details{
-  \codelink2{base:path.expand}{tilde expansion} of the path will be performed.
+  Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) of the path will
+  be performed.
 
   Trailing path separators are removed before dissecting the path, and for
   \code{dirname2()} any trailing file separators are removed from the result.
@@ -73,3 +74,4 @@ path <- c("/usr/lib", "/usr/", "usr", "/", ".", "..")
 x <- cbind(path, dirname = dirname2(path), basename = basename2(path))
 print(x, quote = FALSE, print.gap = 3)
 }
+

@@ -67,7 +67,7 @@ this.dir(verbose = getOption("verbose"), default, else.)
       \sQuote{\Jupyter} by running the current line / / selection with the
       \strong{Run} button / / appropriate keyboard shortcut}
 
-    \item{through a source call: a call to function \sourcesorlistlinks{}}
+    \item{through a source call: a call to function \sourcesorlistlinks}
 
     \item{from a shell, such as the Windows command-line / / Unix terminal}
   }
@@ -76,8 +76,8 @@ this.dir(verbose = getOption("verbose"), default, else.)
   a source call. The calls are searched in reverse order so as to grab the most
   recent source call in the case of nested source calls. If a source call was
   found, the file argument is returned from the function's evaluation
-  environment. If you have your own \sourcenolink{}-like function that you
-  would like to be recognized by \code{this.path()}, please contact the package
+  environment. If you have your own \sourcenolink-like function that you would
+  like to be recognized by \code{this.path()}, please contact the package
   maintainer so that it can be implemented or use \code{\link{wrap.source}()} /
   / \code{\link{inside.source}()} / / \code{\link{set.this.path}()}.
 
@@ -110,7 +110,10 @@ this.dir(verbose = getOption("verbose"), default, else.)
   filename (the document open in the current tab) is returned (at the time of
   evaluation). Please note that the source document will \emph{NEVER} be a
   document open in another window (with the \strong{Show in new window}
-  button). It is important to not leave the current tab (either by closing or
+  button). Please also note that an active document open in another window can
+  sometimes lose focus and become inactive, thus returning the incorrect path.
+  It is best \strong{NOT} to not run \R code from a document open in another
+  window. It is important to not leave the current tab (either by closing or
   switching tabs) while any calls to \code{this.path()} have yet to be
   evaluated in the run selection. It is an error for no documents to be open or
   for a document to not exist (not saved anywhere).
@@ -144,12 +147,12 @@ this.dir(verbose = getOption("verbose"), default, else.)
 }
 \note{
   The first time \code{this.path()} is called within a script, it will
-  \ifelse{html}{\codelink2{base:normalizePath}{normalize}}{\code{normalize}}
-  the script's path, checking that the script exists (throwing an error if it
-  does not), and save it in the appropriate environment. When
-  \code{this.path()} is called subsequent times within the same script, it
-  returns the saved path. This will be faster than the first time, will not
-  check for file existence, and will be independent of the working directory.
+  \ifelse{html}{\codelink2{base:normalizePath}{normalize}}{normalize} the
+  script's path, checking that the script exists (throwing an error if it does
+  not), and save it in the appropriate environment. When \code{this.path()} is
+  called subsequent times within the same script, it returns the saved path.
+  This will be faster than the first time, will not check for file existence,
+  and will be independent of the working directory.
 
   As a side effect, this means that a script can delete itself using
   \codelink3{base:files}{file.remove}{()} or \codelink3{base}{unlink}{()} but
@@ -173,8 +176,8 @@ this.dir(verbose = getOption("verbose"), default, else.)
 
   Please \strong{DO NOT} use \code{this.path()} inside the site-wide startup
   profile file, the user profile, nor the function \code{.First()} (see
-  \codelink4{?}{base}{Startup}{}). This has inconsistent results dependent on
-  the GUI, and often incorrect. For example:
+  \ifelse{html}{\code{?\link[base]{Startup}}}{\code{?Startup}}). This has
+  inconsistent results dependent on the GUI, and often incorrect. For example:
 
   \describe{
 #ifdef unix
@@ -249,7 +252,7 @@ Error in .this.path.toplevel(FALSE, TRUE) :
 
   \code{\link{this.path-package}}
 
-  \sourceslistlinks{}
+  \sourceslistlinks
 
   \code{\link{R.from.shell}}
 }
@@ -373,3 +376,4 @@ this.path::this.path(verbose = FALSE, default = "script.log",
 
 unlink(FILE1.R)
 }
+

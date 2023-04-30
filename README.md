@@ -51,8 +51,8 @@ file paths:
 *   `path.split()`, `path.split.1()`, and `path.unsplit()` split the
     path to a file into components.
 
-*   `relpath()` and `rel2here()` turn absolute paths into relative
-    paths.
+*   `relpath()`, `rel2here()`, and `rel2proj()` turn absolute paths
+    into relative paths.
 
 New additions to **this.path** include:
 

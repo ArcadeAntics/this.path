@@ -169,3 +169,4 @@
   \file{\verb{C:\\Program Files\\R\\R-}\Sexpr[stage=render]{getRversion()}\verb{\\bin\\x64}}
 #endif
 }
+

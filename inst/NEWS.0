@@ -1,0 +1,199 @@
+this.path News
+
+CHANGES IN this.path 0.11.0 (2022-09-03):
+
+  NEW FEATURES:
+
+    * Added tryCatch2(), introducing argument 'else.' similar to
+      'try except' in 'Python'.
+
+    * Added 'else.' argument to this.path(), this.dir(), shFILE(), and
+      normalized.shFILE(), a function to act on the return value.
+
+CHANGES IN this.path 0.10.0 (2022-07-17):
+
+  NEW FEATURES:
+
+    * Added asArgs(), fileArgs(), and withArgs() to more easily provide
+      arguments to a script.
+
+    * Added from.shell() to determine if a script was run from a shell.
+
+    * Added this.proj(...), similar to here::here(...), except that
+      this.proj() supports multiple projects in one R session and is
+      independent of working directory.
+
+  BUG FIXES:
+
+    * this.path::here() no longer uses dirname() on a UNC path.
+
+CHANGES IN this.path 0.9.0 (2022-07-15):
+
+  NEW FEATURES:
+
+    * this.path() is now compatible with GUI 'VSCode'.
+
+  BUG FIXES:
+
+    * when source()-ing a file URL, source("file:///path/to/file"),
+      this.path() no longer attempts to re-open a connection.
+
+CHANGES IN this.path 0.8.0 (2022-07-08):
+
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * All previously defunct functions were removed entirely.
+
+  NEW FEATURES:
+
+    * this.path(), this.dir(), shFILE(), and normalized.shFILE() were
+      given a new argument default that will be evaluated and returned
+      if there is no executing script or command line argument FILE was
+      not found.
+
+  DEPRECATED AND DEFUNCT:
+
+    * this.path2(), this.dir2(), and this.dir3() are deprecated and
+      should be replaced with this.path(default = NULL),
+      this.dir(default = NULL), and this.dir(default = getwd()),
+      respectively.
+
+  BUG FIXES:
+
+    * normalized.shFILE() does not set attribute "this.path.from.shell", that
+      is handled by this.path().
+
+CHANGES IN this.path 0.7.0 (2022-04-24):
+
+  NEW FEATURES:
+
+    * this.path() supports 'Rgui' running with "ucrt" as the C runtime.
+
+CHANGES IN this.path 0.6.0 (2022-04-21):
+
+  NEW FEATURES:
+
+    * Added shFILE() and normalized.shFILE() for extracting 'FILE' from
+      the command line arguments.
+
+CHANGES IN this.path 0.5.1 (2022-03-12):
+
+  NEW FEATURES:
+
+    * Added as.relative.path() and as.rel.path() to turn absolute paths
+      into relative paths.
+
+  DEPRECATED AND DEFUNCT:
+
+    * Several functions were made defunct and moved to package
+      'essentials'.
+
+CHANGES IN this.path 0.5.0 (2022-01-11):
+
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * this.path() supports 'Rgui' running in any of the languages
+      listed by list.dirs(system.file(package = "translations"),
+      full.names = FALSE, recursive = FALSE).
+
+  NEW FEATURES:
+
+    * Added check.path() and check.dir() to initialize this.path() and
+      check that it is returning the expected path.
+
+    * Added here() and ici() for constructing paths to files starting
+      with this.dir().
+
+    * Added this.path2(), this.dir2(), and this.dir3(), variants of
+      this.path() and this.dir() which return 'NULL' or getwd() when
+      there is no executing script.
+
+    * Added withArgs() to source() an R script while providing
+      arguments, similar to 'Rscript' but in the same session in an
+      environment of your choosing.
+
+    * Added several other functions that were made defunct soon after.
+
+CHANGES IN this.path 0.4.4 (2021-03-21):
+
+  BUG FIXES:
+
+    * Added tests to ensure this.path() behaves as expected when used
+      in combination with source(), sys.source(), debugSource() in
+      'RStudio', and testthat::source_file().
+
+    * Improved readability of example(this.path).
+
+    * Fixed LaTeX errors when creating PDF version of the manual.
+
+CHANGES IN this.path 0.4.3 (2021-03-18):
+
+  BUG FIXES:
+
+    * this.path(), in relation to sys.source() and
+      testthat::source_file(), throws an error with the correct call
+      and a better message when 'file = "clipboard"' or
+      'file = "stdin"'.
+
+CHANGES IN this.path 0.4.2 (2021-03-17):
+
+  BUG FIXES:
+
+    * Added 'testthat' to the Enhances field of the DESCRIPTION file.
+
+CHANGES IN this.path 0.4.1 (2021-03-16):
+
+  BUG FIXES:
+
+    * this.path(), in relation to source() and debugSource() in
+      'RStudio', recognizes that 'file = ""', 'file = "clipboard"', and
+      'file = "stdin"' do not refer to files and skips those calls. In
+      relation to sys.source() and testthat::source_file(), it
+      recognizes 'file = "clipboard"' and 'file = "stdin"' do not refer
+      to files and throws an error.
+
+    * this.path(), in relation to source() and debugSource() in
+      'RStudio', recognizes file URIs and turns them into paths.
+
+CHANGES IN this.path 0.4.0 (2021-03-15):
+
+  NEW FEATURES:
+
+    * this.path() is now compatible with function
+      testthat::source_file().
+
+CHANGES IN this.path 0.3.0 (2021-03-04):
+
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * this.path(), in relation to source() and sys.source(), takes
+      argument 'chdir' into account, particularly 'chdir = TRUE'.
+
+    * this.path() saves the normalized path within its appropriate
+      environment the first time it is called within a script. This
+      makes it faster when called subsequent times within the same
+      script and independent of the working directory.
+
+CHANGES IN this.path 0.2.1 (2020-12-17):
+
+  BUG FIXES:
+
+    * this.path() better determines the executing script when running
+      from a shell.
+
+CHANGES IN this.path 0.2.0 (2020-12-03):
+
+  NEW FEATURES:
+
+    * this.path() is now compatible with GUI 'Rgui' and function
+      debugSource() in 'RStudio'.
+
+CHANGES IN this.path 0.1.0 (2020-11-11):
+
+  NEW FEATURES:
+
+    * Initial release of 'this.path'. Added this.path() for determining
+      the path of the executing script. Added this.dir() for
+      determining the directory in which the executing script is
+      located. Compatible with GUIs 'RStudio' and 'Rscript'. Compatible
+      with functions source() and sys.source().

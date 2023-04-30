@@ -56,3 +56,4 @@ writeLines(c(
 this.path:::source2(FILE, echo = TRUE, verbose = FALSE,
     max.deparse.length = Inf, keep.source = TRUE)
 \dontshow{unlink(FILE)}}
+

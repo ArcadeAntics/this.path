@@ -2,6 +2,3 @@
 ^\.gitignore$
 \.Rproj$
 ^check-this\.R$
-^R/path\.R$
-^man/short\.R$
-^man/short\.Rd$

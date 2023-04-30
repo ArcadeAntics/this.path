@@ -30,7 +30,8 @@ ext(path, compression = FALSE) <- value
     \ifelse{text}{1}{\code{1}} or \code{length(path)}, or \code{NULL}.}
 }
 \details{
-  \codelink2{base:path.expand}{tilde expansion} of the path will be performed.
+  Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) of the path will
+  be performed.
 
   Trailing path separators are removed before dissecting the path.
 
@@ -65,3 +66,4 @@ path <- "this.path_1.0.0.tar.gz"
 ext(path, compression = TRUE) <- ".png"
 path
 }
+

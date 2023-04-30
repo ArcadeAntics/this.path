@@ -21,7 +21,7 @@ try.shFILE()
 }
 \arguments{
   \item{contents}{\code{TRUE} or \code{FALSE}; should the contents of the
-    executing script be returned instead, \code{NULL} if that fails.}
+    executing script be returned, \code{NULL} if that fails?}
 }
 \details{
   This should \strong{NOT} be used to construct file paths against the
@@ -43,3 +43,4 @@ try.shFILE()
 try.this.path()
 try.this.path(contents = TRUE)
 }
+

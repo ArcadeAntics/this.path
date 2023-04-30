@@ -6,7 +6,7 @@
   Determine the path of the executing script. Compatible with a few
   popular GUIs: \sQuote{Rgui}, \sQuote{\RStudio}, \sQuote{\VSCode},
   \sQuote{\Jupyter}, and
-  \ifelse{html}{\sQuote{\code{\link[utils]{Rscript}}}}{ifelse{text}{\code{Rscript}}{\sQuote{\code{Rscript}}}}
+  \ifelse{html}{\sQuote{\code{\link[utils]{Rscript}}}}{\ifelse{text}{\code{Rscript}}{\sQuote{\code{Rscript}}}}
   (shell). Compatible with several functions and packages:
   \sourcesandlistlinks.
 }
@@ -47,8 +47,8 @@
     \item{\code{\link{path.split}()}, \code{\link{path.split.1}()}, and
       \code{\link{path.unsplit}()} split the path to a file into components.}
 
-    \item{\code{\link{relpath}()} and \code{\link{rel2here}()} turn absolute
-      paths into relative paths.}
+    \item{\code{\link{relpath}()}, \code{\link{rel2here}()}, and
+      \code{\link{rel2proj}()} turn absolute paths into relative paths.}
   }
 
   New additions to \pkg{this.path} include:
@@ -59,8 +59,8 @@
 
     \item{\code{\link{wrap.source}()}, \code{\link{inside.source}()},
       \code{\link{set.this.path}()}, and \code{\link{unset.this.path}()}
-      implement \code{\link{this.path}()} for any \sourcelink{}-like functions
-      outside of \sourcesandlistlinks{}.}
+      implement \code{\link{this.path}()} for any \sourcelink-like functions
+      outside of \sourcesandlistlinks.}
 
     \item{\code{\link{shFILE}()} looks through the command line arguments,
       extracting \option{FILE} from either of the following: \option{-f}
@@ -88,3 +88,4 @@
 
   \code{\link{R.from.shell}}
 }
+

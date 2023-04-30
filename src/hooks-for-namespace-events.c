@@ -36,18 +36,26 @@ SEXP do_mbcslocale do_formals
 
 
 #if R_version_at_least(4, 2, 0)
+
+
 LibExtern int R_MB_CUR_MAX;
 SEXP do_R_MB_CUR_MAX do_formals
 {
     do_start_no_call_op_rho("R_MB_CUR_MAX", 0);
     return ScalarInteger(R_MB_CUR_MAX);
 }
+
+
 #else
+
+
 SEXP do_R_MB_CUR_MAX do_formals
 {
     do_start_no_call_op_rho("R_MB_CUR_MAX", 0);
     return ScalarInteger(MB_CUR_MAX);
 }
+
+
 #endif
 
 

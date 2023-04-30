@@ -55,3 +55,4 @@ path.join("test1", "c:/test2", "test3", "//host/share/test4", "test5",
     "c:/test6", "test7", "c:test8", "test9")
 #endif
 }
+

@@ -123,7 +123,9 @@ extern0 SEXP0
     envirSymbol                            INI_as(install("envir")),
     inheritsSymbol                         INI_as(install("inherits")),
     for_msgSymbol                          INI_as(install("for.msg")),
-    getContentsSymbol                      INI_as(install("getContents"));
+    getContentsSymbol                      INI_as(install("getContents")),
+    _this_projSymbol                       INI_as(install(".this.proj")),
+    xSymbol                                INI_as(install("x"));
 
 
 #undef extern0

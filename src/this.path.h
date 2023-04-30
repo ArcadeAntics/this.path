@@ -69,6 +69,11 @@ extern SEXP do_asargs do_formals;
 /* backports.c */
 
 
+#if R_version_less_than(3, 5, 0)
+extern SEXP do_dotslength do_formals;
+#endif
+
+
 #if R_version_less_than(3, 3, 0)
 extern SEXP do_strrep     do_formals;
 extern SEXP do_startsWith do_formals;
@@ -79,6 +84,7 @@ extern SEXP do_endsWith   do_formals;
 #if R_version_less_than(3, 2, 0)
 extern SEXP do_direxists do_formals;
 extern SEXP do_lengths   do_formals;
+extern SEXP do_isRegisteredNamespace do_formals;
 #endif
 
 
@@ -173,6 +179,12 @@ extern SEXP do_prinfo                   do_formals;
 extern SEXP do_setthispathjupyter       do_formals;
 
 
+/* rprojroot.c */
+
+
+extern SEXP do_resetthisproj do_formals;
+
+
 /* shfile.c */
 
 
@@ -195,17 +207,6 @@ extern SEXP do_thispath         do_formals;
 extern SEXP do_getframenumber   do_formals;
 extern SEXP do_inittoolsrstudio do_formals;
 extern SEXP do_thispathrgui     do_formals;
-
-
-/* utils.c */
-
-
-#if R_version_less_than(3, 5, 0)
-extern SEXP do_dotslength do_formals;
-#endif
-#if R_version_less_than(3, 2, 0)
-extern SEXP do_isRegisteredNamespace do_formals;
-#endif
 
 
 /* wrapsource.c */

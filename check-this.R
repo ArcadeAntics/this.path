@@ -1,5 +1,5 @@
 {
-    local({  # change the Date in the DESCRIPTION to the current date
+    local({  ## change the Date in the DESCRIPTION to the current date
         path <- this.path::here("DESCRIPTION")
         x <- local({
             conn <- file(path, "rb", encoding = "")
@@ -23,19 +23,19 @@
         }
         invisible()
     })
-    essentials:::check.this(  # this.path
+    essentials:::check.this(  ## this.path
         special = TRUE,
 
-        # INSTALL = TRUE, # html = TRUE, latex = TRUE,
+        # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, as.cran = TRUE,
+        check = FALSE, as.cran = TRUE,
 
         chdir = TRUE
     )
 }
 
 
-local({  # for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
+local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
     file.create(FILE <- "./tools/for-r-mac-builder")
     on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
     essentials:::check.this(
@@ -48,7 +48,7 @@ local({  # for submitting to R Mac Builder https://mac.r-project.org/macbuilder/
 })
 
 
-local({  # testing this.path() with source(gzcon())
+local({  ## testing this.path() with source(gzcon())
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE, after = FALSE)
     writeLines(c(
@@ -65,7 +65,7 @@ local({  # testing this.path() with source(gzcon())
 })
 
 
-local({  # testing relpath() and rel2here()
+local({  ## testing relpath() and rel2here()
     path <- c(
         NA,
         "",
@@ -86,8 +86,10 @@ local({  # testing relpath() and rel2here()
         this.path::here()
         this.path::relpath(path)
         this.path::rel2here(path)
-        this.path::relpath(path2 <- c(path, "A:\\Users\\documents"))
+        this.path::rel2proj(path)
+        this.path::relpath(path2 <- c(path, "A:\\Users\\iris\\Documents"))
         this.path::rel2here(path2)
+        this.path::rel2proj(path2)
     }, echo = TRUE, spaced = TRUE, verbose = FALSE,
         max.deparse.length = Inf, width.cutoff = 60L)
 })
@@ -175,10 +177,10 @@ local({
 
 
 local({
-    # read the text from this URL
+    ## read the text from this URL
     args1 <- c("curl", "--silent", "https://raw.githubusercontent.com/r-lib/vroom/master/inst/extdata/mtcars.csv")
-    # filter out the first row (the column names of the table)
-    # and rows containing "merc" case insensitive
+    ## filter out the first row (the column names of the table)
+    ## and rows containing "merc" case insensitive
     args2 <- c("perl", "-ne", "use English; print if $INPUT_LINE_NUMBER == 1 || /merc/i")
     command1 <- paste(shQuote(args1), collapse = " ")
     command2 <- paste(shQuote(args2), collapse = " ")
@@ -209,7 +211,7 @@ withclose <- function (...)
 {
     if (nargs() != 2L)
         stop(gettextf("%d arguments passed to %s which requires %s", nargs(), "withclose", "2"))
-    ..1  # force the promise
+    ..1  ## force the promise
     on.exit(close(..1))
     ..2
 }
@@ -219,7 +221,7 @@ withunlink <- function (...)
 {
     if (nargs() < 2L)
         stop(gettextf("%d arguments passed to %s which requires %s", nargs(), "withunlink", "at least 2"))
-    for (n in seq_len(nargs() - 1L)) ...elt(n)  # force the promise(s)
+    for (n in seq_len(nargs() - 1L)) ...elt(n)  ## force the promise(s)
     rm(n)
     call <- as.call(c(list(as.symbol("unlink")), `names<-`(lapply(paste0("..", seq_len(nargs() - 1L)), as.symbol), ...names()[-nargs()])))
     if (!"x" %in% names(match.call(unlink, call)))
@@ -236,7 +238,7 @@ withsink <- function (...)
 {
     if (nargs() < 2L)
         stop(gettextf("%d arguments passed to %s which requires %s", nargs(), "withsink", "at least 2"))
-    for (n in seq_len(nargs() - 1L)) ...elt(n)  # force the promise(s)
+    for (n in seq_len(nargs() - 1L)) ...elt(n)  ## force the promise(s)
     rm(n)
     call <- as.call(c(list(as.symbol("sink")), `names<-`(lapply(paste0("..", seq_len(nargs() - 1L)), as.symbol), ...names()[-nargs()])))
     call2 <- match.call(sink, call)
@@ -469,11 +471,11 @@ local({
 
 
                         box.use <- function(file) {
-                            file  # force the promises
+                            file  ## force the promises
 
 
-                            # we have to use box::set_script_path() because {box}
-                            # does not allow us to import a module by its path
+                            ## we have to use box::set_script_path() because {box}
+                            ## does not allow us to import a module by its path
                             script_path <- box::script_path()
                             on.exit(box::set_script_path(script_path))
                             box::set_script_path(normalizePath(file, "/", TRUE))

@@ -5,24 +5,21 @@
 \alias{unset.this.path}
 \title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
-  A \sourcelink{}-like function is any function which evaluates code from a
-  file.
-
   Currently, \code{\link{this.path}()} is implemented to work with
-  \sourcesandlistlinks{}.
+  \sourcesandlistlinks.
 
   \code{wrap.source()} and \code{inside.source()} can be used to implement
-  \code{this.path()} for any other \sourcelink{}-like functions.
+  \code{this.path()} for any other \sourcelink-like functions.
 
   \code{set.this.path()} is just an alias for \code{inside.source()}.
-
-  See \code{?\link{this.path}(local = TRUE)} which returns the path of the
-  executing script, confining the search to the local environment in which
-  \code{inside.source()} / / \code{set.this.path()} was called.
 
   \code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
   need to use this if you wish to call \code{set.this.path()} multiple times
   within a function.
+
+  See \code{?\link{this.path}(local = TRUE)} which returns the path of the
+  executing script, confining the search to the local environment in which
+  \code{inside.source()} / / \code{set.this.path()} was called.
 }
 \usage{
 wrap.source(expr,
@@ -105,7 +102,7 @@ set.this.path(file,
 unset.this.path()
 }
 \arguments{
-  \item{expr}{an (unevaluated) call to a \sourcenolink{}-like function.}
+  \item{expr}{an (unevaluated) call to a \sourcenolink-like function.}
 
   \item{file}{a
     \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
@@ -124,7 +121,7 @@ unset.this.path()
     to UTF-8?}
 
   \item{allow.blank.string}{may \code{file} be a blank string, i.e.
-    \string{}?}
+    \blankstring?}
 
   \item{allow.clipboard}{may \code{file} be \string{clipboard} or a clipboard
     connection?}
@@ -158,13 +155,13 @@ unset.this.path()
 }
 \details{
   \code{inside.source()} should be added to the body of your
-  \sourcenolink{}-like function before reading / / evaluating the expressions.
+  \sourcenolink-like function before reading / / evaluating the expressions.
 
   \code{wrap.source()}, unlike \code{inside.source()}, does not accept an
   argument \code{file}. Instead, an attempt is made to extract the file from
   \code{expr}, after which \code{expr} is evaluated. It is assumed that the
   file is the first argument of the function, as is the case with
-  \sources1stargisfileandlistnolinks{}. The function of the call is evaluated,
+  \sources1stargisfileandlistnolinks. The function of the call is evaluated,
   its \code{\link[base]{formals}()} are retrieved, and then the arguments of
   \code{expr} are searched for a name matching the name of the first formal
   argument. If a match cannot be found by name, the first unnamed argument is
@@ -174,7 +171,7 @@ unset.this.path()
   determine the file. As such, it is less desirable than \code{inside.source()}
   when the option is available. I can think of exactly one scenario in which
   \code{wrap.source()} might be preferable: suppose there is a
-  \sourcenolink{}-like function \code{sourcelike()} in a foreign package (a
+  \sourcenolink-like function \code{sourcelike()} in a foreign package (a
   package for which you do not have write permission). Suppose that you write
   your own function in which the formals are \code{(\dots)} to wrap
   \code{sourcelike()}: \preformatted{wrapper <- function (...)
@@ -203,18 +200,18 @@ unset.this.path()
 \note{
   Both functions should only be called within another function.
 
-  Suppose that the functions \sourcesandlistnolinks{} were not implemented with
+  Suppose that the functions \sourcesandlistnolinks were not implemented with
   \code{this.path()}. You could use \code{inside.source()} to implement each of
   them as follows:
 
   \describe{
 
-    \item{\sourcenolink{}}{\preformatted{wrapper <- function(file, ...) {
+    \item{\sourcenolink}{\preformatted{wrapper <- function(file, ...) {
     file <- inside.source(file)
     source(file = file, ...)
 }}}
 
-    \item{\syssourcenolink{}}{\preformatted{wrapper <- function(file, ...) {
+    \item{\syssourcenolink}{\preformatted{wrapper <- function(file, ...) {
     file <- inside.source(file, path.only = TRUE)
     sys.source(file = file, ...)
 }}}
@@ -241,7 +238,12 @@ unset.this.path()
     knitr::knit(input = input, ...)
 }}}
 
-    \item{\boxusenolink{}}{\preformatted{## 'box' is structured to be an incredible pain in the ass,
+    \item{\compilerloadcmpnolink}{\preformatted{wrapper <- function(file, ...) {
+    file <- inside.source(file, path.only = TRUE)
+    compiler::loadcmp(file = file, ...)
+}}}
+
+    \item{\boxusenolink}{\preformatted{## 'box' is structured to be an incredible pain in the ass,
 ## so this solution is not exactly ideal, but it works so whatever
 wrapper <- function(path, ...) {
     p <- this.path::path.split.1(path.expand(path))
@@ -276,11 +278,6 @@ wrapper <- function(path, ...) {
     caller <- parent.frame()
     box:::load_and_register(spec, info, caller)
     invisible()
-}}}
-
-    \item{\compilerloadcmpnolink{}}{\preformatted{wrapper <- function(file, ...) {
-    file <- inside.source(file, path.only = TRUE)
-    compiler::loadcmp(file = file, ...)
 }}}
   }
 }
@@ -375,3 +372,4 @@ fun <- function (paths, ...)
     }
 }
 \dontshow{unlink(FILE)}}
+

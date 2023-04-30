@@ -361,9 +361,9 @@ validJupyterRNotebook <- function (path)
 # # external pointers containing the windows handles. the thing of
 # # interest are the names of this list, these should be the names of the
 # # windows belonging to the current R process.
-# .this.path.rgui <- function (verbose = FALSE, original = FALSE, for.msg = FALSE)
+# .this.path.rgui <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 # .External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
-#     untitled, r.editor, verbose, original, for.msg)
+#     untitled, r.editor, verbose, original, for.msg, contents)
 
 
 .this.path.toplevel <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE) NULL
@@ -403,11 +403,21 @@ body(.this.path.toplevel) <- bquote({
         # element 'path' is a character string, the path of the document
 
 
-        # this might look stupid af, but we need to do this so the byte
-        # compiler doesn't try to evaluate these promises early
-        context <- .rs.api.getActiveDocumentContext()
-        active <- context[["id"]] != "#console"
-        if (!active) {
+        if (verbose) {
+            context <- .rs.api.getActiveDocumentContext()
+            active <- context[["id"]] != "#console"
+            if (!active) {
+                context <- .rs.api.getSourceEditorContext()
+                if (is.null(context)) {
+                    if (for.msg)
+                        return(NA_character_)
+                    else stop(thisPathNotExistsError(
+                        ..(this_path_used_in_an_inappropriate_fashion),
+                        "* R is being run from RStudio with no documents open\n",
+                        "  (or source document has no path)"))
+                }
+            }
+        } else {
             context <- .rs.api.getSourceEditorContext()
             if (is.null(context)) {
                 if (for.msg)
@@ -449,9 +459,11 @@ body(.this.path.toplevel) <- bquote({
             gettext("Untitled", domain = "RGui", trim = FALSE)
         else stop(
             ..(this_path_used_in_an_inappropriate_fashion),
-            if (active)
-                "* active document in RStudio does not exist"
-            else "* source document in RStudio does not exist")
+            if (verbose) {
+                if (active)
+                    "* active document in RStudio does not exist"
+                else "* source document in RStudio does not exist"
+            } else "* document in RStudio does not exist")
     }
 
 
@@ -582,7 +594,9 @@ body(.this.path.toplevel) <- bquote({
                                     if (identical(expr, call)) {
                                         .External2(C_setthispathjupyter, file, skipCheck = TRUE)
                                         if (verbose) cat("Source: document in Jupyter\n")
-                                        if (original)
+                                        if (contents)
+                                            return(getJupyterNotebookContents(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
+                                        else if (original)
                                             return(.(as.symbol(thispathofilejupyter)))
                                         else return(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)))
                                     }
@@ -611,7 +625,7 @@ body(.this.path.toplevel) <- bquote({
     else if (gui.rgui) {
 
 
-        # .this.path.rgui(verbose, original, for.msg)
+        # .this.path.rgui(verbose, original, for.msg, contents)
         .External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
             untitled, r.editor, verbose, original, for.msg, contents)
     }

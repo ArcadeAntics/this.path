@@ -1,9 +1,16 @@
 %% does not work well with characters that have
 %% special meaning in HTML or LaTeX or Rd
 \newcommand{\string}{\ifelse{text}{"#1"}{\code{"#1"}}}
+\newcommand{\blankstring}{\ifelse{text}{""}{\code{""}}}
 \newcommand{\codelink2}{\ifelse{html}{\code{\link[#1]{#2}}}{\code{#2}}}
 \newcommand{\codelink3}{\ifelse{html}{\code{\link[#1]{#2}#3}}{\code{#2#3}}}
 \newcommand{\codelink4}{\ifelse{html}{\code{#1\link[#2]{#3}#4}}{\code{#1#3#4}}}
+
+
+%% used in ./inst/NEWS.Rd
+\newcommand{\commandorsQuote}{\ifelse{text}{\sQuote{#1}}{\command{#1}}}
+\newcommand{\codeorsQuote}{\ifelse{text}{\sQuote{#1}}{\code{#1}}}
+\newcommand{\optionorsQuote}{\ifelse{text}{\sQuote{#1}}{\option{#1}}}
 
 
 \newcommand{\Jupyter}{\href{https://jupyter.org/}{Jupyter}}
@@ -62,3 +69,4 @@
 \newcommand{\sourcescompatiblewithwithArgslistnolinks}{\sources1stargisfilelistnolinks}
 \newcommand{\sourcescompatiblewithwithArgsorlistnolinks}{\sources1stargisfileorlistnolinks}
 \newcommand{\sourcescompatiblewithwithArgsandlistnolinks}{\sources1stargisfileandlistnolinks}
+
