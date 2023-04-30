@@ -66,4 +66,3 @@ path <- "this.path_1.0.0.tar.gz"
 ext(path, compression = TRUE) <- ".png"
 path
 }
-

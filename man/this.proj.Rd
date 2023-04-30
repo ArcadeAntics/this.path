@@ -33,4 +33,3 @@ reset.this.proj()
 \seealso{
   \code{this.path::\link{here}()}
 }
-

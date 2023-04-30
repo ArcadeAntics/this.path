@@ -22,8 +22,8 @@ CHANGES IN this.path 1.4.0 (2023-04-18):
     * this.path() now accepts argument 'contents' that returns the
       contents of the executing script.
 
-    * try.this.path() now accepts argument 'contents' that returns the contents
-      of the executing script, 'NULL' if that fails.
+    * try.this.path() now accepts argument 'contents' that returns the
+      contents of the executing script, 'NULL' if that fails.
 
   DEPRECATED AND DEFUNCT:
 
@@ -167,8 +167,8 @@ CHANGES IN this.path 1.1.0 (2022-12-01):
     * Added relpath(), a version of as.rel.path() with different
       default argument values.
 
-    * Added 'OS.type', a list of 'TRUE' / / 'FALSE' values giving more details
-      about the operating system.
+    * Added 'OS.type', a list of 'TRUE' / / 'FALSE' values giving more
+      details about the operating system.
 
   DEPRECATED AND DEFUNCT:
 
@@ -192,7 +192,7 @@ CHANGES IN this.path 1.0.2 (2022-09-23):
   BUG FIXES:
 
     * this.path() works when called in a script run from a shell on
-      Ubuntu installed on an Android (where .Platform$GUI == "unknown",
+      Ubuntu installed on an Android (where .Platform$GUI is "unknown",
       normally "unix").
 
 CHANGES IN this.path 1.0.1 (2022-09-22):

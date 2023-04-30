@@ -27,4 +27,3 @@ Sys.getenv("R_TEST")
 Sys.unsetenv("R_TEST")  ## under Unix-alikes may warn and not succeed
 Sys.getenv("R_TEST", unset = NA)
 }
-

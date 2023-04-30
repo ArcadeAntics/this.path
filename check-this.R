@@ -28,7 +28,7 @@
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, as.cran = TRUE,
+        check = FALSE, as.cran = TRUE,
 
         chdir = TRUE
     )

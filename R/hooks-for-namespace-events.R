@@ -37,36 +37,8 @@ R_MB_CUR_MAX <- function ()
 .External2(C_R_MB_CUR_MAX)
 
 
-if (getRversion() >= "2.15.0") {
-
-
 .onLoad <- function (libname, pkgname)
 .External2(C_onload, libname, pkgname)
-
-
-} else {
-
-
-.onLoad <- function (libname, pkgname)
-{
-    dlls <- getLoadedDLLs()
-    print(dlls)
-    dll <- dlls[["this.path"]]
-    print(dll)
-    print(names(dll))
-    print(dll$onload)
-    routines <- getDLLRegisteredRoutines(pkgname)
-    print(routines)
-    type <- routines[[".External"]]
-    print(type)
-    C_onload <- type[["onload"]]
-    print(C_onload)
-    .External2(C_onload, libname, pkgname)
-    assign("OS.type", NULL, envir = getNamespace(pkgname))
-}
-
-
-}
 
 
 .onUnload <- function (libpath)

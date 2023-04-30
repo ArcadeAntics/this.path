@@ -224,8 +224,8 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item{\code{this.path()} works when called in a script from a shell on
-        Ubuntu installed on an Android (where
-        \code{.Platform$GUI == "unknown"}, normally \string{unix}).}
+        Ubuntu installed on an Android (where \code{.Platform$GUI} is
+        \string{unknown}, normally \string{unix}).}
     }
   }
 }

@@ -61,8 +61,7 @@ withArgs(...)
 
     \item{Raw Bytes (class \string{raw})}{using
       \ifelse{html}{\code{\link[base]{sprintf}("0x\%02x", )}}{\code{sprintf("0x\%02x", )}}
-      (for easy conversion back to raw with
-      \codelink3{base:raw}{as.raw}{()} or
+      (for easy conversion back to raw with \codelink3{base:raw}{as.raw}{()} or
       \codelink3{base:vector}{as.vector}{(, "raw")})}
   }
 
@@ -145,5 +144,7 @@ sourcelike3 <- function (file, envir = parent.frame())
 }
 this.path::withArgs(sourcelike3(FILE), LETTERS[1:5])
 this.path::withArgs(wrap.source(sourcelike2(FILE)), LETTERS[6:10])
-\dontshow{unlink(FILE)}}
 
+
+unlink(FILE)
+}

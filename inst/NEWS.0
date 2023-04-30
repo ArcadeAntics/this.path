@@ -60,8 +60,8 @@ CHANGES IN this.path 0.8.0 (2022-07-08):
 
   BUG FIXES:
 
-    * normalized.shFILE() does not set attribute "this.path.from.shell", that
-      is handled by this.path().
+    * normalized.shFILE() does not set attribute
+      "this.path.from.shell", that is handled by this.path().
 
 CHANGES IN this.path 0.7.0 (2022-04-24):
 

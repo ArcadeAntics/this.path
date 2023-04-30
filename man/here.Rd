@@ -47,5 +47,7 @@ this.path:::write.code({
 
 
 source(FILE, echo = TRUE, verbose = FALSE)
-\dontshow{unlink(FILE)}}
 
+
+unlink(FILE)
+}

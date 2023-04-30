@@ -37,4 +37,3 @@ set.this.path.jupyter(...)
 #
 # ## and then this.path() will return "~/file50b816a24ec1.ipynb"
 }
-

@@ -18,4 +18,3 @@ initwd
 cat("\\ninitial working directory:\\n"); getinitwd()
 cat("\\ncurrent working directory:\\n"); getwd()
 }
-

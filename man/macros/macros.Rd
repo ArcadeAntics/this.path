@@ -69,4 +69,3 @@
 \newcommand{\sourcescompatiblewithwithArgslistnolinks}{\sources1stargisfilelistnolinks}
 \newcommand{\sourcescompatiblewithwithArgsorlistnolinks}{\sources1stargisfileorlistnolinks}
 \newcommand{\sourcescompatiblewithwithArgsandlistnolinks}{\sources1stargisfileandlistnolinks}
-

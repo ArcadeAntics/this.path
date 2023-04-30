@@ -371,5 +371,7 @@ fun <- function (paths, ...)
         unset.this.path(pathname)
     }
 }
-\dontshow{unlink(FILE)}}
 
+
+unlink(FILE)
+}

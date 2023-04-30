@@ -88,4 +88,3 @@
 
   \code{\link{R.from.shell}}
 }
-

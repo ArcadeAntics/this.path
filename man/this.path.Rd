@@ -376,4 +376,3 @@ this.path::this.path(verbose = FALSE, default = "script.log",
 
 unlink(FILE1.R)
 }
-

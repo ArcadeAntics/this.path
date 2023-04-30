@@ -256,14 +256,3 @@ environment(parse) <- .BaseNamespaceEnv
 
 
 }
-
-
-if (getRversion() < "2.15.0") {
-
-
-paste0 <- function (..., collapse = NULL)
-paste(..., sep = "", collapse = collapse)
-environment(paste0) <- .BaseNamespaceEnv
-
-
-}

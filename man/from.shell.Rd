@@ -57,4 +57,3 @@ this.path:::Rscript(c("--default-packages=this.path", "--vanilla",
 
 unlink(FILES)
 }
-
