@@ -750,7 +750,7 @@ normalizePath(path, winslash, mustWork)
 .normalizeNotDirectory <- function (path, winslash = "/", mustWork = TRUE)
 {
     x <- normalizePath(path, winslash, mustWork)
-    if (!is.na(isdir <- .is.dir(x)) && !isdir)
+    if (!is.na(isdir <- .isdir(x)) && !isdir)
         x
     else stop(sprintf("'%s' is not a regular file", path), domain = NA)
 }

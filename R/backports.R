@@ -211,17 +211,17 @@ file.info <- function (..., extra_cols = TRUE)
 environment(file.info) <- .BaseNamespaceEnv
 
 
-.is.dir <- function (...)
+.isdir <- function (...)
 file.info(...)$isdir
-environment(.is.dir) <- .BaseNamespaceEnv
+environment(.isdir) <- .BaseNamespaceEnv
 
 
 } else {
 
 
-.is.dir <- function (...)
+.isdir <- function (...)
 file.info(..., extra_cols = FALSE)$isdir
-environment(.is.dir) <- .BaseNamespaceEnv
+environment(.isdir) <- .BaseNamespaceEnv
 
 
 }
