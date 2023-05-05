@@ -25,12 +25,12 @@ is.main()
 }
 \examples{
 FILES <- tempfile(c("file1_", "file2_"), fileext = ".R")
-this.path:::write.code({
+this.path:::.write.code({
     from.shell()
     is.main()
 }, FILES[2])
-this.path:::write.code((
-    bquote(this.path:::withAutoprint({
+this.path:::.write.code((
+    bquote(this.path:::.withAutoprint({
         from.shell()
         is.main()
         source(.(FILES[2]), echo = TRUE, verbose = FALSE,
@@ -40,12 +40,12 @@ this.path:::write.code((
 ), FILES[1])
 
 
-this.path:::Rscript(
+this.path:::.Rscript(
     c("--default-packages=this.path", "--vanilla", FILES[1])
 )
 
 
-this.path:::Rscript(c("--default-packages=this.path", "--vanilla",
+this.path:::.Rscript(c("--default-packages=this.path", "--vanilla",
     "-e", "cat(\\"\\n> from.shell()\\\\n\\")",
     "-e", "from.shell()",
     "-e", "cat(\\"\\n> is.main()\\\\n\\")",

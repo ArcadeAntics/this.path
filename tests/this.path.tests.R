@@ -31,7 +31,7 @@ local({
 
 
     on.exit(unlink(full.path), add = TRUE)
-    this.path:::write.code({
+    this.path:::.write.code({
         cat("\n> getwd()\n")
         print(getwd())
         cat("\n> this.path(verbose = TRUE)\n")

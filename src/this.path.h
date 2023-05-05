@@ -9,11 +9,11 @@ Each function must:
   * return a SEXP
   * have an argument list (SEXP call, SEXP op, SEXP args, SEXP rho)
 
-call is the LANGSXP that called the C code, like .External2(C_funname, ...)
+call is the LANGSXP that called the C code, like .External2(.C_funname, ...)
 
 op is the operator that called the C code, always .External2
 
-args is the argument list provided to .External2(.), including C_funname
+args is the argument list provided to .External2(.), including .C_funname
 
 rho is the environment in which .External2(.) was evaluated, useful for
 accessing and assigning variables
@@ -33,12 +33,12 @@ the first element of 'args' is '.NAME', as usual. The next 3 elements must be
 the 'call', 'op', and 'rho' that would have been provided if .External2() was
 available. for example:
 
- .External2(C_thispath, verbose, original, for.msg, N, get.frame.number)
+ .External2(.C_thispath, verbose, original, for.msg, N, get.frame.number)
 
 becomes:
 
- .External(C_thispath,
-     quote(.External(C_thispath, verbose, original, for.msg, N, get.frame.number)),
+ .External(.C_thispath,
+     quote(.External(.C_thispath, verbose, original, for.msg, N, get.frame.number)),
      .External,
      environment(),
      verbose, original, for.msg, N, get.frame.number)
@@ -49,9 +49,9 @@ becomes:
 #define THIS_PATH_H
 
 
-#include <Rinternals.h>
-#include "Rversiondefines.h"
-#include "thispathbackports.h"
+#include <Rinternals.h>         /* need definition of SEXP */
+#include "thispathbackports.h"  /* need definition of do_formals */
+#include "Rversiondefines.h"    /* need definition of R_version_less_than */
 
 
 /* aquarootscript.c */
@@ -128,8 +128,8 @@ extern SEXP do_extgets        do_formals;
 /* hooks-for-namespace-events.c */
 
 
-// extern SEXP do_utf8locale   do_formals;
 extern SEXP do_mbcslocale   do_formals;
+// extern SEXP do_utf8locale   do_formals;
 // extern SEXP do_latin1locale do_formals;
 extern SEXP do_R_MB_CUR_MAX do_formals;
 

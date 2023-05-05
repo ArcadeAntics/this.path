@@ -27,7 +27,7 @@ ici(..., .. = 0)
 }
 \examples{
 FILE <- tempfile(fileext = ".R")
-this.path:::write.code({
+this.path:::.write.code({
 
 
     this.path::here()

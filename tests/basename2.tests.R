@@ -7,8 +7,8 @@ check <- function (path, dirname, basename)
 }
 
 
-dirname2 <- this.path:::windows.dirname2
-basename2 <- this.path:::windows.basename2
+dirname2 <- this.path:::.windows.dirname2
+basename2 <- this.path:::.windows.basename2
 
 
 check("", "", "")
@@ -58,8 +58,8 @@ check(
 )
 
 
-dirname2 <- this.path:::unix.dirname2
-basename2 <- this.path:::unix.basename2
+dirname2 <- this.path:::.unix.dirname2
+basename2 <- this.path:::.unix.basename2
 
 
 check("", "", "")

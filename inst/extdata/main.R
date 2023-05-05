@@ -1,4 +1,4 @@
-languages <- matrix(dimnames = list(NULL, c(
+.languages <- matrix(dimnames = list(NULL, c(
     "LANGUAGE", "Format: (* Custom Locale)"    , "locale"                      )), data = c(
     "da"      , "Danish (Denmark)"             , "Danish_Denmark"              ,
     "de"      , "German (Germany)"             , "German_Germany"              ,
@@ -21,31 +21,31 @@ languages <- matrix(dimnames = list(NULL, c(
     "zh_CN"   , "Chinese (Simplified, China)"  , "Chinese (Simplified)_China"  ,
     "zh_TW"   , "Chinese (Traditional, Taiwan)", "Chinese (Traditional)_Taiwan"
 ), ncol = 3L, byrow = TRUE)
-rownames(languages) <- languages[, "LANGUAGE"]
+rownames(.languages) <- .languages[, "LANGUAGE"]
 
 
-locales <- languages[, "locale"]
+.locales <- .languages[, "locale"]
 
 
-languageEnvvars <- function (LANGUAGE = Sys.getenv("LANGUAGE"), utf8 = identical(R.version[["crt"]], "ucrt"))
+.languageEnvvars <- function (LANGUAGE = Sys.getenv("LANGUAGE"), utf8 = identical(R.version[["crt"]], "ucrt"))
 {
     if (!is.character(LANGUAGE) || length(LANGUAGE) != 1L)
         stop(gettextf("'%s' must be a character string", "LANGUAGE", domain = "R"), domain = NA)
     if (.Platform$OS.type == "windows") {
         if (!nzchar(LANGUAGE))
             return(c("LANGUAGE=", "LC_ALL="))
-        LANGUAGE <- match.arg(LANGUAGE, c(rownames(languages), NA))
+        LANGUAGE <- match.arg(LANGUAGE, c(rownames(.languages), NA))
         if (is.na(LANGUAGE))
             return(c("LANGUAGE=", "LC_ALL="))
         paste0(
             c("LANGUAGE=", "LC_ALL="),
-            c(LANGUAGE, locales[[LANGUAGE]]),
-            if (utf8 && nzchar(locales[[LANGUAGE]])) c("", ".utf8")
+            c(LANGUAGE, .locales[[LANGUAGE]]),
+            if (utf8 && nzchar(.locales[[LANGUAGE]])) c("", ".utf8")
         )
     } else {
         if (!nzchar(LANGUAGE))
             return("LANGUAGE=")
-        LANGUAGE <- match.arg(LANGUAGE, c(rownames(languages), NA))
+        LANGUAGE <- match.arg(LANGUAGE, c(rownames(.languages), NA))
         if (is.na(LANGUAGE))
             return("LANGUAGE=")
         paste0("LANGUAGE=", LANGUAGE)
@@ -86,8 +86,8 @@ if (sys.nframe() != 0L) {
         # there was a time when I was doing something more along the lines:
         #
         # ```
-        # for (language in rownames(languages)) {
-        #     Sys.putenv(languageEnvvars(language))
+        # for (language in rownames(.languages)) {
+        #     Sys.putenv(.languageEnvvars(language))
         #     gettext("Untitled", domain = "RGui")
         #     gettext("R Editor", domain = "RGui")
         # }
@@ -260,8 +260,8 @@ if (sys.nframe() != 0L) {
 
 
             n <- 0L
-            for (language in rownames(languages)) {
-                args <- c(rgui, options, languageEnvvars(language, ucrt))
+            for (language in rownames(.languages)) {
+                args <- c(rgui, options, .languageEnvvars(language, ucrt))
                 command <- paste(shQuote(args), collapse = " ")
                 ans <- system(command)
                 if (ans) {

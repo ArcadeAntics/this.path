@@ -28,7 +28,7 @@
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE,
+        check = TRUE, as.cran = TRUE,
 
         chdir = TRUE
     )
@@ -52,7 +52,7 @@ local({  ## testing this.path() with source(gzcon())
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE, after = FALSE)
     writeLines(c(
-        "sys.frame(.External2(this.path:::C_getframenumber))$ofile",
+        "sys.frame(.External2(this.path:::.C_getframenumber))$ofile",
         "this.path::this.path(original = TRUE)",
         "this.path::this.path()"
     ), FILE)
@@ -151,26 +151,24 @@ local({
     files <- files[!startsWith(files, "./.git/")]
     files <- files[!startsWith(files, "./.Rproj.user/")]
     files <- files[!startsWith(files, "./this.path.Rcheck/")]
-    Rdfiles <- files[grepl("\\.Rd$", basename(files), ignore.case = TRUE)]
+    Rfiles <- files[grepl("(?i)\\.R$", basename(files))]
+    Rdfiles <- files[grepl("(?i)\\.Rd$", basename(files))]
     files
+    Rfiles
     Rdfiles
 
 
-    x <- this.path:::readFiles(files)
-    # x <- grep("(?i)(windows|unix)", x, value = TRUE)
-    # x <- grep("(?i)(load\\.cmp)", x, value = TRUE)
-    x <- grep("(?i)tryCatch", x, value = TRUE)
+    x <- this.path:::.readFiles(files)
+    x <- grep("is\\.dir", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
-    x <- this.path:::readFiles(Rdfiles)
-    # x <- x[vapply(strsplit(x, "\n", fixed = TRUE, useBytes = TRUE),
-    #     \(xx) max(nchar(xx)) >= 80L, NA)]
-    # x <- grep("\\\\(enumerate|itemize)\\{", x, value = TRUE)
-    # x <- grep("\\\\codelink\\{", x, value = TRUE)
-    # x <- grep("\\\\string\\{", x, value = TRUE)
-    # x <- grep("\\\\link2\\{", x, value = TRUE)
-    # x <- grep("\\\\DebuggingWithRStudio\\{", x, value = TRUE)
+    x <- this.path:::.readFiles(Rfiles)
+    x <- grep("gui\\.rstudio", x, value = TRUE)
+    x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
+
+
+    x <- this.path:::.readFiles(Rdfiles)
     x <- grep("\\\\encoding\\{", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
@@ -329,7 +327,7 @@ local({
 
 
                 withunlink(FILE <- tempfile(fileext = ".R"), force = TRUE, expand = FALSE, {
-                    this.path:::write.code(file = FILE, {
+                    this.path:::.write.code(file = FILE, {
                         # withAutoprint must be the first function called
                         withAutoprint({
                             .this.path <- this.path:::.this.path
@@ -351,7 +349,7 @@ local({
                             bindings <- grep("^\\.this\\.path::", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
                             stopifnot(vapply(bindings, bindingIsLocked, frame, FUN.VALUE = NA))
                             getwd()
-                            try(this.path:::PRINFO(".this.path::file", frame, inherits = FALSE))
+                            try(this.path:::.PRINFO(".this.path::file", frame, inherits = FALSE))
                             # don't use as.list yet, will force the promises
                             .this.path(for.msg = TRUE)
                             .this.path(original = TRUE, for.msg = TRUE)
@@ -360,7 +358,7 @@ local({
                             .this.path(original = TRUE, for.msg = TRUE)
                             try(Encoding(.this.path(original = TRUE)))
                             try(Encoding(.this.path(original = FALSE)))
-                            try(this.path:::PRINFO(".this.path::file", frame, inherits = FALSE))
+                            try(this.path:::.PRINFO(".this.path::file", frame, inherits = FALSE))
                             sapply(bindings, get, envir = frame, inherits = FALSE, simplify = FALSE)
                             try(this.path::this.path())
                         }, spaced = TRUE)

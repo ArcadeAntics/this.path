@@ -61,7 +61,7 @@ SEXP do_wrapsource do_formals
     int nprotect = 0;
 
 
-    /* determine context number for .this.path(get.frame.number = TRUE) */
+    /* determine context number for .External2(.C_getframenumber) */
     int context_number;
     int nframe = asInteger(eval(lang1(sys_nframeSymbol), rho));
     // Rprintf("sys.nframe() = %d\n", nframe);
@@ -165,19 +165,19 @@ SEXP do_wrapsource do_formals
      */
     {
 #if R_version_at_least(3, 0, 0)
-        /* .External2(C_setprseen2, ptr) */
+        /* .External2(.C_setprseen2, ptr) */
         SEXP expr = allocList(3);
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);
         SETCAR(expr, External2Symbol);
-        SETCADR(expr, C_setprseen2Symbol);
+        SETCADR(expr, _C_setprseen2Symbol);
         SETCADDR(expr, ptr);
 #else
-        /* setprseen2(ptr) */
+        /* .setprseen2(ptr) */
         SEXP expr = allocList(2);
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);
-        SETCAR(expr, setprseen2Symbol);
+        SETCAR(expr, _setprseen2Symbol);
         SETCADR(expr, ptr);
 #endif
 

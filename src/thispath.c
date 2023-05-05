@@ -675,7 +675,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     else
                         ofile = PRVALUE(ofile);
                 }
-                int ignore_all = asLogical(eval(lang1(testthat_uses_brioSymbol), mynamespace));
+                int ignore_all = asLogical(eval(lang1(_testthat_uses_brioSymbol), mynamespace));
                 checkfile(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ pathSymbol,
@@ -748,7 +748,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* forcepromise           */ FALSE,
                     /* assign_returnvalue     */ FALSE,
                     /* maybe_chdir            */ TRUE,
-                    /* getowd                 */ eval(lang1(knitr_output_dirSymbol), mynamespace),
+                    /* getowd                 */ eval(lang1(_knitr_output_dirSymbol), mynamespace),
                     /* hasowd                 */ ((owd) != R_NilValue),
                     /* character_only         */ FALSE,
                     /* conv2utf8              */ FALSE,
@@ -998,7 +998,7 @@ SEXP thispath(Rboolean verbose         , Rboolean original        ,
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
         PROTECT(value);
-        SEXP expr = lang2(getContentsSymbol, value);
+        SEXP expr = lang2(_getContentsSymbol, value);
         PROTECT(expr);
         value = eval(expr, mynamespace);
         UNPROTECT(2);
@@ -1051,7 +1051,7 @@ SEXP do_thispath do_formals
             N = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), "C_thispath", "0, 1, or 5"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_thispath", "0, 1, or 5"));
         return R_NilValue;
     }
 
@@ -1102,7 +1102,7 @@ SEXP do_inittoolsrstudio do_formals
             errorcall(call, _("invalid '%s' argument"), "skipCheck");
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), "C_inittoolsrstudio", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_inittoolsrstudio", "0 or 1"));
     }
     return ScalarLogical(init_tools_rstudio(skipCheck));
 }

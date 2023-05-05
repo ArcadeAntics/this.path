@@ -1,4 +1,4 @@
-debugInfo <- function ()
+.debugInfo <- function ()
 {
     info <- list()
     info$loadedNamespaces <- loadedNamespaces()

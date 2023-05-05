@@ -1,3 +1,7 @@
+#include <Rinternals.h>
+#include "Rversiondefines.h"
+
+
 #if defined(R_THIS_PATH_DEFINE_SYMBOLS)
 #define extern0
 #define SEXP0
@@ -45,19 +49,19 @@ extern0 SEXP0
     _normalizeAgainstSymbol                INI_as(install(".normalizeAgainst")),
     stopSymbol                             INI_as(install("stop")),
     delayedAssignSymbol                    INI_as(install("delayedAssign")),
-    normalizeURL_1Symbol                   INI_as(install("normalizeURL.1")),
+    _normalizeURL_1Symbol                  INI_as(install(".normalizeURL.1")),
     sourceSymbol                           INI_as(install("source")),
     sys_sourceSymbol                       INI_as(install("sys.source")),
-    gui_rstudioSymbol                      INI_as(install("gui.rstudio")),
-    init_tools_rstudioSymbol               INI_as(install("init.tools:rstudio")),
-    tools_rstudioSymbol                    INI_as(install("tools:rstudio")),
+    _gui_rstudioSymbol                     INI_as(install(".gui.rstudio")),
+    _tools_rstudioSymbol                   INI_as(install(".tools:rstudio")),
     _rs_api_getActiveDocumentContextSymbol INI_as(install(".rs.api.getActiveDocumentContext")),
     _rs_api_getSourceEditorContextSymbol   INI_as(install(".rs.api.getSourceEditorContext")),
     debugSourceSymbol                      INI_as(install("debugSource")),
+    _debugSourceSymbol                     INI_as(install(".debugSource")),
     testthatSymbol                         INI_as(install("testthat")),
     source_fileSymbol                      INI_as(install("source_file")),
-    testthat_uses_brioSymbol               INI_as(install("testthat.uses.brio")),
-    knitr_output_dirSymbol                 INI_as(install("knitr.output.dir")),
+    _testthat_uses_brioSymbol              INI_as(install(".testthat.uses.brio")),
+    _knitr_output_dirSymbol                INI_as(install(".knitr.output.dir")),
     knitrSymbol                            INI_as(install("knitr")),
     knitSymbol                             INI_as(install("knit")),
     wrap_sourceSymbol                      INI_as(install("wrap.source")),
@@ -89,9 +93,9 @@ extern0 SEXP0
     on_exitSymbol                          INI_as(install("on.exit")),
 #if R_version_at_least(3, 0, 0)
     External2Symbol                        INI_as(install(".External2")),
-    C_setprseen2Symbol                     INI_as(install("C_setprseen2")),
+    _C_setprseen2Symbol                    INI_as(install(".C_setprseen2")),
 #else
-    setprseen2Symbol                       INI_as(install("setprseen2")),
+    _setprseen2Symbol                      INI_as(install(".setprseen2")),
 #endif
     thispathtempSymbol                     INI_as(install(".this.path::*tmp*")),
     parent_frameSymbol                     INI_as(install("parent.frame")),
@@ -107,13 +111,13 @@ extern0 SEXP0
 #endif
     _asArgsSymbol                          INI_as(install(".asArgs")),
     commandArgsSymbol                      INI_as(install("commandArgs")),
-    maybe_unembedded_shellSymbol           INI_as(install("maybe.unembedded.shell")),
+    _maybe_unembedded_shellSymbol           INI_as(install(".maybe.unembedded.shell")),
     insidesourcefrompackageSymbol          INI_as(install("inside.source from package this.path")),
     setthispathfrompackageSymbol           INI_as(install("set.this.path from package this.path")),
     printSymbol                            INI_as(install("print")),
     _xDataSymbol                           INI_as(install(".xData")),
     _DataSymbol                            INI_as(install(".Data")),
-    validJupyterRNotebookSymbol            INI_as(install("validJupyterRNotebook")),
+    _validJupyterRNotebookSymbol           INI_as(install(".validJupyterRNotebook")),
     R_LengthSymbol                         INI_as(install("length")),
     file_infoSymbol                        INI_as(install("file.info")),
     is_naSymbol                            INI_as(install("is.na")),
@@ -123,7 +127,7 @@ extern0 SEXP0
     envirSymbol                            INI_as(install("envir")),
     inheritsSymbol                         INI_as(install("inherits")),
     for_msgSymbol                          INI_as(install("for.msg")),
-    getContentsSymbol                      INI_as(install("getContents")),
+    _getContentsSymbol                     INI_as(install(".getContents")),
     _this_projSymbol                       INI_as(install(".this.proj")),
     xSymbol                                INI_as(install("x"));
 

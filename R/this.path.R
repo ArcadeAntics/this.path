@@ -27,7 +27,7 @@ rm(i, tmp)
 
 
 
-defunctError <- function (new, package = NULL, msg, old = as.character(sys.call(sys.parent()))[1L])
+.defunctError <- function (new, package = NULL, msg, old = as.character(sys.call(sys.parent()))[1L])
 {
     msg <- if (missing(msg)) {
         msg <- gettextf("'%s' is defunct.\n", old, domain = "R-base")
@@ -50,14 +50,14 @@ defunctError <- function (new, package = NULL, msg, old = as.character(sys.call(
 
 
 .shFILE <- function (original = TRUE, for.msg = FALSE)
-.External2(C_shfile, original, for.msg)
+.External2(.C_shfile, original, for.msg)
 evalq(envir = environment(.shFILE) <- new.env(), {
-    delayedAssign(thispathofile, if (in.shell) shINFO[["FILE"]] else NA_character_)
+    delayedAssign(thispathofile, if (.in.shell) .shINFO[["FILE"]] else NA_character_)
     eval(call("delayedAssign", thispathfile, call(".normalizePath", as.symbol(thispathofile))))
 })
 
 
-delayedAssign("has.shFILE", !is.na(.shFILE()))
+delayedAssign(".has.shFILE", !is.na(.shFILE()))
 
 
 shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
@@ -69,14 +69,14 @@ shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
     }
     else {
         if (missing(else.)) {
-            if (has.shFILE)
+            if (.has.shFILE)
                 .shFILE(original, for.msg)
             else if (for.msg)
                 NA_character_
             else default
         }
         else {
-            if (has.shFILE) {
+            if (.has.shFILE) {
                 value <- .shFILE(original, for.msg)
                 (else.)(value)
             }
@@ -91,14 +91,14 @@ shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
 
 
 normalized.shFILE <- function (...)
-stop(defunctError("shFILE", pkgname, old = "normalized.shFILE"))
+stop(.defunctError("shFILE", .pkgname, old = "normalized.shFILE"))
 
 
 
 
 
-is.abs.path <- function (path)
-.External2(C_isabspath, path)
+.is.abs.path <- function (path)
+.External2(.C_isabspath, path)
 
 
 
@@ -117,12 +117,12 @@ readLines2 <- function(path, default = character(0)) {
     Encoding(txt) <- encoding
     txt
 }
-r.editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
-r.editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
+.r.editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
+.r.editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
 
 
-untitled_msvcrt <- readLines2("./inst/extdata/untitled_msvcrt.txt", "Untitled - R Editor")
-untitled_ucrt   <- readLines2("./inst/extdata/untitled_ucrt.txt"  , "Untitled - R Editor")
+.untitled_msvcrt <- readLines2("./inst/extdata/untitled_msvcrt.txt", "Untitled - R Editor")
+.untitled_ucrt   <- readLines2("./inst/extdata/untitled_ucrt.txt"  , "Untitled - R Editor")
 
 
 rm(readLines2)
@@ -131,18 +131,18 @@ rm(readLines2)
 
 
 
-delayedAssign("r.editor", {
-    if (gui.rgui) {
-        if (ucrt)
-            r.editor_ucrt
-        else r.editor_msvcrt
+delayedAssign(".r.editor", {
+    if (.gui.rgui) {
+        if (.ucrt)
+            .r.editor_ucrt
+        else .r.editor_msvcrt
     }
 })
-delayedAssign("untitled", {
-    if (gui.rgui) {
-        if (ucrt)
-            untitled_ucrt
-        else untitled_msvcrt
+delayedAssign(".untitled", {
+    if (.gui.rgui) {
+        if (.ucrt)
+            .untitled_ucrt
+        else .untitled_msvcrt
     }
 })
 
@@ -150,7 +150,7 @@ delayedAssign("untitled", {
 
 
 
-getCurrentCall <- function (n = 3L)
+.getCurrentCall <- function (n = 3L)
 {
     # find the call that stop() would have also found
     #
@@ -160,7 +160,7 @@ getCurrentCall <- function (n = 3L)
     # this is intended to be used as such:
     # stop(errorMakingFunction())
     #
-    # where errorMakingFunction calls getCurrentCall()
+    # where errorMakingFunction calls .getCurrentCall()
 
 
     n <- sys.nframe() - n
@@ -172,7 +172,7 @@ getCurrentCall <- function (n = 3L)
     skip.stop <- TRUE
     for (n in seq.int(to = 1L, by = -1L, length.out = n)) {
         if (typeof(fun <- sys.function(n)) == "closure") {
-            if (skip.stop && (identical2)(fun, stop)) {
+            if (skip.stop && (.identical)(fun, stop)) {
                 skip.stop <- FALSE
                 next
             }
@@ -183,43 +183,43 @@ getCurrentCall <- function (n = 3L)
 }
 
 
-thisPathUnrecognizedConnectionClassError <- function (con, call = getCurrentCall(), call. = TRUE)
-.External2(C_thispathunrecognizedconnectionclasserror, if (call.) call, con)
+.thisPathUnrecognizedConnectionClassError <- function (con, call = .getCurrentCall(), call. = TRUE)
+.External2(.C_thispathunrecognizedconnectionclasserror, if (call.) call, con)
 
 
-thisPathUnrecognizedMannerError <- function (call = getCurrentCall(), call. = TRUE)
-.External2(C_thispathunrecognizedmannererror, if (call.) call)
+.thisPathUnrecognizedMannerError <- function (call = .getCurrentCall(), call. = TRUE)
+.External2(.C_thispathunrecognizedmannererror, if (call.) call)
 
 
-thisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = getCurrentCall())
-.External2(C_thispathnotimplementederror, .makeMessage(..., domain = domain), call = if (call.) call)
+.thisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
+.External2(.C_thispathnotimplementederror, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-thisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = getCurrentCall())
-.External2(C_thispathnotexistserror, .makeMessage(..., domain = domain), call = if (call.) call)
+.thisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
+.External2(.C_thispathnotexistserror, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-thisPathInZipFileError <- function (description, call = getCurrentCall(), call. = TRUE)
-.External2(C_thispathinzipfileerror, if (call.) call, description)
+.thisPathInZipFileError <- function (description, call = .getCurrentCall(), call. = TRUE)
+.External2(.C_thispathinzipfileerror, if (call.) call, description)
 
 
-thisPathInAQUAError <- function (call = getCurrentCall(), call. = TRUE)
-.External2(C_thispathinaquaerror, if (call.) call)
+.thisPathInAQUAError <- function (call = .getCurrentCall(), call. = TRUE)
+.External2(.C_thispathinaquaerror, if (call.) call)
 
 
 # helper functions for this.path()   ----
 
 
-is.unevaluated.promise <- function (sym, env)
-.External2(C_isunevaluatedpromise, sym, env)
+.is.unevaluated.promise <- function (sym, env)
+.External2(.C_isunevaluatedpromise, sym, env)
 
 
-promise.is.unevaluated <- function (sym, env)
-.External2(C_promiseisunevaluated, sym, env)
+.promise.is.unevaluated <- function (sym, env)
+.External2(.C_promiseisunevaluated, sym, env)
 
 
-is.clipboard <- function (file)
-.External2(C_isclipboard, file)
+.is.clipboard <- function (file)
+.External2(.C_isclipboard, file)
 
 
 rm.list.append("this_path_used_in_an_inappropriate_fashion")
@@ -236,7 +236,7 @@ this_path_used_in_an_inappropriate_fashion <- local({
 })
 
 
-getContents <- function (file, encoding = getOption("encoding"))
+.getContents <- function (file, encoding = getOption("encoding"))
 {
     if (identical(encoding, "unknown")) {
         enc <- utils::localeToCharset()
@@ -269,9 +269,9 @@ getContents <- function (file, encoding = getOption("encoding"))
 }
 
 
-getJupyterNotebookContents <- function (..., do.unlist = TRUE, give.f = TRUE)
+.getJupyterNotebookContents <- function (..., do.unlist = TRUE, give.f = TRUE)
 {
-    lines <- getContents(...)
+    lines <- .getContents(...)
     source <- jsonlite::fromJSON(lines)[[c("cells", "source")]]
     if (do.unlist) {
         value <- unlist(source)
@@ -282,7 +282,7 @@ getJupyterNotebookContents <- function (..., do.unlist = TRUE, give.f = TRUE)
 }
 
 
-removeSource <- function (fn)
+.removeSource <- function (fn)
 {
     recurse <- function(part) {
         if (is.name(part))
@@ -315,7 +315,7 @@ removeSource <- function (fn)
 }
 
 
-getNamedElement <- function (x, names)
+.getNamedElement <- function (x, names)
 {
     for (name in names) {
         if (i <- match(name, names(x), 0L, c("", NA_character_)))
@@ -329,21 +329,21 @@ getNamedElement <- function (x, names)
 # this.path(), this.dir(), and here() ----
 
 
-isJupyterLoaded <- function ()
-gui.jupyter && isNamespaceLoaded("IRkernel") && (identical2)(sys.function(1L), IRkernel::main)
+.isJupyterLoaded <- function ()
+.gui.jupyter && isNamespaceLoaded("IRkernel") && (.identical)(sys.function(1L), IRkernel::main)
 
 
-validJupyterRNotebook <- function (path)
+.validJupyterRNotebook <- function (path)
 {
-    contents <- tryCatch(getContents(path), error = identity)
+    contents <- tryCatch(.getContents(path), error = identity)
     if (!inherits(contents, "error")) {
         contents <- tryCatch(jsonlite::parse_json(contents, simplifyVector = TRUE),
             error = identity)
         if (!inherits(contents, "error")) {
-            language <- getNamedElement(contents, c("metadata", "kernelspec", "language"))
-            name <- getNamedElement(contents, c("metadata", "language_info", "name"))
-            version <- getNamedElement(contents, c("metadata", "language_info", "version"))
-            source <- getNamedElement(contents, c("cells", "source"))
+            language <- .getNamedElement(contents, c("metadata", "kernelspec", "language"))
+            name <- .getNamedElement(contents, c("metadata", "language_info", "name"))
+            version <- .getNamedElement(contents, c("metadata", "language_info", "version"))
+            source <- .getNamedElement(contents, c("cells", "source"))
             if (is.character(language) && length(language) == 1L && !is.na(language) && language == "R" &&
                 is.character(name)     && length(name)     == 1L && !is.na(name)     && name     == "R" &&
                 is.character(version)  && length(version)  == 1L && !is.na(version)  && version  == as.character(getRversion()) &&
@@ -362,17 +362,17 @@ validJupyterRNotebook <- function (path)
 # # interest are the names of this list, these should be the names of the
 # # windows belonging to the current R process.
 # .this.path.rgui <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-# .External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
-#     untitled, r.editor, verbose, original, for.msg, contents)
+# .External2(.C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
+#     .untitled, .r.editor, verbose, original, for.msg, contents)
 
 
 .this.path.toplevel <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE) NULL
 body(.this.path.toplevel) <- bquote({
-    if (in.shell) {
+    if (.in.shell) {
 
 
         value <- shFILE(original, for.msg, default = {
-            stop(thisPathNotExistsError(
+            stop(.thisPathNotExistsError(
                 ..(this_path_used_in_an_inappropriate_fashion),
                 "* R is being run from a shell and argument 'FILE' is missing",
                 call = sys.call()))
@@ -383,10 +383,10 @@ body(.this.path.toplevel) <- bquote({
 
 
     # running from 'RStudio'
-    else if (gui.rstudio) {
+    else if (.gui.rstudio) {
 
 
-        if (!`init.tools:rstudio`()) {
+        if (!`.init.tools:rstudio`()) {
             if (for.msg) {
                 return(NA_character_)
             }
@@ -411,7 +411,7 @@ body(.this.path.toplevel) <- bquote({
                 if (is.null(context)) {
                     if (for.msg)
                         return(NA_character_)
-                    else stop(thisPathNotExistsError(
+                    else stop(.thisPathNotExistsError(
                         ..(this_path_used_in_an_inappropriate_fashion),
                         "* R is being run from RStudio with no documents open\n",
                         "  (or source document has no path)"))
@@ -422,7 +422,7 @@ body(.this.path.toplevel) <- bquote({
             if (is.null(context)) {
                 if (for.msg)
                     return(NA_character_)
-                else stop(thisPathNotExistsError(
+                else stop(.thisPathNotExistsError(
                     ..(this_path_used_in_an_inappropriate_fashion),
                     "* R is being run from RStudio with no documents open\n",
                     "  (or source document has no path)"))
@@ -467,14 +467,14 @@ body(.this.path.toplevel) <- bquote({
     }
 
 
-    else if (gui.vscode) {
+    else if (.gui.vscode) {
 
 
         context <- rstudioapi::getSourceEditorContext()
         if (is.null(context)) {
             if (for.msg)
                 return(NA_character_)
-            else stop(thisPathNotExistsError(
+            else stop(.thisPathNotExistsError(
                 ..(this_path_used_in_an_inappropriate_fashion),
                 "* R is being run from VSCode with no documents open\n",
                 "  (or document has no path)"
@@ -514,29 +514,29 @@ body(.this.path.toplevel) <- bquote({
 
 
     # running from 'jupyter'
-    else if (gui.jupyter) {
+    else if (.gui.jupyter) {
 
 
         if (!is.na(.(as.symbol(thispathofilejupyter)))) {
             if (verbose) cat("Source: document in Jupyter\n")
             if (contents)
-                return(getJupyterNotebookContents(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
+                return(.getJupyterNotebookContents(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
             else if (original)
                 return(.(as.symbol(thispathofilejupyter)))
-            else return(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)))
+            else return(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)))
         }
 
 
         if (is.null(initwd)) {
             if (for.msg)
                 return(NA_character_)
-            else stop(thisPathNotExistsError(
+            else stop(.thisPathNotExistsError(
                 ..(this_path_used_in_an_inappropriate_fashion),
                 "* R is being run from Jupyter but the initial working directory is unknown"))
         }
 
 
-        if (!isJupyterLoaded()) {
+        if (!.isJupyterLoaded()) {
             if (for.msg)
                 return(NA_character_)
             else stop("Jupyter has not finished loading")
@@ -545,7 +545,7 @@ body(.this.path.toplevel) <- bquote({
 
         n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
         ocall <- sys.call(n)
-        call <- removeSource(ocall)
+        call <- .removeSource(ocall)
 
 
         files <- list.files(initwd, all.files = TRUE, full.names = TRUE,
@@ -565,17 +565,17 @@ body(.this.path.toplevel) <- bquote({
 
 
         for (file in c(ipynb, IPYNB, files)) {
-            contents <- tryCatch(getContents(file), error = identity)
+            contents <- tryCatch(.getContents(file), error = identity)
             if (!inherits(contents, "error")) {
                 contents <- tryCatch(jsonlite::parse_json(contents, simplifyVector = TRUE),
                     error = identity)
                 if (!inherits(contents, "error")) {
 
 
-                    language <- getNamedElement(contents, c("metadata", "kernelspec", "language"))
-                    name <- getNamedElement(contents, c("metadata", "language_info", "name"))
-                    version <- getNamedElement(contents, c("metadata", "language_info", "version"))
-                    source <- getNamedElement(contents, c("cells", "source"))
+                    language <- .getNamedElement(contents, c("metadata", "kernelspec", "language"))
+                    name <- .getNamedElement(contents, c("metadata", "language_info", "name"))
+                    version <- .getNamedElement(contents, c("metadata", "language_info", "version"))
+                    source <- .getNamedElement(contents, c("cells", "source"))
 
 
                     # withAutoprint( { language; name; version; source } , spaced = TRUE, verbose = FALSE, width.cutoff = 60L); cat("\n\n\n\n\n")
@@ -592,13 +592,13 @@ body(.this.path.toplevel) <- bquote({
                             if (!inherits(exprs, "error")) {
                                 for (expr in exprs) {
                                     if (identical(expr, call)) {
-                                        .External2(C_setthispathjupyter, file, skipCheck = TRUE)
+                                        .External2(.C_setthispathjupyter, file, skipCheck = TRUE)
                                         if (verbose) cat("Source: document in Jupyter\n")
                                         if (contents)
-                                            return(getJupyterNotebookContents(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
+                                            return(.getJupyterNotebookContents(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
                                         else if (original)
                                             return(.(as.symbol(thispathofilejupyter)))
-                                        else return(.External2(C_getpromisewithoutwarning, .(thispathfilejupyter)))
+                                        else return(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)))
                                     }
                                 }
                             }
@@ -611,7 +611,7 @@ body(.this.path.toplevel) <- bquote({
 
         if (for.msg)
             NA_character_
-        else stop(thisPathNotExistsError(
+        else stop(.thisPathNotExistsError(
             ..(this_path_used_in_an_inappropriate_fashion),
             sprintf("* R is being run from Jupyter with initial working directory '%s'\n but could not find a file with contents matching:\n", encodeString(initwd)),
             {
@@ -622,31 +622,31 @@ body(.this.path.toplevel) <- bquote({
 
 
     # running from 'Rgui' on Windows
-    else if (gui.rgui) {
+    else if (.gui.rgui) {
 
 
         # .this.path.rgui(verbose, original, for.msg, contents)
-        .External2(C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
-            untitled, r.editor, verbose, original, for.msg, contents)
+        .External2(.C_thispathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
+            .untitled, .r.editor, verbose, original, for.msg, contents)
     }
 
 
-    else if (gui.aqua) {
+    else if (.gui.aqua) {
 
 
         if (for.msg)
             NA_character_
-        else stop(thisPathInAQUAError())
+        else stop(.thisPathInAQUAError())
     }
 
 
     # running from a shell under Unix-alikes with GUI 'Tk'
-    else if (gui.tk) {
+    else if (.gui.tk) {
 
 
         if (for.msg)
             NA_character_
-        else stop(thisPathNotExistsError(
+        else stop(.thisPathNotExistsError(
             ..(this_path_used_in_an_inappropriate_fashion),
             "* R is being run from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
@@ -658,7 +658,7 @@ body(.this.path.toplevel) <- bquote({
 
         if (for.msg)
             NA_character_
-        else stop(thisPathUnrecognizedMannerError())
+        else stop(.thisPathUnrecognizedMannerError())
     }
 }, splice = TRUE)
 evalq(envir = environment(.this.path.toplevel) <- new.env(), {
@@ -669,10 +669,10 @@ evalq(envir = environment(.this.path.toplevel) <- new.env(), {
 
 set.this.path.jupyter <- function (...)
 {
-    if (!gui.jupyter)
+    if (!.gui.jupyter)
         stop(gettextf("'%s' can only be called in Jupyter",
             "set.this.path.jupyter"))
-    if (!isJupyterLoaded())
+    if (!.isJupyterLoaded())
         stop(gettextf("'%s' can only be called after Jupyter has finished loading",
             "set.this.path.jupyter"))
     n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
@@ -684,11 +684,11 @@ set.this.path.jupyter <- function (...)
     else if (is.null(initwd))
         path.join(...)
     else path.join(initwd, ...)
-    .External2(C_setthispathjupyter, path)
+    .External2(.C_setthispathjupyter, path)
 }
 
 
-delayedAssign("identical2", {
+delayedAssign(".identical", {
     if (getRversion() >= "4.2.0") {
 
 
@@ -750,7 +750,7 @@ normalizePath(path, winslash, mustWork)
 .normalizeNotDirectory <- function (path, winslash = "/", mustWork = TRUE)
 {
     x <- normalizePath(path, winslash, mustWork)
-    if (!is.na(isdir <- is.dir(x)) && !isdir)
+    if (!is.na(isdir <- .is.dir(x)) && !isdir)
         x
     else stop(sprintf("'%s' is not a regular file", path), domain = NA)
 }
@@ -767,22 +767,22 @@ normalizePath(path, winslash, mustWork)
 }
 
 
-testthat.uses.brio <- function ()
+.testthat.uses.brio <- function ()
 as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2"
 
 
-knitr.output.dir <- function ()
+.knitr.output.dir <- function ()
 knitr::opts_knit$get("output.dir")
 
 
 # .this.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE,
 #     N = sys.nframe() - 1L, get.frame.number = FALSE, contents = FALSE)
-# .External2(C_thispath, verbose, original, for.msg, N, get.frame.number, contents)
+# .External2(.C_thispath, verbose, original, for.msg, N, get.frame.number, contents)
 
 
 .this.dir <- function (verbose = FALSE)
 {
-    path <- .External2(C_thispath, verbose)
+    path <- .External2(.C_thispath, verbose)
     if (grepl("^(https|http|ftp|ftps)://", path)) {
         # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         p <- path.split.1(path)
@@ -795,14 +795,14 @@ knitr::opts_knit$get("output.dir")
 
 
 
-faster.subsequent.times.test <- function ()
+.faster.subsequent.times.test <- function ()
 {
     first.time <- microbenchmark::microbenchmark(
-        `first time` = .External2(C_thispath),
+        `first time` = .External2(.C_thispath),
         times = 1
     )
     subsequent <- microbenchmark::microbenchmark(
-        subsequent = .External2(C_thispath),
+        subsequent = .External2(.C_thispath),
         times = 100
     )
     rbind(first.time, subsequent)
@@ -814,7 +814,7 @@ faster.subsequent.times.test <- function ()
 
 this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, local = FALSE, contents = FALSE, default, else.)
 tryCatch({
-    .External2(C_thispath, verbose, original, for.msg, local, contents)
+    .External2(.C_thispath, verbose, original, for.msg, local, contents)
 }, function(c) default)
 
 
@@ -883,15 +883,15 @@ rm(tmp)
 
 
 this.path2 <- function (...)
-stop(defunctError("this.path(..., default = NULL)", pkgname, old = "this.path2(...)"))
+stop(.defunctError("this.path(..., default = NULL)", .pkgname, old = "this.path2(...)"))
 
 
 this.dir2 <- function (...)
-stop(defunctError("this.dir(..., default = NULL)", pkgname, old = "this.dir2(...)"))
+stop(.defunctError("this.dir(..., default = NULL)", .pkgname, old = "this.dir2(...)"))
 
 
 this.dir3 <- function (...)
-stop(defunctError("this.dir(..., default = getwd())", pkgname, old = "this.dir3(...)"))
+stop(.defunctError("this.dir(..., default = getwd())", .pkgname, old = "this.dir3(...)"))
 
 
 
@@ -899,7 +899,7 @@ stop(defunctError("this.dir(..., default = getwd())", pkgname, old = "this.dir3(
 
 here <- ici <- function (..., .. = 0L)
 {
-    base <- .External2(C_thispath)
+    base <- .External2(.C_thispath)
     base <- if (grepl("^(https|http|ftp|ftps)://", base)) {
         # base <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         # .. <- "2"
@@ -914,7 +914,7 @@ here <- ici <- function (..., .. = 0L)
     # base <- "//host/share/path/to/file"
     # base <- "C:/Users/iris/Documents/this.path/man/this.path.Rd"
     # .. <- "10"
-    else .External2(C_dirname2, base, ..)
+    else .External2(.C_dirname2, base, ..)
     path.join(base, ...)
 }
 
@@ -923,11 +923,11 @@ here <- ici <- function (..., .. = 0L)
 
 
 Sys.path <- function ()
-stop(defunctError("this.path(verbose = FALSE)", pkgname, old = "Sys.path()"))
+stop(.defunctError("this.path(verbose = FALSE)", .pkgname, old = "Sys.path()"))
 
 
 Sys.dir <- function ()
-stop(defunctError("this.dir(verbose = FALSE)", pkgname, old = "Sys.dir()"))
+stop(.defunctError("this.dir(verbose = FALSE)", .pkgname, old = "Sys.dir()"))
 
 
 
@@ -940,9 +940,9 @@ tryCatch(.shFILE(FALSE), error = function(e) .shFILE())
 try.this.path <- function (contents = FALSE)
 {
     contents  ## force the promise before proceeding
-    tryCatch(.External2(C_thispath, FALSE, FALSE, FALSE, FALSE, contents),
+    tryCatch(.External2(.C_thispath, FALSE, FALSE, FALSE, FALSE, contents),
         error = function(e) {
-            .External2(C_thispath, FALSE, FALSE, TRUE, FALSE, contents)
+            .External2(.C_thispath, FALSE, FALSE, TRUE, FALSE, contents)
         })
 }
 
@@ -953,7 +953,7 @@ try.this.path <- function (contents = FALSE)
 # local.path <- function(verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, contents = FALSE, default, else.) NULL
 # body(local.path) <- as.call(append(as.list(body(this.path)), expression(local <- TRUE), after = 1L))
 local.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, contents = FALSE, default, else.)
-stop(defunctError("this.path(..., local = TRUE)", pkgname, old = "local.path(...)"))
+stop(.defunctError("this.path(..., local = TRUE)", .pkgname, old = "local.path(...)"))
 
 
 

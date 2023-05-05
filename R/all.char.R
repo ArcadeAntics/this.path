@@ -1,4 +1,4 @@
-all.char <- function ()
+.all.char <- function ()
 {
     c(
         local({
@@ -45,22 +45,22 @@ tmp <- function(expr) {
     }
     else if (is.call(expr)) {
         if (identical(expr, `.Platform$OS.type == "windows"`))
-            os.windows
+            .os.windows
         else if (identical(expr, `identical(R.version[["crt"]], "ucrt")`))
-            ucrt
+            .ucrt
         else as.call(lapply(expr, tmp))
     }
     else expr
 }
 evalq(envir = environment(tmp) <- new.env(), {
     `.Platform$OS.type == "windows"` <- quote(.Platform$OS.type == "windows")
-    os.windows <- quote(os.windows)
+    .os.windows <- quote(.os.windows)
     `identical(R.version[["crt"]], "ucrt")` <- quote(identical(R.version[["crt"]], "ucrt"))
-    ucrt <- quote(ucrt)
+    .ucrt <- quote(.ucrt)
 })
 
 
-languageEnvvars <- tmp(languageEnvvars)
+.languageEnvvars <- tmp(.languageEnvvars)
 Sys.putenv <- tmp(Sys.putenv)
 
 

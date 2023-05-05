@@ -1,5 +1,5 @@
-this.path:::write.code({
-    this.path:::withAutoprint({
+this.path:::.write.code({
+    this.path:::.withAutoprint({
         this.path::this.path(original = TRUE)
         this.path::this.path(original = NA)
         writeLines(sQuote(this.path::this.path(verbose = TRUE)))

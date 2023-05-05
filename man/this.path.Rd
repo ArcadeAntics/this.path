@@ -258,8 +258,8 @@ Error in .this.path.toplevel(FALSE, TRUE) :
 }
 \examples{
 FILE1.R <- tempfile(fileext = ".R")
-this.path:::write.code({
-    this.path:::withAutoprint({
+this.path:::.write.code({
+    this.path:::.withAutoprint({
         cat(sQuote(this.path::this.path(verbose = TRUE, default = {
             stop("since the executing script's path will be found,\\n",
                 " argument 'default' will not be evaluated, so this\\n",
@@ -296,21 +296,21 @@ if (requireNamespace("knitr")) {
     ## another document, pretty embarassing oversight, so we have to
     ## launch a new R session and knit the document from there
     FILE4.R <- tempfile(fileext = ".R")
-    this.path:::write.code(bquote(knitr::knit(.(FILE2.Rmd),
+    this.path:::.write.code(bquote(knitr::knit(.(FILE2.Rmd),
         output = .(FILE3.md), quiet = TRUE)), FILE4.R)
-    this.path:::Rscript(
+    this.path:::.Rscript(
         c("--default-packages=NULL", "--vanilla", FILE4.R),
-        print.command = FALSE
+        show.command = FALSE
     )
     unlink(FILE4.R)
 
 
-    this.path:::cat.file(FILE2.Rmd, number.nonblank = TRUE,
+    this.path:::.cat.file(FILE2.Rmd, number.nonblank = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE,
-        print.command = TRUE)
-    this.path:::cat.file(FILE3.md, number.nonblank = TRUE,
+        show.command = TRUE)
+    this.path:::.cat.file(FILE3.md, number.nonblank = TRUE,
         squeeze.blank = TRUE, show.tabs = TRUE,
-        print.command = TRUE)
+        show.command = TRUE)
     unlink(c(FILE3.md, FILE2.Rmd))
 }
 if (requireNamespace("compiler")) {
@@ -323,7 +323,7 @@ if (requireNamespace("compiler")) {
 }
 if (requireNamespace("box")) {
     FILE2.R <- tempfile(fileext = ".R")
-    this.path:::write.code(bquote({
+    this.path:::.write.code(bquote({
         ## we have to use box::set_script_path() because {box}
         ## does not allow us to import a module by its path
         script_path <- box::script_path()
@@ -340,7 +340,7 @@ if (requireNamespace("box")) {
 }
 
 
-this.path:::Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
 options(oopt)
 
 
@@ -349,7 +349,7 @@ options(oopt)
 tryCatch({
     source(paste0("https://raw.githubusercontent.com/ArcadeAntics/",
                   "this.path/main/tests/this.path_w_URLs.R"))
-}, condition = this.path:::cat.condition)
+}, condition = this.path:::.cat.condition)
 
 
 for (expr in c("this.path()",
@@ -359,7 +359,7 @@ for (expr in c("this.path()",
                "this.dir(default = getwd())"))
 {
     cat("\\n\\n")
-    this.path:::Rscript(c("--default-packages=this.path",
+    this.path:::.Rscript(c("--default-packages=this.path",
                           "--vanilla", "-e", expr))
 }
 

@@ -137,8 +137,8 @@ extern SEXP summaryconnection(SEXP sConn);
 #endif
 
 
-extern SEXP errorCondition (const char *msg, SEXP call, const char **cls, int n, int nfields);
-extern SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int nfields);
+extern SEXP errorCondition (const char *msg, SEXP call, const char **cls, int numFields);
+extern SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int numFields);
 
 
 extern SEXP simpleError(const char *msg, SEXP call);
@@ -239,7 +239,7 @@ typedef struct gzconn {
 
 
 /* it is undesirable to have this as a #define but we also cannot
-   evaluate all the arguments. used in thispath(), do_wrapsource(), and
+   evaluate all the arguments. used in _thispath(), do_wrapsource(), and
    insidesource()
  */
 #define checkfile(call, sym, ofile, frame, check_not_directory,\
@@ -500,18 +500,18 @@ extern Rboolean init_tools_rstudio(Rboolean skipCheck);
 
 
 #define in_rstudio                                             \
-    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getInFrame(gui_rstudioSymbol, mynamespace, FALSE))))
+    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getInFrame(_gui_rstudioSymbol, mynamespace, FALSE))))
 
 
 extern int maybe_unembedded_shell;
 
 
 #define is_maybe_unembedded_shell                              \
-    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getInFrame(maybe_unembedded_shellSymbol, mynamespace, FALSE))))
+    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getInFrame(_maybe_unembedded_shellSymbol, mynamespace, FALSE))))
 
 
 #define get_debugSource                                        \
-    ((has_tools_rstudio) ? getInFrame(debugSourceSymbol, mynamespace, FALSE) : R_UnboundValue)
+    ((has_tools_rstudio) ? getInFrame(_debugSourceSymbol, mynamespace, FALSE) : R_UnboundValue)
 
 
 extern SEXP mynamespace;

@@ -1,5 +1,4 @@
-\name{Args}
-\alias{Args}
+\name{progArgs}
 \alias{asArgs}
 \alias{fileArgs}
 \alias{progArgs}
@@ -86,8 +85,8 @@ this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
 
 
 FILE <- tempfile(fileext = ".R")
-this.path:::write.code({
-    this.path:::withAutoprint({
+this.path:::.write.code({
+    this.path:::.withAutoprint({
         this.path::this.path()
         this.path::fileArgs()
         this.path::progArgs()
@@ -104,10 +103,10 @@ this.path::withArgs(
     sys.source(FILE, environment()),
     letters[11:15], pi + 1i * exp(1)
 )
-this.path:::Rscript(c("--default-packages=NULL", "--vanilla", FILE,
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE,
     this.path::asArgs(letters[16:20], pi, Sys.time())))
 ## fileArgs() will be character(0) because there is no executing script
-this.path:::Rscript(c("--default-packages=NULL", "--vanilla",
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
     rbind("-e", readLines(FILE)[-2L]),
     this.path::asArgs(letters[16:20], pi, Sys.time())))
 

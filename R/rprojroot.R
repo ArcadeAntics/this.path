@@ -1,4 +1,4 @@
-find_root <- function (path = normalizePath(getwd()), verbose = FALSE, criterion = default.criterion)
+.find.root <- function (path = normalizePath(getwd()), verbose = FALSE, criterion = default.criterion)
 {
     # path <- "\\\\host\\share\\path\\to\\file\\"
     criterion <- rprojroot::as.root_criterion(criterion)
@@ -26,7 +26,7 @@ find_root <- function (path = normalizePath(getwd()), verbose = FALSE, criterion
         encodeString(opath, quote = "\""),
         paste(format(criterion), collapse = "\n")))
 }
-evalq(envir = environment(find_root) <- new.env(), {
+evalq(envir = environment(.find.root) <- new.env(), {
     delayedAssign("default.criterion", rprojroot::has_file(".here")     |
                                        rprojroot::is_rstudio_project    |
                                        rprojroot::is_r_package          |
@@ -41,24 +41,24 @@ evalq(envir = environment(find_root) <- new.env(), {
     path <- .this.dir()
     if (indx <- match(path, names(x), 0L))
         x[[indx]]
-    else (x[[path]] <<- find_root(path, verbose))
+    else (x[[path]] <<- .find.root(path, verbose))
 }
 evalq(envir = environment(.this.proj) <- new.env(), {
     x <- structure(character(0), names = character(0))
 })
 
 
-reset.this.proj <- function ()
-{
-    if (sys.nframe() != toplevel.context.number() + 1L)
-        stop(gettextf("'%s' can only be called from a top-level context",
-            "reset.this.proj"))
-    .External2(C_resetthisproj)
-}
-
-
 this.proj <- function (...)
 {
     base <- .this.proj()
     path.join(base, ...)
+}
+
+
+reset.this.proj <- function ()
+{
+    if (sys.nframe() != .toplevel.context.number() + 1L)
+        stop(gettextf("'%s' can only be called from a top-level context",
+            "reset.this.proj"))
+    .External2(.C_resetthisproj)
 }

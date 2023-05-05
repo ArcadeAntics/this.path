@@ -1,11 +1,11 @@
-file.URL.path <- function (path)
+.file.URI.path <- function (path)
 {
     # remove the leading "file://" from a file URL
     #
     # but specifically on Windows, where file URLs may look like
     # "file:///c:" ...
     # remove the leading "file:///" from those file URLs
-    if (os.windows && any(i <- grepl("^file:///.:", path, useBytes = TRUE))) {
+    if (.os.windows && any(i <- grepl("^file:///.:", path, useBytes = TRUE))) {
         path[ i] <- substr(path[ i], 9L, 1000000L)
         path[!i] <- substr(path[!i], 8L, 1000000L)
         path
@@ -14,10 +14,10 @@ file.URL.path <- function (path)
 }
 
 
-file.URL.path.1 <- function (path)
+.file.URI.path.1 <- function (path)
 {
-    # do file.URL.path but a little bit faster when path is length 1
-    if (os.windows && grepl("^file:///.:", path, useBytes = TRUE))
+    # do .file.URI.path but a little bit faster when path is length 1
+    if (.os.windows && grepl("^file:///.:", path, useBytes = TRUE))
         substr(path, 9L, 1000000L)
     else substr(path, 8L, 1000000L)
 }
@@ -26,7 +26,7 @@ file.URL.path.1 <- function (path)
 # extra.whitespace.pattern <- "^[\n\r]+|[\t\n\r ]+$"
 
 
-normalizeURL <- function (path)
+.normalizeURL <- function (path)
 {
     # x <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
     # print(c(x, this.path:::.normalizeURL(x)))
@@ -46,7 +46,7 @@ normalizeURL <- function (path)
 }
 
 
-normalizeURL.1 <- function (path)
+.normalizeURL.1 <- function (path)
 {
     # path <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
 
@@ -60,55 +60,55 @@ normalizeURL.1 <- function (path)
 }
 
 
-normalizePath.and.URL <- function (path, ...)
+.normalizePath.and.URL <- function (path, ...)
 {
     # a version of normalizePath that will also normalize URLs
     if (any(i <- grepl("^file://", path)))
-        path[i] <- file.URL.path(path[i])
+        path[i] <- .file.URI.path(path[i])
     if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
-        path[i] <- normalizeURL(path[i])
-        path[!i] <- normpath(path = path[!i], ...)
+        path[i] <- .normalizeURL(path[i])
+        path[!i] <- .normalizeAbsPath(path = path[!i], ...)
         path
     }
-    else normpath(path = path, ...)
+    else .normalizeAbsPath(path = path, ...)
 }
 
 
-normalizePath.and.URL.1 <- function (path, ...)
+.normalizePath.and.URL.1 <- function (path, ...)
 {
     if (grepl("^file://", path))
-        normpath(path = file.URL.path.1(path), ...)
+        .normalizeAbsPath(path = .file.URI.path.1(path), ...)
     else if (grepl("^(ftp|ftps|http|https)://", path))
-        normalizeURL.1(path)
-    else normpath(path = path, ...)
+        .normalizeURL.1(path)
+    else .normalizeAbsPath(path = path, ...)
 }
 
 
 as.relative.path <- function (path)
-stop(defunctError("rel2here", pkgname, old = "as.relative.path"))
+stop(.defunctError("rel2here", .pkgname, old = "as.relative.path"))
 
 
 as.rel.path <- function (path)
-stop(defunctError("rel2here", pkgname, old = "as.rel.path"))
+stop(.defunctError("rel2here", .pkgname, old = "as.rel.path"))
 
 
 
 
 
-tolower.ASCII <- function (x)
+.tolower.ASCII <- function (x)
 chartr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", x)
 
 
-toupper.ASCII <- function (x)
+.toupper.ASCII <- function (x)
 chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
 
 
-casefold.ASCII <- function (x, upper = FALSE)
-if (upper) toupper.ASCII(x) else tolower.ASCII(x)
+.casefold.ASCII <- function (x, upper = FALSE)
+if (upper) .toupper.ASCII(x) else .tolower.ASCII(x)
 
 
-delayedAssign("NET.USE.command", {
-    if (os.windows)
+delayedAssign(".NET.USE.command", {
+    if (.os.windows)
         paste(shQuote(paste0(Sys.getenv("windir"), "\\System32\\net.exe")), "USE")
 })
 
@@ -125,11 +125,11 @@ delayedAssign("NET.USE.command", {
         value[] <- path
         if (any(i <- !(is.na(value) | value == ""))) {
             path <- value[i]
-            path <- normalizePath.and.URL(path, "/", FALSE)
+            path <- .normalizePath.and.URL(path, "/", FALSE)
             switch (type, relpath = {
                 if (!is.character(relative.to) || length(relative.to) != 1L)
                     stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
-                relative.to <- normalizePath.and.URL.1(relative.to, "/", TRUE)
+                relative.to <- .normalizePath.and.URL.1(relative.to, "/", TRUE)
             }, rel2here = {
                 relative.to <- .this.dir()
             }, rel2proj = {
@@ -138,7 +138,7 @@ delayedAssign("NET.USE.command", {
                 stop(gettextf("invalid '%s' argument", "type", domain = "R"))
             })
             path <- c(relative.to, path)
-            value[i] <- if (os.windows) {
+            value[i] <- if (.os.windows) {
                 ## replace //LOCALHOST/C$/
                 ## with    C:/
                 path <- sub("(?i)^[/\\\\][/\\\\](?:LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
@@ -154,26 +154,26 @@ delayedAssign("NET.USE.command", {
                 singular.drive <- if (length(u) == 1L) {
                     TRUE
                 } else if (any(j <- grepl("^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:/$", u))) {
-                    u[j] <- toupper.ASCII(u[j])
+                    u[j] <- .toupper.ASCII(u[j])
                     length(unique(u)) == 1L
                 } else FALSE
                 if (singular.drive) {
                     fix.local <- identity
                 } else {
-                    x <- system(NET.USE.command, intern = TRUE)
+                    x <- system(.NET.USE.command, intern = TRUE)
                     m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *$", x)
                     ## one for the whole match, another two for the parenthesized sub-expressions
                     if (any(keep <- lengths(m) == 3L)) {
                         x <- regmatches(x[keep], m[keep])
                         local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
-                        local <- tolower.ASCII(local)
+                        local <- .tolower.ASCII(local)
                         local <- paste0(local, "/")
                         remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
                         if (any(j <- grepl("^[/\\\\]{2}", remote)))
                             remote[j] <- chartr("\\", "/", remote[j])
                         remote <- paste0(remote, "/")
                         fix.local <- function(p) {
-                            if (indx <- match(tolower.ASCII(p[[1L]]), local, 0L)) {
+                            if (indx <- match(.tolower.ASCII(p[[1L]]), local, 0L)) {
                                 c(remote[[indx]], p[-1L])
                             } else p
                         }
@@ -185,7 +185,7 @@ delayedAssign("NET.USE.command", {
                 p <- p[-1L]
                 r <- fix.local(r)
                 ignore.case <- !grepl("^(http|https)://", r[[1L]])
-                fix.case <- if (ignore.case) tolower.ASCII else identity
+                fix.case <- if (ignore.case) .tolower.ASCII else identity
                 r <- fix.case(r)
                 len <- length(r)
                 path.unsplit(lapply(p, function(p) {

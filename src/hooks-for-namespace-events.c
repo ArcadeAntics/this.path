@@ -104,8 +104,8 @@ SEXP do_onload do_formals
     LockCLOENV(install(".this.proj"), FALSE);
 
 
-    /* get the function find_root and lock its environment and bindings */
-    LockCLOENV(install("find_root"), TRUE);
+    /* get the function .find.root and lock its environment and bindings */
+    LockCLOENV(install(".find.root"), TRUE);
 
 
     /* get the function .this.path.toplevel and lock its environment and bindings */
@@ -121,39 +121,39 @@ SEXP do_onload do_formals
 
 
     /* save libname and pkgname in the namespace */
-    INCREMENT_NAMED_defineVar(install("libname"), libname, mynamespace);
-    INCREMENT_NAMED_defineVar(install("pkgname"), pkgname, mynamespace);
+    INCREMENT_NAMED_defineVar(install(".libname"), libname, mynamespace);
+    INCREMENT_NAMED_defineVar(install(".pkgname"), pkgname, mynamespace);
 
 
     /* find and save libpath in the namespace */
-    /* building the call getNamespaceInfo(pkgname, "path") and evaluating */
+    /* building the call getNamespaceInfo(.pkgname, "path") and evaluating */
     SEXP expr = allocList(3);
     PROTECT(expr);
     SET_TYPEOF(expr, LANGSXP);
     SETCAR  (expr, install("getNamespaceInfo"));
-    SETCADR (expr, install("pkgname"));
+    SETCADR (expr, install(".pkgname"));
     SETCADDR(expr, mkString("path"));
-    INCREMENT_NAMED_defineVar(install("libpath"), PROTECT(eval(expr, rho)), mynamespace);
+    INCREMENT_NAMED_defineVar(install(".libpath"), PROTECT(eval(expr, rho)), mynamespace);
     UNPROTECT(2);  /* expr & value */
 
 
     /* save HAVE_AQUA, PATH_MAX, and NAMEDMAX in my namespace */
 #if defined(HAVE_AQUA)
-    INCREMENT_NAMED_defineVar(install("HAVE_AQUA"), PROTECT(ScalarLogical(TRUE)), mynamespace);
+    INCREMENT_NAMED_defineVar(install(".HAVE_AQUA"), PROTECT(ScalarLogical(TRUE)), mynamespace);
 #else
-    INCREMENT_NAMED_defineVar(install("HAVE_AQUA"), PROTECT(ScalarLogical(FALSE)), mynamespace);
+    INCREMENT_NAMED_defineVar(install(".HAVE_AQUA"), PROTECT(ScalarLogical(FALSE)), mynamespace);
 #endif
     UNPROTECT(1);
 
 
-    INCREMENT_NAMED_defineVar(install("PATH_MAX"), PROTECT(ScalarInteger(PATH_MAX)), mynamespace);
+    INCREMENT_NAMED_defineVar(install(".PATH_MAX"), PROTECT(ScalarInteger(PATH_MAX)), mynamespace);
     UNPROTECT(1);
 
 
 #if R_version_less_than(3, 0, 0)
-    INCREMENT_NAMED_defineVar(install("NAMEDMAX"), PROTECT(ScalarInteger(NA_INTEGER)), mynamespace);
+    INCREMENT_NAMED_defineVar(install(".NAMEDMAX"), PROTECT(ScalarInteger(NA_INTEGER)), mynamespace);
 #else
-    INCREMENT_NAMED_defineVar(install("NAMEDMAX"), PROTECT(ScalarInteger(NAMEDMAX)), mynamespace);
+    INCREMENT_NAMED_defineVar(install(".NAMEDMAX"), PROTECT(ScalarInteger(NAMEDMAX)), mynamespace);
 #endif
     UNPROTECT(1);
 
@@ -169,11 +169,10 @@ SEXP do_onload do_formals
     } while (0)
 
 
-    convertclosure2activebinding(install("mbcslocale"));
-    convertclosure2activebinding(install("utf8locale"));
-    convertclosure2activebinding(install("latin1locale"));
-    convertclosure2activebinding(install("R_MB_CUR_MAX"));
-    // convertclosure2activebinding(install("utf8"));
+    convertclosure2activebinding(install(".mbcslocale"));
+    convertclosure2activebinding(install(".utf8locale"));
+    convertclosure2activebinding(install(".latin1locale"));
+    convertclosure2activebinding(install(".R_MB_CUR_MAX"));
 
 
     SEXP value = allocVector(VECSXP, 13);

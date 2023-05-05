@@ -1,6 +1,6 @@
-.Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
+.Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, show.command = TRUE, intern = TRUE, show.output.on.console = show.command, ...)
 {
-    command <- path.join(R.home("bin"), if (os.windows)
+    command <- path.join(R.home("bin"), if (.os.windows)
         "Rscript.exe"
     else "Rscript")
     args <- c(command, options)
@@ -8,23 +8,7 @@
     command <- paste(args, collapse = " ")
     if (dry.run)
         return(command)
-    if (print.command)
-        cat(command, "\n", sep = "")
-    invisible(system(command = command, ...))
-}
-
-
-Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, intern = TRUE, show.output.on.console = print.command, ...)
-{
-    command <- path.join(R.home("bin"), if (os.windows)
-        "Rscript.exe"
-    else "Rscript")
-    args <- c(command, options)
-    args <- c(shQuote(args), trailing)
-    command <- paste(args, collapse = " ")
-    if (dry.run)
-        return(command)
-    if (print.command)
+    if (show.command)
         cat(command, "\n", sep = "")
     value <- suppressWarnings(system(command = command, intern = intern, ...))
     if (show.output.on.console)
@@ -33,25 +17,9 @@ Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE, pr
 }
 
 
-# .Rterm <- function (options = NULL, trailing = character(), dry.run = FALSE, print.command = TRUE, ...)
-# {
-#     command <- path.join(R.home("bin"), if (os.windows)
-#         "Rterm.exe"
-#     else "R")
-#     args <- c(command, options)
-#     args <- c(shQuote(args), trailing)
-#     command <- paste(args, collapse = " ")
-#     if (dry.run)
-#         return(command)
-#     if (print.command)
-#         cat(command, "\n", sep = "")
-#     invisible(system(command = command, ...))
-# }
-
-
-build_this <- function(chdir = FALSE, file = here(), which = "tar") NULL
-body(build_this) <- bquote({
-    # build_this {this.path}                                     R Documentation
+.build.this <- function(chdir = FALSE, file = here(), which = "tar") NULL
+body(.build.this) <- bquote({
+    # .build.this {this.path}                                    R Documentation
     #
     # Building Packages
     #
@@ -66,7 +34,7 @@ body(build_this) <- bquote({
     #
     # Usage:
     #
-    # build_this(chdir = FALSE, file = here(), which = "tar")
+    # .build.this(chdir = FALSE, file = here(), which = "tar")
     #
     #
     #
@@ -91,7 +59,7 @@ body(build_this) <- bquote({
     #
     # Details:
     #
-    # build_this builds package archives similar to 'R CMD build', and takes
+    # .build.this builds package archives similar to 'R CMD build', and takes
     # the name of the package and its version from the 'DESCRIPTION' file.
     # If you are unfamiliar with the 'DESCRIPTION' file, here is a outline:
     #
@@ -124,7 +92,7 @@ body(build_this) <- bquote({
     if (!is.character(file) || length(file) != 1L) {
         stop(gettextf("'%s' must be a character string", "file", domain = "R"), domain = NA)
     } else if (grepl("^(ftp|ftps|http|https)://", file)) {
-        stop("cannot 'build_this' on a URL")
+        stop("cannot '.build.this' on a URL")
     } else if (chdir && (path <- file) != ".") {
         file <- "."
         owd <- getwd()
@@ -388,7 +356,7 @@ body(build_this) <- bquote({
             args <- c("zip", "-r", shQuote(build.path), shQuote(pkgname))
             command <- paste(args, collapse = " ")
             cat("* building '", build.name, "'\n", sep = "")
-            res <- do_with_wd(system(command, ignore.stdout = TRUE), my.tmpdir)
+            res <- .do.with.wd(system(command, ignore.stdout = TRUE), my.tmpdir)
             if (res == -1L) {
                 stop("'", command, "' could not be run")
             } else if (res) {
@@ -408,10 +376,7 @@ body(build_this) <- bquote({
 }, splice = TRUE)
 
 
-build.this <- build_this
-
-
-do_with_wd <- function (expr, wd)
+.do.with.wd <- function (expr, wd)
 {
     owd <- getwd()
     on.exit(setwd(owd))
@@ -420,10 +385,10 @@ do_with_wd <- function (expr, wd)
 }
 
 
-R_BraceSymbol <- as.symbol("{")
+.R_BraceSymbol <- as.symbol("{")
 
 
-maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
+.maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
 {
     # possibly quote an expression
     #
@@ -443,7 +408,7 @@ maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
 
     if (missing(evaluated)) {
         if (is.call(e <- eval(substitute(substitute(expr)), parent.frame())) &&
-            identical(e[[1L]], R_BraceSymbol))
+            identical(e[[1L]], .R_BraceSymbol))
         {
             expr <- e
         }
@@ -460,7 +425,7 @@ maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
         # always turn a call into an expression so that it
         # cannot be misinterpreted later
         if (simplify.brace) {
-            if (identical(expr[[1L]], R_BraceSymbol))
+            if (identical(expr[[1L]], .R_BraceSymbol))
                 as.expression(as.list(expr[-1L]))
             else as.expression(list(expr))
         }
@@ -470,13 +435,7 @@ maybeQuote <- function (expr, evaluated, simplify.brace = TRUE)
 }
 
 
-# this function does not exist in R < 4.0.0
-deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...)
-paste(deparse(expr, width.cutoff, ...), collapse = collapse)
-environment(deparse1) <- getNamespace("base")
-
-
-code2character <- function (x, width.cutoff = 60L,
+.code2character <- function (x, width.cutoff = 60L,
     deparseCtrl = c("keepInteger", "showAttributes", "useSource", "keepNA", "digits17"))
 {
     # if 'x' is an (unevaluated) call to `{`
@@ -555,15 +514,15 @@ code2character <- function (x, width.cutoff = 60L,
 }
 
 
-write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
+.write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
     width.cutoff = 60L, deparseCtrl = c("keepInteger", "showAttributes", "useSource", "keepNA", "digits17"))
 {
-    x <- maybeQuote(x, evaluated, simplify.brace)
-    x <- code2character(x, width.cutoff, deparseCtrl)
+    x <- .maybeQuote(x, evaluated, simplify.brace)
+    x <- .code2character(x, width.cutoff, deparseCtrl)
     if (is.null(file))
         x
     else {
-        writeLines(x, file, useBytes = !utf8locale)
+        writeLines(x, file, useBytes = !.utf8locale)
         invisible(x)
     }
 }
@@ -572,16 +531,16 @@ write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
 if (getRversion() < "3.2.0") {
 
 
-    tmp <- formals(code2character)[["deparseCtrl"]]
-    formals(code2character)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
+    tmp <- formals(.code2character)[["deparseCtrl"]]
+    formals(.code2character)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
 
 
-    tmp <- formals(write.code)[["deparseCtrl"]]
-    formals(write.code)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
+    tmp <- formals(.write.code)[["deparseCtrl"]]
+    formals(.write.code)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
 
 
 }
 
 
-readFiles <- function (files)
+.readFiles <- function (files)
 vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")

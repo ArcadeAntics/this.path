@@ -1,10 +1,10 @@
-windows.path.join <- function (...)
-.External2(C_windowspathjoin)
+.windows.path.join <- function (...)
+.External2(.C_windowspathjoin)
 
 
-unix.path.join <- function (...)
-.External2(C_unixpathjoin)
+.unix.path.join <- function (...)
+.External2(.C_unixpathjoin)
 
 
 path.join <- function (...)
-.External2(C_pathjoin)
+.External2(.C_pathjoin)

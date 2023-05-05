@@ -92,7 +92,7 @@ SEXP do_isunevaluatedpromise do_formals
     do_start_no_op("isunevaluatedpromise", -1);
 
 
-    handles_nargs(rho, "C_isunevaluatedpromise");
+    handles_nargs(rho, ".C_isunevaluatedpromise");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
@@ -113,7 +113,7 @@ SEXP do_promiseisunevaluated do_formals
     do_start_no_op("promiseisunevaluated", -1);
 
 
-    handles_nargs(ENCLOS(rho), "C_promiseisunevaluated");
+    handles_nargs(ENCLOS(rho), ".C_promiseisunevaluated");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
@@ -141,7 +141,7 @@ SEXP do_getpromisewithoutwarning do_formals
     do_start_no_op("getpromisewithoutwarning", -1);
 
 
-    handles_nargs(ENCLOS(rho), "C_getpromisewithoutwarning");
+    handles_nargs(ENCLOS(rho), ".C_getpromisewithoutwarning");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
@@ -256,7 +256,7 @@ SEXP do_prinfo do_formals
         })
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(nargs, "C_prinfo", "1, 2, or 3"));
+        errorcall(call, wrong_nargs_to_External(nargs, ".C_prinfo", "1, 2, or 3"));
         return R_NilValue;
     }
 
@@ -284,7 +284,7 @@ Rboolean validJupyterRNotebook(SEXP path)
     SEXP expr = allocList(2);
     PROTECT(expr);
     SET_TYPEOF(expr, LANGSXP);
-    SETCAR(expr, validJupyterRNotebookSymbol);
+    SETCAR(expr, _validJupyterRNotebookSymbol);
     SETCADR(expr, path);
     SEXP value = eval(expr, mynamespace);
     if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL(value)[0] == NA_LOGICAL)
@@ -315,7 +315,7 @@ SEXP do_setthispathjupyter do_formals
             errorcall(call, _("invalid '%s' argument"), "skipCheck");
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), "C_setthispathjupyter", "1 or 2"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_setthispathjupyter", "1 or 2"));
         return R_NilValue;
     }
 

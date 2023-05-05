@@ -75,7 +75,7 @@ SEXP findFunction(SEXP symbol, SEXP rho, SEXP call)
 int IS_ASCII(SEXP x)
 {
     for (const char *s = CHAR(x); *s; s++) {
-        if (*s > 127) {
+        if (*s > 0x7f) {
             return FALSE;
         }
     }
@@ -292,7 +292,7 @@ SEXP summaryconnection(SEXP sConn)
 #endif
 
 
-SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numCls, int numFields)
+SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numFields)
 {
     SEXP value = allocVector(VECSXP, 2 + numFields);
     PROTECT(value);
@@ -304,6 +304,11 @@ SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numCls, in
     SET_VECTOR_ELT(value, 0, mkString(msg));
     SET_STRING_ELT(names, 1, mkChar("call"));
     SET_VECTOR_ELT(value, 1, call);
+
+
+    /* count the number of strings in 'cls' */
+    int numCls;
+    for (numCls = 0; cls[numCls]; numCls++);
 
 
     SEXP klass = allocVector(STRSXP, numCls + 2);
@@ -390,14 +395,13 @@ SEXP thisPathUnrecognizedMannerError(SEXP call)
 
 SEXP thisPathNotImplementedError(const char *msg, SEXP call)
 {
-#define thispathnotimplementederrorcls                         \
+#define thisPathNotImplementedErrorCls                         \
     "this.path::thisPathNotImplementedError",                  \
     "this.path_this.path_unimplemented_error",                 \
     "notImplementedError",                                     \
     "NotImplementedError"
-#define thispathnotimplementederrornumcls 4
-    const char *cls[] = {thispathnotimplementederrorcls};
-    return errorCondition(msg, call, cls, thispathnotimplementederrornumcls, 0);
+    const char *cls[] = {thisPathNotImplementedErrorCls, NULL};
+    return errorCondition(msg, call, cls, 0);
 }
 
 
@@ -406,9 +410,10 @@ SEXP thisPathNotExistsError(const char *msg, SEXP call)
     const char *cls[] = {
         thisPathNotExistsErrorCls,
         "this.path::thisPathNotExistError",
-        "this.path_this.path_not_exists_error"
+        "this.path_this.path_not_exists_error",
+        NULL
     };
-    return errorCondition(msg, call, cls, 3, 0);
+    return errorCondition(msg, call, cls, 0);
 }
 
 
@@ -433,8 +438,8 @@ SEXP thisPathInAQUAError(SEXP call)
         "* no appropriate source call was found up the calling stack\n"
         "* R is being run from AQUA which is currently unimplemented\n"
         "  consider using RStudio / / VSCode until such a time when this is implemented";
-    const char *cls[] = {"this.path::thisPathInAQUAError", thispathnotimplementederrorcls};
-    return errorCondition(msg, call, cls, 1 + thispathnotimplementederrornumcls, 0);
+    const char *cls[] = {"this.path::thisPathInAQUAError", thisPathNotImplementedErrorCls, NULL};
+    return errorCondition(msg, call, cls, 0);
 }
 
 
@@ -564,7 +569,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame)
 #endif
 
 
-    SET_PRCODE(e, lang2(normalizeURL_1Symbol, ofile));
+    SET_PRCODE(e, lang2(_normalizeURL_1Symbol, ofile));
     SET_PRENV(e, mynamespace);
 
 
@@ -575,12 +580,12 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame)
 
 static Rboolean _init_tools_rstudio(void)
 {
-    SEXP tools_rstudio = getInFrame(tools_rstudioSymbol, mynamespace, FALSE);
-    if (tools_rstudio != R_EmptyEnv)
+    SEXP _tools_rstudio = getInFrame(_tools_rstudioSymbol, mynamespace, FALSE);
+    if (_tools_rstudio != R_EmptyEnv)
         return TRUE;
 
 
-    const char *what = EncodeChar(PRINTNAME(tools_rstudioSymbol));
+    const char *what = "tools:rstudio";
 
 
     SEXP name;
@@ -618,8 +623,8 @@ static Rboolean _init_tools_rstudio(void)
 
             assigninmynamespace(_rs_api_getActiveDocumentContextSymbol, _rs_api_getActiveDocumentContext);
             assigninmynamespace(_rs_api_getSourceEditorContextSymbol  , _rs_api_getSourceEditorContext  );
-            assigninmynamespace(debugSourceSymbol                     , debugSource                     );
-            assigninmynamespace(tools_rstudioSymbol                   , t                               );
+            assigninmynamespace(_debugSourceSymbol                    , debugSource                     );
+            assigninmynamespace(_tools_rstudioSymbol                  , t                               );
 
 
 #undef assigninmynamespace
@@ -691,8 +696,8 @@ SEXP get_sys_parents(SEXP rho)
 
 int get_sys_parent(int n, SEXP rho)
 {
-    SEXP N = PROTECT(ScalarInteger(n));
-    int value = asInteger(eval(lang2(findVarInFrame(R_BaseEnv, sys_parentSymbol), N), rho));
+    SEXP sys_parent = PROTECT(findVarInFrame(R_BaseEnv, sys_parentSymbol));
+    int value = asInteger(eval(lang2(sys_parent, ScalarInteger(n)), rho));
     UNPROTECT(1);
     return value;
 }

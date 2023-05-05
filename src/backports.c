@@ -599,7 +599,7 @@ SEXP do_anyNA do_formals
         x = CAR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), "C_anyNA", "1 or 2"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNA", "1 or 2"));
         return R_NilValue;
     }
 

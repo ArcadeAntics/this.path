@@ -1,4 +1,4 @@
-useDynLib(this.path, .registration = TRUE, .fixes = "C_")
+useDynLib(this.path, .registration = TRUE, .fixes = ".C_")
 
 
 # all.char.R                   ----

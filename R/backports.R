@@ -62,6 +62,17 @@ bquote <- function (expr, where = parent.frame(), splice = FALSE)
 }
 
 
+if (getRversion() < "4.0.0") {
+
+
+deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...)
+paste(deparse(expr, width.cutoff, ...), collapse = collapse)
+environment(deparse1) <- .BaseNamespaceEnv
+
+
+}
+
+
 if (getRversion() < "3.6.0") {
 
 
@@ -99,7 +110,7 @@ if (getRversion() < "3.5.0") {
 
 
 ...length <- function ()
-.External2(C_dotslength)
+.External2(.C_dotslength)
 
 
 isTRUE <- function (x)
@@ -118,7 +129,7 @@ environment(isFALSE) <- .BaseNamespaceEnv
 if (getRversion() < "3.4.0") {
 
 
-withAutoprint <- function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
+.withAutoprint <- function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
     echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20,
         getOption("width")), deparseCtrl = c("keepInteger", "showAttributes",
         "keepNA"), spaced = FALSE, ...)
@@ -132,14 +143,20 @@ withAutoprint <- function (exprs, evaluated = FALSE, local = parent.frame(), pri
     }
     if (!is.expression(exprs))
         exprs <- as.expression(exprs)
-    conn <- textConnection(code2character(exprs, width.cutoff = width.cutoff, deparseCtrl = deparseCtrl))
+    conn <- textConnection(.code2character(exprs, width.cutoff = width.cutoff, deparseCtrl = deparseCtrl))
     on.exit(close(conn))
     source(file = conn, local = local, print.eval = print., echo = echo,
         max.deparse.length = max.deparse.length, ...)
 }
 
 
-} else withAutoprint <- base::withAutoprint
+} else {
+
+
+.withAutoprint <- withAutoprint
+
+
+}
 
 
 if (getRversion() < "3.3.0") {
@@ -149,16 +166,16 @@ strrep <- function (x, times)
 {
     if (!is.character(x))
         x <- as.character(x)
-    .External2(C_strrep, x, as.integer(times))
+    .External2(.C_strrep, x, as.integer(times))
 }
 
 
 startsWith <- function (x, prefix)
-.External2(C_startsWith, x, prefix)
+.External2(.C_startsWith, x, prefix)
 
 
 endsWith <- function (x, suffix)
-.External2(C_endsWith, x, suffix)
+.External2(.C_endsWith, x, suffix)
 
 
 }
@@ -168,15 +185,15 @@ if (getRversion() < "3.2.0") {
 
 
 isNamespaceLoaded <- function (name)
-.External2(C_isRegisteredNamespace, name)
+.External2(.C_isRegisteredNamespace, name)
 
 
 dir.exists <- function (paths)
-.External2(C_direxists, paths)
+.External2(.C_direxists, paths)
 
 
 lengths <- function (x, use.names = TRUE)
-.External2(C_lengths, x, use.names)
+.External2(.C_lengths, x, use.names)
 
 
 ## file.info() did not have argument 'extra_cols' at this time
@@ -194,21 +211,17 @@ file.info <- function (..., extra_cols = TRUE)
 environment(file.info) <- .BaseNamespaceEnv
 
 
-is.dir <- function (...)
+.is.dir <- function (...)
 file.info(...)$isdir
-environment(is.dir) <- .BaseNamespaceEnv
+environment(.is.dir) <- .BaseNamespaceEnv
 
 
 } else {
 
 
-isNamespaceLoaded <- function (name)
-isNamespaceLoaded(name)
-environment(isNamespaceLoaded) <- .BaseNamespaceEnv
-
-
-is.dir <- function (...)
+.is.dir <- function (...)
 file.info(..., extra_cols = FALSE)$isdir
+environment(.is.dir) <- .BaseNamespaceEnv
 
 
 }
@@ -218,7 +231,7 @@ if (getRversion() < "3.1.0") {
 
 
 anyNA <- function (x, recursive = FALSE)
-.External2(C_anyNA, x, recursive)
+.External2(.C_anyNA, x, recursive)
 
 
 }
@@ -227,15 +240,15 @@ anyNA <- function (x, recursive = FALSE)
 if (getRversion() < "3.0.0") {
 
 
-delayedAssign("C_mapply", getNativeSymbolInfo("do_mapply", PACKAGE = "base"))
+delayedAssign(".C_mapply", getNativeSymbolInfo("do_mapply", PACKAGE = "base"))
 
 
 .mapply <- function (FUN, dots, MoreArgs)
-.Call(C_mapply, match.fun(FUN), dots, MoreArgs, environment())
+.Call(.C_mapply, match.fun(FUN), dots, MoreArgs, environment())
 
 
-setprseen2 <- function (ptr)
-.External2(C_setprseen2, ptr)
+.setprseen2 <- function (ptr)
+.External2(.C_setprseen2, ptr)
 
 
 parse <- function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),

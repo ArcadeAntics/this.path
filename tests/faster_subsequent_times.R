@@ -2,11 +2,11 @@ main <- function ()
 {
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE)
-    this.path:::write.code(file = FILE, {
+    this.path:::.write.code(file = FILE, {
         if (requireNamespace("microbenchmark")) {
             invisible(loadNamespace("microbenchmark"))
             invisible(loadNamespace("this.path"))
-            print(this.path:::faster.subsequent.times.test())
+            print(this.path:::.faster.subsequent.times.test())
         } else cat("\npackage {microbenchmark} is not available :(\n")
     })
     cat("\n")

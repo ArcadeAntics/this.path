@@ -75,7 +75,7 @@ tmp <- function (x, varname, name)
 
 
 check.path <- function(...) NULL
-body(check.path) <- tmp(quote(.External2(C_thispath)), "thispath", "this.path()")
+body(check.path) <- tmp(quote(.External2(.C_thispath)), "thispath", "this.path()")
 
 
 check.dir <- function(...) NULL
@@ -95,7 +95,7 @@ check.proj <- function (...)
     expected <- path.split.1(expected)
     if (check.wd <- expected[[1L]] == ".")
         expected <- expected[-1L]
-    thispath <- .External2(C_thispath)
+    thispath <- .External2(.C_thispath)
     thispath <- path.split.1(thispath)
     thisproj <- .this.proj()
     thisproj <- path.split.1(thisproj)

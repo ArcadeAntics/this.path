@@ -43,7 +43,7 @@ SEXP do_asargs do_formals
             errorcall(call, _("argument must be coercible to non-negative integer"));
     }
     else {
-        errorcall(call, wrong_nargs_to_External(nargs, "C_asargs", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(nargs, ".C_asargs", "0 or 1"));
         return R_NilValue;
     }
 

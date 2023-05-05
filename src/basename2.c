@@ -481,7 +481,7 @@ SEXP dirname2(SEXP path, int times)
    the second argument (optional) is the number of additional times to
    calculate dirname2(). for example:
 
-   .External2(C_dirname2, path, 2)
+   .External2(.C_dirname2, path, 2)
 
    will calculate the dirname() once, then calculate it 2 more times
    afterward
@@ -517,7 +517,7 @@ SEXP do_windowsdirname2 do_formals
 {
     do_start_no_op_rho("windowsdirname2", -1);
     if (debug) Rprintf("in do_windowsdirname2\n\n");
-    do_dirname2_check_nargs("C_windowsdirname2");
+    do_dirname2_check_nargs(".C_windowsdirname2");
     return windowsdirname2(path, times);
 }
 
@@ -526,7 +526,7 @@ SEXP do_unixdirname2 do_formals
 {
     do_start_no_op_rho("unixdirname2", -1);
     if (debug) Rprintf("in do_unixdirname2\n\n");
-    do_dirname2_check_nargs("C_unixdirname2");
+    do_dirname2_check_nargs(".C_unixdirname2");
     return unixdirname2(path, times);
 }
 
@@ -535,7 +535,7 @@ SEXP do_dirname2 do_formals
 {
     do_start_no_op_rho("dirname2", -1);
     if (debug) Rprintf("in do_dirname2\n\n");
-    do_dirname2_check_nargs("C_dirname2");
+    do_dirname2_check_nargs(".C_dirname2");
     return dirname2(path, times);
 }
 

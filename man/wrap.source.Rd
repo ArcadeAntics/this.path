@@ -283,7 +283,7 @@ wrapper <- function(path, ...) {
 }
 \examples{
 FILE <- tempfile(fileext = ".R")
-this.path:::write.code({
+this.path:::.write.code({
     this.path::this.path(verbose = TRUE)
 }, FILE)
 
@@ -296,7 +296,7 @@ sourcelike <- function (file, envir = parent.frame())
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = file)
     ## this prints nicely
-    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE,
+    this.path:::.withAutoprint(exprs = exprs, evaluated = TRUE,
         local = envir, spaced = TRUE, verbose = FALSE,
         width.cutoff = 60L)
     # ## you could alternatively do:
@@ -318,7 +318,7 @@ sourcelike2 <- function (pathname, envir = globalenv())
              pathname, domain = "R-base"))
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = pathname)
-    this.path:::withAutoprint(exprs = exprs, evaluated = TRUE,
+    this.path:::.withAutoprint(exprs = exprs, evaluated = TRUE,
         local = envir, spaced = TRUE, verbose = FALSE,
         width.cutoff = 60L)
 }

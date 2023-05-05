@@ -80,8 +80,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* hooks-for-namespace-events.c */
 
 
-    // {"utf8locale"  , (DL_FUNC) &do_utf8locale  , 0},
     {"mbcslocale"  , (DL_FUNC) &do_mbcslocale  , 0},
+    // {"utf8locale"  , (DL_FUNC) &do_utf8locale  , 0},
     // {"latin1locale", (DL_FUNC) &do_latin1locale, 0},
     {"R_MB_CUR_MAX", (DL_FUNC) &do_R_MB_CUR_MAX, 0},
 

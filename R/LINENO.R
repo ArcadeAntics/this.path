@@ -1,4 +1,4 @@
-.normpath <- function (path, wd)
+.try.normalizePath <- function (path, wd)
 {
     if (!missing(wd) && !is.null(wd)) {
         oldwd <- setwd(wd)
@@ -7,7 +7,7 @@
     tryCatch({
         normalizePath(path, "/")
     }, warning = function(w) {
-        if (os.windows)
+        if (.os.windows)
             chartr("\\", "/", path)
         else path
     })
@@ -18,10 +18,10 @@ LINENO <- function ()
 {
     failure <- TRUE
     tryCatch({
-        cntxt.number <- .External2(C_getframenumber)
+        cntxt.number <- .External2(.C_getframenumber)
         if (cntxt.number == 0L)
             return(NA_integer_)
-        path <- .External2(C_thispath)
+        path <- .External2(.C_thispath)
         failure <- FALSE
     }, error = function(e) NULL)
     if (failure)
@@ -33,7 +33,7 @@ LINENO <- function ()
         srcref <- attr(call, "srcref")
         if (!is.null(srcref)) {
             srcfile <- attr(srcref, "srcfile")
-            filename <- .normpath(srcfile$filename, srcfile$wd)
+            filename <- .try.normalizePath(srcfile$filename, srcfile$wd)
             if (path == filename) {
                 # return(srcref[7L])
 
@@ -48,7 +48,7 @@ LINENO <- function ()
 }
 
 
-source2 <- function (file, local = FALSE, echo = verbose, print.eval = echo,
+.source <- function (file, local = FALSE, echo = verbose, print.eval = echo,
     exprs, spaced = use_file, verbose = getOption("verbose"),
     prompt.echo = getOption("prompt"), max.deparse.length = 150,
     width.cutoff = 60L, deparseCtrl = "showAttributes", chdir = FALSE,
@@ -120,7 +120,7 @@ source2 <- function (file, local = FALSE, echo = verbose, print.eval = echo,
                   on.exit()
                   close(file)
                   srcfile <- srcfilecopy(filename, lines, file.mtime(filename)[1],
-                    isFile = is.abs.path(filename))
+                    isFile = .is.abs.path(filename))
                 }
                 else {
                   from_file <- TRUE

@@ -59,10 +59,10 @@ asArgs <- function (...)
 
 fileArgs <- function ()
 {
-    n <- .External2(C_getframenumber)
+    n <- .External2(.C_getframenumber)
     if (n) {
         if (n == 1L) {
-            if (has.shFILE)
+            if (.has.shFILE)
                 character()
             else commandArgs(trailingOnly = TRUE)
         }
@@ -70,7 +70,7 @@ fileArgs <- function ()
             get("args", envir = sys.frame(n - 1L), inherits = FALSE)
         else character()
     }
-    else if (has.shFILE)
+    else if (.has.shFILE)
         commandArgs(trailingOnly = TRUE)
     else character()
 }
@@ -78,10 +78,10 @@ fileArgs <- function ()
 
 progArgs <- function ()
 {
-    n <- .External2(C_getframenumber)
+    n <- .External2(.C_getframenumber)
     if (n) {
         if (n == 1L) {
-            if (has.shFILE)
+            if (.has.shFILE)
                 character()
             else commandArgs(trailingOnly = TRUE)
         }
@@ -89,7 +89,7 @@ progArgs <- function ()
             get("args", envir = sys.frame(n - 1L), inherits = FALSE)
         else character()
     }
-    else if (in.shell)
+    else if (.in.shell)
         commandArgs(trailingOnly = TRUE)
     else character()
 }
@@ -97,6 +97,6 @@ progArgs <- function ()
 
 withArgs <- function (...)
 {
-    args <- .External2(C_asargs, 1L)
+    args <- .External2(.C_asargs, 1L)
     ..1
 }

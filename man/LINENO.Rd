@@ -51,9 +51,8 @@ writeLines(c(
 # source(FILE, echo = TRUE, verbose = FALSE,
 #     max.deparse.length = Inf, keep.source = TRUE)
 #
-# ## but it echoes incorrectly with #line directives.
-# ## source2() echoes correctly!
-this.path:::source2(FILE, echo = TRUE, verbose = FALSE,
+# ## but it echoes incorrectly with #line directives
+this.path:::.source(FILE, echo = TRUE, verbose = FALSE,
     max.deparse.length = Inf, keep.source = TRUE)
 
 
