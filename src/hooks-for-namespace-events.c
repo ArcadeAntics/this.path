@@ -333,6 +333,13 @@ SEXP do_onload do_formals
     defineVar(thispathtempSymbol, R_NilValue, mynamespace);
 
 
+    /*
+       setHook(
+           packageEvent(.pkgname, "onLoad"),
+           function(pkgname, pkgpath) unlockBinding(thispathtempSymbol, mynamespace),
+           "prepend"
+       )
+     */
     do {
         SEXP expr, expr2, expr3, expr4;
         expr = allocList(4);
