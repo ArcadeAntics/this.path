@@ -330,6 +330,41 @@ SEXP do_onload do_formals
     UNPROTECT(1);  /* value */
 
 
+    defineVar(thispathtempSymbol, R_NilValue, mynamespace);
+
+
+    do {
+        SEXP expr, expr2, expr3, expr4;
+        expr = allocList(4);
+        PROTECT(expr);
+        SET_TYPEOF(expr, LANGSXP);
+        SETCAR   (expr, install("setHook"));
+        SETCADR  (expr, lang3(install("packageEvent"), install(".pkgname"), mkString("onLoad")));
+        SETCADDR (expr, expr2 = allocList(3));
+        SETCADDDR(expr, mkString("prepend"));
+
+
+        SET_TYPEOF(expr2, LANGSXP);
+        SETCAR  (expr2, install("function"));
+        SETCADR (expr2, expr3 = allocList(2));
+        SETCADDR(expr2, expr4 = allocList(3));
+
+
+        SET_TAG(expr3, install("pkgname")); SETCAR(expr3, R_MissingArg); expr3 = CDR(expr3);
+        SET_TAG(expr3, install("pkgpath")); SETCAR(expr3, R_MissingArg); expr3 = CDR(expr3);
+
+
+        SET_TYPEOF(expr4, LANGSXP);
+        SETCAR  (expr4, install("unlockBinding"));
+        SETCADR (expr4, ScalarString(PRINTNAME(thispathtempSymbol)));
+        SETCADDR(expr4, mynamespace);
+
+
+        eval(expr, mynamespace);
+        UNPROTECT(1);  /* expr */
+    } while (0);
+
+
     return R_NilValue;
 }
 

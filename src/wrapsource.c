@@ -460,17 +460,16 @@ SEXP do_wrapsource do_formals
         SETCAR   (tmp, findVarInFrame(R_BaseEnv, delayedAssignSymbol));
         SETCADR  (tmp, /* x          */ ScalarString(PRINTNAME(thispathtempSymbol)));
         SETCADDDR(tmp, /* eval.env   */ R_EmptyEnv);
-        SETCAD4R (tmp, /* assign.env */ rho);
+        SETCAD4R (tmp, /* assign.env */ mynamespace);
 
 
         eval(tmp, R_EmptyEnv);
-        tmp = findVarInFrame(rho, thispathtempSymbol);
+        tmp = findVarInFrame(mynamespace, thispathtempSymbol);
         SET_PRCODE(tmp, s);
         SET_PRSEEN(tmp, 0);
         SET_PRVALUE(tmp, e);
         ENSURE_NAMEDMAX(e);
         SET_PRENV(tmp, R_NilValue);
-        R_removeVarFromFrame(thispathtempSymbol, rho);
 
 
         e = tmp;
