@@ -23,12 +23,13 @@
         }
         invisible()
     })
+    Sys.setenv(`_R_CHECK_CRAN_INCOMING_` = "TRUE")
     essentials:::check.this(  ## this.path
         special = TRUE,
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, as.cran = TRUE,
+        check = FALSE, as.cran = TRUE,
 
         chdir = TRUE
     )
@@ -45,6 +46,28 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
         chdir = TRUE
     )
+})
+
+
+local({
+    sourcelike <- function(file, envir = .GlobalEnv) {
+        ofile <- file
+        if (file.exists(file)) {
+        } else if (file.exists(file <- path.join("~", ofile))) {
+        } else stop("file not found")
+        file <- set.sys.path(file, ofile = ofile, Function = "sourcelike")
+        local.file <- sys.path(for.msg = TRUE, local = TRUE)
+        lines <- readLines(file, warn = FALSE)
+        srcfile <- srcfilecopy(file, lines, file.mtime(local.file),
+            isFile = !is.na(local.file))
+        exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
+        for (i in seq_along(exprs)) eval(exprs[i], envir)
+        invisible()
+    }
+
+
+    sourcelike("test66.R", environment())
+    sourcelike("test67.R", environment())
 })
 
 
@@ -159,12 +182,12 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\.is\\.dir", x, value = TRUE)
+    x <- grep("\\.this\\.dir", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
     x <- this.path:::.readFiles(Rfiles)
-    x <- grep("gui\\.rstudio", x, value = TRUE)
+    x <- grep("attr", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
@@ -350,7 +373,7 @@ local({
                             stopifnot(vapply(bindings, bindingIsLocked, frame, FUN.VALUE = NA))
                             getwd()
                             try(this.path:::.PRINFO(".this.path::file", frame, inherits = FALSE))
-                            # don't use as.list yet, will force the promises
+                            ## don't use as.list yet, will force the promises
                             .this.path(for.msg = TRUE)
                             .this.path(original = TRUE, for.msg = TRUE)
                             try(writeLines(sQuote(.this.path(verbose = TRUE))))

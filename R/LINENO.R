@@ -14,38 +14,66 @@
 }
 
 
-LINENO <- function ()
+.LINENO <- function (path, to = 1L)
 {
-    failure <- TRUE
-    tryCatch({
-        cntxt.number <- .External2(.C_getframenumber)
-        if (cntxt.number == 0L)
-            return(NA_integer_)
-        path <- .External2(.C_thispath)
-        failure <- FALSE
-    }, error = function(e) NULL)
-    if (failure)
-        return(NA_integer_)
-
-
-    for (which in sys.nframe():(cntxt.number + 1L)) {
+    for (which in (sys.nframe() - 1L):to) {
         call <- sys.call(which)
-        srcref <- attr(call, "srcref")
+        srcref <- attr(call, "srcref", exact = TRUE)
         if (!is.null(srcref)) {
-            srcfile <- attr(srcref, "srcfile")
+            srcfile <- attr(srcref, "srcfile", exact = TRUE)
             filename <- .try.normalizePath(srcfile$filename, srcfile$wd)
             if (path == filename) {
                 # return(srcref[7L])
 
-                # srcref[1L] is better, it respects #line directives
+                ## srcref[1L] is better, it respects #line directives
                 return(srcref[1L])
             }
         }
     }
-
-
     NA_integer_
 }
+
+
+sys.LINENO <- function ()
+{
+    failure <- TRUE
+    tryCatch({
+        context.number <- .External2(.C_getframenumber)
+        if (context.number == 0L)
+            return(NA_integer_)
+        path <- .External2(.C_syspath)
+        failure <- FALSE
+    }, error = function(e) NULL)
+    if (failure)
+        NA_integer_
+    else .LINENO(path, context.number + 1L)
+}
+
+
+env.LINENO <- function (envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+{
+    ## force the promises
+    envir
+    matchThisEnv
+
+
+    failure <- TRUE
+    tryCatch({
+        path <- .External2(.C_envpath, envir, matchThisEnv)
+        failure <- FALSE
+    }, error = function(e) NULL)
+    if (failure)
+        NA_integer_
+    else .LINENO(path)
+}
+
+
+LINENO <- eval(call("function", as.pairlist(alist(envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))), bquote({
+    value <- .(body(env.LINENO))
+    if (is.na(value))
+        .(body(sys.LINENO))
+    else value
+})))
 
 
 .source <- function (file, local = FALSE, echo = verbose, print.eval = echo,
@@ -55,7 +83,7 @@ LINENO <- function ()
     encoding = getOption("encoding"), continue.echo = getOption("continue"),
     skip.echo = 0, keep.source = getOption("keep.source"))
 {
-    file <- inside.source(file)
+    file <- set.sys.path(file)
     envir <- if (isTRUE(local))
         parent.frame()
     else if (isFALSE(local))
@@ -196,7 +224,7 @@ LINENO <- function ()
     }
     yy <- NULL
     lastshown <- 0
-    srcrefs <- attr(exprs, "srcref")
+    srcrefs <- attr(exprs, "srcref", exact = TRUE)
     if (verbose && !is.null(srcrefs)) {
         cat("has srcrefs:\n")
         utils::str(srcrefs)
@@ -211,14 +239,14 @@ LINENO <- function ()
         if (echo) {
             nd <- 0
             srcref <- if (tail)
-                attr(exprs, "wholeSrcref")
+                attr(exprs, "wholeSrcref", exact = TRUE)
             else if (i <= length(srcrefs))
                 srcrefs[[i]]
             if (!is.null(srcref)) {
                 if (i == 1)
                   lastshown <- min(skip.echo, srcref[8L] - 1)
                 if (lastshown < srcref[8L]) {
-                  srcfile <- attr(srcref, "srcfile")
+                  srcfile <- attr(srcref, "srcfile", exact = TRUE)
                   dep <- trySrcLines(srcfile, lastshown + 1,
                     srcref[8L])
                   if (length(dep)) {

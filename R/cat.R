@@ -226,7 +226,7 @@ writeLines(
 5 + \u03b4", FILE, useBytes = TRUE)
 
 
-# number ----
+## number ----
 
 
 cat.file(FILE)
@@ -241,7 +241,7 @@ cat.file(FILE, number = TRUE)
 system2("cat", shQuote(c(FILE, "--number")))
 
 
-# show-ends ----
+## show-ends ----
 
 
 cat.file(FILE, show.ends = TRUE)
@@ -256,28 +256,28 @@ cat.file(FILE, show.ends = TRUE, number = TRUE)
 system2("cat", shQuote(c(FILE, "--show-ends", "--number")))
 
 
-# squeeze-blank ----
+## squeeze-blank ----
 
 
 cat.file(FILE, squeeze.blank = TRUE)
 system2("cat", shQuote(c(FILE, "--squeeze-blank")))
 
 
-# show-tabs ----
+## show-tabs ----
 
 
 cat.file(FILE, show.tabs = TRUE)
 system2("cat", shQuote(c(FILE, "--show-tabs")))
 
 
-# show-nonprinting ----
+## show-nonprinting ----
 
 
 cat.file(FILE, show.nonprinting = TRUE)
 system2("cat", shQuote(c(FILE, "--show-nonprinting")))
 
 
-# show-all ----
+## show-all ----
 
 
 cat.file(FILE, show.all = TRUE)

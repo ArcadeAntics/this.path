@@ -1,10 +1,10 @@
 .file.URI.path <- function (path)
 {
-    # remove the leading "file://" from a file URL
-    #
-    # but specifically on Windows, where file URLs may look like
-    # "file:///c:" ...
-    # remove the leading "file:///" from those file URLs
+    ## remove the leading "file://" from a file URL
+    ##
+    ## but specifically on Windows, where file URLs may look like
+    ## "file:///c:" ...
+    ## remove the leading "file:///" from those file URLs
     if (.os.windows && any(i <- grepl("^file:///.:", path, useBytes = TRUE))) {
         path[ i] <- substr(path[ i], 9L, 1000000L)
         path[!i] <- substr(path[!i], 8L, 1000000L)
@@ -16,7 +16,7 @@
 
 .file.URI.path.1 <- function (path)
 {
-    # do .file.URI.path but a little bit faster when path is length 1
+    ## do .file.URI.path but a little bit faster when path is length 1
     if (.os.windows && grepl("^file:///.:", path, useBytes = TRUE))
         substr(path, 9L, 1000000L)
     else substr(path, 8L, 1000000L)
@@ -62,7 +62,7 @@
 
 .normalizePath.and.URL <- function (path, ...)
 {
-    # a version of normalizePath that will also normalize URLs
+    ## a version of normalizePath that will also normalize URLs
     if (any(i <- grepl("^file://", path)))
         path[i] <- .file.URI.path(path[i])
     if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
@@ -84,12 +84,14 @@
 }
 
 
-as.relative.path <- function (path)
-stop(.defunctError("rel2here", .pkgname, old = "as.relative.path"))
+as.relative.path <- eval(call("function", as.pairlist(alist(path = )), bquote(
+stop(.defunctError("rel2here", .(.pkgname), old = "as.relative.path"))
+)))
 
 
-as.rel.path <- function (path)
-stop(.defunctError("rel2here", .pkgname, old = "as.rel.path"))
+as.rel.path <- eval(call("function", as.pairlist(alist(path = )), bquote(
+stop(.defunctError("rel2here", .(.pkgname), old = "as.rel.path"))
+)))
 
 
 
@@ -113,7 +115,7 @@ delayedAssign(".NET.USE.command", {
 })
 
 
-.relpath <- function (path, relative.to = getwd(), type = "relpath")
+.relpath <- function (path, relative.to = getwd(), normalize = !missing(relative.to))
 {
     if (!is.character(path))
         stop("a character vector argument expected", domain = "R")
@@ -126,20 +128,14 @@ delayedAssign(".NET.USE.command", {
         if (any(i <- !(is.na(value) | value == ""))) {
             path <- value[i]
             path <- .normalizePath.and.URL(path, "/", FALSE)
-            switch (type, relpath = {
-                if (!is.character(relative.to) || length(relative.to) != 1L)
-                    stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
+            if (!is.character(relative.to) || length(relative.to) != 1L)
+                stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
+            if (normalize)
                 relative.to <- .normalizePath.and.URL.1(relative.to, "/", TRUE)
-            }, rel2here = {
-                relative.to <- .this.dir()
-            }, rel2proj = {
-                relative.to <- .this.proj()
-            }, {
-                stop(gettextf("invalid '%s' argument", "type", domain = "R"))
-            })
             path <- c(relative.to, path)
             value[i] <- if (.os.windows) {
                 ## replace //LOCALHOST/C$/
+                ## or      //127.0.0.1/C$/
                 ## with    C:/
                 path <- sub("(?i)^[/\\\\][/\\\\](?:LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
                             "\\1:/", path)
@@ -161,7 +157,7 @@ delayedAssign(".NET.USE.command", {
                     fix.local <- identity
                 } else {
                     x <- system(.NET.USE.command, intern = TRUE)
-                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *$", x)
+                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Microsoft Windows Network)?$", x)
                     ## one for the whole match, another two for the parenthesized sub-expressions
                     if (any(keep <- lengths(m) == 3L)) {
                         x <- regmatches(x[keep], m[keep])
@@ -172,6 +168,8 @@ delayedAssign(".NET.USE.command", {
                         if (any(j <- grepl("^[/\\\\]{2}", remote)))
                             remote[j] <- chartr("\\", "/", remote[j])
                         remote <- paste0(remote, "/")
+                        remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
+                            "\\1:/", remote)
                         fix.local <- function(p) {
                             if (indx <- match(.tolower.ASCII(p[[1L]]), local, 0L)) {
                                 c(remote[[indx]], p[-1L])
@@ -230,12 +228,60 @@ delayedAssign(".NET.USE.command", {
 
 
 relpath <- function (path, relative.to = getwd())
-.relpath(path, relative.to)
+.relpath(path, relative.to, normalize = !missing(relative.to))
 
 
-rel2here <- function (path)
-.relpath(path, type = "rel2here")
+if (.Platform$OS.type == "windows") {
+    formals(.relpath)$relative.to <- formals(relpath)$relative.to <- quote(normalizePath(getwd(), "/", TRUE))
+}
 
 
-rel2proj <- function (path)
-.relpath(path, type = "rel2proj")
+rel2sys.dir <- function (path)
+{
+    relative.to <- .External2(.C_syspath)
+    relative.to <- .dir(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2sys.proj <- function (path)
+{
+    relative.to <- .External2(.C_syspath)
+    relative.to <- .dir(relative.to)
+    relative.to <- .proj(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2env.dir <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+{
+    relative.to <- .External2(.C_envpath, envir, matchThisEnv)
+    relative.to <- .dir(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2env.proj <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+{
+    relative.to <- .External2(.C_envpath, envir, matchThisEnv)
+    relative.to <- .dir(relative.to)
+    relative.to <- .proj(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2here <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+{
+    relative.to <- .External2(.C_thispath, envir, matchThisEnv)
+    relative.to <- .dir(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2proj <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+{
+    relative.to <- .External2(.C_thispath, envir, matchThisEnv)
+    relative.to <- .dir(relative.to)
+    relative.to <- .proj(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}

@@ -1,106 +1,120 @@
 useDynLib(this.path, .registration = TRUE, .fixes = ".C_")
 
 
-# all.char.R                   ----
+## allchar.R    ----
 
 
 export(Sys.putenv)
 
 
-# Args.R                       ----
-
-
-export(asArgs  , fileArgs, progArgs, withArgs)
-
-
-# basename2.R                  ----
+## basename2.R  ----
 
 
 export(basename2, dirname2 )
 
 
-# check.path.R                 ----
+## checkpath.R  ----
 
 
 export(check.path, check.dir , check.proj)
 
 
-# ext.R                        ----
+## ext.R        ----
 
 
 export(splitext , removeext, ext      , "ext<-"  )
 
 
-# from.shell.R                 ----
+## fromshell.R  ----
 
 
 export(from.shell, is.main   )
 
 
-# hooks-for-namespace-events.R ----
+## lineno.R     ----
 
 
+export(sys.LINENO, env.LINENO, LINENO)
+
+
+## ns-hooks.R   ----
+
+
+# export(FILE, LINE)
 export(OS.type)
 
 
-# LINENO.R                     ----
+## pathfuns.R   ----
 
 
-export(LINENO)
+export(path.functions)
 
 
-# path.join.R                  ----
+## pathjoin.R   ----
 
 
 export(path.join)
 
 
-# path.split.R                 ----
+## pathsplit.R  ----
 
 
 export(path.split  , path.split.1, path.unsplit)
 
 
-# promises.R                   ----
+## progargs.R   ----
+
+
+export(asArgs  , fileArgs, progArgs, withArgs)
+
+
+## promises.R   ----
 
 
 export(initwd   , getinitwd)
 
 
-# relpath.R                    ----
+## relpath.R    ----
 
 
 export(as.relative.path, as.rel.path     , relpath         ,
+       rel2sys.dir     , rel2sys.proj    ,
+       rel2env.dir     , rel2env.proj    ,
        rel2here        , rel2proj        )
 
 
-# rprojroot.R                  ----
+## rprojroot.R  ----
 
 
-export(this.proj      , reset.this.proj)
+export(sys.proj       , env.proj       , this.proj      ,
+       reset.proj     , reset.this.proj)
 
 
-# this.path.R                  ----
+## thispath.R   ----
 
 
 export(shFILE               , normalized.shFILE    ,
-       set.this.path.jupyter, this.path            ,
-       this.dir             , this.path2           ,
-       this.dir2            , this.dir3            ,
-       here                 , ici                  ,
-       Sys.path             , Sys.dir              ,
-       try.shFILE           , try.this.path        ,
-       local.path           )
+       set.sys.path.jupyter , set.this.path.jupyter,
+       sys.path             , sys.dir              ,
+       env.path             , env.dir              ,
+       this.path            , this.dir             ,
+       this.path2           , this.dir2            ,
+       this.dir3            , sys.here             ,
+       env.here             , here                 ,
+       ici                  , Sys.path             ,
+       Sys.dir              , try.shFILE           ,
+       try.sys.path         , try.env.path         ,
+       try.this.path        , local.path           )
 
 
-# tryCatch2.R                  ----
+## trycatch2.R  ----
 
 
 export(tryCatch2)
 
 
-# wrapsource.R                 ----
+## wrapsource.R ----
 
 
-export(wrap.source    , inside.source  , set.this.path  ,
-       unset.this.path)
+export(wrap.source    , set.sys.path   , unset.sys.path ,
+       inside.source  , set.this.path  , unset.this.path)

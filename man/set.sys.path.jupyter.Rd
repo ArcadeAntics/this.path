@@ -1,18 +1,18 @@
-\name{set.this.path.jupyter}
-\alias{set.this.path.jupyter}
+\name{set.sys.path.jupyter}
+\alias{set.sys.path.jupyter}
 \title{Declare Executing \sQuote{Jupyter} Notebook's Filename}
 \description{
-  \code{\link{this.path}()} does some guess work to determine the path of the
+  \code{\link{sys.path}()} does some guess work to determine the path of the
   executing notebook in \sQuote{\Jupyter}. This involves listing all the files
   in the initial working directory, filtering those which are \R notebooks,
   then filtering those with contents matching the top-level expression.
 
   This could possibly select the wrong file if the same top-level expression is
-  found in another file. As such, you can use \code{set.this.path.jupyter()} to
+  found in another file. As such, you can use \code{set.sys.path.jupyter()} to
   declare the executing \sQuote{Jupyter} notebook's filename.
 }
 \usage{
-set.this.path.jupyter(...)
+set.sys.path.jupyter(...)
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}. If no
@@ -33,7 +33,7 @@ set.this.path.jupyter(...)
 # ## if you opened the file "~/file50b816a24ec1.ipynb", the initial
 # ## working directory should be "~". You can write:
 #
-# set.this.path.jupyter("file50b816a24ec1.ipynb")
+# set.sys.path.jupyter("file50b816a24ec1.ipynb")
 #
-# ## and then this.path() will return "~/file50b816a24ec1.ipynb"
+# ## and then sys.path() will return "~/file50b816a24ec1.ipynb"
 }

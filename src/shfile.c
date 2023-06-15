@@ -6,8 +6,10 @@
 
 void Rprint(SEXP x, SEXP rho)
 {
-    SEXP expr = lang2(printSymbol, x);
-    PROTECT(expr);
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
+    REPROTECT(expr = LCONS(getFromBase(printSymbol), expr), indx);
     eval(expr, rho);
     UNPROTECT(1);
 }
@@ -31,10 +33,10 @@ void Rprint(SEXP x, SEXP rho)
 
 
 
-SEXP do_shfile do_formals
+SEXP do_shFILE do_formals
 {
     /*
-    do_shfile {this.path}                                        C Documentation
+    do_shFILE {this.path}                                        C Documentation
 
     Get Argument FILE Provided to R by a Shell
 
@@ -50,7 +52,7 @@ SEXP do_shfile do_formals
      */
 
 
-    do_start_no_call_op("shfile", 2);
+    do_start_no_call_op("shFILE", 2);
 
 
     /* see ?shFILE */
@@ -285,10 +287,10 @@ static char *unescape_arg(char *p, const char *avp)
 #endif
 
 
-SEXP do_shinfo do_formals
+SEXP do_shINFO do_formals
 {
     /*
-    do_shinfo {this.path}                                        C Documentation
+    do_shINFO {this.path}                                        C Documentation
 
     Get Information About The Command Line Arguments
 
@@ -332,7 +334,7 @@ SEXP do_shinfo do_formals
      */
 
 
-    do_start_no_op_rho("shinfo", 0);
+    do_start_no_op_rho("shINFO", 0);
 
 
     if (!is_maybe_unembedded_shell) {
@@ -345,7 +347,7 @@ SEXP do_shinfo do_formals
 #endif
 
 
-#define return_shinfo(_ENC_, _FILE_, _EXPR_, _HAS_INPUT_)      \
+#define return_shINFO(_ENC_, _FILE_, _EXPR_, _HAS_INPUT_)      \
         do {                                                   \
             SEXP value = allocVector(VECSXP, 4);               \
             PROTECT(value);                                    \
@@ -365,11 +367,11 @@ SEXP do_shinfo do_formals
         } while (0)
 
 
-        return_shinfo(
+        return_shINFO(
             ScalarString(NA_STRING),
             ScalarString(NA_STRING),
             ScalarString(NA_STRING),
-            ScalarLogical(NA_LOGICAL)
+            R_LogicalNAValue
         );
     }
 
@@ -377,10 +379,7 @@ SEXP do_shinfo do_formals
     int ARGC; SEXP ARGV;
 
 
-    SEXP expr = lang1(commandArgsSymbol);
-    PROTECT(expr);
-    ARGV = eval(expr, R_BaseEnv);
-    UNPROTECT(1);
+    ARGV = eval(expr_commandArgs, R_BaseEnv);
     PROTECT(ARGV);
     ARGC = LENGTH(ARGV);
 
@@ -401,7 +400,7 @@ SEXP do_shinfo do_formals
 
     if (ARGC <= 1) {
         UNPROTECT(1);
-        return_shinfo(
+        return_shINFO(
             ScalarString(has_enc ? mkChar(enc) : NA_STRING),
             ScalarString(FILE ? mkChar(FILE) : NA_STRING),
             ScalarString(strlen(cmdlines) ? mkChar(cmdlines) : NA_STRING),
@@ -630,7 +629,7 @@ SEXP do_shinfo do_formals
 #endif
 
 
-    return_shinfo(
+    return_shINFO(
         ScalarString(has_enc ? mkChar(enc) : NA_STRING),
         ScalarString(FILE ? mkChar(FILE) : NA_STRING),
         ScalarString(strlen(cmdlines) ? mkChar(cmdlines) : NA_STRING),

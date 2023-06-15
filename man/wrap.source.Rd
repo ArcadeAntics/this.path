@@ -1,25 +1,22 @@
 \name{wrap.source}
 \alias{wrap.source}
-\alias{inside.source}
-\alias{set.this.path}
-\alias{unset.this.path}
-\title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
+\alias{set.sys.path}
+\alias{unset.sys.path}
+\title{Implement 'sys.path()' For Arbitrary 'source()'-Like Functions}
 \description{
-  Currently, \code{\link{this.path}()} is implemented to work with
+  Currently, \code{\link{sys.path}()} is implemented to work with
   \sourcesandlistlinks.
 
-  \code{wrap.source()} and \code{inside.source()} can be used to implement
-  \code{this.path()} for any other \sourcelink-like functions.
+  \code{wrap.source()} and \code{set.sys.path()} can be used to implement
+  \code{sys.path()} for any other \sourcelink-like functions.
 
-  \code{set.this.path()} is just an alias for \code{inside.source()}.
-
-  \code{unset.this.path()} will undo a call to \code{set.this.path()}. You will
-  need to use this if you wish to call \code{set.this.path()} multiple times
+  \code{unset.sys.path()} will undo a call to \code{set.sys.path()}. You will
+  need to use this if you wish to call \code{set.sys.path()} multiple times
   within a function.
 
-  See \code{?\link{this.path}(local = TRUE)} which returns the path of the
+  See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
-  \code{inside.source()} / / \code{set.this.path()} was called.
+  \code{set.sys.path()} was called.
 }
 \usage{
 wrap.source(expr,
@@ -47,7 +44,7 @@ wrap.source(expr,
     ignore.url = ignore.all,
     ignore.file.uri = ignore.all)
 
-inside.source(file,
+set.sys.path(file,
     path.only = FALSE,
     character.only = path.only,
     file.only = path.only,
@@ -71,35 +68,9 @@ inside.source(file,
     ignore.stdin = ignore.all,
     ignore.url = ignore.all,
     ignore.file.uri = ignore.all,
-    Function = NULL)
+    Function = NULL, ofile)
 
-set.this.path(file,
-    path.only = FALSE,
-    character.only = path.only,
-    file.only = path.only,
-    conv2utf8 = FALSE,
-    allow.blank.string = FALSE,
-    allow.clipboard = !file.only,
-    allow.stdin = !file.only,
-    allow.url = !file.only,
-    allow.file.uri = !path.only,
-    allow.unz = !path.only,
-    allow.pipe = !file.only,
-    allow.terminal = !file.only,
-    allow.textConnection = !file.only,
-    allow.rawConnection = !file.only,
-    allow.sockconn = !file.only,
-    allow.servsockconn = !file.only,
-    allow.customConnection = !file.only,
-    ignore.all = FALSE,
-    ignore.blank.string = ignore.all,
-    ignore.clipboard = ignore.all,
-    ignore.stdin = ignore.all,
-    ignore.url = ignore.all,
-    ignore.file.uri = ignore.all,
-    Function = NULL)
-
-unset.this.path()
+unset.sys.path()
 }
 \arguments{
   \item{expr}{an (unevaluated) call to a \sourcenolink-like function.}
@@ -151,13 +122,18 @@ unset.this.path()
 
   \item{Function}{character vector of length \ifelse{text}{1}{\code{1}} or
     \ifelse{text}{2}{\code{2}}; the name of the function and package in which
-    \code{inside.source()} / / \code{set.this.path()} is called.}
+    \code{set.sys.path()} is called.}
+
+  \item{ofile}{a
+    \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
+    character string specifying the original file argument. This overwrites the
+    value returned by \code{\link{sys.path}(original = TRUE)}.}
 }
 \details{
-  \code{inside.source()} should be added to the body of your
-  \sourcenolink-like function before reading / / evaluating the expressions.
+  \code{set.sys.path()} should be added to the body of your \sourcenolink-like
+  function before reading / / evaluating the expressions.
 
-  \code{wrap.source()}, unlike \code{inside.source()}, does not accept an
+  \code{wrap.source()}, unlike \code{set.sys.path()}, does not accept an
   argument \code{file}. Instead, an attempt is made to extract the file from
   \code{expr}, after which \code{expr} is evaluated. It is assumed that the
   file is the first argument of the function, as is the case with
@@ -168,7 +144,7 @@ unset.this.path()
   taken instead. If no such argument exists, the file is assumed missing.
 
   \code{wrap.source()} does non-standard evaluation and does some guess work to
-  determine the file. As such, it is less desirable than \code{inside.source()}
+  determine the file. As such, it is less desirable than \code{set.sys.path()}
   when the option is available. I can think of exactly one scenario in which
   \code{wrap.source()} might be preferable: suppose there is a
   \sourcenolink-like function \code{sourcelike()} in a foreign package (a
@@ -184,16 +160,16 @@ unset.this.path()
   extracting the file from the \code{\dots} list would be a pain. Then again,
   you could simply change the formals of \code{wrapper()} from \code{(\dots)}
   to \code{(file, \dots)}. If this does not describe your exact scenario, use
-  \code{inside.source()} instead.
+  \code{set.sys.path()} instead.
 }
 \value{
   for \code{wrap.source()}, the result of evaluating \code{expr}.
 
-  for \code{inside.source()}, if \code{file} is a path, then the normalized
+  for \code{set.sys.path()}, if \code{file} is a path, then the normalized
   path with the same attributes, otherwise \code{file} itself. The return value
-  of \code{inside.source()} should be assigned to a variable before use,
+  of \code{set.sys.path()} should be assigned to a variable before use,
   something like: \preformatted{{
-    file <- inside.source(file, ...)
+    file <- set.sys.path(file, ...)
     sourcelike(file)
 }}
 }
@@ -201,23 +177,23 @@ unset.this.path()
   Both functions should only be called within another function.
 
   Suppose that the functions \sourcesandlistnolinks were not implemented with
-  \code{this.path()}. You could use \code{inside.source()} to implement each of
+  \code{sys.path()}. You could use \code{set.sys.path()} to implement each of
   them as follows:
 
   \describe{
 
     \item{\sourcenolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- inside.source(file)
+    file <- set.sys.path(file)
     source(file = file, ...)
 }}}
 
     \item{\syssourcenolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- inside.source(file, path.only = TRUE)
+    file <- set.sys.path(file, path.only = TRUE)
     sys.source(file = file, ...)
 }}}
 
     \item{\debugSourceinRStudionolink}{\preformatted{wrapper <- function(fileName, ...) {
-    fileName <- inside.source(fileName, character.only = TRUE,
+    fileName <- set.sys.path(fileName, character.only = TRUE,
         conv2utf8 = TRUE, allow.blank.string = TRUE)
     debugSource(fileName = fileName, ...)
 }}}
@@ -227,19 +203,19 @@ unset.this.path()
     ## the input lines. changed in 3.1.2, source_file() uses
     ## brio::read_lines() which normalizes 'path' before reading,
     ## disregarding the special meaning of the strings listed above
-    path <- inside.source(path, path.only = TRUE, ignore.all =
+    path <- set.sys.path(path, path.only = TRUE, ignore.all =
         as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
     testthat::source_file(path = path, ...)
 }}}
 
     \item{\knitrknitnolink}{\preformatted{wrapper <- function(input, ...) {
     ## this works for the most part, but will not work in child mode
-    input <- inside.source(input)
+    input <- set.sys.path(input)
     knitr::knit(input = input, ...)
 }}}
 
     \item{\compilerloadcmpnolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- inside.source(file, path.only = TRUE)
+    file <- set.sys.path(file, path.only = TRUE)
     compiler::loadcmp(file = file, ...)
 }}}
 
@@ -270,7 +246,7 @@ wrapper <- function(path, ...) {
     spec <- list(name = name, prefix = prefix, attach = NULL,
         alias = name, explicit = FALSE)
     class(spec) <- c("box$mod_spec", "box$spec")
-    path <- set.this.path(path, path.only = TRUE)
+    path <- set.sys.path(path, path.only = TRUE)
     info <- list(name = name, source_path =
         if (.Platform$OS.type == "windows")
         chartr("/", "\\\\", path) else path)
@@ -281,10 +257,36 @@ wrapper <- function(path, ...) {
 }}}
   }
 }
+\section{Using \code{ofile}}{
+  \code{ofile} can be used when the \code{file} argument supplied to
+  \code{set.sys.path()} is not the same as the \code{file} argument supplied to
+  the \sourcenolink-like function:
+
+\preformatted{sourcelike <- function (file)
+{
+    ofile <- file
+    if (!is.character(ofile) || length(ofile) != 1)
+        stop(gettextf("'\%s' must be a character string", "file"))
+    ## if the file exists, do nothing
+    if (file.exists(file)) {
+    }
+    ## look for the file in the home directory
+    ## if it exists, do nothing
+    else if (file.exists(file <- this.path::path.join("~", ofile))) {
+    }
+    ## you could add other directories to look in,
+    ## but this is good enough for an example
+    else stop(gettextf("'\%s' is not an existing file", ofile))
+    file <- this.path::set.sys.path(file, ofile = ofile)
+    exprs <- parse(file)
+    for (i in seq_along(exprs)) eval(exprs[i], envir)
+    invisible()
+}}
+}
 \examples{
 FILE <- tempfile(fileext = ".R")
 this.path:::.write.code({
-    this.path::this.path(verbose = TRUE)
+    this.path::sys.path(verbose = TRUE)
 }, FILE)
 
 
@@ -292,7 +294,7 @@ this.path:::.write.code({
 ## function is in a package for which you have write permission
 sourcelike <- function (file, envir = parent.frame())
 {
-    file <- inside.source(file)
+    file <- set.sys.path(file)
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = file)
     ## this prints nicely
@@ -328,7 +330,7 @@ sourcelike2 <- function (pathname, envir = globalenv())
 ## expects a character string referring to an existing file
 ##
 ## with the following, you should be able
-## to use 'this.path()' within 'FILE':
+## to use 'sys.path()' within 'FILE':
 wrap.source(sourcelike2(FILE), path.only = TRUE)
 
 
@@ -356,7 +358,7 @@ sourcelike3(FILE)
 sourcelike4 <- function (pathname, ...)
 {
     ## pathname is now normalized
-    pathname <- inside.source(pathname, path.only = TRUE)
+    pathname <- set.sys.path(pathname, path.only = TRUE)
     sourcelike2(pathname = pathname, ...)
 }
 sourcelike4(FILE)
@@ -366,9 +368,9 @@ sourcelike4(FILE)
 fun <- function (paths, ...)
 {
     for (pathname in paths) {
-        pathname <- set.this.path(pathname, path.only = TRUE)
+        pathname <- set.sys.path(pathname, path.only = TRUE)
         sourcelike2(pathname = pathname, ...)
-        unset.this.path(pathname)
+        unset.sys.path(pathname)
     }
 }
 

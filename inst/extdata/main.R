@@ -83,21 +83,21 @@ if (sys.nframe() != 0L) {
         # testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
 
 
-        # there was a time when I was doing something more along the lines:
-        #
-        # ```
-        # for (language in rownames(.languages)) {
-        #     Sys.putenv(.languageEnvvars(language))
-        #     gettext("Untitled", domain = "RGui")
-        #     gettext("R Editor", domain = "RGui")
-        # }
-        # ```
-        #
-        # but it doesn't work well for Microsoft Visual C++ Runtime
-        # because the messages usually get mis-translated in the windows titles
-        # but they don't with gettext()
-        #
-        # and it also doesn't work well for Universal C Runtime in Lithuanian
+        ## there was a time when I was doing something more along the lines:
+        ##
+        ## ```
+        ## for (language in rownames(.languages)) {
+        ##     Sys.putenv(.languageEnvvars(language))
+        ##     gettext("Untitled", domain = "RGui")
+        ##     gettext("R Editor", domain = "RGui")
+        ## }
+        ## ```
+        ##
+        ## but it doesn't work well for Microsoft Visual C++ Runtime
+        ## because the messages usually get mis-translated in the windows titles
+        ## but they don't with gettext()
+        ##
+        ## and it also doesn't work well for Universal C Runtime in Lithuanian
 
 
         stopifnot(.Platform$OS.type == "windows")
@@ -246,15 +246,15 @@ if (sys.nframe() != 0L) {
             Sys.setenv(R_PROFILE_USER = tmpRprofile)
 
 
-            # we want to provide --vanilla to enable factory-default settings
-            # for Rgui.exe
-            #
-            # --vanilla is a combination of --no-save, --no-restore,
-            #           --no-site-file, --no-init-file, --no-environ,
-            #           and --no-Rconsole
-            #
-            # however, we want to run the init file, so instead of --vanilla,
-            # use the other arguments except --no-init-file
+            ## we want to provide --vanilla to enable factory-default settings
+            ## for Rgui.exe
+            ##
+            ## --vanilla is a combination of --no-save, --no-restore,
+            ##           --no-site-file, --no-init-file, --no-environ,
+            ##           and --no-Rconsole
+            ##
+            ## however, we want to run the init file, so instead of --vanilla,
+            ## use the other arguments except --no-init-file
             options <- c("R_DEFAULT_PACKAGES=NULL", "--no-save", "--no-restore",
                 "--no-site-file", "--no-environ", "--no-Rconsole")
 
@@ -366,11 +366,11 @@ if (sys.nframe() != 0L) {
             } else {
 
 
-                # string comparisons often involve translating between encodings
-                # so we will do raw comparisons instead to avoid translations
+                ## string comparisons often involve translating between encodings
+                ## so we will do raw comparisons instead to avoid translations
                 r.editor <- vapply(r.editor, function(str) {
                     bytes <- charToRaw(str)
-                    # all "R Editor" strings must start with this prefix
+                    ## all "R Editor" strings must start with this prefix
                     prefix <- c(charToRaw(tmpR), charToRaw(" - "))
                     if (length(bytes) < length(prefix) ||
                         any(bytes[seq_along(prefix)] != prefix))
@@ -391,8 +391,8 @@ if (sys.nframe() != 0L) {
 
 
                     writeLines2 <- function(x, path) {
-                        # save the text as its bytes without translation
-                        # plus its encoding
+                        ## save the text as its bytes without translation
+                        ## plus its encoding
                         conn <- file(path, "wb", encoding = "")
                         on.exit(close(conn))
                         writeLines(rbind(x, Encoding(x)), conn, sep = "\r\n", useBytes = TRUE)

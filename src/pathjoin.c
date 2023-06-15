@@ -635,15 +635,13 @@ void pathjoin(SEXP x, int x_length, int commonLength, SEXP value)
             /* coerce the object to string if needed */        \
             if (!isString(xi)) {                               \
                 if (OBJECT(xi)) {                              \
-                    SEXP expr, expr2;                          \
-                    expr = allocList(2);                       \
-                    PROTECT(expr);                             \
-                    SET_TYPEOF(expr, LANGSXP);                 \
-                    SETCAR(expr, findVarInFrame(R_BaseEnv, R_AsCharacterSymbol));\
-                    SETCADR(expr, expr2 = allocList(2));       \
-                    SET_TYPEOF(expr2, LANGSXP);                \
-                    SETCAR(expr2, findVarInFrame(R_BaseEnv, R_QuoteSymbol));\
-                    SETCADR(expr2, xi);                        \
+                    /* as.character(quote(xi)) */              \
+                    SEXP expr;                                 \
+                    PROTECT_INDEX indx;                        \
+                    PROTECT_WITH_INDEX(expr = CONS(xi, R_NilValue), &indx);\
+                    REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);\
+                    REPROTECT(expr = CONS(expr, R_NilValue), indx);\
+                    REPROTECT(expr = LCONS(getFromBase(R_AsCharacterSymbol), expr), indx);\
                     SET_VECTOR_ELT(x, i, eval(expr, rho));     \
                     UNPROTECT(1);                              \
                 }                                              \

@@ -2,11 +2,12 @@ if (getRversion() < "4.2.0") {
 
 
 ## gettext(trim = TRUE) was added in R 4.2.0
-gettext <- function (..., domain = NULL, trim = TRUE)
+gettext <- evalq(envir = .BaseNamespaceEnv,
+function (..., domain = NULL, trim = TRUE)
 {
     gettext(..., domain = domain)
 }
-environment(gettext) <- .BaseNamespaceEnv
+)
 
 
 }
@@ -65,9 +66,10 @@ bquote <- function (expr, where = parent.frame(), splice = FALSE)
 if (getRversion() < "4.0.0") {
 
 
-deparse1 <- function (expr, collapse = " ", width.cutoff = 500L, ...)
+deparse1 <- evalq(envir = .BaseNamespaceEnv,
+function (expr, collapse = " ", width.cutoff = 500L, ...)
 paste(deparse(expr, width.cutoff, ...), collapse = collapse)
-environment(deparse1) <- .BaseNamespaceEnv
+)
 
 
 }
@@ -76,10 +78,11 @@ environment(deparse1) <- .BaseNamespaceEnv
 if (getRversion() < "3.6.0") {
 
 
-errorCondition <- function (message, ..., class = NULL, call = NULL)
+errorCondition <- evalq(envir = .BaseNamespaceEnv,
+function (message, ..., class = NULL, call = NULL)
 structure(list(message = as.character(message), call = call, ...),
     class = c(class, "error", "condition"))
-environment(errorCondition) <- .BaseNamespaceEnv
+)
 
 
 str2expression <- function (text)
@@ -113,14 +116,16 @@ if (getRversion() < "3.5.0") {
 .External2(.C_dotslength)
 
 
-isTRUE <- function (x)
+isTRUE <- evalq(envir = .BaseNamespaceEnv,
+function (x)
 is.logical(x) && length(x) == 1L && !is.na(x) && x
-environment(isTRUE) <- .BaseNamespaceEnv
+)
 
 
-isFALSE <- function (x)
+isFALSE <- evalq(envir = .BaseNamespaceEnv,
+function (x)
 is.logical(x) && length(x) == 1L && !is.na(x) && !x
-environment(isFALSE) <- .BaseNamespaceEnv
+)
 
 
 }
@@ -197,31 +202,35 @@ lengths <- function (x, use.names = TRUE)
 
 
 ## file.info() did not have argument 'extra_cols' at this time
-file.mtime <- function (...)
+file.mtime <- evalq(envir = .BaseNamespaceEnv,
+function (...)
 file.info(...)$mtime
-environment(file.mtime) <- .BaseNamespaceEnv
+)
 
 
-file.info <- function (..., extra_cols = TRUE)
+file.info <- evalq(envir = .BaseNamespaceEnv,
+function (..., extra_cols = TRUE)
 {
     if (extra_cols)
         file.info(...)
     else file.info(...)[1:6]
 }
-environment(file.info) <- .BaseNamespaceEnv
+)
 
 
-.isdir <- function (...)
+.isdir <- evalq(envir = .BaseNamespaceEnv,
+function (...)
 file.info(...)$isdir
-environment(.isdir) <- .BaseNamespaceEnv
+)
 
 
 } else {
 
 
-.isdir <- function (...)
+.isdir <- evalq(envir = .BaseNamespaceEnv,
+function (...)
 file.info(..., extra_cols = FALSE)$isdir
-environment(.isdir) <- .BaseNamespaceEnv
+)
 
 
 }
@@ -251,7 +260,8 @@ delayedAssign(".C_mapply", getNativeSymbolInfo("do_mapply", PACKAGE = "base"))
 .External2(.C_setprseen2, ptr)
 
 
-parse <- function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),
+parse <- evalq(envir = .BaseNamespaceEnv,
+function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),
     srcfile = NULL, encoding = "unknown")
 {
     if (!missing(keep.source)) {
@@ -265,7 +275,7 @@ parse <- function (file = "", n = NULL, text = NULL, prompt = "?", keep.source =
         parse(file = file, n = n, text = text, prompt = prompt, srcfile = , encoding = encoding)
     else parse(file = file, n = n, text = text, prompt = prompt, srcfile = srcfile, encoding = encoding)
 }
-environment(parse) <- .BaseNamespaceEnv
+)
 
 
 }

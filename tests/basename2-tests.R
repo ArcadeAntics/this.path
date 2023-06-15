@@ -7,7 +7,7 @@ check <- function (path, dirname, basename)
 }
 
 
-dirname2 <- this.path:::.windows.dirname2
+dirname2  <- this.path:::.windows.dirname2
 basename2 <- this.path:::.windows.basename2
 
 
@@ -58,7 +58,7 @@ check(
 )
 
 
-dirname2 <- this.path:::.unix.dirname2
+dirname2  <- this.path:::.unix.dirname2
 basename2 <- this.path:::.unix.basename2
 
 

@@ -5,6 +5,11 @@
     \itemize{
       \item{Added \code{rel2proj()} for turning absolute paths into relative
         paths against the executing project's directory.}
+
+      \item{\code{inside.source()} / / \code{set.this.path()} now accept
+        argument \codeorsQuote{ofile} specifying the original file argument.
+        This overwrites the value returned by
+        \code{this.path(original = TRUE)}.}
     }
   }
   \subsection{BUG FIXES}{
@@ -14,6 +19,15 @@
       \item{\code{reset.this.proj()} now has environment
         \code{<environment: namespace:this.path>} as do all other exported
         functions.}
+
+      \item{Fixed \code{this.path(contents = TRUE)} in \sQuote{\RStudio} and
+        \sQuote{\VSCode} having a trailing blank string.}
+
+      \item{Fixed \code{this.path(contents = TRUE)} in \sQuote{\Jupyter} if the
+        executing script had yet to be determined.}
+
+      \item{Fixed \code{relpath()} on Windows when comparing paths with network
+        shares.}
     }
   }
 }
@@ -81,9 +95,9 @@
       \item{For logging purposes, \code{this.path(for.msg = TRUE)} will now
         return \string{Untitled} when appropriate.}
 
-      \item{\code{inside.source()} / / \code{set.this.path()} accept argument
-        \codeorsQuote{Function} specifying the name of the function and package
-        in which they are called.}
+      \item{\code{inside.source()} / / \code{set.this.path()} now accept
+        argument \codeorsQuote{Function} specifying the name of the function
+        and package in which they are called.}
 
       \item{\code{this.path()} now accepts argument \codeorsQuote{local} to
         confine the search for the executing script to the local environment in

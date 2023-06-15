@@ -2,11 +2,6 @@
 #include "drivewidth.h"
 
 
-#if R_version_less_than(3, 0, 0)
-#define XLENGTH LENGTH
-#endif
-
-
 #define errorbody                                              \
     if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||      \
         STRING_ELT(CAR(args), 0) == NA_STRING)                 \
@@ -18,9 +13,9 @@
     ENSURE_NAMEDMAX(call2)
 
 
-SEXP do_thispathunrecognizedconnectionclasserror do_formals
+SEXP do_thisPathUnrecognizedConnectionClassError do_formals
 {
-    do_start_no_call_op_rho("thispathunrecognizedconnectionclasserror", 2);
+    do_start_no_call_op_rho("thisPathUnrecognizedConnectionClassError", 2);
 
 
     SEXP call2 = CAR(args); args = CDR(args);
@@ -37,9 +32,9 @@ SEXP do_thispathunrecognizedconnectionclasserror do_formals
 }
 
 
-SEXP do_thispathunrecognizedmannererror do_formals
+SEXP do_thisPathUnrecognizedMannerError do_formals
 {
-    do_start_no_call_op_rho("thispathunrecognizedmannererror", 1);
+    do_start_no_call_op_rho("thisPathUnrecognizedMannerError", 1);
 
 
     ENSURE_NAMEDMAX(CAR(args));
@@ -47,9 +42,9 @@ SEXP do_thispathunrecognizedmannererror do_formals
 }
 
 
-SEXP do_thispathnotimplementederror do_formals
+SEXP do_thisPathNotImplementedError do_formals
 {
-    do_start_no_op_rho("thispathnotimplementederror", 2);
+    do_start_no_op_rho("thisPathNotImplementedError", 2);
 
 
     errorbody;
@@ -57,9 +52,9 @@ SEXP do_thispathnotimplementederror do_formals
 }
 
 
-SEXP do_thispathnotexistserror do_formals
+SEXP do_thisPathNotExistsError do_formals
 {
-    do_start_no_op_rho("thispathnotexistserror", 2);
+    do_start_no_op_rho("thisPathNotExistsError", 2);
 
 
     errorbody;
@@ -67,9 +62,9 @@ SEXP do_thispathnotexistserror do_formals
 }
 
 
-SEXP do_thispathinzipfileerror do_formals
+SEXP do_thisPathInZipFileError do_formals
 {
-    do_start_no_op_rho("thispathinzipfileerror", 2);
+    do_start_no_op_rho("thisPathInZipFileError", 2);
 
 
     SEXP call2 = CAR(args); args = CDR(args);
@@ -83,9 +78,9 @@ SEXP do_thispathinzipfileerror do_formals
 }
 
 
-SEXP do_thispathinaquaerror do_formals
+SEXP do_thisPathInAQUAError do_formals
 {
-    do_start_no_call_op_rho("thispathinaquaerror", 1);
+    do_start_no_call_op_rho("thisPathInAQUAError", 1);
 
 
     return thisPathInAQUAError(lazy_duplicate(CAR(args)));
@@ -117,10 +112,177 @@ SEXP do_isclipboard do_formals
 }
 
 
-SEXP _thispath(Rboolean verbose         , Rboolean original        ,
-               Rboolean for_msg         , Rboolean get_frame_number,
-               Rboolean local           , Rboolean contents        ,
-               int N                    , SEXP rho                 )
+SEXP do_inittoolsrstudio do_formals
+{
+    do_start_no_op_rho("inittoolsrstudio", -1);
+
+
+    Rboolean skipCheck = FALSE;
+    switch (length(args)) {
+    case 0:
+        break;
+    case 1:
+        skipCheck = asLogical(CAR(args));
+        if (skipCheck == NA_LOGICAL)
+            errorcall(call, _("invalid '%s' argument"), "skipCheck");
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_inittoolsrstudio", "0 or 1"));
+    }
+    return ScalarLogical(init_tools_rstudio(skipCheck));
+}
+
+
+SEXP do_syspathrgui do_formals
+{
+    do_start_no_op("syspathrgui", 7);
+
+
+    SEXP wintitle, untitled, r_editor;
+    Rboolean verbose , original, for_msg , contents;
+
+
+    /* titles of the windows in RGui */
+    wintitle = CAR(args); args = CDR(args);
+    if (!(TYPEOF(wintitle) == STRSXP || wintitle == R_NilValue))
+        errorcall(call, "%s, must be %s", _("invalid first argument"), "'character' / / NULL");
+
+
+    /* strings representing non-existent files in RGui */
+    untitled = CAR(args); args = CDR(args);
+    if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
+        errorcall(call, "%s, must be %s", "invalid second argument", "'character' / / NULL");
+
+
+    /* strings representing R scripts in RGui */
+    r_editor = CAR(args); args = CDR(args);
+    if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
+        errorcall(call, "%s, must be %s", "invalid third argument", "'character' / / NULL");
+
+
+    verbose = asLogical(CAR(args)); args = CDR(args);
+    if (verbose == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "verbose");
+
+
+    original = asLogical(CAR(args)); args = CDR(args);
+    if (verbose == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "original");
+
+
+    for_msg = asLogical(CAR(args)); args = CDR(args);
+    if (for_msg == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "for.msg");
+
+
+    contents = asLogical(CAR(args)); args = CDR(args);
+    if (contents == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' value"), "contents");
+
+
+    Rboolean active = TRUE;
+    int n = LENGTH(wintitle);
+    int length_untitled = LENGTH(untitled);
+    int length_r_editor = LENGTH(r_editor);
+    for (int i = 0; i < n; i++) {
+        SEXP wintitle0 = STRING_ELT(wintitle, i);
+        if (wintitle0 == NA_STRING || wintitle0 == R_BlankString) continue;
+        const char *title = CHAR(wintitle0);
+        int nchar_title = (int) strlen(title);
+
+
+        /* if the title and untitled strings are equal (byte-wise, do
+         * not care if encodings match), then the script does not exist
+         */
+        for (int j = 0; j < length_untitled; j++) {
+            SEXP untitled0 = STRING_ELT(untitled, j);
+            if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
+            // if (wintitle0 == untitled0) {
+            if (!strcmp(title, CHAR(untitled0))) {
+                if (for_msg) {
+                    if (contents)
+                        return ScalarString(NA_STRING);
+                    else
+                        return mkString(_RGui("Untitled"));
+                }
+                error(active ? "active document in Rgui does not exist" :
+                               "source document in Rgui does not exist");
+            }
+        }
+
+
+        /* if the title ends with R Editor strings (again, bit-wise),
+         * then it is an R script, remove the suffix and return
+         */
+        for (int j = 0; j < length_r_editor; j++) {
+            SEXP r_editor0 = STRING_ELT(r_editor, j);
+            if (r_editor0 == NA_STRING || r_editor0 == R_BlankString) continue;
+            const char *suffix = CHAR(r_editor0);
+            int nchar_suffix = (int) strlen(suffix);
+            int off = nchar_title - nchar_suffix;
+            if (off > 0) {
+                if (memcmp(title + off, suffix, nchar_suffix) == 0) {
+                    SEXP ans = mkCharLenCE(title, off, getCharCE(wintitle0));
+                    if (!is_abs_path_windows(CHAR(ans)))
+                        error("invalid title, path preceding '%s' must be absolute", suffix);
+
+
+#define return_abs_path(charsxp)                               \
+                    if (verbose)                               \
+                        Rprintf((active) ? "Source: active document in Rgui\n" :\
+                                           "Source: source document in Rgui\n");\
+                    if (original)                              \
+                        return ScalarString((charsxp));        \
+                    SEXP expr = LCONS(_normalizePathSymbol,    \
+                                      CONS(ScalarString((charsxp)), R_NilValue));\
+                    PROTECT(expr);                             \
+                    SEXP returnthis = eval(expr, mynamespace); \
+                    UNPROTECT(1);                              \
+                    return returnthis
+
+
+                    return_abs_path(ans);
+                }
+            }
+        }
+
+
+        /* if found an absolute path, return it */
+        if (is_abs_path_windows(title)) {
+            active = FALSE;
+            return_abs_path(wintitle0);
+        }
+
+
+        /* determine if the executing script is active */
+        if (active) {
+            if (!strcmp(title, "R Console") ||
+                !strcmp(title, "R Console (64-bit)") ||
+                !strcmp(title, "R Console (32-bit)"))
+            {
+                active = FALSE;
+            }
+        }
+    }
+
+
+    if (active) error("no windows in Rgui; should never happen, please report!");
+    if (for_msg) return ScalarString(NA_STRING);
+
+
+    const char *msg = "R is running from Rgui with no documents open";
+    SEXP cond = thisPathNotExistsError(msg, PROTECT(getCurrentCall(rho)));
+    PROTECT(cond);
+    stop(cond);
+    UNPROTECT(2);
+    return R_NilValue;  /* should not be reached */
+}
+
+
+void check_arguments(Rboolean verbose         , Rboolean original        ,
+                     Rboolean for_msg         , Rboolean get_frame_number,
+                     Rboolean local           , Rboolean contents        ,
+                     int N                    )
 {
     if (verbose == NA_LOGICAL)
         error(_("invalid '%s' value"), "verbose");
@@ -135,7 +297,8 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         error(_("invalid '%s' value"), "contents");
 
 
-    if (N == NA_INTEGER || N < 0)
+    if (N == NA_INTEGER);
+    else if (N < 0)
         error(_("invalid '%s' argument"), "N");
 
 
@@ -221,37 +384,61 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
 #undef three
 #undef two
 #undef one
+}
+
+
+SEXP _syspath(Rboolean verbose         , Rboolean original        ,
+              Rboolean for_msg         , Rboolean get_frame_number,
+              Rboolean local           , Rboolean contents        ,
+              int N                    , SEXP rho                 )
+{
+    static const char *name = "'sys.path(local = TRUE)'";
 
 
     SEXP returnthis = NULL;
     SEXP returnvalue;  /* checkfile() creates a variable 'returnvalue' that is
-                          used in insidesource() (see ./src/wrapsource.c).
+                          used in setsyspath() (see ./src/wrapsource.c).
                           not used elsewhere but must be declared */
 
 
+    if (N == NA_INTEGER) {
+        if (local)
+            N = get_sys_parent(1, rho);
+        else {
+            N = asInteger(eval(expr_sys_nframe, rho));
+            if (N) --N;
+        }
+        if (N == NA_INTEGER)
+            error(_("invalid '%s' argument"), "N");
+    }
+
+
     if (local) {
-        const char *name = "this.path(local = TRUE)";
 
 
         if (N <= 0) error("%s cannot be used within the global environment", name);
-        SEXP frame = eval(lang1(parent_frameSymbol), rho);
+        SEXP frame = eval(expr_parent_frame, rho);
         PROTECT(frame);
 
 
-        /* ensure 'inside.source()' isn't evaluated in an invalid environment */
-        if (frame == R_GlobalEnv)
+        /* ensure 'sys.path(local = TRUE)' isn't evaluated in an invalid environment */
+        if (frame == R_EmptyEnv)
+            error("%s cannot be used within the empty environment", name);
+        else if (frame == R_GlobalEnv)
             error("%s cannot be used within the global environment", name);
         else if (frame == R_BaseEnv)
             error("%s cannot be used within the base environment", name);
-        else if (frame == R_EmptyEnv)
-            error("%s cannot be used within the empty environment", name);
+        else if (frame == R_BaseNamespace)
+            error("%s cannot be used within the base namespace environment", name);
         else if (R_IsPackageEnv(frame))
             error("%s cannot be used within a package environment", name);
         else if (R_IsNamespaceEnv(frame))
             error("%s cannot be used within a namespace environment", name);
+        else if (R_existsVarInFrame(frame, R_dot_packageName))
+            error("%s cannot be used within a top level environment", name);
 
 
-        if (findVarInFrame(frame, insidesourcewashereSymbol) == R_UnboundValue)
+        if (findVarInFrame(frame, setsyspathwashereSymbol) == R_UnboundValue)
             error("%s cannot be called within this environment", name);
         if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
             error("%s cannot be called within this environment", name);
@@ -260,7 +447,11 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         UNPROTECT(1);  /* frame */
 
 
-        SEXP function = eval(PROTECT(lang2(sys_functionSymbol, ScalarInteger(N))), rho);
+        SEXP expr;
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(expr = CONS(ScalarInteger(N), R_NilValue), &indx);
+        REPROTECT(expr = LCONS(getFromBase(sys_functionSymbol), expr), indx);
+        SEXP function = eval(expr, rho);
         if (TYPEOF(function) != CLOSXP)
             error("%s cannot be used within a '%s', possible errors with eval?",
                   name, type2char(TYPEOF(function)));
@@ -274,16 +465,27 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
 #define toplevel                                               \
         if (get_frame_number) return ScalarInteger(0);         \
         SEXP expr;                                             \
-        if (contents)                                          \
-            expr = lang5(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original), ScalarLogical(for_msg), ScalarLogical(contents));\
-        else if (for_msg)                                      \
-            expr = lang4(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original), ScalarLogical(for_msg));\
-        else if (original)                                     \
-            expr = lang3(_this_path_toplevelSymbol, ScalarLogical(verbose), ScalarLogical(original));\
-        else if (verbose)                                      \
-            expr = lang2(_this_path_toplevelSymbol, ScalarLogical(verbose));\
-        else                                                   \
-            expr = lang1(_this_path_toplevelSymbol);           \
+        if (contents) {                                        \
+            expr = LCONS(_sys_path_toplevelSymbol,             \
+                         CONS(ScalarLogical(verbose),          \
+                              CONS(ScalarLogical(original),    \
+                                   CONS(ScalarLogical(for_msg),\
+                                        CONS(ScalarLogical(contents), R_NilValue)))));\
+        } else if (for_msg) {                                  \
+            expr = LCONS(_sys_path_toplevelSymbol,             \
+                         CONS(ScalarLogical(verbose),          \
+                              CONS(ScalarLogical(original),    \
+                                   CONS(ScalarLogical(for_msg), R_NilValue))));\
+        } else if (original) {                                 \
+            expr = LCONS(_sys_path_toplevelSymbol,             \
+                         CONS(ScalarLogical(verbose),          \
+                              CONS(ScalarLogical(original), R_NilValue)));\
+        } else if (verbose) {                                  \
+            expr = LCONS(_sys_path_toplevelSymbol,             \
+                         CONS(ScalarLogical(verbose), R_NilValue));\
+        } else {                                               \
+            return eval(expr__sys_path_toplevel, mynamespace); \
+        }                                                      \
         PROTECT(expr);                                         \
         returnthis = eval(expr, mynamespace);                  \
         UNPROTECT(1);                                          \
@@ -294,8 +496,8 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
     }
 
 
-    SEXP thispathofile      , thispathfile       , thispathformsg     ,
-         thispatherror      , insidesourcewashere;
+    SEXP thispathofile    , thispathfile     , thispathformsg   ,
+         thispatherror    , setsyspathwashere;
 
 
     int nprotect = 0;
@@ -304,10 +506,10 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
     init_tools_rstudio(/* skipCheck */ FALSE);
 
 
-    SEXP source      = getInFrame(sourceSymbol    , R_BaseEnv, FALSE),
-         sys_source  = getInFrame(sys_sourceSymbol, R_BaseEnv, FALSE),
+    SEXP source      = getFromBase(sourceSymbol    ),
+         sys_source  = getFromBase(sys_sourceSymbol),
          debugSource = get_debugSource,
-         wrap_source = getInFrame(wrap_sourceSymbol, mynamespace, FALSE);
+         wrap_source = getFromMyNS(wrap_sourceSymbol);
 
 
     SEXP ns;
@@ -336,18 +538,27 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
 
 
     SEXP which = allocVector(INTSXP, 1);
+    PROTECT(which); nprotect++;
     int *iwhich = INTEGER(which);
-    SEXP getframe = lang2(getInFrame(sys_frameSymbol, R_BaseEnv, FALSE), which);
-    PROTECT(getframe); nprotect++;
-    SEXP getfunction = lang2(getInFrame(sys_functionSymbol, R_BaseEnv, FALSE), which);
-    PROTECT(getfunction); nprotect++;
+    SEXP getframe;
+    {
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(getframe = CONS(which, R_NilValue), &indx); nprotect++;
+        REPROTECT(getframe = LCONS(getFromBase(sys_frameSymbol), getframe), indx);
+    }
+    SEXP getfunction;
+    {
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(getfunction = CONS(which, R_NilValue), &indx); nprotect++;
+        REPROTECT(getfunction = LCONS(getFromBase(sys_functionSymbol), getfunction), indx);
+    }
 
 
     SEXP frame, function;
     SEXP ofile;
 
 
-    int to = ((local) ? N : 1);
+    int to = ((local) ? N : (1 + asInteger(eval(expr__toplevel_context_number, R_EmptyEnv))));
 
 
     for (iwhich[0] = N; iwhich[0] >= to; iwhich[0]--) {
@@ -363,7 +574,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         if (identical(function, source)) {
             if (local)
                 error("%s cannot be called within %s()",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(sourceSymbol)));
+                      name, EncodeChar(PRINTNAME(sourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, ofileSymbol);
                 if (ofile == R_UnboundValue) {
@@ -387,6 +598,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* maybe_chdir            */ TRUE,
                     /* getowd                 */ findVarInFrame(frame, owdSymbol),
                     /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
                     /* character_only         */ FALSE,
                     /* conv2utf8              */ FALSE,
                     /* allow_blank_string     */ FALSE,
@@ -535,7 +747,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         else if (identical(function, sys_source)) {
             if (local)
                 error("%s cannot be called within %s()",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(sys_sourceSymbol)));
+                      name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -562,6 +774,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* maybe_chdir            */ TRUE,
                     /* getowd                 */ findVarInFrame(frame, owdSymbol),
                     /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
                     /* character_only         */ TRUE,
                     /* conv2utf8              */ FALSE,
                     /* allow_blank_string     */ FALSE,
@@ -597,7 +810,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         else if (has_tools_rstudio && identical(function, debugSource)) {
             if (local)
                 error("%s cannot be called within %s() in RStudio",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(debugSourceSymbol)));
+                      name, EncodeChar(PRINTNAME(debugSourceSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
@@ -624,6 +837,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* maybe_chdir            */ FALSE,
                     /* getowd                 */ NULL,
                     /* hasowd                 */ FALSE,
+                    /* ofilearg               */ NULL,
                     /* character_only         */ TRUE,
                     /* conv2utf8              */ TRUE,
                     /* allow_blank_string     */ TRUE,
@@ -659,7 +873,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         else if (testthat_loaded && identical(function, source_file)) {
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
+                      name, EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
@@ -675,7 +889,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     else
                         ofile = PRVALUE(ofile);
                 }
-                int ignore_all = asLogical(eval(lang1(_testthat_uses_brioSymbol), mynamespace));
+                int ignore_all = asLogical(eval(expr_testthat_source_file_uses_brio_read_lines, R_EmptyEnv));
                 checkfile(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ pathSymbol,
@@ -687,6 +901,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* maybe_chdir            */ TRUE,
                     /* getowd                 */ findVarInFrame(frame, old_dirSymbol),
                     /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
                     /* character_only         */ TRUE,
                     /* conv2utf8              */ FALSE,
                     /* allow_blank_string     */ FALSE,
@@ -722,17 +937,13 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         else if (knitr_loaded && identical(function, knit)) {
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
+                      name, EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
                     UNPROTECT(nprotect_loop);
                     continue;
                 }
-                /* missing(input) */
-                SEXP expr = lang2(missingSymbol, inputSymbol);
-                PROTECT(expr);
-                int missing_input = asLogical(eval(expr, frame));
-                UNPROTECT(1);  /* expr */
+                int missing_input = asLogical(eval(expr_missing_input, frame));
                 if (missing_input) {
                     assign_null(frame);
                     UNPROTECT(nprotect_loop);
@@ -748,8 +959,9 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* forcepromise           */ FALSE,
                     /* assign_returnvalue     */ FALSE,
                     /* maybe_chdir            */ TRUE,
-                    /* getowd                 */ eval(lang1(_knitr_output_dirSymbol), mynamespace),
+                    /* getowd                 */ eval(expr_knitr_output_dir, R_EmptyEnv),
                     /* hasowd                 */ ((owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
                     /* character_only         */ FALSE,
                     /* conv2utf8              */ FALSE,
                     /* allow_blank_string     */ FALSE,
@@ -785,7 +997,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         else if (identical(function, wrap_source)) {
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
+                      name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 UNPROTECT(nprotect_loop);
                 continue;
@@ -803,13 +1015,9 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         else if (box_loaded && identical(function, load_from_source)) {
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
+                      name, EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
-                /* info$source_path */
-                SEXP expr = lang3(R_DollarSymbol, infoSymbol, source_pathSymbol);
-                PROTECT(expr);
-                SEXP ofile = eval(expr, frame);
-                UNPROTECT(1);  /* expr */
+                SEXP ofile = eval(expr_info_dollar_source_path, frame);
                 PROTECT(ofile);
                 checkfile(
                     /* call                   */ sys_call(which, rho),
@@ -822,6 +1030,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* maybe_chdir            */ FALSE,
                     /* getowd                 */ NULL,
                     /* hasowd                 */ FALSE,
+                    /* ofilearg               */ NULL,
                     /* character_only         */ TRUE,
                     /* conv2utf8              */ FALSE,
                     /* allow_blank_string     */ FALSE,
@@ -859,7 +1068,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
             /* much the same as sys.source() */
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      "this.path(local = TRUE)", EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+                      name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
             if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
@@ -886,6 +1095,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                     /* maybe_chdir            */ TRUE,
                     /* getowd                 */ findVarInFrame(frame, owdSymbol),
                     /* hasowd                 */ ((owd) != R_UnboundValue),
+                    /* ofilearg               */ NULL,
                     /* character_only         */ TRUE,
                     /* conv2utf8              */ FALSE,
                     /* allow_blank_string     */ FALSE,
@@ -918,9 +1128,9 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
         }
 
 
-        else if ((insidesourcewashere = findVarInFrame(frame, insidesourcewashereSymbol)) != R_UnboundValue) {
+        else if ((setsyspathwashere = findVarInFrame(frame, setsyspathwashereSymbol)) != R_UnboundValue) {
             // Rprintf("\nhere\n");
-            if (insidesourcewashere == R_MissingArg) {
+            if (setsyspathwashere == R_MissingArg) {
                 UNPROTECT(nprotect_loop);
                 continue;
             }
@@ -937,7 +1147,7 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
                 /* file_only              */ FALSE,
                 /* which                  */ thispathn,
                 /* promise_must_be_forced */ TRUE,
-                /* fun_name               */ CHAR(insidesourcewashere)
+                /* fun_name               */ CHAR(setsyspathwashere)
             );
         }
 
@@ -970,48 +1180,64 @@ SEXP _thispath(Rboolean verbose         , Rboolean original        ,
 }
 
 
-SEXP thispath(Rboolean verbose         , Rboolean original        ,
-              Rboolean for_msg         , Rboolean get_frame_number,
-              Rboolean local           , Rboolean contents        ,
-              int N                    , SEXP rho                 )
+SEXP syspath(Rboolean verbose         , Rboolean original        ,
+             Rboolean for_msg         , Rboolean get_frame_number,
+             Rboolean local           , Rboolean contents        ,
+             int N                    , SEXP rho                 )
 {
-    SEXP value = _thispath(verbose         , original        ,
-                           for_msg         , get_frame_number,
-                           local           , contents        ,
-                           N               , rho             );
+    SEXP value = _syspath(verbose         , original        , for_msg         ,
+                          get_frame_number, local           , contents        ,
+                          N               , rho             );
     if (!contents)
         return value;
     if (TYPEOF(value) == VECSXP) {
         if (XLENGTH(value) == 1) {
+            PROTECT(value);
             SEXP names = getAttrib(value, R_NamesSymbol);
             if (TYPEOF(names) == STRSXP && XLENGTH(names) == 1 && STRING_ELT(names, 0) == mkChar("contents")) {
+                /* do not need to protect */
                 value = VECTOR_ELT(value, 0);
                 if (TYPEOF(value) != STRSXP)
-                    error("internal error; invalid '%s' value", "_thispath()");
+                    error("internal error; invalid '%s' value", "_syspath()");
+                R_xlen_t n = XLENGTH(value) - 1;
+                if (n) {
+                    /* if the last line is a blank string, remove it */
+                    if (STRING_ELT(value, n) == R_BlankString) {
+                        SEXP tmp = PROTECT(allocVector(STRSXP, n));
+                        for (R_xlen_t i = 0; i < n; i++) {
+                            SET_STRING_ELT(tmp, i, STRING_ELT(value, i));
+                        }
+                        value = tmp;
+                        UNPROTECT(1);
+                    }
+                }
+                else {
+                    value = allocVector(STRSXP, 0);
+                }
             }
+            UNPROTECT(1);
         }
         return value;
     }
     if (TYPEOF(value) == STRSXP) {
         if (XLENGTH(value) != 1)
-            error("internal error; invalid '%s' value", "_thispath()");
+            error("internal error; invalid '%s' value", "_syspath()");
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
-        PROTECT(value);
-        SEXP expr = lang2(_getContentsSymbol, value);
+        SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
         PROTECT(expr);
         value = eval(expr, mynamespace);
-        UNPROTECT(2);
+        UNPROTECT(1);
         return value;
     }
-    error("internal error; invalid '%s' value", "_thispath()");
+    error("internal error; invalid '%s' value", "_syspath()");
     return R_NilValue;
 }
 
 
-SEXP do_thispath do_formals
+SEXP do_syspath do_formals
 {
-    do_start_no_op("thispath", -1);
+    do_start_no_op("syspath", -1);
 
 
     Rboolean verbose         , original        , for_msg         ,
@@ -1027,7 +1253,7 @@ SEXP do_thispath do_formals
         get_frame_number = FALSE;
         local            = FALSE;
         contents         = FALSE;
-        N                = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+        N                = NA_INTEGER;
         break;
     case 1:
         verbose          = asLogical(CAR(args)); args = CDR(args);
@@ -1036,7 +1262,34 @@ SEXP do_thispath do_formals
         get_frame_number = FALSE;
         local            = FALSE;
         contents         = FALSE;
-        N                = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+        N                = NA_INTEGER;
+        break;
+    case 2:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = asLogical(CAR(args)); args = CDR(args);
+        for_msg          = FALSE;
+        get_frame_number = FALSE;
+        local            = FALSE;
+        contents         = FALSE;
+        N                = NA_INTEGER;
+        break;
+    case 3:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = asLogical(CAR(args)); args = CDR(args);
+        for_msg          = asLogical(CAR(args)); args = CDR(args);
+        get_frame_number = FALSE;
+        local            = FALSE;
+        contents         = FALSE;
+        N                = NA_INTEGER;
+        break;
+    case 4:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = asLogical(CAR(args)); args = CDR(args);
+        for_msg          = asLogical(CAR(args)); args = CDR(args);
+        get_frame_number = FALSE;
+        local            = FALSE;
+        contents         = asLogical(CAR(args)); args = CDR(args);
+        N                = NA_INTEGER;
         break;
     case 5:
         verbose          = asLogical(CAR(args)); args = CDR(args);
@@ -1045,217 +1298,674 @@ SEXP do_thispath do_formals
         get_frame_number = FALSE;
         local            = asLogical(CAR(args)); args = CDR(args);
         contents         = asLogical(CAR(args)); args = CDR(args);
-        if (local)
-            N = get_sys_parent(1, rho);
-        else
-            N = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
+        N                = NA_INTEGER;
+        break;
+    case 6:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = asLogical(CAR(args)); args = CDR(args);
+        for_msg          = asLogical(CAR(args)); args = CDR(args);
+        get_frame_number = FALSE;
+        local            = asLogical(CAR(args)); args = CDR(args);
+        contents         = asLogical(CAR(args)); args = CDR(args);
+        N                = asInteger(CAR(args)); args = CDR(args);
+        break;
+    case 7:
+        verbose          = asLogical(CAR(args)); args = CDR(args);
+        original         = asLogical(CAR(args)); args = CDR(args);
+        for_msg          = asLogical(CAR(args)); args = CDR(args);
+        get_frame_number = asLogical(CAR(args)); args = CDR(args);
+        local            = asLogical(CAR(args)); args = CDR(args);
+        contents         = asLogical(CAR(args)); args = CDR(args);
+        N                = asInteger(CAR(args)); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_thispath", "0, 1, or 5"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_syspath", "0, 1, 2, 3, 4, 5, 6, or 7"));
         return R_NilValue;
     }
 
 
-    return thispath(verbose         , original        , for_msg         ,
+    check_arguments(verbose         , original        , for_msg         ,
                     get_frame_number, local           , contents        ,
-                    N               , rho             );
+                    N               );
+
+
+    return syspath(verbose         , original        , for_msg         ,
+                   get_frame_number, local           , contents        ,
+                   N               , rho             );
 }
 
 
 SEXP do_getframenumber do_formals
 {
     do_start_no_call_op("getframenumber", 0);
-
-
-    Rboolean verbose         , original        , for_msg         ,
-             get_frame_number, local           , contents        ;
-    int N;
-
-
-    verbose          = FALSE;
-    original         = FALSE;
-    for_msg          = FALSE;
-    get_frame_number = TRUE;
-    contents         = FALSE;
-    local            = FALSE;
-    N                = asInteger(eval(lang1(getInFrame(sys_nframeSymbol, R_BaseEnv, FALSE)), rho)) - 1;
-
-
-    return thispath(verbose         , original        , for_msg         ,
-                    get_frame_number, local           , contents        ,
-                    N               , rho             );
+    return syspath(/* verbose          */ FALSE,
+                   /* original         */ FALSE,
+                   /* for_msg          */ FALSE,
+                   /* get_frame_number */ TRUE,
+                   /* local            */ FALSE,
+                   /* contents         */ FALSE,
+                   /* N                */ NA_INTEGER,
+                   rho);
 }
 
 
-SEXP do_inittoolsrstudio do_formals
+#if R_version_at_least(3, 2, 0)
+extern SEXP topenv(SEXP target, SEXP envir);
+#else
+SEXP topenv(SEXP target, SEXP envir)
 {
-    do_start_no_op_rho("inittoolsrstudio", -1);
+    static SEXP topenvSymbol = NULL;
+    if (topenvSymbol == NULL) {
+        topenvSymbol = install("topenv");
+    }
+    SEXP expr = LCONS(topenvSymbol, CONS(envir, CONS(target, R_NilValue)));
+    PROTECT(expr);
+    SEXP value = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return value;
+}
+#endif
 
 
-    Rboolean skipCheck = FALSE;
+SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
+              SEXP target, SEXP envir, Rboolean unbound_ok, SEXP rho)
+{
+    if (envir == NULL) envir = eval(expr_parent_frame, rho);
+    if (TYPEOF(envir) != ENVSXP) envir = rho;
+
+
+    SEXP env;
+    if (target == NULL) {
+        target = PROTECT(eval(expr_getOption_topLevelEnvironment, rho));
+
+
+#define getenv                                                 \
+        if (target != R_NilValue && TYPEOF(target) != ENVSXP) target = R_NilValue;\
+        env = topenv(target, envir)
+
+
+        getenv;
+
+
+        UNPROTECT(1);
+    } else {
+        getenv;
+    }
+
+
+    SEXP path;
+
+
+    if (env == R_GlobalEnv ||
+        env == R_BaseEnv || env == R_BaseNamespace ||
+        R_IsPackageEnv(env) || R_IsNamespaceEnv(env));
+    else if (inherits(env, "box$ns")) {
+        SEXP thispathfile = getAttrib(env, original ? thispathofileSymbol : thispathfileSymbol);
+        if (isString(thispathfile)) {
+            if (verbose) Rprintf("Source: source path of a {box} namespace\n");
+            return thispathfile;
+        }
+        SEXP info = findVarInFrame(env, moduleSymbol);
+        if (info != R_UnboundValue && TYPEOF(info) == ENVSXP) {
+            SEXP spec = findVarInFrame(info, infoSymbol);
+            if (spec != R_UnboundValue && TYPEOF(spec) == VECSXP) {
+                SEXP names = getAttrib(spec, R_NamesSymbol);
+                if (names != R_NilValue && TYPEOF(names) == STRSXP) {
+                    for (R_xlen_t i = 0, n = XLENGTH(spec); i < n; i++) {
+                        if (!strcmp(CHAR(STRING_ELT(names, i)), "source_path")) {
+                            path = VECTOR_ELT(spec, i);
+                            if (TYPEOF(path) == STRSXP && XLENGTH(path) > 0 &&
+#ifdef _WIN32
+                                is_abs_path_windows(CHAR(STRING_ELT(path, 0)))
+#else
+                                is_abs_path_unix(CHAR(STRING_ELT(path, 0)))
+#endif
+                            )
+                            {
+                                SEXP thispathofile = ScalarString(STRING_ELT(path, 0));
+                                setAttrib(env, thispathofileSymbol, thispathofile);
+
+
+                                SEXP expr = LCONS(_normalizePathSymbol,
+                                                  CONS(thispathofile, R_NilValue));
+                                PROTECT(expr);
+                                thispathfile = eval(expr, mynamespace);
+                                UNPROTECT(1);
+                                setAttrib(env, thispathfileSymbol, thispathfile);
+
+
+                                if (verbose) Rprintf("Source: source path of a {box} namespace\n");
+                                return (original ? thispathofile : thispathfile);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        error("invalid {box} namespace without an associated path");
+    }
+    else if (isString(path = getAttrib(env, original ? thispathofileSymbol : thispathfileSymbol))) {
+        if (verbose) Rprintf("Source: attr(,\"path\") of the top level environment\n");
+        return path;
+    }
+    else if (isString(path = getAttrib(env, pathSymbol)) && XLENGTH(path) > 0)
+    {
+        const char *str = CHAR(STRING_ELT(path, 0));
+        SEXP normalize = NULL;
+        if (
+#ifdef _WIN32
+             is_abs_path_windows(str)
+#else
+             is_abs_path_unix(str)
+#endif
+        )
+            normalize = _normalizeNotDirectorySymbol;
+#define looks_like_url(_STR_, _SCHEME_, _NCHAR_SCHEME_)        \
+        (                                                      \
+        !strncmp((_STR_), (_SCHEME_), (_NCHAR_SCHEME_)) &&     \
+        (_STR_)[(_NCHAR_SCHEME_)] != '\0'               &&     \
+        (_STR_)[(_NCHAR_SCHEME_)] != '/'                       \
+        )
+        else if (looks_like_url(str, "https://", 8) ||
+                 looks_like_url(str, "http://" , 7) ||
+                 looks_like_url(str, "ftp://"  , 6) ||
+                 looks_like_url(str, "ftps://" , 7)
+        )
+            normalize = _normalizeURL_1Symbol;
+        if (normalize) {
+            SEXP thispathofile = ScalarString(STRING_ELT(path, 0));
+            setAttrib(env, thispathofileSymbol, thispathofile);
+
+
+            SEXP thispathfile;
+            SEXP expr = LCONS(normalize, CONS(thispathofile, R_NilValue));
+            PROTECT(expr);
+            thispathfile = eval(expr, mynamespace);
+            UNPROTECT(1);
+            setAttrib(env, thispathfileSymbol, thispathfile);
+
+
+            if (verbose) Rprintf("Source: attr(,\"path\") of the top level environment\n");
+            return (original ? thispathofile : thispathfile);
+        }
+    }
+
+
+    if (unbound_ok)
+        return R_UnboundValue;
+    else if (for_msg)
+        return ScalarString(NA_STRING);
+    else {
+        const char *msg = "no associated path";
+        SEXP call = getCurrentCall(rho);
+        PROTECT(call);
+        SEXP cond = thisPathNotExistsError(msg, call);
+        PROTECT(cond);
+        stop(cond);
+        UNPROTECT(2);
+        return R_NilValue;
+    }
+}
+
+
+SEXP envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
+             Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
+             SEXP rho)
+{
+    SEXP value = _envpath(verbose   , original  , for_msg   , target    ,
+                          envir     , unbound_ok, rho       );
+    if (unbound_ok && value == R_UnboundValue)
+        return value;
+    if (!contents)
+        return value;
+    if (TYPEOF(value) == STRSXP) {
+        if (XLENGTH(value) != 1)
+            error("internal error; invalid '%s' value", "_envpath()");
+        if (STRING_ELT(value, 0) == NA_STRING)
+            return R_NilValue;
+        SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
+        PROTECT(expr);
+        value = eval(expr, mynamespace);
+        UNPROTECT(1);
+        return value;
+    }
+    error("internal error; invalid '%s' value", "_envpath()");
+    return R_NilValue;
+}
+
+
+SEXP do_envpath do_formals
+{
+    do_start_no_op("envpath", -1);
+
+
+    Rboolean verbose, original, for_msg, contents;
+    SEXP envir, target;
+
+
     switch (length(args)) {
     case 0:
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        contents = FALSE;
+        envir    = NULL;
+        target   = NULL;
         break;
     case 1:
-        skipCheck = asLogical(CAR(args));
-        if (skipCheck == NA_LOGICAL)
-            errorcall(call, _("invalid '%s' argument"), "skipCheck");
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        contents = FALSE;
+        envir    = CAR(args); args = CDR(args);
+        target   = NULL;
+        break;
+    case 2:
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        contents = FALSE;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 3:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = FALSE;
+        for_msg  = FALSE;
+        contents = FALSE;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 4:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = FALSE;
+        contents = FALSE;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 5:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        contents = FALSE;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 6:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        contents = asLogical(CAR(args)); args = CDR(args);
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_inittoolsrstudio", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_envpath", "0, 1, 2, 3, 4, 5, or 6"));
+        return R_NilValue;
     }
-    return ScalarLogical(init_tools_rstudio(skipCheck));
+
+
+    check_arguments(verbose, original, for_msg, /* get_frame_number */ FALSE,
+                    /* local */ FALSE, contents, /* N */ 0);
+
+
+    return envpath(verbose, original, for_msg, contents, target, envir,
+                   /* unbound_ok */ FALSE, rho);
 }
 
 
-SEXP do_thispathrgui do_formals
+SEXP _srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
+                  Rboolean contents, Rboolean unbound_ok,
+                  Rboolean *gave_contents, SEXP rho)
 {
-    do_start_no_op("thispathrgui", 7);
+    *gave_contents = FALSE;
 
 
-    SEXP wintitle, untitled, r_editor;
-    Rboolean verbose , original, for_msg , contents;
+    int nprotect = 0;
 
 
-    /* titles of the windows in RGui */
-    wintitle = CAR(args); args = CDR(args);
-    if (!(TYPEOF(wintitle) == STRSXP || wintitle == R_NilValue))
-        errorcall(call, "%s, must be %s", _("invalid first argument"), "'character' / / NULL");
+    SEXP returnthis = NULL;
+    SEXP returnvalue;
 
 
-    /* strings representing non-existent files in RGui */
-    untitled = CAR(args); args = CDR(args);
-    if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
-        errorcall(call, "%s, must be %s", "invalid second argument", "'character' / / NULL");
+    SEXP thispathofile, thispathfile;
 
 
-    /* strings representing R scripts in RGui */
-    r_editor = CAR(args); args = CDR(args);
-    if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
-        errorcall(call, "%s, must be %s", "invalid third argument", "'character' / / NULL");
+    SEXP ofile;
 
 
-    verbose = asLogical(CAR(args)); args = CDR(args);
-    if (verbose == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "verbose");
+    Rboolean _is_srcfilecopy = NA_LOGICAL;
+#define is_srcfilecopy ((_is_srcfilecopy == NA_LOGICAL) ?      \
+                        (_is_srcfilecopy = inherits(srcfile, "srcfilecopy")) :\
+                        (_is_srcfilecopy))
 
 
-    original = asLogical(CAR(args)); args = CDR(args);
-    if (verbose == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "original");
-
-
-    for_msg = asLogical(CAR(args)); args = CDR(args);
-    if (for_msg == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "for.msg");
-
-
-    contents = asLogical(CAR(args)); args = CDR(args);
-    if (contents == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "contents");
-
-
-    Rboolean active = TRUE;
-    int n = LENGTH(wintitle);
-    int length_untitled = LENGTH(untitled);
-    int length_r_editor = LENGTH(r_editor);
-    for (int i = 0; i < n; i++) {
-        SEXP wintitle0 = STRING_ELT(wintitle, i);
-        if (wintitle0 == NA_STRING || wintitle0 == R_BlankString) continue;
-        const char *title = CHAR(wintitle0);
-        int nchar_title = (int) strlen(title);
-
-
-        /* if the title and untitled strings are equal (byte-wise, do
-         * not care if encodings match), then the script does not exist
-         */
-        for (int j = 0; j < length_untitled; j++) {
-            SEXP untitled0 = STRING_ELT(untitled, j);
-            if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
-            // if (wintitle0 == untitled0) {
-            if (!strcmp(title, CHAR(untitled0))) {
-                if (for_msg) {
-                    if (contents)
-                        return ScalarString(NA_STRING);
-                    else
-                        return mkString(_RGui("Untitled"));
+    SEXP rcall = PROTECT(eval(expr_sys_call, rho)); nprotect++;
+    if (rcall != R_NilValue) {
+        /* it would be nice to use 'R_Srcref' but
+           this is not the most recent source reference */
+        SEXP srcref = PROTECT(getAttrib(rcall, srcrefSymbol)); nprotect++;
+        if (TYPEOF(srcref) == INTSXP) {
+            SEXP srcfile = PROTECT(getAttrib(srcref, srcfileSymbol)); nprotect++;
+            if (TYPEOF(srcfile) == ENVSXP) {
+                if (findVarInFrame(srcfile, thispathdoneSymbol) == R_UnboundValue) {
+                    if (is_srcfilecopy && asLogical(findVarInFrame(srcfile, isFileSymbol)) != TRUE) {
+                        assign_null(srcfile);
+                    } else {
+                        ofile = findVarInFrame(srcfile, filenameSymbol);
+                        if (ofile == R_UnboundValue)
+                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
+                        checkfile(
+                            /* call                   */ R_NilValue,
+                            /* sym                    */ filenameSymbol,
+                            /* ofile                  */ ofile,
+                            /* frame                  */ srcfile,
+                            /* check_not_directory    */ TRUE,
+                            /* forcepromise           */ TRUE,
+                            /* assign_returnvalue     */ FALSE,
+                            /* maybe_chdir            */ TRUE,
+                            /* getowd                 */ findVarInFrame(srcfile, wdSymbol),
+                            /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                            /* ofilearg               */ NULL,
+                            /* character_only         */ TRUE,
+                            /* conv2utf8              */ FALSE,
+                            /* allow_blank_string     */ TRUE,
+                            /* allow_clipboard        */ TRUE,
+                            /* allow_stdin            */ TRUE,
+                            /* allow_url              */ TRUE,
+                            /* allow_file_uri         */ TRUE,
+                            /* allow_unz              */ FALSE,
+                            /* allow_pipe             */ FALSE,
+                            /* allow_terminal         */ FALSE,
+                            /* allow_textConnection   */ FALSE,
+                            /* allow_rawConnection    */ FALSE,
+                            /* allow_sockconn         */ FALSE,
+                            /* allow_servsockconn     */ FALSE,
+                            /* allow_customConnection */ FALSE,
+                            /* ignore_blank_string    */ FALSE,
+                            /* ignore_clipboard       */ FALSE,
+                            /* ignore_stdin           */ FALSE,
+                            /* ignore_url             */ FALSE,
+                            /* ignore_file_uri        */ FALSE
+                        );
+                    }
                 }
-                error("%s%s",
-                    this_path_used_in_an_inappropriate_fashion,
-                    (active) ? "* active document in Rgui does not exist" :
-                               "* source document in Rgui does not exist");
-            }
-        }
-
-
-        /* if the title ends with R Editor strings (again, bit-wise),
-         * then it is an R script, remove the suffix and return
-         */
-        for (int j = 0; j < length_r_editor; j++) {
-            SEXP r_editor0 = STRING_ELT(r_editor, j);
-            if (r_editor0 == NA_STRING || r_editor0 == R_BlankString) continue;
-            const char *suffix = CHAR(r_editor0);
-            int nchar_suffix = (int) strlen(suffix);
-            int off = nchar_title - nchar_suffix;
-            if (off > 0) {
-                if (memcmp(title + off, suffix, nchar_suffix) == 0) {
-                    SEXP ans = mkCharLenCE(title, off, getCharCE(wintitle0));
-                    if (!is_abs_path_windows(CHAR(ans)))
-                        error("invalid title, path preceding '%s' must be absolute", suffix);
-
-
-#define return_abs_path(charsxp)                               \
-                    if (verbose)                               \
-                        Rprintf((active) ? "Source: active document in Rgui\n" :\
-                                           "Source: source document in Rgui\n");\
-                    if (original)                              \
-                        return ScalarString((charsxp));        \
-                    SEXP expr = allocList(2);                  \
-                    PROTECT(expr);                             \
-                    SET_TYPEOF(expr, LANGSXP);                 \
-                    SETCAR(expr, _normalizePathSymbol);        \
-                    SETCADR(expr, ScalarString((charsxp)));    \
-                    SEXP returnthis = eval(expr, mynamespace); \
-                    UNPROTECT(1);                              \
-                    return returnthis
-
-
-                    return_abs_path(ans);
+                thispathofile = findVarInFrame(srcfile, thispathofileSymbol);
+                if (thispathofile != R_NilValue) {
+                    if (thispathofile == R_UnboundValue)
+                        error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
+                    if (contents && is_srcfilecopy) {
+                        returnthis = findVarInFrame(srcfile, linesSymbol);
+                        if (returnthis == R_UnboundValue)
+                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));
+                        if (TYPEOF(returnthis) != STRSXP)
+                            error(_("object '%s' of mode '%s' was not found"),
+                                  EncodeChar(PRINTNAME(linesSymbol)), "character");
+                        *gave_contents = TRUE;
+                    }
+                    else if (original == TRUE)
+                        returnthis = thispathofile;
+                    else {
+                        thispathfile = findVarInFrame(srcfile, thispathfileSymbol);
+                        if (thispathfile == R_UnboundValue)
+                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
+                        if (TYPEOF(thispathfile) != PROMSXP)
+                            error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
+                        if (PRVALUE(thispathfile) == R_UnboundValue)
+                            error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));
+                        returnthis = PRVALUE(thispathfile);
+                    }
+                    if (verbose) Rprintf("Source: attr(,\"srcref\")attr(,\"srcfile\") of current expression\n");
+                    UNPROTECT(nprotect);
+                    return returnthis;
                 }
-            }
-        }
-
-
-        /* if found an absolute path, return it */
-        if (is_abs_path_windows(title)) {
-            active = FALSE;
-            return_abs_path(wintitle0);
-        }
-
-
-        /* determine if the executing script is active */
-        if (active) {
-            if (!strcmp(title, "R Console") ||
-                !strcmp(title, "R Console (64-bit)") ||
-                !strcmp(title, "R Console (32-bit)"))
-            {
-                active = FALSE;
             }
         }
     }
 
 
-    if (active) error("no windows in Rgui; should never happen, please report!");
-    if (for_msg) return ScalarString(NA_STRING);
+    UNPROTECT(nprotect);
 
 
-    char msg[256];
-    snprintf(msg, 256, "%s%s",
-        this_path_used_in_an_inappropriate_fashion,
-        "* R is being run from Rgui with no documents open");
-    SEXP cond = thisPathNotExistsError(msg, PROTECT(getCurrentCall(rho)));
-    PROTECT(cond);
-    stop(cond);
-    UNPROTECT(2);
-    return R_NilValue;  /* should not be reached */
+    if (unbound_ok)
+        return R_UnboundValue;
+    else if (for_msg)
+        return ScalarString(NA_STRING);
+    else {
+        if (for_msg) return ScalarString(NA_STRING);
+        const char *msg = "no associated path";
+        SEXP call = getCurrentCall(rho);
+        PROTECT(call);
+        SEXP cond = thisPathNotExistsError(msg, call);
+        PROTECT(cond);
+        stop(cond);
+        UNPROTECT(2);
+        return R_NilValue;
+    }
+}
+
+
+SEXP srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
+                 Rboolean contents, Rboolean unbound_ok, SEXP rho)
+{
+    Rboolean gave_contents;
+    SEXP value = _srcfilepath(verbose       , original      , for_msg       ,
+                              contents      , unbound_ok    , &gave_contents,
+                              rho           );
+    if (unbound_ok && value == R_UnboundValue)
+        return value;
+    if (!contents)
+        return value;
+    if (gave_contents)
+        return value;
+    if (XLENGTH(value) != 1)
+        error("internal error; invalid '%s' value", "_envpath()");
+    if (STRING_ELT(value, 0) == NA_STRING)
+        return R_NilValue;
+    SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
+    PROTECT(expr);
+    value = eval(expr, mynamespace);
+    UNPROTECT(1);
+    return value;
+}
+
+
+SEXP do_srcfilepath do_formals
+{
+    do_start("srcfilepath", -1);
+
+
+    Rboolean verbose, original, for_msg, contents;
+
+
+    switch (length(args)) {
+    case 0:
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        contents = FALSE;
+        break;
+    case 1:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = FALSE;
+        for_msg  = FALSE;
+        contents = FALSE;
+        break;
+    case 2:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = FALSE;
+        contents = FALSE;
+        break;
+    case 3:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        contents = FALSE;
+        break;
+    case 4:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        contents = asLogical(CAR(args)); args = CDR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_srcfilepath", "0, 1, 2, 3, or 4"));
+        return R_NilValue;
+    }
+
+
+    check_arguments(verbose, original, for_msg, /* get_frame_number */ FALSE,
+                    /* local */ FALSE, contents, /* N */ 0);
+
+
+    return srcfilepath(verbose, original, for_msg, contents,
+                       /* unbound_ok */ FALSE, rho);
+}
+
+
+SEXP do_thispath do_formals
+{
+    do_start_no_op("thispath", -1);
+
+
+    Rboolean verbose, original, for_msg, local, contents;
+    int N;
+    SEXP envir, target;
+
+
+    switch (length(args)) {
+    case 0:
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        local    = FALSE;
+        contents = FALSE;
+        N        = NA_INTEGER;
+        envir    = NULL;
+        target   = NULL;
+        break;
+    case 1:
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        local    = FALSE;
+        contents = FALSE;
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = NULL;
+        break;
+    case 2:
+        verbose  = FALSE;
+        original = FALSE;
+        for_msg  = FALSE;
+        local    = FALSE;
+        contents = FALSE;
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 3:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = FALSE;
+        for_msg  = FALSE;
+        local    = FALSE;
+        contents = FALSE;
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 4:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = FALSE;
+        local    = FALSE;
+        contents = FALSE;
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 5:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        local    = FALSE;
+        contents = FALSE;
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 6:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        local    = FALSE;
+        contents = asLogical(CAR(args)); args = CDR(args);
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 7:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        local    = asLogical(CAR(args)); args = CDR(args);
+        contents = asLogical(CAR(args)); args = CDR(args);
+        N        = NA_INTEGER;
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    case 8:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        local    = asLogical(CAR(args)); args = CDR(args);
+        contents = asLogical(CAR(args)); args = CDR(args);
+        N        = asInteger(CAR(args)); args = CDR(args);
+        envir    = CAR(args); args = CDR(args);
+        target   = CAR(args); args = CDR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_thispath", "0, 1, 2, 3, 4, 5, 6, 7, or 8"));
+        return R_NilValue;
+    }
+
+
+    check_arguments(verbose, original, for_msg, /* get_frame_number */ FALSE,
+                    local, contents, N);
+
+
+    if (local) return syspath(verbose, original, for_msg, FALSE, local, contents, N, rho);
+
+
+    SEXP value = srcfilepath(verbose, original, for_msg, contents,
+                             /* unbound_ok */ TRUE, rho);
+    if (value == R_UnboundValue) {
+        value = envpath(verbose, original, for_msg, contents, target, envir,
+                        /* unbound_ok */ TRUE, rho);
+        if (value == R_UnboundValue) {
+            value = syspath(verbose, original, for_msg, FALSE, local, contents,
+                            N, rho);
+        }
+    }
+    return value;
+}
+
+
+SEXP do_istrue do_formals
+{
+    do_start_no_call_op_rho("istrue", 1);
+
+
+    return ScalarLogical(asLogical(CAR(args)) == TRUE);
+}
+
+
+SEXP do_isfalse do_formals
+{
+    do_start_no_call_op_rho("isfalse", 1);
+
+
+    return ScalarLogical(asLogical(CAR(args)) == FALSE);
 }

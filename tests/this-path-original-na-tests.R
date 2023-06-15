@@ -1,10 +1,10 @@
 this.path:::.write.code({
     this.path:::.withAutoprint({
-        this.path::this.path(original = TRUE)
-        this.path::this.path(original = NA)
-        writeLines(sQuote(this.path::this.path(verbose = TRUE)))
-        this.path::this.path(original = TRUE)
-        this.path::this.path(original = NA)
+        this.path::sys.path(original = TRUE)
+        this.path::sys.path(original = NA)
+        writeLines(sQuote(this.path::sys.path(verbose = TRUE)))
+        this.path::sys.path(original = TRUE)
+        this.path::sys.path(original = NA)
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE <- tempfile(fileext = ".R"))
 

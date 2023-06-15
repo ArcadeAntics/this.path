@@ -124,7 +124,8 @@ main <- function ()
                 }
                 c(
                     paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Author"])    , "}}"),
-                    paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Maintainer"]), "}}")
+                    paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Maintainer"]), "}}"),
+                    paste0("\\newcommand{\\CRANpkg"          , "}{\\href{https://CRAN.R-project.org/package=#1}{\\pkg{#1}}}")
                 )
             }
         )

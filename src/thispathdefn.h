@@ -10,6 +10,29 @@
 #include "thispathbackports.h"
 
 
+#if R_version_less_than(3, 0, 0)
+#define XLENGTH LENGTH
+#define xlength length
+#define R_xlen_t R_len_t
+#endif
+
+
+extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
+LibExtern SEXP R_SrcfileSymbol;
+LibExtern SEXP R_SrcrefSymbol;
+
+
+#if R_version_at_least(3, 1, 0)
+LibExtern SEXP R_TrueValue;
+LibExtern SEXP R_FalseValue;
+LibExtern SEXP R_LogicalNAValue;
+#else
+#define R_TrueValue ScalarLogical(TRUE)
+#define R_FalseValue ScalarLogical(FALSE)
+#define R_LogicalNAValue ScalarLogical(NA_LOGICAL)
+#endif
+
+
 #if R_version_at_least(3, 3, 0)
     #if defined(R_THIS_PATH_DEFINES)
         #include <R_ext/Connections.h>
@@ -28,6 +51,34 @@
 
 
 #include "symbols.h"
+
+
+extern SEXP mynamespace,
+            promiseenv ;
+
+
+extern SEXP expr_commandArgs                              ,
+#if defined(R_THIS_PATH_HAVE_invisibleSymbol)
+            expr_invisible                                ,
+#endif
+            expr_parent_frame                             ,
+            expr_sys_call                                 ,
+            expr_sys_nframe                               ,
+            expr_sys_parents                              ,
+            expr_missing_file                             ,
+            expr_missing_input                            ,
+            expr_missing_ofile                            ,
+            expr_info_dollar_source_path                  ,
+            expr_delayedAssign_x                          ,
+            expr_knitr_output_dir                         ,
+            expr_testthat_source_file_uses_brio_read_lines,
+            expr__sys_path_toplevel                       ,
+            expr_getOption_topLevelEnvironment            ,
+            expr__toplevel_context_number                 ;
+
+
+extern SEXP makePROMISE(SEXP expr, SEXP env);
+extern SEXP makeEVPROMISE(SEXP expr, SEXP value);
 
 
 #if R_version_less_than(3, 1, 0)
@@ -62,7 +113,7 @@ void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
 void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
 
 
-#if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
+#if !defined(R_THIS_PATH_HAVE_invisibleSymbol)
 /* R_Visible is not part of the R API. DO NOT USE OR MODIFY IT unless you are
    absolutely certain it is what you wish to do. it is subject to change
    without notice nor back-compatibility. only the development version of this
@@ -70,7 +121,7 @@ void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
 extern Rboolean R_Visible;
 #define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
 #else
-#define set_R_Visible(v) (eval((v) ? R_NilValue : lang1(invisibleSymbol), R_BaseEnv))
+#define set_R_Visible(v) (eval((v) ? R_NilValue : expr_invisible, R_EmptyEnv))
 #endif
 
 
@@ -125,6 +176,8 @@ extern void R_LockBinding(SEXP sym, SEXP env);
 
 
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
+#define getFromBase(sym) (getInFrame((sym), R_BaseEnv, FALSE))
+#define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))
 
 
 extern SEXP as_environment_char(const char *what);
@@ -145,13 +198,13 @@ extern SEXP simpleError(const char *msg, SEXP call);
 
 
 /* this code is written this way on purpose, do not reformat it */
-#define this_path_used_in_an_inappropriate_fashion             \
-    "'this.path' used in an inappropriate fashion\n* no appropriate source call was found up the calling stack\n"
+#define thisPathNotExistsErrorCls                              \
+    "this.path::thisPathNotExistsError"
 
 
 /* this code is written this way on purpose, do not reformat it */
-#define thisPathNotExistsErrorCls                              \
-    "this.path::thisPathNotExistsError"
+#define thisPathNotFoundErrorCls                               \
+    "this.path::thisPathNotFoundError"
 
 
 #if defined(R_CONNECTIONS_VERSION_1)
@@ -193,6 +246,7 @@ extern void assign_chdir(SEXP file, SEXP owd, SEXP frame);
 extern void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, Rboolean check_not_directory);
 extern void assign_file_uri2(SEXP description, SEXP frame, Rboolean check_not_directory);
 extern void assign_url(SEXP ofile, SEXP file, SEXP frame);
+extern void overwrite_ofile(SEXP ofilearg, SEXP frame);
 
 
 #define isurl(url) (                                           \
@@ -233,18 +287,18 @@ typedef struct gzconn {
             SEXP summary = summaryconnection(ofile);           \
             SEXP description = get_connection_description(summary);\
             const char *klass = get_connection_class(summary); \
-            if (streql(klass, "gzcon")) error("this.path() not implemented for a gzcon()")
+            if (streql(klass, "gzcon")) error("'sys.path' not implemented for a gzcon()")
 #define Rcon_or_summary(Rcon, summary) summary
 #endif
 
 
 /* it is undesirable to have this as a #define but we also cannot
-   evaluate all the arguments. used in _thispath(), do_wrapsource(), and
-   insidesource()
+   evaluate all the arguments. used in _syspath(), do_wrapsource(), and
+   setsyspath()
  */
 #define checkfile(call, sym, ofile, frame, check_not_directory,\
     forcepromise, assign_returnvalue,                          \
-    maybe_chdir, getowd, hasowd,                               \
+    maybe_chdir, getowd, hasowd, ofilearg,                     \
     character_only, conv2utf8, allow_blank_string,             \
     allow_clipboard, allow_stdin, allow_url, allow_file_uri,   \
     allow_unz, allow_pipe, allow_terminal,                     \
@@ -259,6 +313,17 @@ do {                                                           \
         SEXP file = STRING_ELT(ofile, 0);                      \
         if (file == NA_STRING)                                 \
             errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
+        if (ofilearg != NULL) {                                \
+            if (TYPEOF(ofilearg) == STRSXP) {                  \
+                if (LENGTH(ofilearg) != 1)                     \
+                    errorcall(call, "'%s' must be a character string", "ofile");\
+                if (STRING_ELT(ofilearg, 0) == NA_STRING)      \
+                    errorcall(call, "invalid '%s', must not be NA", "ofile");\
+            }                                                  \
+            else {                                             \
+                errorcall(call, "'%s' must be a character string", "ofile");\
+            }                                                  \
+        }                                                      \
         const char *url;                                       \
         if (conv2utf8) {                                       \
             if (IS_UTF8(file) || IS_ASCII(file) || IS_BYTES(file))\
@@ -301,6 +366,8 @@ do {                                                           \
                 assign_url(ofile, file, frame);                \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
+                if (ofilearg != NULL)                          \
+                    overwrite_ofile(ofilearg, frame);          \
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(sym)));\
@@ -314,6 +381,8 @@ do {                                                           \
                 }                                              \
                 else if (forcepromise)                         \
                     getInFrame(thispathfileSymbol, frame, FALSE);\
+                if (ofilearg != NULL)                          \
+                    overwrite_ofile(ofilearg, frame);          \
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', cannot be a file URI", EncodeChar(PRINTNAME(sym)));\
@@ -333,6 +402,8 @@ do {                                                           \
             }                                                  \
             else if (forcepromise)                             \
                 getInFrame(thispathfileSymbol, frame, FALSE);  \
+            if (ofilearg != NULL)                              \
+                overwrite_ofile(ofilearg, frame);              \
         }                                                      \
     }                                                          \
     else {                                                     \
@@ -341,6 +412,12 @@ do {                                                           \
         else if (!inherits(ofile, "connection"))               \
             errorcall(call, "invalid '%s', must be a string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \
+            if (ofilearg != NULL) {                            \
+                if (!identical(ofile, ofilearg)) {             \
+                    errorcall(call, "invalid '%s', must be identical to '%s'",\
+                                    "ofile", EncodeChar(PRINTNAME(sym)));\
+                }                                              \
+            }                                                  \
             get_description_and_class;                         \
             if (streql(klass, "file"  ) ||                     \
                 streql(klass, "gzfile") ||                     \
@@ -369,12 +446,12 @@ do {                                                           \
                    document has no path                        \
                                                                \
                    we also assign thispathformsg as the object \
-                   to return for this.path(for.msg = TRUE)     \
+                   to return for sys.path(for.msg = TRUE)      \
                                                                \
                    we also assign thispathassocwfile so that   \
-                   we know this source-call is assocaited with \
+                   we know this source-call is associated with \
                    a file, even though that file has no path   \
-                   (well it has a path, but it cannot be       \
+                   (well, it has a path, but it cannot be      \
                     represented by a single string)            \
                  */                                            \
                 if (allow_unz) {                               \
@@ -437,7 +514,7 @@ do {                                                           \
                 if (allow_customConnection) {                  \
                     /* same as "unz", we save the error and    \
                        the description for                     \
-                       this.path(for.msg = TRUE)               \
+                       sys.path(for.msg = TRUE)                \
                                                                \
                        however, we do not save                 \
                        thispathassocwfile because we don't     \
@@ -463,8 +540,8 @@ do {                                                           \
 } while (0)
 
 
-#define sys_call(which, rho) eval(lang2(sys_callSymbol, (which)), (rho))
-#define getCurrentCall(rho) eval(lang1(sys_callSymbol), (rho))
+extern SEXP sys_call(SEXP which, SEXP rho);
+#define getCurrentCall(rho) eval(expr_sys_call, (rho))
 
 
 /* doesn't work in general, for example sys.function() duplicates its return value */
@@ -500,21 +577,18 @@ extern Rboolean init_tools_rstudio(Rboolean skipCheck);
 
 
 #define in_rstudio                                             \
-    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getInFrame(_gui_rstudioSymbol, mynamespace, FALSE))))
+    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getFromMyNS(_gui_rstudioSymbol))))
 
 
 extern int maybe_unembedded_shell;
 
 
 #define is_maybe_unembedded_shell                              \
-    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getInFrame(_maybe_unembedded_shellSymbol, mynamespace, FALSE))))
+    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
 
 
 #define get_debugSource                                        \
-    ((has_tools_rstudio) ? getInFrame(_debugSourceSymbol, mynamespace, FALSE) : R_UnboundValue)
-
-
-extern SEXP mynamespace;
+    ((has_tools_rstudio) ? getFromMyNS(_debugSourceSymbol) : R_UnboundValue)
 
 
 #define wrong_nargs_to_External(nargs, name, expected_nargs)   \

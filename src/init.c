@@ -12,12 +12,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"aquarootscript", (DL_FUNC) &do_aquarootscript, 0},
 
 
-    /* args.c */
-
-
-    {"asargs", (DL_FUNC) &do_asargs, -1},
-
-
     /* backports.c */
 
 
@@ -77,7 +71,15 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"extgets"       , (DL_FUNC) &do_extgets       , 3},
 
 
-    /* hooks-for-namespace-events.c */
+    /* isabspath.c */
+
+
+    {"windowsisabspath", (DL_FUNC) &do_windowsisabspath, 1},
+    {"unixisabspath"   , (DL_FUNC) &do_unixisabspath   , 1},
+    {"isabspath"       , (DL_FUNC) &do_isabspath       , 1},
+
+
+    /* ns-hooks.c */
 
 
     {"mbcslocale"  , (DL_FUNC) &do_mbcslocale  , 0},
@@ -85,16 +87,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     // {"latin1locale", (DL_FUNC) &do_latin1locale, 0},
     {"R_MB_CUR_MAX", (DL_FUNC) &do_R_MB_CUR_MAX, 0},
 
-    {"onload"  , (DL_FUNC) &do_onload  , 2},
-    {"onunload", (DL_FUNC) &do_onunload, 1},
-
-
-    /* isabspath.c */
-
-
-    {"windowsisabspath", (DL_FUNC) &do_windowsisabspath, 1},
-    {"unixisabspath"   , (DL_FUNC) &do_unixisabspath   , 1},
-    {"isabspath"       , (DL_FUNC) &do_isabspath       , 1},
+    {"onLoad"  , (DL_FUNC) &do_onLoad  , 2},
+    {"onUnload", (DL_FUNC) &do_onUnload, 1},
 
 
     /* pathjoin.c */
@@ -121,54 +115,67 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"pathunsplit"       , (DL_FUNC) &do_pathunsplit       , 0},
 
 
+    /* progargs.c */
+
+
+    {"asArgs", (DL_FUNC) &do_asArgs, -1},
+
+
     /* promises.c */
 
 
     {"isunevaluatedpromise"    , (DL_FUNC) &do_isunevaluatedpromise    , -1},
     {"promiseisunevaluated"    , (DL_FUNC) &do_promiseisunevaluated    , -1},
     {"getpromisewithoutwarning", (DL_FUNC) &do_getpromisewithoutwarning, -1},
-    {"prinfo"                  , (DL_FUNC) &do_prinfo                  , -1},
-    {"setthispathjupyter"      , (DL_FUNC) &do_setthispathjupyter      , -1},
+    {"PRINFO"                  , (DL_FUNC) &do_PRINFO                  , -1},
+    {"setsyspathjupyter"       , (DL_FUNC) &do_setsyspathjupyter       , -1},
+    {"mkPROMISE"               , (DL_FUNC) &do_mkPROMISE               ,  2},
+    {"mkEVPROMISE"             , (DL_FUNC) &do_mkEVPROMISE             ,  2},
+    {"unlockEnvironment"       , (DL_FUNC) &do_unlockEnvironment       , -1},
 
 
     /* rprojroot.c */
 
 
-    {"resetthisproj", (DL_FUNC) &do_resetthisproj, 0},
+    {"resetproj", (DL_FUNC) &do_resetproj, 0},
 
 
     /* shfile.c */
 
 
-    {"shfile", (DL_FUNC) &do_shfile, 2},
-    {"shinfo", (DL_FUNC) &do_shinfo, 0},
+    {"shFILE", (DL_FUNC) &do_shFILE, 2},
+    {"shINFO", (DL_FUNC) &do_shINFO, 0},
 
 
     /* thispath.c */
 
 
-    {"thispathunrecognizedconnectionclasserror", (DL_FUNC) &do_thispathunrecognizedconnectionclasserror, 2},
-    {"thispathunrecognizedmannererror"         , (DL_FUNC) &do_thispathunrecognizedmannererror         , 1},
-    {"thispathnotimplementederror"             , (DL_FUNC) &do_thispathnotimplementederror             , 2},
-    {"thispathnotexistserror"                  , (DL_FUNC) &do_thispathnotexistserror                  , 2},
-    {"thispathinzipfileerror"                  , (DL_FUNC) &do_thispathinzipfileerror                  , 2},
-    {"thispathinaquaerror"                     , (DL_FUNC) &do_thispathinaquaerror                     , 1},
+    {"thisPathUnrecognizedConnectionClassError", (DL_FUNC) &do_thisPathUnrecognizedConnectionClassError, 2},
+    {"thisPathUnrecognizedMannerError"         , (DL_FUNC) &do_thisPathUnrecognizedMannerError         , 1},
+    {"thisPathNotImplementedError"             , (DL_FUNC) &do_thisPathNotImplementedError             , 2},
+    {"thisPathNotExistsError"                  , (DL_FUNC) &do_thisPathNotExistsError                  , 2},
+    {"thisPathInZipFileError"                  , (DL_FUNC) &do_thisPathInZipFileError                  , 2},
+    {"thisPathInAQUAError"                     , (DL_FUNC) &do_thisPathInAQUAError                     , 1},
 
     {"isclipboard"     , (DL_FUNC) &do_isclipboard     ,  1},
-    {"thispath"        , (DL_FUNC) &do_thispath        , -1},
-    {"getframenumber"  , (DL_FUNC) &do_getframenumber  ,  0},
     {"inittoolsrstudio", (DL_FUNC) &do_inittoolsrstudio, -1},
-    {"thispathrgui"    , (DL_FUNC) &do_thispathrgui    ,  7},
+    {"syspathrgui"     , (DL_FUNC) &do_syspathrgui     ,  7},
+    {"syspath"         , (DL_FUNC) &do_syspath         , -1},
+    {"getframenumber"  , (DL_FUNC) &do_getframenumber  ,  0},
+    {"envpath"         , (DL_FUNC) &do_envpath         , -1},
+    {"thispath"        , (DL_FUNC) &do_thispath        , -1},
+    {"istrue"          , (DL_FUNC) &do_istrue          ,  1},
+    {"isfalse"         , (DL_FUNC) &do_isfalse         ,  1},
+    {"srcfilepath"     , (DL_FUNC) &do_srcfilepath     , -1},
 
 
     /* wrapsource.c */
 
 
-    {"setprseen2"   , (DL_FUNC) &do_setprseen2   ,  1},
-    {"wrapsource"   , (DL_FUNC) &do_wrapsource   , 20},
-    {"insidesource" , (DL_FUNC) &do_insidesource , 21},
-    {"setthispath"  , (DL_FUNC) &do_setthispath  , 21},
-    {"unsetthispath", (DL_FUNC) &do_unsetthispath,  0},
+    {"setprseen2"  , (DL_FUNC) &do_setprseen2  ,  1},
+    {"wrapsource"  , (DL_FUNC) &do_wrapsource  , 20},
+    {"setsyspath"  , (DL_FUNC) &do_setsyspath  , 21},
+    {"unsetsyspath", (DL_FUNC) &do_unsetsyspath,  0},
 
 
     {NULL, NULL, 0}

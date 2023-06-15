@@ -97,6 +97,6 @@ progArgs <- function ()
 
 withArgs <- function (...)
 {
-    args <- .External2(.C_asargs, 1L)
+    args <- .External2(.C_asArgs, 1L)
     ..1
 }

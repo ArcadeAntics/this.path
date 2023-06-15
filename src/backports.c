@@ -1,13 +1,6 @@
 #include "thispathdefn.h"
 
 
-#if R_version_less_than(3, 0, 0)
-#define XLENGTH LENGTH
-#define xlength length
-#define R_xlen_t R_len_t
-#endif
-
-
 R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
 {
     /*
@@ -16,24 +9,19 @@ R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
      * length methods in said environment
      */
     if (isObject(x)) {
-        SEXP expr = allocList(2), expr2;
-        PROTECT(expr);
-        SET_TYPEOF(expr, LANGSXP);
-        SETCAR(expr, findVarInFrame(R_BaseEnv, R_LengthSymbol));
+        SEXP expr;
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
         switch (TYPEOF(x)) {
-            case BCODESXP:
-            case SYMSXP:
-            case PROMSXP:
-            case LANGSXP:
-            case DOTSXP:
-                SETCADR(expr, expr2 = allocList(2));
-                SET_TYPEOF(expr2, LANGSXP);
-                SETCAR(expr2, findVarInFrame(R_BaseEnv, R_QuoteSymbol));
-                SETCADR(expr2, x);
-                break;
-            default:
-                SETCADR(expr, x);
+        case BCODESXP:
+        case SYMSXP:
+        case PROMSXP:
+        case LANGSXP:
+        case DOTSXP:
+            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
+            REPROTECT(expr = CONS(expr, R_NilValue), indx);
         }
+        REPROTECT(expr = LCONS(getFromBase(R_LengthSymbol), expr), indx);
         expr = PROTECT(eval(expr, rho));
         R_xlen_t value = (R_xlen_t)
             (TYPEOF(expr) == REALSXP ? REAL(expr)[0] : asInteger(expr));
@@ -47,21 +35,23 @@ R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
 SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
 {
     if (isObject(x)) {
-        SEXP expr = allocList(3), expr2;
+        SEXP expr = allocList(3);
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);
-        SETCAR(expr, findVarInFrame(R_BaseEnv, R_Bracket2Symbol));
+        SETCAR(expr, getFromBase(R_Bracket2Symbol));
         switch (TYPEOF(x)) {
             case BCODESXP:
             case SYMSXP:
             case PROMSXP:
             case LANGSXP:
             case DOTSXP:
-                SETCADR(expr, expr2 = allocList(2));
-                SET_TYPEOF(expr2, LANGSXP);
-                SETCAR(expr2, findVarInFrame(R_BaseEnv, R_QuoteSymbol));
+            {
+                SEXP expr2;
+                SETCADR(expr, expr2 = allocList(2)); SET_TYPEOF(expr2, LANGSXP);
+                SETCAR (expr2, getFromBase(R_QuoteSymbol));
                 SETCADR(expr2, x);
                 break;
+            }
             default:
                 SETCADR(expr, x);
         }
@@ -109,10 +99,7 @@ SEXP do_dotslength do_formals
     do_start_no_call_op("dotslength", 0);
 
 
-    SEXP expr = lang1(parent_frameSymbol);
-    PROTECT(expr);
-    SEXP env = eval(expr, rho);
-    UNPROTECT(1);
+    SEXP env = eval(expr_parent_frame, rho);
     SEXP vl = findVar(R_DotsSymbol, env);
     if (vl == R_UnboundValue)
         error(_("incorrect context: the current call has no '...' to look in"));
@@ -337,11 +324,8 @@ SEXP do_direxists do_formals
     int n = LENGTH(fn);
 
 
-    SEXP expr = allocList(2);
+    SEXP expr = LCONS(file_infoSymbol, CONS(fn, R_NilValue));
     PROTECT(expr);
-    SET_TYPEOF(expr, LANGSXP);
-    SETCAR(expr, file_infoSymbol);
-    SETCADR(expr, fn);
     SEXP value = eval(expr, R_BaseEnv);
     UNPROTECT(1);  /* expr */
     PROTECT(value);
@@ -465,7 +449,7 @@ SEXP do_isRegisteredNamespace do_formals
     SEXP name = checkNSname(call, PROTECT(coerceVector(CAR(args), SYMSXP)));
     UNPROTECT(1);
     SEXP val = findVarInFrame(R_NamespaceRegistry, name);
-    return ScalarLogical(val == R_UnboundValue ? FALSE : TRUE);
+    return val == R_UnboundValue ? R_FalseValue : R_TrueValue;
 }
 
 
@@ -482,27 +466,21 @@ Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
 
 
     if (OBJECT(x) || (isList && !recursive)) {
-        SEXP expr = allocList(2), expr2, expr3;
-        PROTECT(expr);
-        SET_TYPEOF(expr, LANGSXP);
-        SETCAR(expr, anySymbol);
-        SETCADR(expr, expr2 = allocList(2));
-        SET_TYPEOF(expr2, LANGSXP);
-        SETCAR(expr2, is_naSymbol);
-        switch (type) {
-            case BCODESXP:
-            case SYMSXP:
-            case PROMSXP:
-            case LANGSXP:
-            case DOTSXP:
-                SETCADR(expr2, expr3 = allocList(2));
-                SET_TYPEOF(expr3, LANGSXP);
-                SETCAR(expr3, R_QuoteSymbol);
-                SETCADR(expr3, x);
-                break;
-            default:
-                SETCADR(expr2, x);
+        SEXP expr;
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
+        switch (TYPEOF(x)) {
+        case BCODESXP:
+        case SYMSXP:
+        case PROMSXP:
+        case LANGSXP:
+        case DOTSXP:
+            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
+            REPROTECT(expr = CONS(expr, R_NilValue), indx);
         }
+        REPROTECT(expr = LCONS(getFromBase(is_naSymbol), expr), indx);
+        REPROTECT(expr = CONS(expr, R_NilValue), indx);
+        REPROTECT(expr = LCONS(getFromBase(anySymbol), expr), indx);
         SEXP res = PROTECT(eval(expr, rho));
         Rboolean value = (asLogical(res) == TRUE);
         UNPROTECT(2);

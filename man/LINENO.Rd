@@ -1,19 +1,61 @@
 \name{LINENO}
+\alias{sys.LINENO}
+\alias{env.LINENO}
 \alias{LINENO}
-\title{Line Number of Executing Script}
+\title{Line Number of Executing Expression}
 \description{
-  Get the line number of the executing script.
+  Get the line number of the executing expression.
 }
 \usage{
-LINENO()
+sys.LINENO()
+env.LINENO(envir = parent.frame(),
+           matchThisEnv = getOption("topLevelEnvironment"))
+LINENO(envir = parent.frame(),
+       matchThisEnv = getOption("topLevelEnvironment"))
+}
+\arguments{
+  \item{envir, matchThisEnv}{See \code{?\link{this.path}()}.}
+}
+\details{
+  \code{sys.LINENO()} will be the line number of the most recent expression
+  with a source reference and a source file equal to \code{\link{sys.path}()}.
+
+  \code{env.LINENO()} will be the line number of the most recent expression
+  with a source reference and a source file equal to \code{\link{env.path}()}.
+
+  \code{LINENO()} will be the line number of the most recent expression with a
+  source reference and a source file equal to \code{\link{this.path}()}.
+
+  In general, \code{LINENO()} is the most useful. It works whether your \R code
+  is \sourcelink-d or modularized.
 }
 \value{
   An integer, \code{NA_integer_} if the line number cannot be determined.
 }
 \note{
-  \code{LINENO()} only works if the executing script has a
-  \codelink2{base:srcfile}{srcref} and a \codelink2{base}{srcfile}. Scripts run
-  with \Rscriptlink do not store their \code{srcref}, even when
+  \code{LINENO()} only works if the expressions have a
+  \codelink2{base:srcfile}{srcref} and a \codelink2{base}{srcfile}.
+
+  When a file is parsed, source references are stored only for top-level
+  expressions (including directly inside braces). For example: \preformatted{
+#line 1
+if (TRUE)
+    message(sprintf("LINENO() will be 1: \%d",
+                    LINENO()))
+
+#line 1
+if (TRUE) {
+    message(sprintf("LINENO() will be 2 because of the brace on line 1: \%d",
+                    LINENO()))
+}
+
+#line 1
+if (TRUE) {
+    message(sprintf("LINENO() will be 3 because of the braces on line 3: \%d",
+                    { LINENO() }))
+}}
+
+  Scripts run with \Rscriptlink do not store their \code{srcref}, even when
   \codelink3{base:options}{getOption}{("keep.source")} is \code{TRUE}.
 
   For \sourcelink or \syssourcelink, make sure to supply argument
@@ -41,8 +83,12 @@ writeLines(c(
     "LINENO()",
     "LINENO()",
     "## LINENO() respects #line directives",
+    "#line 15",
+    "LINENO()",
     "#line 1218",
-    "LINENO()"
+    "cat(sprintf(\\"invalid value \%d at \%s, line \%d\\",",
+    "",
+    "            -5, try.this.path(), LINENO()))"
 ), FILE)
 
 

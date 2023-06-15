@@ -57,10 +57,9 @@
     \item{\code{\link{LINENO}()} returns the line number of the executing
       expression in the executing script.}
 
-    \item{\code{\link{wrap.source}()}, \code{\link{inside.source}()},
-      \code{\link{set.this.path}()}, and \code{\link{unset.this.path}()}
-      implement \code{\link{this.path}()} for any \sourcelink-like functions
-      outside of \sourcesandlistlinks.}
+    \item{\code{\link{wrap.source}()}, \code{\link{set.sys.path}()}, and
+      \code{\link{unset.sys.path}()} implement \code{\link{this.path}()} for
+      any \sourcelink-like functions outside of \sourcesandlistlinks.}
 
     \item{\code{\link{shFILE}()} looks through the command line arguments,
       extracting \option{FILE} from either of the following: \option{-f}

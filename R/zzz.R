@@ -1,24 +1,27 @@
+rm(.pkgname)
+
+
 if (FALSE) {
 
 
-.eval.with.message <- function (sym, val)
+.eval.with.message <- evalq(envir = new.env(), {
+    indent <- 0L
+function (sym, val)
 {
+    writeLines(sprintf("%sevaluating '%s'", strrep(" ", indent), sym))
     oindent <- indent
     on.exit(indent <<- oindent)
-    writeLines(sprintf("%sevaluating '%s'", strrep(" ", indent), sym))
     indent <<- indent + if (indent < 16L) 4L else 2L
     val
 }
-evalq(envir = environment(.eval.with.message) <- new.env(), {
-    indent <- 0L
 })
 
 
-tmp <- function (envir = parent.frame(), bindings)
+tmp <- function (..., envir = parent.frame())
 {
     if (!is.environment(envir))
         envir <- as.environment(envir)
-    lapply(as.character(bindings), function(sym) {
+    lapply(as.character(c(...)), function(sym) {
         if (!exists(sym, envir = envir, inherits = FALSE))
             stop(gettextf("object '%s' not found", sym, domain = "R"), domain = NA)
         expr <- call("substitute", as.symbol(sym))
@@ -31,10 +34,8 @@ tmp <- function (envir = parent.frame(), bindings)
 }
 
 
-tmp(bindings = c(
-
-
-    # promises.R
+tmp(
+    ## promises.R ----
 
 
     ".os.unix", ".os.windows",
@@ -50,30 +51,30 @@ tmp(bindings = c(
     "initwd", ".ucrt",
 
 
-    # relpath.R
+    ## relpath.R  ----
 
 
     "NET.USE.command",
 
 
-    # this.path.R
+    ## thispath.R ----
 
 
     ".has.shFILE",
     ".r.editor", ".untitled",
     ".identical"
-))
+)
 
 
-# rprojroot.R
-envir <- environment(find_root)
-tmp(envir, "default.criterion")
+## rprojroot.R ----
+envir <- environment(.find.root)
+tmp("default.criterion", envir = envir)
 rm(envir)
 
 
-# this.path.R
+## thispath.R  ----
 envir <- environment(.shFILE)
-tmp(envir, grep("this.path::", names(envir), value = TRUE, fixed = TRUE, useBytes = TRUE))
+tmp(grep("^\\.this\\.path::", names(envir), value = TRUE), envir = envir)
 rm(envir)
 
 
@@ -116,10 +117,18 @@ if (getRversion() < "3.0.0") {
         }
         recurse(fn)
     }
-    fix.External2.promise <- function(envir = parent.frame(), bindings) {
+    fix.External2.fun <- function(fn, envir = parent.frame()) {
+        symbol <- substitute(fn)
+        if (typeof(symbol) != "symbol")
+            stop(gettext("not a symbol", domain = "R"), domain = NA)
+        if (typeof(fn) != "closure")
+            stop("not a function")
+        envir[[as.character(symbol)]] <- fix.External2(fn)
+    }
+    fix.External2.promise <- function(..., envir = parent.frame()) {
         if (!is.environment(envir))
             envir <- as.environment(envir)
-        lapply(as.character(bindings), function(sym) {
+        lapply(as.character(c(...)), function(sym) {
             if (!exists(sym, envir = envir, inherits = FALSE))
                 stop(gettextf("object '%s' not found", sym, domain = "R"), domain = NA)
             expr <- call("substitute", as.symbol(sym))
@@ -132,179 +141,215 @@ if (getRversion() < "3.0.0") {
     }
 
 
-    ## Args.R                       ----
-
-
-    fileArgs <- fix.External2(fileArgs)
-    progArgs <- fix.External2(progArgs)
-    withArgs <- fix.External2(withArgs)
-
-
-    ## backports.R                  ----
+    ## backports.R  ----
 
 
     if (getRversion() < "3.3.0") {
-        strrep     <- fix.External2(strrep    )
-        startsWith <- fix.External2(startsWith)
-        endsWith   <- fix.External2(endsWith  )
+        fix.External2.fun(strrep)
+        fix.External2.fun(startsWith)
+        fix.External2.fun(endsWith)
     }
     if (getRversion() < "3.2.0") {
-        dir.exists <- fix.External2(dir.exists)
-        lengths    <- fix.External2(lengths   )
+        fix.External2.fun(dir.exists)
+        fix.External2.fun(lengths)
     }
     if (getRversion() < "3.1.0") {
-        anyNA <- fix.External2(anyNA)
+        fix.External2.fun(anyNA)
     }
     if (getRversion() < "3.0.0") {
-        .setprseen2 <- fix.External2(.setprseen2)
+        fix.External2.fun(.setprseen2)
     }
 
 
-    ## basename2.R                  ----
+    ## basename2.R  ----
 
 
-    .windows.basename2 <- fix.External2(.windows.basename2)
-    .unix.basename2    <- fix.External2(.unix.basename2   )
-    basename2          <- fix.External2(basename2         )
-    .windows.dirname2  <- fix.External2(.windows.dirname2 )
-    .unix.dirname2     <- fix.External2(.unix.dirname2    )
-    dirname2           <- fix.External2(dirname2          )
+    fix.External2.fun(.windows.basename2)
+    fix.External2.fun(.unix.basename2)
+    fix.External2.fun(basename2)
+    fix.External2.fun(.windows.dirname2)
+    fix.External2.fun(.unix.dirname2)
+    fix.External2.fun(dirname2)
 
 
-    ## check.path.R                 ----
+    ## checkpath.R  ----
 
 
-    check.path <- fix.External2(check.path)
-    check.proj <- fix.External2(check.proj)
+    fix.External2.fun(check.path)
+    fix.External2.fun(check.dir)
+    fix.External2.fun(check.proj)
 
 
-    ## ext.R                        ----
+    ## ext.R        ----
 
 
-    .windows.splitext  <- fix.External2(.windows.splitext )
-    .unix.splitext     <- fix.External2(.unix.splitext    )
-    splitext           <- fix.External2(splitext          )
-    .windows.removeext <- fix.External2(.windows.removeext)
-    .unix.removeext    <- fix.External2(.unix.removeext   )
-    removeext          <- fix.External2(removeext         )
-    .windows.ext       <- fix.External2(.windows.ext      )
-    .unix.ext          <- fix.External2(.unix.ext         )
-    ext                <- fix.External2(ext               )
-    `.windows.ext<-`   <- fix.External2(`.windows.ext<-`  )
-    `.unix.ext<-`      <- fix.External2(`.unix.ext<-`     )
-    `ext<-`            <- fix.External2(`ext<-`           )
+    fix.External2.fun(.windows.splitext)
+    fix.External2.fun(.unix.splitext)
+    fix.External2.fun(splitext)
+    fix.External2.fun(.windows.removeext)
+    fix.External2.fun(.unix.removeext)
+    fix.External2.fun(removeext)
+    fix.External2.fun(.windows.ext)
+    fix.External2.fun(.unix.ext)
+    fix.External2.fun(ext)
+    fix.External2.fun(`.windows.ext<-`)
+    fix.External2.fun(`.unix.ext<-`)
+    fix.External2.fun(`ext<-`)
 
 
-    ## from.shell.R                 ----
+    ## fromshell.R  ----
 
 
-    from.shell <- fix.External2(from.shell)
-    is.main    <- fix.External2(is.main   )
+    fix.External2.fun(from.shell)
+    fix.External2.fun(is.main)
 
 
-    ## hooks-for-namespace-events.R ----
+    ## lineno.R     ----
 
 
-    .mbcslocale   <- fix.External2(.mbcslocale  )
-    # .utf8locale   <- fix.External2(.utf8locale  )
-    # .latin1locale <- fix.External2(.latin1locale)
-    .R_MB_CUR_MAX <- fix.External2(.R_MB_CUR_MAX)
+    fix.External2.fun(sys.LINENO)
+    fix.External2.fun(env.LINENO)
+    fix.External2.fun(LINENO)
 
 
-    .onLoad   <- fix.External2(.onLoad  )
-    .onUnload <- fix.External2(.onUnload)
+    ## makefuns.R   ----
 
 
-    ## LINENO.R                     ----
+    fix.External2.fun(path.functions)
 
 
-    LINENO <- fix.External2(LINENO)
+    ## ns-hooks.R   ----
 
 
-    ## path.join.R                  ----
+    fix.External2.fun(.mbcslocale)
+    # fix.External2.fun(.utf8locale)
+    # fix.External2.fun(.latin1locale)
+    fix.External2.fun(.R_MB_CUR_MAX)
 
 
-    .windows.path.join <- fix.External2(.windows.path.join)
-    .unix.path.join    <- fix.External2(.unix.path.join   )
-    path.join          <- fix.External2(path.join         )
+    # fix.External2.fun(FILE)
+    # fix.External2.fun(LINE)
 
 
-    ## path.split.R                 ----
+    fix.External2.fun(.onLoad)
+    fix.External2.fun(.onUnload)
 
 
-    .windows.path.split   <- fix.External2(.windows.path.split  )
-    .unix.path.split      <- fix.External2(.unix.path.split     )
-    path.split            <- fix.External2(path.split           )
-    .windows.path.split.1 <- fix.External2(.windows.path.split.1)
-    .unix.path.split.1    <- fix.External2(.unix.path.split.1   )
-    path.split.1          <- fix.External2(path.split.1         )
-    .windows.path.unsplit <- fix.External2(.windows.path.unsplit)
-    .unix.path.unsplit    <- fix.External2(.unix.path.unsplit   )
-    path.unsplit          <- fix.External2(path.unsplit         )
+    ## pathjoin.R   ----
 
 
-    ## promises.R                   ----
+    fix.External2.fun(.windows.path.join)
+    fix.External2.fun(.unix.path.join)
+    fix.External2.fun(path.join)
 
 
-    fix.External2.promise(bindings = c(".shINFO", ".gui.rstudio"))
-    `.init.tools:rstudio` <- fix.External2(`.init.tools:rstudio`)
-    .PRINFO               <- fix.External2(.PRINFO              )
+    ## pathsplit.R  ----
 
 
-    ## rprojroot.R                  ----
+    fix.External2.fun(.windows.path.split)
+    fix.External2.fun(.unix.path.split)
+    fix.External2.fun(path.split)
+    fix.External2.fun(.windows.path.split.1)
+    fix.External2.fun(.unix.path.split.1)
+    fix.External2.fun(path.split.1)
+    fix.External2.fun(.windows.path.unsplit)
+    fix.External2.fun(.unix.path.unsplit)
+    fix.External2.fun(path.unsplit)
 
 
-    reset.this.proj <- fix.External2(reset.this.proj)
+    ## progargs.R   ----
 
 
-    ## this.path.R                  ----
+    fix.External2.fun(fileArgs)
+    fix.External2.fun(progArgs)
+    fix.External2.fun(withArgs)
 
 
-    .shFILE                                   <- fix.External2(.shFILE                                  )
-    .is.abs.path                              <- fix.External2(.is.abs.path                             )
-    .thisPathUnrecognizedConnectionClassError <- fix.External2(.thisPathUnrecognizedConnectionClassError)
-    .thisPathUnrecognizedMannerError          <- fix.External2(.thisPathUnrecognizedMannerError         )
-    .thisPathNotImplementedError              <- fix.External2(.thisPathNotImplementedError             )
-    .thisPathNotExistsError                   <- fix.External2(.thisPathNotExistsError                  )
-    .thisPathInZipFileError                   <- fix.External2(.thisPathInZipFileError                  )
-    .thisPathInAQUAError                      <- fix.External2(.thisPathInAQUAError                     )
-    .is.unevaluated.promise                   <- fix.External2(.is.unevaluated.promise                  )
-    .promise.is.unevaluated                   <- fix.External2(.promise.is.unevaluated                  )
-    .is.clipboard                             <- fix.External2(.is.clipboard                            )
-    # .this.path.rgui                           <- fix.External2(.this.path.rgui                          )
-    .this.path.toplevel                       <- fix.External2(.this.path.toplevel                      )
-    set.this.path.jupyter                     <- fix.External2(set.this.path.jupyter                    )
-    .this.dir                                 <- fix.External2(.this.dir                                )
-    .faster.subsequent.times.test             <- fix.External2(.faster.subsequent.times.test            )
-    # .this.path                                <- fix.External2(.this.path                               )
-    this.path                                 <- fix.External2(this.path                                )
-    here                                      <- fix.External2(here                                     )
-    ici                                       <- fix.External2(ici                                      )
-    Sys.path                                  <- fix.External2(Sys.path                                 )
-    try.this.path                             <- fix.External2(try.this.path                            )
-    # try.contents                              <- fix.External2(try.contents                             )
-    # local.path                                <- fix.External2(local.path                               )
+    ## promises.R   ----
 
 
-    ## utils.R                      ----
+    fix.External2.promise(".shINFO", ".gui.rstudio")
+    fix.External2.fun(`.init.tools:rstudio`)
+    fix.External2.fun(.PRINFO)
+    fix.External2.fun(.mkPROMISE)
+    fix.External2.fun(.mkEVPROMISE)
+    fix.External2.fun(.unlockEnvironment)
+
+
+    ## relpath.R    ----
+
+
+    fix.External2.fun(rel2sys.dir)
+    fix.External2.fun(rel2sys.proj)
+    fix.External2.fun(rel2env.dir)
+    fix.External2.fun(rel2env.proj)
+    fix.External2.fun(rel2here)
+    fix.External2.fun(rel2proj)
+
+
+    ## rprojroot.R  ----
+
+
+    fix.External2.fun(sys.proj)
+    fix.External2.fun(env.proj)
+    fix.External2.fun(this.proj)
+    fix.External2.fun(reset.proj)
+
+
+    ## thispath.R   ----
+
+
+    fix.External2.fun(.shFILE)
+    fix.External2.fun(.is.abs.path)
+    fix.External2.fun(.thisPathUnrecognizedConnectionClassError)
+    fix.External2.fun(.thisPathUnrecognizedMannerError)
+    fix.External2.fun(.thisPathNotImplementedError)
+    fix.External2.fun(.thisPathNotExistsError)
+    fix.External2.fun(.thisPathInZipFileError)
+    fix.External2.fun(.thisPathInAQUAError)
+    fix.External2.fun(.is.unevaluated.promise)
+    fix.External2.fun(.promise.is.unevaluated)
+    fix.External2.fun(.is.clipboard)
+    fix.External2.fun(.sys.path.toplevel)
+    fix.External2.fun(set.sys.path.jupyter)
+    fix.External2.fun(.faster.subsequent.times.test)
+    fix.External2.fun(sys.path)
+    fix.External2.fun(sys.dir)
+    fix.External2.fun(env.path)
+    fix.External2.fun(env.dir)
+    fix.External2.fun(this.path)
+    fix.External2.fun(this.dir)
+    fix.External2.fun(.here)
+    fix.External2.fun(sys.here)
+    fix.External2.fun(env.here)
+    fix.External2.fun(here)
+    fix.External2.fun(try.sys.path)
+    fix.External2.fun(try.env.path)
+    fix.External2.fun(try.this.path)
+
+
+    ## utils.R      ----
 
 
     if (getRversion() < "3.5.0") {
-        ...length <- fix.External2(...length)
+        fix.External2.fun(...length)
     }
     if (getRversion() < "3.2.0") {
-        isNamespaceLoaded <- fix.External2(isNamespaceLoaded)
+        fix.External2.fun(isNamespaceLoaded)
     }
 
 
-    ## wrapsource.R                 ----
+    fix.External2.fun(.istrue)
+    fix.External2.fun(.isfalse)
 
 
-    wrap.source     <- fix.External2(wrap.source    )
-    inside.source   <- fix.External2(inside.source  )
-    set.this.path   <- fix.External2(set.this.path  )
-    unset.this.path <- fix.External2(unset.this.path)
+    ## wrapsource.R ----
 
 
-    rm(fix.External2.promise, fix.External2)
+    fix.External2.fun(wrap.source)
+    fix.External2.fun(set.sys.path)
+    fix.External2.fun(unset.sys.path)
+
+
+    rm(fix.External2.promise, fix.External2.fun, fix.External2)
 }

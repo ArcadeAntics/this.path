@@ -1,19 +1,31 @@
 \name{here}
+\alias{sys.here}
+\alias{env.here}
 \alias{here}
 \alias{ici}
-\title{Construct Path to File, Starting with 'this.dir()'}
+\title{Construct Path to File, Starting with Current Directory}
 \description{
   Construct the path to a file from components / / paths in a
-  platform-\strong{DEPENDENT} way, starting with \code{\link{this.dir}()}.
+  platform-\strong{DEPENDENT} way, starting with \code{\link{sys.dir}()},
+  \code{\link{env.dir}()}, or \code{\link{this.dir}()}.
 }
 \usage{
-here(..., .. = 0)
-ici(..., .. = 0)
+sys.here(..., .. = 0)
+env.here(..., .. = 0L, envir = parent.frame(),
+         matchThisEnv = getOption("topLevelEnvironment"))
+here(..., .. = 0, envir = parent.frame(),
+     matchThisEnv = getOption("topLevelEnvironment"))
+
+## alias for 'here'
+ici(..., .. = 0, envir = parent.frame(),
+    matchThisEnv = getOption("topLevelEnvironment"))
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
 
   \item{..}{the number of directories to go back.}
+
+  \item{envir, matchThisEnv}{See \code{?\link{this.path}()}.}
 }
 \details{
   The path to a file starts with a base. The base is \code{..} number of

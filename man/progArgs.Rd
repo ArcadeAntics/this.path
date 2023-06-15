@@ -31,7 +31,7 @@ withArgs(...)
     for \code{withArgs()}, the first argument should be an (unevaluated) call
     to \sourcescompatiblewithwithArgslistlinks, or a \sourcenolink-like
     function containing \code{\link{wrap.source}()} / /
-    \code{\link{inside.source}()} / / \code{\link{set.this.path}()}.}
+    \code{\link{set.sys.path}()}.}
 }
 \details{
   \code{fileArgs()} will return the arguments associated with the executing
@@ -87,7 +87,7 @@ this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
 FILE <- tempfile(fileext = ".R")
 this.path:::.write.code({
     this.path:::.withAutoprint({
-        this.path::this.path()
+        this.path::sys.path()
         this.path::fileArgs()
         this.path::progArgs()
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
@@ -119,10 +119,10 @@ this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
 #     letters[11:15], pi + 1i * exp(1))
 
 
-## withArgs() also works with inside.source() and wrap.source()
+## withArgs() also works with set.sys.path() and wrap.source()
 sourcelike <- function (file, envir = parent.frame())
 {
-    file <- inside.source(file)
+    file <- set.sys.path(file)
     envir <- as.environment(envir)
     exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)

@@ -101,7 +101,7 @@ check("file.ext.gz" , "file"  , ".ext.gz" , compression = TRUE)
 check(letters, letters, character(26))
 
 
-# windows replacement tests ----
+## windows replacement tests ----
 
 
 ext     <- this.path:::.windows.ext
@@ -133,7 +133,7 @@ ext(x) <- 5
 stopifnot(identical(x, "a.5"))
 
 
-# unix replacement tests ----
+## unix replacement tests ----
 
 
 ext     <- this.path:::.unix.ext

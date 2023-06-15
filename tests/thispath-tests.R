@@ -12,7 +12,7 @@ local({
         expr <- call("bquote", substitute(expr), as.symbol("envir"))
         expr <- eval(expr)
         # dep <- deparse1(expr, "\n", 60L)
-        # replace with this for R < 4.0.0:
+        ## replace with this for R < 4.0.0:
         dep <- paste(deparse(expr, 60L), collapse = "\n")
         dep <- gsub("\n", "\n+ ", dep, fixed = TRUE, useBytes = TRUE)
         dep <- paste0("> ", dep)
@@ -26,7 +26,7 @@ local({
     ## * sourcing a file by specifying its absolute path
     ## * sourcing a file by specifying one of its relative paths that is not its basename
     base.path  <- "test.R"
-    full.path  <- this.path::here(base.path)
+    full.path  <- this.path::sys.here(base.path)
     short.path <- file.path(basename(dirname(full.path)), base.path)
 
 
@@ -34,8 +34,8 @@ local({
     this.path:::.write.code({
         cat("\n> getwd()\n")
         print(getwd())
-        cat("\n> this.path(verbose = TRUE)\n")
-        print(this.path::this.path(verbose = TRUE))
+        cat("\n> sys.path(verbose = TRUE)\n")
+        print(this.path::sys.path(verbose = TRUE))
     }, file = full.path)
 
 
@@ -107,7 +107,7 @@ local({
 
     ## 'debugSource' cannot handle connections
     if (.Platform$GUI == "RStudio") {
-        debugSource<- get("debugSource", "tools:rstudio", inherits = FALSE)
+        debugSource <- get("debugSource", "tools:rstudio", inherits = FALSE)
         setwd(base.path.dir)
         fun(debugSource(.(base.path)     ))
         fun(debugSource(.(url.base.path) ))
@@ -139,7 +139,3 @@ local({
         fun(testthat::source_file(.(full.path) , env = environment(), chdir = TRUE , wrap = TRUE ))
     }
 })
-
-
-# print(this.path:::HAVE_AQUA)
-# print(this.path:::PATH_MAX)

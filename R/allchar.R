@@ -34,7 +34,12 @@ if (getRversion() >= "3.4.0") {
 }
 
 
-tmp <- function(expr) {
+tmp <- evalq(envir = new.env(), {
+    `.Platform$OS.type == "windows"` <- quote(.Platform$OS.type == "windows")
+    .os.windows <- quote(.os.windows)
+    `identical(R.version[["crt"]], "ucrt")` <- quote(identical(R.version[["crt"]], "ucrt"))
+    .ucrt <- quote(.ucrt)
+function(expr) {
     if (typeof(expr) == "closure") {
         formals(expr) <- tmp(formals(expr))
         body(expr) <- tmp(body(expr))
@@ -52,11 +57,6 @@ tmp <- function(expr) {
     }
     else expr
 }
-evalq(envir = environment(tmp) <- new.env(), {
-    `.Platform$OS.type == "windows"` <- quote(.Platform$OS.type == "windows")
-    .os.windows <- quote(.os.windows)
-    `identical(R.version[["crt"]], "ucrt")` <- quote(identical(R.version[["crt"]], "ucrt"))
-    .ucrt <- quote(.ucrt)
 })
 
 

@@ -59,9 +59,9 @@ New additions to **this.path** include:
 *   `LINENO()` returns the line number of the executing expression in
     the executing script.
 
-*   `wrap.source()`, `inside.source()`, `set.this.path()`, and
-    `unset.this.path()` implement `this.path()` for any `source()`-like
-    functions outside of the builtins.
+*   `wrap.source()`, `set.sys.path()`, and `unset.sys.path()` implement
+    `this.path()` for any `source()`-like functions outside of the
+    builtins.
 
 *   `shFILE()` looks through the command line arguments, extracting
     *FILE* from either of the following: `-f FILE` or `--file=FILE`

@@ -4,10 +4,10 @@
 
 
 
-SEXP do_asargs do_formals
+SEXP do_asArgs do_formals
 {
     /*
-    do_asargs {this.path}                                        C Documentation
+    do_asArgs {this.path}                                        C Documentation
 
     Providing Arguments to a Script
 
@@ -15,7 +15,7 @@ SEXP do_asargs do_formals
 
     Description
 
-    do_asargs() coerces R objects into a character vector, primarily for use
+    do_asArgs() coerces R objects into a character vector, primarily for use
     with command line applications. It accepts one optional argument, the
     number of arguments to skip in the ... list.
 
@@ -24,7 +24,7 @@ SEXP do_asargs do_formals
      */
 
 
-    do_start_no_op("asargs", -1);
+    do_start_no_op("asArgs", -1);
 
 
     int nprotect = 0;
@@ -43,7 +43,7 @@ SEXP do_asargs do_formals
             errorcall(call, _("argument must be coercible to non-negative integer"));
     }
     else {
-        errorcall(call, wrong_nargs_to_External(nargs, ".C_asargs", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(nargs, ".C_asArgs", "0 or 1"));
         return R_NilValue;
     }
 
@@ -78,9 +78,9 @@ SEXP do_asargs do_formals
     }
 
 
-    SEXP expr = lang2(_asArgsSymbol, x);
+    SEXP expr = LCONS(_asArgsSymbol, CONS(x, R_NilValue));
     PROTECT(expr); nprotect++;
-    SEXP value = eval(expr, rho);
+    SEXP value = eval(expr, mynamespace);
     UNPROTECT(nprotect);
     return value;
 }

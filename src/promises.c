@@ -4,11 +4,6 @@
 
 
 
-#if R_version_less_than(3, 0, 0)
-#define XLENGTH LENGTH
-#endif
-
-
 SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 {
     SEXP value = getAttrib(obj, _DataSymbol);
@@ -224,9 +219,9 @@ SEXP PRINFO(SEXP e)
 }
 
 
-SEXP do_prinfo do_formals
+SEXP do_PRINFO do_formals
 {
-    do_start_no_op("prinfo", -1);
+    do_start_no_op("PRINFO", -1);
 
 
     int nargs = length(args);
@@ -250,13 +245,13 @@ SEXP do_prinfo do_formals
         }
     case 1:
         _get_sym({
-            if (TYPEOF(sym) != PROMSXP)
-                errorcall(call, _("invalid '%s' argument"), "x");
-            return PRINFO(sym);
+            if (TYPEOF(sym) == PROMSXP)
+                return PRINFO(sym);
+            errorcall(call, _("invalid '%s' argument"), "x");
         })
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(nargs, ".C_prinfo", "1, 2, or 3"));
+        errorcall(call, wrong_nargs_to_External(nargs, ".C_PRINFO", "1, 2, or 3"));
         return R_NilValue;
     }
 
@@ -281,11 +276,8 @@ SEXP do_prinfo do_formals
 
 Rboolean validJupyterRNotebook(SEXP path)
 {
-    SEXP expr = allocList(2);
+    SEXP expr = LCONS(_validJupyterRNotebookSymbol, CONS(path, R_NilValue));
     PROTECT(expr);
-    SET_TYPEOF(expr, LANGSXP);
-    SETCAR(expr, _validJupyterRNotebookSymbol);
-    SETCADR(expr, path);
     SEXP value = eval(expr, mynamespace);
     if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL(value)[0] == NA_LOGICAL)
         errorcall(expr, "invalid return value");
@@ -297,9 +289,9 @@ Rboolean validJupyterRNotebook(SEXP path)
 #include "drivewidth.h"
 
 
-SEXP do_setthispathjupyter do_formals
+SEXP do_setsyspathjupyter do_formals
 {
-    do_start_no_op_rho("setthispathjupyter", -1);
+    do_start_no_op_rho("setsyspathjupyter", -1);
 
 
     SEXP path;
@@ -315,7 +307,7 @@ SEXP do_setthispathjupyter do_formals
             errorcall(call, _("invalid '%s' argument"), "skipCheck");
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_setthispathjupyter", "1 or 2"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_setsyspathjupyter", "1 or 2"));
         return R_NilValue;
     }
 
@@ -335,9 +327,9 @@ SEXP do_setthispathjupyter do_formals
     else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
 
 
-    SEXP sym, env = getInFrame(_this_path_toplevelSymbol, mynamespace, FALSE);
+    SEXP sym, env = getFromMyNS(_sys_path_toplevelSymbol);
     if (TYPEOF(env) != CLOSXP)
-        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_this_path_toplevelSymbol)));
+        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_sys_path_toplevelSymbol)));
     env = CLOENV(env);
 
 
@@ -367,4 +359,108 @@ SEXP do_setthispathjupyter do_formals
 
     set_R_Visible(FALSE);
     return path;
+}
+
+
+
+
+
+SEXP do_mkPROMISE do_formals
+{
+    do_start_no_call_op_rho("mkPROMISE", 2);
+
+
+    if (!isEnvironment(CADR(args)))
+        error(_("not an environment"));
+
+
+    return makePROMISE(CAR(args), CADR(args));
+}
+
+
+SEXP do_mkEVPROMISE do_formals
+{
+    do_start_no_call_op_rho("mkEVPROMISE", 2);
+
+
+    return makeEVPROMISE(CAR(args), CADR(args));
+}
+
+
+#define FRAME_LOCK_MASK (1<<14)
+#define UNLOCK_FRAME(e) SET_ENVFLAGS(e, ENVFLAGS(e) & (~ FRAME_LOCK_MASK))
+
+
+#if R_version_less_than(3, 2, 0)
+SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted)
+{
+    static SEXP sortedSymbol    = NULL,
+                all_namesSymbol = NULL,
+                lsSymbol        = NULL;
+    if (sortedSymbol == NULL) {
+        sortedSymbol    = install("sorted");
+        all_namesSymbol = install("all.names");
+        lsSymbol        = install("ls");
+    }
+
+
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
+    SET_TAG(expr, sortedSymbol);
+    REPROTECT(expr = CONS(R_TrueValue, expr), indx);
+    SET_TAG(expr, all_namesSymbol);
+    REPROTECT(expr = CONS(env, expr), indx);
+    SET_TAG(expr, envirSymbol);
+    REPROTECT(expr = LCONS(getFromBase(lsSymbol), expr), indx);
+
+
+    SEXP value = eval(expr, R_EmptyEnv);
+    UNPROTECT(1);
+    return value;
+}
+#endif
+
+
+void unLockEnvironment(SEXP env, Rboolean bindings)
+{
+    if (IS_S4_OBJECT(env) && (TYPEOF(env) == S4SXP))
+	    env = R_getS4DataSlot(env, ANYSXP); /* better be an ENVSXP */
+
+    if (TYPEOF(env) != ENVSXP)
+	    error(_("not an environment"));
+    if (bindings) {
+        SEXP names = R_lsInternal3(env, /* all */ TRUE, /* sorted */ FALSE);
+        PROTECT(names);
+        int n = length(names);
+        for (int i = 0; i < n; i++)
+            R_unLockBinding(installTrChar(STRING_ELT(names, i)), env);
+        UNPROTECT(1);
+    }
+    UNLOCK_FRAME(env);
+}
+
+
+SEXP do_unlockEnvironment do_formals
+{
+    do_start_no_op_rho("unlockEnvironment", -1);
+
+
+    SEXP frame;
+    Rboolean bindings = FALSE;
+    switch (length(args)) {
+    case 2:
+        bindings = asLogical(CADR(args));
+    case 1:
+        frame = CAR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_unlockEnvironment", "1 or 2"));
+        return R_NilValue;
+    }
+
+
+    unLockEnvironment(frame, bindings);
+    set_R_Visible(FALSE);
+    return R_NilValue;
 }
