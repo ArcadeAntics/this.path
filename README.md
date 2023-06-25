@@ -55,8 +55,7 @@ file paths:
 
 New additions to **this.path** include:
 
-*   `LINENO()` returns the line number of the executing expression in
-    the current script.
+*   `LINENO()` returns the line number of the executing expression.
 
 *   `wrap.source()`, `set.sys.path()`, and `unset.sys.path()` implement
     `this.path()` for any `source()`-like functions outside of the

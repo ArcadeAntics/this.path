@@ -1518,9 +1518,6 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     srcfile = NULL;
 
 
-    SEXP returnvalue;
-
-
     if (x == NULL) {
         x = PROTECT(eval(expr_sys_call, rho)); nprotect++;
         // {
@@ -1548,6 +1545,9 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     }
 
 
+    SEXP returnthis = NULL;
+
+
     if (get_lineno) {
         switch (TYPEOF(x)) {
         case SYMSXP:
@@ -1557,9 +1557,9 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
 #define return_lineno                                          \
-                returnvalue = ScalarInteger(INTEGER(srcref)[0]);\
+                returnthis = ScalarInteger(INTEGER(srcref)[0]);\
                 UNPROTECT(nprotect);                           \
-                return returnvalue
+                return returnthis
 
 
                 return_lineno;
@@ -1657,7 +1657,7 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     }
 
 
-    SEXP returnthis = NULL;
+    SEXP returnvalue;
 
 
     SEXP thispathofile, thispathfile;

@@ -539,17 +539,17 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 
 
         for (file in c(ipynb, IPYNB, files)) {
-            contents <- tryCatch(.getContents(file), error = identity)
-            if (!inherits(contents, "error")) {
-                contents <- tryCatch(jsonlite::parse_json(contents, simplifyVector = TRUE),
+            CONTENTS <- tryCatch(.getContents(file), error = identity)
+            if (!inherits(CONTENTS, "error")) {
+                CONTENTS <- tryCatch(jsonlite::parse_json(CONTENTS, simplifyVector = TRUE),
                     error = identity)
-                if (!inherits(contents, "error")) {
+                if (!inherits(CONTENTS, "error")) {
 
 
-                    language <- .getNamedElement(contents, c("metadata", "kernelspec", "language"))
-                    name     <- .getNamedElement(contents, c("metadata", "language_info", "name"))
-                    version  <- .getNamedElement(contents, c("metadata", "language_info", "version"))
-                    source   <- .getNamedElement(contents, c("cells", "source"))
+                    language <- .getNamedElement(CONTENTS, c("metadata", "kernelspec", "language"))
+                    name     <- .getNamedElement(CONTENTS, c("metadata", "language_info", "name"))
+                    version  <- .getNamedElement(CONTENTS, c("metadata", "language_info", "version"))
+                    source   <- .getNamedElement(CONTENTS, c("cells", "source"))
 
 
                     # withAutoprint( { language; name; version; source } , spaced = TRUE, verbose = FALSE, width.cutoff = 60L); cat("\n\n\n\n\n")
