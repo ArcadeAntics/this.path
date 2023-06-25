@@ -34,13 +34,12 @@ export(from.shell, is.main   )
 ## lineno.R     ----
 
 
-export(sys.LINENO, env.LINENO, LINENO)
+export(sys.LINENO, env.LINENO, src.LINENO, LINENO, LINE)
 
 
 ## ns-hooks.R   ----
 
 
-# export(FILE, LINE)
 export(OS.type)
 
 
@@ -80,14 +79,15 @@ export(initwd   , getinitwd)
 export(as.relative.path, as.rel.path     , relpath         ,
        rel2sys.dir     , rel2sys.proj    ,
        rel2env.dir     , rel2env.proj    ,
+       rel2src.dir     , rel2src.proj    ,
        rel2here        , rel2proj        )
 
 
 ## rprojroot.R  ----
 
 
-export(sys.proj       , env.proj       , this.proj      ,
-       reset.proj     , reset.this.proj)
+export(sys.proj       , env.proj       , src.proj       ,
+       this.proj      , reset.proj     , reset.this.proj)
 
 
 ## thispath.R   ----
@@ -97,14 +97,17 @@ export(shFILE               , normalized.shFILE    ,
        set.sys.path.jupyter , set.this.path.jupyter,
        sys.path             , sys.dir              ,
        env.path             , env.dir              ,
+       src.path             , src.dir              ,
        this.path            , this.dir             ,
        this.path2           , this.dir2            ,
        this.dir3            , sys.here             ,
-       env.here             , here                 ,
-       ici                  , Sys.path             ,
-       Sys.dir              , try.shFILE           ,
-       try.sys.path         , try.env.path         ,
-       try.this.path        , local.path           )
+       env.here             , src.here             ,
+       here                 , ici                  ,
+       Sys.path             , Sys.dir              ,
+       try.shFILE           , try.sys.path         ,
+       try.env.path         , try.src.path         ,
+       try.this.path        , FILE                 ,
+       local.path           )
 
 
 ## trycatch2.R  ----

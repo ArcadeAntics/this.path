@@ -1,6 +1,7 @@
 \name{LINENO}
 \alias{sys.LINENO}
 \alias{env.LINENO}
+\alias{src.LINENO}
 \alias{LINENO}
 \title{Line Number of Executing Expression}
 \description{
@@ -10,21 +11,28 @@
 sys.LINENO()
 env.LINENO(envir = parent.frame(),
            matchThisEnv = getOption("topLevelEnvironment"))
+src.LINENO(srcfile = sys.call())
+
 LINENO(envir = parent.frame(),
-       matchThisEnv = getOption("topLevelEnvironment"))
+       matchThisEnv = getOption("topLevelEnvironment"),
+       srcfile = sys.call())
 }
 \arguments{
-  \item{envir, matchThisEnv}{See \code{?\link{this.path}()}.}
+  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
+
+  \item{srcfile}{See \code{?\link{src.path}()}.}
 }
 \details{
-  \code{sys.LINENO()} will be the line number of the most recent expression
+  \code{sys.LINENO()} returns the line number of the most recent expression
   with a source reference and a source file equal to \code{\link{sys.path}()}.
 
-  \code{env.LINENO()} will be the line number of the most recent expression
+  \code{env.LINENO()} returns the line number of the most recent expression
   with a source reference and a source file equal to \code{\link{env.path}()}.
 
-  \code{LINENO()} will be the line number of the most recent expression with a
-  source reference and a source file equal to \code{\link{this.path}()}.
+  \code{src.LINENO()} returns the line number of its source file.
+
+  \code{LINENO()} returns the line number of the most recent expression
+  with a source reference and a source file equal to \code{\link{this.path}()}.
 
   In general, \code{LINENO()} is the most useful. It works whether your \R code
   is \sourcelink-d or modularized.
@@ -36,8 +44,9 @@ LINENO(envir = parent.frame(),
   \code{LINENO()} only works if the expressions have a
   \codelink2{base:srcfile}{srcref} and a \codelink2{base}{srcfile}.
 
-  When a file is parsed, source references are stored only for top-level
-  expressions (including directly inside braces). For example: \preformatted{
+  As mentioned in section \strong{Note} of \code{?\link{this.path}}, source
+  references are stored only for top-level expressions (including directly
+  inside braces). For example: \preformatted{
 #line 1
 if (TRUE)
     message(sprintf("LINENO() will be 1: \%d",
@@ -78,7 +87,7 @@ if (TRUE) {
   anything special before calling.
 }
 \examples{
-FILE <- tempfile(fileext = ".R")
+FILE.R <- tempfile(fileext = ".R")
 writeLines(c(
     "LINENO()",
     "LINENO()",
@@ -86,21 +95,21 @@ writeLines(c(
     "#line 15",
     "LINENO()",
     "#line 1218",
-    "cat(sprintf(\\"invalid value \%d at \%s, line \%d\\",",
+    "cat(sprintf(\\"invalid value \%d at \%s, line \%d\\n\\",",
     "",
-    "            -5, try.this.path(), LINENO()))"
-), FILE)
+    "            -5, { try.this.path() }, { LINENO() }))"
+), FILE.R)
 
 
 # ## previously used:
 #
-# source(FILE, echo = TRUE, verbose = FALSE,
+# source(FILE.R, echo = TRUE, verbose = FALSE,
 #     max.deparse.length = Inf, keep.source = TRUE)
 #
 # ## but it echoes incorrectly with #line directives
-this.path:::.source(FILE, echo = TRUE, verbose = FALSE,
+this.path:::.source(FILE.R, echo = TRUE, verbose = FALSE,
     max.deparse.length = Inf, keep.source = TRUE)
 
 
-unlink(FILE)
+unlink(FILE.R)
 }

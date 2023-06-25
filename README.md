@@ -4,9 +4,9 @@
 
 **this.path** aims to provide a mechanism for retrieving the path of an
 R script within itself without needing to explicitly write its path
-elsewhere. Additionally, it provides a mechanism for specifying file
-paths against the executing script's directory (without changing the
-working directory).
+elsewhere. Additionally, it provides a mechanism for a script to read
+and write data relative to its directory without changing the working
+directory.
 
 ## Installation
 
@@ -26,16 +26,15 @@ install.packages("this.path",
 The most important functions from **this.path** are `this.path()`,
 `this.dir()`, `here()`, and `this.proj()`:
 
-*   `this.path()` returns the normalized path of the executing script.
+*   `this.path()` returns the normalized path of the script in which it is
+    written.
 
-*   `this.dir()` return the normalized path of the directory in which
-    the executing script is located.
+*   `this.dir()` returns the directory of `this.path()`.
 
-*   `here()` constructs file paths against the executing script's
-    directory.
+*   `here()` constructs file paths against `this.dir()`.
 
-*   `this.proj()` constructs file paths against the executing project's
-    directory instead of the executing script's directory.
+*   `this.proj()` constructs file paths against the project root of
+    `this.dir()`.
 
 **this.path** also provides functions for constructing and manipulating
 file paths:
@@ -57,7 +56,7 @@ file paths:
 New additions to **this.path** include:
 
 *   `LINENO()` returns the line number of the executing expression in
-    the executing script.
+    the current script.
 
 *   `wrap.source()`, `set.sys.path()`, and `unset.sys.path()` implement
     `this.path()` for any `source()`-like functions outside of the
@@ -92,7 +91,7 @@ The only equivalent to `this.path()` (that I have seen) is
     2.5. skips calls in which `file` is missing and `exprs` is used
          instead.
 
-3.  if an R script is being run from a shell, `this.path()` does a
+3.  If an R script is being run from a shell, `this.path()` does a
     better job of extracting the command line argument `-f FILE` or
     `--file=FILE`.
 
@@ -100,7 +99,7 @@ The only equivalent to `this.path()` (that I have seen) is
     environments, making it much faster subsequent times within the
     same script, and independent of working directory.
 
-5.  if `this.path()` does not find an executing script, it throws an
+5.  If `this.path()` does not find an executing script, it throws an
     error. This is better than `whereami::thisfile()` which returns
     `NULL` when it cannot find the executing script. If the executing
     script cannot be found, obviously there is a problem that needs to
@@ -147,8 +146,9 @@ If you are not using **this.path** for the function `this.path()`, you
 are probably using it for `this.path::here()`. The only equivalent
 (that I know of) is R package **here** with its function
 `here::here()`. **this.path** provides a mechanism for specifying a
-path relative to the executing script's directory, while here provides
-a mechanism for specifying a path relative to the project's directory.
+path relative to the executing script's directory, while **here**
+provides a mechanism for specifying a path relative to the project's
+root.
 
 As a long time **here** user, I appreciate all the functionality and
 convenience this package offered, but it has some faults that I could
@@ -190,7 +190,7 @@ to `here::here()`, but can handle multiple projects in use at once.
 
 ## Other methods
 
-There are a few alternatives to `this.path()`, though they are very
+There are a few alternatives to `this.path()`, though they are
 limiting.
 
 ### Change working directory

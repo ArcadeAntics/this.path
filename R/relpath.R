@@ -115,7 +115,7 @@ delayedAssign(".NET.USE.command", {
 })
 
 
-.relpath <- function (path, relative.to = getwd(), normalize = !missing(relative.to))
+.relpath <- function (path, relative.to = getwd(), normalize = !missing(relative.to), normalize.path = TRUE)
 {
     if (!is.character(path))
         stop("a character vector argument expected", domain = "R")
@@ -127,7 +127,8 @@ delayedAssign(".NET.USE.command", {
         value[] <- path
         if (any(i <- !(is.na(value) | value == ""))) {
             path <- value[i]
-            path <- .normalizePath.and.URL(path, "/", FALSE)
+            if (normalize.path)
+                path <- .normalizePath.and.URL(path, "/", FALSE)
             if (!is.character(relative.to) || length(relative.to) != 1L)
                 stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
             if (normalize)
@@ -236,17 +237,17 @@ if (.Platform$OS.type == "windows") {
 }
 
 
-rel2sys.dir <- function (path)
+rel2sys.dir <- function (path, local = FALSE)
 {
-    relative.to <- .External2(.C_syspath)
+    relative.to <- .External2(.C_syspath, local)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
 
 
-rel2sys.proj <- function (path)
+rel2sys.proj <- function (path, local = FALSE)
 {
-    relative.to <- .External2(.C_syspath)
+    relative.to <- .External2(.C_syspath, local)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -270,17 +271,36 @@ rel2env.proj <- function (path, envir = parent.frame(), matchThisEnv = getOption
 }
 
 
-rel2here <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+rel2src.dir <- function (path, srcfile = sys.call())
 {
-    relative.to <- .External2(.C_thispath, envir, matchThisEnv)
+    relative.to <- .External2(.C_srcpath, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
 
 
-rel2proj <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+rel2src.proj <- function (path, srcfile = sys.call())
 {
-    relative.to <- .External2(.C_thispath, envir, matchThisEnv)
+    relative.to <- .External2(.C_srcpath, srcfile)
+    relative.to <- .dir(relative.to)
+    relative.to <- .proj(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2here <- function (path, local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call())
+{
+    relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
+    relative.to <- .dir(relative.to)
+    .relpath(path, relative.to, normalize = FALSE)
+}
+
+
+rel2proj <- function (path, local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call())
+{
+    relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
     .relpath(path, relative.to, normalize = FALSE)

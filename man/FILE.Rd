@@ -20,3 +20,16 @@ LINE
   error message to report an inconsistency detected by the program; the message
   can state the source line at which the inconsistency was detected.
 }
+\examples{
+FILE.R <- tempfile(fileext = ".R")
+writeLines("fun <- function ()
+{
+    message(sprintf('invalid value \%d at \%s, line \%d',
+        ## do not forget the braces around 'FILE' and 'LINE'
+        ## see section Note of ?this.path for more details
+        -1, { FILE }, { LINE }))
+}", FILE.R)
+source(FILE.R, verbose = FALSE, keep.source = TRUE)
+fun()
+unlink(FILE.R)
+}

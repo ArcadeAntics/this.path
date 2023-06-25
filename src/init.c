@@ -163,10 +163,11 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"syspath"         , (DL_FUNC) &do_syspath         , -1},
     {"getframenumber"  , (DL_FUNC) &do_getframenumber  ,  0},
     {"envpath"         , (DL_FUNC) &do_envpath         , -1},
+    {"srcpath"         , (DL_FUNC) &do_srcpath         , -1},
+    {"srclineno"       , (DL_FUNC) &do_srclineno       , -1},
     {"thispath"        , (DL_FUNC) &do_thispath        , -1},
     {"istrue"          , (DL_FUNC) &do_istrue          ,  1},
     {"isfalse"         , (DL_FUNC) &do_isfalse         ,  1},
-    {"srcfilepath"     , (DL_FUNC) &do_srcfilepath     , -1},
 
 
     /* wrapsource.c */

@@ -39,24 +39,24 @@ shFILE(original = FALSE, for.msg = FALSE, default, else.)
   \code{\link{this.path}()}, \code{\link{here}()}
 }
 \examples{
-FILE <- tempfile(fileext = ".R")
+FILE.R <- tempfile(fileext = ".R")
 this.path:::.write.code({
     this.path:::.withAutoprint({
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {
-            stop("since 'FILE' will be found, argument 'default'\\n",
+            stop("since 'FILE.R' will be found, argument 'default'\\n",
                 " will not be evaluated, so this error will not be\\n",
                 " thrown! you can use this to your advantage in a\\n",
                 " similar manner, doing arbitrary things only if\\n",
-                " 'FILE' is not found")
+                " 'FILE.R' is not found")
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
-}, FILE)
+}, FILE.R)
 this.path:::.Rscript(
-    c("--default-packages=this.path", "--vanilla", FILE)
+    c("--default-packages=this.path", "--vanilla", FILE.R)
 )
-unlink(FILE)
+unlink(FILE.R)
 
 
 for (expr in c("shFILE(original = TRUE)",

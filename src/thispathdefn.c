@@ -676,8 +676,8 @@ static Rboolean _init_tools_rstudio(void)
 
 #define check4closure(var, sym)                                \
             SEXP var = getInFrame((sym), t, FALSE);            \
-            PROTECT((var));                                    \
-            if (TYPEOF((var)) != CLOSXP)                       \
+            PROTECT(var);                                      \
+            if (TYPEOF(var) != CLOSXP)                         \
                 error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME((sym))), "closure")
 
 
@@ -733,42 +733,6 @@ Rboolean init_tools_rstudio(Rboolean skipCheck)
 
 
 int maybe_unembedded_shell = -1;
-
-
-SEXP get_sys_parents(SEXP rho)
-{
-    /* this function PROTECTs value and does not UNPROTECT at the end.
-     * UNPROTECT it yourself when necessary */
-    SEXP value = eval(expr_sys_parents, rho);
-    PROTECT(value);
-    // Rprintf("\n> sys.parents()\n");
-    // eval(lang2(printSymbol, value), rho);
-    // Rprintf("\n> sys.parent()\n");
-    // eval(lang2(printSymbol, lang1(install("sys.parent"))), rho);
-    int previous = 0, n = LENGTH(value);
-    int *ivalue = INTEGER(value);
-    for (int i = 0; i < n; i++) {
-        if (ivalue[i] < previous) {
-            // ivalue[i] = previous;
-            previous = (ivalue[i] = i);
-        } else {
-            previous = ivalue[i];
-        }
-    }
-    return value;
-}
-
-
-// int get_sys_parent(int n, SEXP rho)
-// {
-//     SEXP value = get_sys_parents(rho);
-//     int N = LENGTH(value);
-//     if (n == NA_INTEGER || n < 1 || n > N)
-//         error(_("invalid '%s' value"), "n");
-//     int returnthis = INTEGER(value)[N - n];
-//     UNPROTECT(1);  /* value */
-//     return returnthis;
-// }
 
 
 int get_sys_parent(int n, SEXP rho)

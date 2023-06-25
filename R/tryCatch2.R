@@ -66,3 +66,51 @@ tryCatch2 <- function (expr, ..., else., finally)
         else invisible(x[[1L]])  ## else invisible(x$value)
     }
 }
+
+
+# .last.condition <- NULL
+# tryCatch3 <- function (expr, ..., else., finally)
+# {
+#     fun <- function(c) {
+#         .last.condition <<- c
+#         NULL
+#     }
+#     syms <- lapply(paste0("..", seq_len(...length())), as.symbol)
+#     env <- environment()
+#     missing <- vapply(syms, function(sym) eval(call("missing", sym), env), NA)
+#     return(missing)
+#     funs <- lapply(paste0("..", seq_len(...length())), function(x) {
+#         x <- as.symbol(x)
+#         if (eval(call("missing", x)))
+#
+#         body(fun)[[3L]] <- x
+#         fun
+#     })
+#     call <- lapply(seq_along(funs), function(x) {
+#         call("[[", as.symbol("funs"), x)
+#     })
+#     names(call) <- ...names()
+#     if (!missing(finally))
+#         call <- c(call, finally = as.symbol("finally"))
+#     call <- c(expr = as.symbol("expr"), call)
+#     call <- as.call(c(as.symbol("tryCatch"), call))
+#     if (missing(else.)) {
+#         eval(call("delayedAssign", "call", call))
+#         call
+#     }
+#     else {
+#         do_else <- FALSE
+#         call[[2L]] <- quote({ expr; do_else <- TRUE})
+#         call <- call("withVisible", call)
+#         eval(call("delayedAssign", "call", call))
+#         x <- call
+#         if (do_else)
+#             else.
+#         else if (x[[2L]])
+#             x[[1L]]
+#         else invisible(x[[1L]])
+#     }
+# }
+#
+#
+# tryCatch3(message("testing"), error = , warning = 6, finally = writeLines("finally"), else. = 5)

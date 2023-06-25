@@ -1,33 +1,105 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \section{CHANGES IN VERSION devel}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item{\code{this.path()} was misleading users into believing it returns
+        the path of the script in which it is written. In actuality, it returns
+        the path of the executing script. As such, it was renamed to
+        \code{sys.path()} in accordance with the other call stack inspection
+        functions \code{sys.call()}, \code{sys.frame()}, \code{sys.nframe()},
+        and \code{sys.function()}. Related functions that were renamed:
+        \tabular{rll}{
+               \tab old                   \tab new                  \cr
+          [1,] \tab this.dir              \tab sys.dir              \cr
+          [2,] \tab here                  \tab sys.here             \cr
+          [3,] \tab this.proj             \tab sys.proj             \cr
+          [4,] \tab rel2here              \tab rel2sys.dir          \cr
+          [5,] \tab LINENO                \tab sys.LINENO           \cr
+          [6,] \tab try.this.path         \tab try.sys.path         \cr
+          [7,] \tab set.this.path         \tab set.sys.path         \cr
+          [8,] \tab unset.this.path       \tab unset.sys.path       \cr
+          [9,] \tab set.this.path.jupyter \tab set.sys.path.jupyter
+        }
+
+        \code{this.path()} was replaced by a function that returns the path of
+        the script in which it is written. It does this by looking for a source
+        reference with an appropriate source file, or inspects the environment
+        in which it is called for an associated path, or returns the path of
+        the executing script, as before. Related functions that were replaced:
+        \tabular{rllll}{
+          [1] \tab this.dir  \tab here       \tab ici           \tab this.proj  \cr
+          [5] \tab rel2here  \tab LINENO     \tab try.this.path \tab check.path \cr
+          [9] \tab check.dir \tab check.proj \tab               \tab
+        }}
+    }
+  }
   \subsection{NEW FEATURES}{
     \itemize{
-      \item{Added \code{rel2proj()} for turning absolute paths into relative
-        paths against the executing project's directory.}
+      \item{Added \code{env.path()} for determining the path associated with
+        the top level environment. Also added \code{env.dir()},
+        \code{env.here()}, \code{env.proj()}, \code{rel2env.dir()},
+        \code{env.LINENO()}, and \code{try.env.path()}.}
 
-      \item{\code{inside.source()} / / \code{set.this.path()} now accept
-        argument \codeorsQuote{ofile} specifying the original file argument.
-        This overwrites the value returned by
-        \code{this.path(original = TRUE)}.}
+      \item{Added \code{src.path()} for determining the path associated with
+        its source reference. Also added \code{src.dir()}, \code{src.here()},
+        \code{src.proj()}, \code{rel2src.dir()}, \code{src.LINENO()}, and
+        \code{try.src.path()}.}
+
+      \item{Added \code{rel2proj()} for turning absolute paths into relative
+        paths against the current script's project root. Also added
+        \code{rel2sys.proj()}, \code{rel2env.proj()}, and
+        \code{rel2src.proj()}.}
+
+      \item{\code{set.sys.path()} now accepts argument \codeorsQuote{ofile}
+        specifying the original file argument. This overwrites the value
+        returned by \code{sys.path(original = TRUE)}.}
+
+      \item{Added active bindings \codeorsQuote{FILE} and \codeorsQuote{LINE}
+        linking to \code{try.this.path()} and \code{LINENO()} to be used in a
+        similar manner to the macros \codeorsQuote{__FILE__} and
+        \codeorsQuote{__LINE__} in C.}
+
+      \item{Added \code{path.functions()} which accepts a file path and
+        constructs a set of path-related functions, similar to
+        \code{this.path()} and associated.}
+    }
+  }
+  \subsection{DEPRECATED AND DEFUNCT}{
+    \itemize{
+      \item{\code{inside.source()} and \code{set.this.path()} are defunct and
+        should be replaced with \code{set.sys.path()}.}
+
+      \item{\code{unset.this.path()} is defunct and should be replaced with
+        \code{unset.sys.path()}.}
+
+      \item{\code{set.this.path.jupyter()} is defunct and should be replaced
+        with \code{set.sys.path.jupyter()}.}
+
+      \item{\code{reset.this.proj()} is defunct and should be replaced with
+        \code{reset.proj()}.}
     }
   }
   \subsection{BUG FIXES}{
     \itemize{
       \item{Fixed display issues in LaTeX and plain text documentation.}
 
-      \item{\code{reset.this.proj()} now has environment
+      \item{\code{reset.proj()} now has environment
         \code{<environment: namespace:this.path>} as do all other exported
         functions.}
 
-      \item{Fixed \code{this.path(contents = TRUE)} in \sQuote{\RStudio} and
+      \item{Fixed \code{sys.path(contents = TRUE)} in \sQuote{\RStudio} and
         \sQuote{\VSCode} having a trailing blank string.}
 
-      \item{Fixed \code{this.path(contents = TRUE)} in \sQuote{\Jupyter} if the
+      \item{Fixed \code{sys.path(contents = TRUE)} in \sQuote{\Jupyter} if the
         executing script had yet to be determined.}
 
       \item{Fixed \code{relpath()} on Windows when comparing paths with network
         shares.}
+
+      \item{Fixed \pkg{this.path} used in site-wide startup profile file, the
+        user profile, or the function \code{.First()} on Windows in
+        \sQuote{\RStudio}.}
     }
   }
 }

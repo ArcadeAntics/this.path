@@ -1,7 +1,7 @@
 \name{this.path-package}
 \alias{this.path-package}
 \docType{package}
-\title{Get Executing Script's Path}
+\title{Get Script's Path}
 \description{
   Determine the path of the executing script. Compatible with a few
   popular GUIs: \sQuote{Rgui}, \sQuote{\RStudio}, \sQuote{\VSCode},
@@ -16,17 +16,17 @@
   and \code{\link{this.proj}()}:
 
   \itemize{
-    \item{\code{\link{this.path}()} returns the normalized path of the
-      executing script.}
+    \item{\code{\link{this.path}()} returns the normalized path of the script
+      in which it is written.}
 
-    \item{\code{\link{this.dir}()} return the normalized path of the directory
-      in which the executing script is located.}
+    \item{\code{\link{this.dir}()} returns the directory of
+      \code{this.path()}.}
 
-    \item{\code{\link{here}()} constructs file paths against the executing
-      script's directory.}
+    \item{\code{\link{here}()} constructs file paths against
+      \code{this.dir()}.}
 
-    \item{\code{\link{this.proj}()} constructs file paths against the executing
-      project's directory instead of the executing script's directory.}
+    \item{\code{\link{this.proj}()} constructs file paths against the project
+      root of \code{this.dir()}.}
   }
 
   \pkg{this.path} also provides functions for constructing and manipulating
@@ -55,7 +55,7 @@
 
   \itemize{
     \item{\code{\link{LINENO}()} returns the line number of the executing
-      expression in the executing script.}
+      expression.}
 
     \item{\code{\link{wrap.source}()}, \code{\link{set.sys.path}()}, and
       \code{\link{unset.sys.path}()} implement \code{\link{this.path}()} for
@@ -82,8 +82,3 @@
   Maintainer: \packageMaintainer{this.path}
 }
 \keyword{ package }
-\seealso{
-  \sourceslistlinks
-
-  \code{\link{R.from.shell}}
-}

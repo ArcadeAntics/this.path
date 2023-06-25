@@ -2,31 +2,96 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * this.path() was misleading users into believing it returns the
+      path of the script in which it is written. In actuality, it
+      returns the path of the executing script. As such, it was renamed
+      to sys.path() in accordance with the other call stack inspection
+      functions sys.call(), sys.frame(), sys.nframe(), and
+      sys.function(). Related functions that were renamed:
+
+              old                    new
+        [1,]  this.dir               sys.dir
+        [2,]  here                   sys.here
+        [3,]  this.proj              sys.proj
+        [4,]  rel2here               rel2sys.dir
+        [5,]  LINENO                 sys.LINENO
+        [6,]  try.this.path          try.sys.path
+        [7,]  set.this.path          set.sys.path
+        [8,]  unset.this.path        unset.sys.path
+        [9,]  set.this.path.jupyter  set.sys.path.jupyter
+
+      this.path() was replaced by a function that returns the path of
+      the script in which it is written. It does this by looking for a
+      source reference with an appropriate source file, or inspects the
+      environment in which it is called for an associated path, or
+      returns the path of the executing script, as before. Related
+      functions that were replaced:
+
+        [1]  this.dir   here        ici            this.proj
+        [5]  rel2here   LINENO      try.this.path  check.path
+        [9]  check.dir  check.proj
+
   NEW FEATURES:
 
-    * Added rel2proj() for turning absolute paths into relative paths
-      against the executing project's directory.
+    * Added env.path() for determining the path associated with the top
+      level environment. Also added env.dir(), env.here(), env.proj(),
+      rel2env.dir(), env.LINENO(), and try.env.path().
 
-    * inside.source() / / set.this.path() now accept argument 'ofile'
-      specifying the original file argument. This overwrites the value
-      returned by this.path(original = TRUE).
+    * Added src.path() for determining the path associated with its
+      source reference. Also added src.dir(), src.here(), src.proj(),
+      rel2src.dir(), src.LINENO(), and try.src.path().
+
+    * Added rel2proj() for turning absolute paths into relative paths
+      against the current script's project root. Also added
+      rel2sys.proj(), rel2env.proj(), and rel2src.proj().
+
+    * set.sys.path() now accepts argument 'ofile' specifying the
+      original file argument. This overwrites the value returned by
+      sys.path(original = TRUE).
+
+    * Added active bindings 'FILE' and 'LINE' linking to
+      try.this.path() and LINENO() to be used in a similar manner to
+      the macros '__FILE__' and '__LINE__' in C.
+
+    * Added path.functions() which accepts a file path and constructs a
+      set of path-related functions, similar to this.path() and
+      associated.
+
+  DEPRECATED AND DEFUNCT:
+
+    * inside.source() and set.this.path() are defunct and should be
+      replaced with set.sys.path().
+
+    * unset.this.path() is defunct and should be replaced with
+      unset.sys.path().
+
+    * set.this.path.jupyter() is defunct and should be replaced with
+      set.sys.path.jupyter().
+
+    * reset.this.proj() is defunct and should be replaced with
+      reset.proj().
 
   BUG FIXES:
 
     * Fixed display issues in LaTeX and plain text documentation.
 
-    * reset.this.proj() now has environment
+    * reset.proj() now has environment
       <environment: namespace:this.path> as do all other exported
       functions.
 
-    * Fixed this.path(contents = TRUE) in 'RStudio' and 'VSCode' having
+    * Fixed sys.path(contents = TRUE) in 'RStudio' and 'VSCode' having
       a trailing blank string.
 
-    * Fixed this.path(contents = TRUE) in 'Jupyter' if the executing
+    * Fixed sys.path(contents = TRUE) in 'Jupyter' if the executing
       script had yet to be determined.
 
     * Fixed relpath() on Windows when comparing paths with network
       shares.
+
+    * Fixed 'this.path' used in site-wide startup profile file, the
+      user profile, or the function .First() on Windows in 'RStudio'.
 
 CHANGES IN this.path 1.4.0 (2023-04-18):
 

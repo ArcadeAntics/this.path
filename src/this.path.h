@@ -211,10 +211,11 @@ extern SEXP do_syspathrgui      do_formals;
 extern SEXP do_syspath          do_formals;
 extern SEXP do_getframenumber   do_formals;
 extern SEXP do_envpath          do_formals;
+extern SEXP do_srcpath          do_formals;
+extern SEXP do_srclineno        do_formals;
 extern SEXP do_thispath         do_formals;
 extern SEXP do_istrue           do_formals;
 extern SEXP do_isfalse          do_formals;
-extern SEXP do_srcfilepath      do_formals;
 
 
 /* wrapsource.c */

@@ -133,13 +133,147 @@ SEXP do_inittoolsrstudio do_formals
 }
 
 
+void check_arguments7(Rboolean verbose         , Rboolean original        ,
+                      Rboolean for_msg         , Rboolean contents        ,
+                      Rboolean local           , int N                    ,
+                      Rboolean get_frame_number)
+{
+    if (verbose == NA_LOGICAL)
+        error(_("invalid '%s' value"), "verbose");
+    /* original is allowed to be NA */
+    if (for_msg == NA_LOGICAL)
+        error(_("invalid '%s' value"), "for.msg");
+    if (contents == NA_LOGICAL)
+        error(_("invalid '%s' value"), "contents");
+    if (local == NA_LOGICAL)
+        error(_("invalid '%s' value"), "local");
+    if (N == NA_INTEGER);
+    else if (N < 0) error(_("invalid '%s' argument"), "N");
+    if (get_frame_number == NA_LOGICAL)
+        error(_("invalid '%s' value"), "get.frame.number");
+
+
+#define one   "'%s' must be FALSE when '%s' is TRUE"
+#define two   "'%s' and '%s' must be FALSE when '%s' is TRUE"
+#define three "'%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
+#define four  "'%s', '%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
+
+
+    if (get_frame_number) {
+        if (original) {
+            if (for_msg) {
+                if (contents) {
+                    if (local)
+                        error(four, "original", "for.msg", "contents", "local", "get.frame.number");
+                    else
+                        error(three, "original", "for.msg", "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(three, "original", "for.msg", "local", "get.frame.number");
+                    else
+                        error(two, "original", "for.msg", "get.frame.number");
+                }
+            }
+            else {
+                if (contents) {
+                    if (local)
+                        error(three, "original", "contents", "local", "get.frame.number");
+                    else
+                        error(two, "original", "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(two, "original", "local", "get.frame.number");
+                    else
+                        error(one, "original", "get.frame.number");
+                }
+            }
+        }
+        else {
+            if (for_msg) {
+                if (contents) {
+                    if (local)
+                        error(three "for.msg", "contents", "local", "get.frame.number");
+                    else
+                        error(two, "for.msg", "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(two, "for.msg", "local", "get.frame.number");
+                    else
+                        error(one, "for.msg", "get.frame.number");
+                }
+            }
+            else {
+                if (contents) {
+                    if (local)
+                        error(two, "contents", "local", "get.frame.number");
+                    else
+                        error(one, "contents", "get.frame.number");
+                }
+                else {
+                    if (local)
+                        error(one, "local", "get.frame.number");
+                    else
+                        ;
+                }
+            }
+        }
+    }
+
+
+    if (contents) {
+        if (original)
+            error(one, "original", "contents");
+        else
+            ;
+    }
+
+
+#undef four
+#undef three
+#undef two
+#undef one
+}
+
+
+void check_arguments5(Rboolean verbose , Rboolean original, Rboolean for_msg ,
+                      Rboolean contents, Rboolean local   )
+{
+    check_arguments7(verbose, original, for_msg, contents, local,
+                     /* N */ NA_INTEGER, /* get_frame_number */ FALSE);
+}
+
+
+void check_arguments4(Rboolean verbose , Rboolean original, Rboolean for_msg ,
+                      Rboolean contents)
+{
+    check_arguments5(verbose, original, for_msg, contents, /* local */ FALSE);
+}
+
+
+void check_arguments1(Rboolean verbose)
+{
+    check_arguments4(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                     /* contents */ FALSE);
+}
+
+
 SEXP do_syspathrgui do_formals
 {
     do_start_no_op("syspathrgui", 7);
 
 
+    Rboolean verbose, original, for_msg, contents;
     SEXP wintitle, untitled, r_editor;
-    Rboolean verbose , original, for_msg , contents;
+
+
+    verbose  = asLogical(CAR(args)); args = CDR(args);
+    original = asLogical(CAR(args)); args = CDR(args);
+    for_msg  = asLogical(CAR(args)); args = CDR(args);
+    contents = asLogical(CAR(args)); args = CDR(args);
+    check_arguments4(verbose, original, for_msg, contents);
 
 
     /* titles of the windows in RGui */
@@ -158,26 +292,6 @@ SEXP do_syspathrgui do_formals
     r_editor = CAR(args); args = CDR(args);
     if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
         errorcall(call, "%s, must be %s", "invalid third argument", "'character' / / NULL");
-
-
-    verbose = asLogical(CAR(args)); args = CDR(args);
-    if (verbose == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "verbose");
-
-
-    original = asLogical(CAR(args)); args = CDR(args);
-    if (verbose == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "original");
-
-
-    for_msg = asLogical(CAR(args)); args = CDR(args);
-    if (for_msg == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "for.msg");
-
-
-    contents = asLogical(CAR(args)); args = CDR(args);
-    if (contents == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' value"), "contents");
 
 
     Rboolean active = TRUE;
@@ -266,8 +380,8 @@ SEXP do_syspathrgui do_formals
     }
 
 
-    if (active) error("no windows in Rgui; should never happen, please report!");
     if (for_msg) return ScalarString(NA_STRING);
+    if (active) error("no windows in Rgui; should never happen, please report!");
 
 
     const char *msg = "R is running from Rgui with no documents open";
@@ -279,118 +393,10 @@ SEXP do_syspathrgui do_formals
 }
 
 
-void check_arguments(Rboolean verbose         , Rboolean original        ,
-                     Rboolean for_msg         , Rboolean get_frame_number,
-                     Rboolean local           , Rboolean contents        ,
-                     int N                    )
-{
-    if (verbose == NA_LOGICAL)
-        error(_("invalid '%s' value"), "verbose");
-    /* original is allowed to be NA */
-    if (for_msg == NA_LOGICAL)
-        error(_("invalid '%s' value"), "for.msg");
-    if (get_frame_number == NA_LOGICAL)
-        error(_("invalid '%s' value"), "get.frame.number");
-    if (local == NA_LOGICAL)
-        error(_("invalid '%s' value"), "local");
-    if (contents == NA_LOGICAL)
-        error(_("invalid '%s' value"), "contents");
-
-
-    if (N == NA_INTEGER);
-    else if (N < 0)
-        error(_("invalid '%s' argument"), "N");
-
-
-#define one   "'%s' must be FALSE when '%s' is TRUE"
-#define two   "'%s' and '%s' must be FALSE when '%s' is TRUE"
-#define three "'%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
-#define four  "'%s', '%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
-
-
-    if (get_frame_number) {
-        if (original) {
-            if (for_msg) {
-                if (contents) {
-                    if (local)
-                        error(four, "original", "for.msg", "contents", "local", "get.frame.number");
-                    else
-                        error(three, "original", "for.msg", "contents", "get.frame.number");
-                }
-                else {
-                    if (local)
-                        error(three, "original", "for.msg", "local", "get.frame.number");
-                    else
-                        error(two, "original", "for.msg", "get.frame.number");
-                }
-            }
-            else {
-                if (contents) {
-                    if (local)
-                        error(three, "original", "contents", "local", "get.frame.number");
-                    else
-                        error(two, "original", "contents", "get.frame.number");
-                }
-                else {
-                    if (local)
-                        error(two, "original", "local", "get.frame.number");
-                    else
-                        error(one, "original", "get.frame.number");
-                }
-            }
-        }
-        else {
-            if (for_msg) {
-                if (contents) {
-                    if (local)
-                        error(three "for.msg", "contents", "local", "get.frame.number");
-                    else
-                        error(two, "for.msg", "contents", "get.frame.number");
-                }
-                else {
-                    if (local)
-                        error(two, "for.msg", "local", "get.frame.number");
-                    else
-                        error(one, "for.msg", "get.frame.number");
-                }
-            }
-            else {
-                if (contents) {
-                    if (local)
-                        error(two, "contents", "local", "get.frame.number");
-                    else
-                        error(one, "contents", "get.frame.number");
-                }
-                else {
-                    if (local)
-                        error(one, "local", "get.frame.number");
-                    else
-                        ;
-                }
-            }
-        }
-    }
-
-
-    if (contents) {
-        if (original)
-            error(one, "original", "contents");
-        else
-            ;
-    }
-
-
-#undef four
-#undef three
-#undef two
-#undef one
-}
-
-
 SEXP _syspath(Rboolean verbose         , Rboolean original        ,
-              Rboolean for_msg         , Rboolean get_frame_number,
-              Rboolean local           , Rboolean contents        ,
-              int N                    , SEXP rho                 )
+              Rboolean for_msg         , Rboolean contents        ,
+              Rboolean local           , int N                    ,
+              Rboolean get_frame_number, SEXP rho                 )
 {
     static const char *name = "'sys.path(local = TRUE)'";
 
@@ -438,9 +444,9 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             error("%s cannot be used within a top level environment", name);
 
 
-        if (findVarInFrame(frame, setsyspathwashereSymbol) == R_UnboundValue)
+        if (!existsInFrame(frame, setsyspathwashereSymbol))
             error("%s cannot be called within this environment", name);
-        if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
+        if (!existsInFrame(frame, thispathdoneSymbol))
             error("%s cannot be called within this environment", name);
 
 
@@ -561,26 +567,25 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
     int to = ((local) ? N : (1 + asInteger(eval(expr__toplevel_context_number, R_EmptyEnv))));
 
 
-    for (iwhich[0] = N; iwhich[0] >= to; iwhich[0]--) {
+/* the number of objects protected in each iteration (that must be unprotected
+   before moving to the next iteration) */
+#define nprotect_loop 1
+
+
+    for (iwhich[0] = N; iwhich[0] >= to; iwhich[0]--, UNPROTECT(nprotect_loop)) {
         frame = eval(getframe, rho);
         // PROTECT(frame);
         function = eval(getfunction, rho);
         PROTECT(function);
-/* the number of objects protected in each iteration (that must be unprotected
-   before moving to the next iteration) */
-#define nprotect_loop 1
 
 
         if (identical(function, source)) {
             if (local)
                 error("%s cannot be called within %s()",
                       name, EncodeChar(PRINTNAME(sourceSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
                 ofile = findVarInFrame(frame, ofileSymbol);
-                if (ofile == R_UnboundValue) {
-                    UNPROTECT(nprotect_loop);
-                    continue;
-                }
+                if (ofile == R_UnboundValue) continue;
                 if (TYPEOF(ofile) == PROMSXP) {
                     if (PRVALUE(ofile) == R_UnboundValue)
                         ofile = eval(ofile, R_EmptyEnv);
@@ -623,85 +628,49 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             }
 
 
-#define returnfile(character_only, file_only, which,           \
-    promise_must_be_forced, fun_name)                          \
+#define returnfile(character_only, file_only, which, fun_name) \
             thispathofile = findVarInFrame(frame, thispathofileSymbol);\
             /* don't check right away that this is missing, in case another\
                error must be thrown or the frame number is requested */\
             if (!file_only) {                                  \
                 /* if file_only is TRUE, thispathofile cannot be NULL */\
-                if (thispathofile == R_NilValue) {             \
-                    UNPROTECT(nprotect_loop);                  \
-                    continue;                                  \
-                }                                              \
+                if (thispathofile == R_NilValue) continue;     \
             }                                                  \
-            if (!character_only) {                             \
-                /* if character_only is TRUE, there cannot be a delayed error */\
-                thispatherror = findVarInFrame(frame, thispatherrorSymbol);\
-                /* if there is an error which needs to be thrown */\
-                if (thispatherror != R_UnboundValue) {         \
-                    if (for_msg) {                             \
-                        if (contents) {                        \
-                            UNPROTECT(nprotect + nprotect_loop);\
-                            return ScalarString(NA_STRING);    \
-                        }                                      \
+            /* if character_only is TRUE, there cannot be a delayed error */\
+            if (!character_only &&                             \
+                (thispatherror = findVarInFrame(frame, thispatherrorSymbol)) != R_UnboundValue)\
+            {                                                  \
+                if (for_msg) {                                 \
+                    if (contents) {                            \
+                        returnthis = ScalarString(NA_STRING);  \
+                    } else {                                   \
                         thispathformsg = findVarInFrame(frame, thispathformsgSymbol);\
                         if (thispathformsg == R_UnboundValue)  \
                             error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathformsgSymbol)));\
-                        UNPROTECT(nprotect + nprotect_loop);   \
-                        return thispathformsg;                 \
-                    }                                          \
-                    else if (get_frame_number) {               \
-                        UNPROTECT(nprotect + nprotect_loop);   \
-                        if (findVarInFrame(frame, thispathassocwfileSymbol) == R_UnboundValue)\
-                            return ScalarInteger(NA_INTEGER);  \
-                        return (which);                        \
-                    }                                          \
-                    else {                                     \
-                        thispatherror = duplicate(thispatherror);\
-                        PROTECT(thispatherror);                \
-                        SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));\
-                        stop(thispatherror);                   \
-                        UNPROTECT(1);  /* thispatherror */     \
-                        /* should not reach here */            \
-                        UNPROTECT(nprotect + nprotect_loop);   \
-                        return R_NilValue;                     \
+                        returnthis = thispathformsg;           \
                     }                                          \
                 }                                              \
-            }                                                  \
-            if (get_frame_number) {                            \
-                UNPROTECT(nprotect + nprotect_loop);           \
-                return (which);                                \
-            }                                                  \
-            if (thispathofile == R_UnboundValue)               \
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));\
-            if (for_msg) {                                     \
-                if (original == TRUE) {                        \
-                    UNPROTECT(nprotect + nprotect_loop);       \
-                    return thispathofile;                      \
-                }                                              \
-                thispathfile = findVarInFrame(frame, thispathfileSymbol);\
-                if (thispathfile == R_UnboundValue)            \
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));\
-                if (TYPEOF(thispathfile) != PROMSXP)           \
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));\
-                if (promise_must_be_forced) {                  \
-                    if (PRVALUE(thispathfile) == R_UnboundValue)\
-                        error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));\
-                    UNPROTECT(nprotect + nprotect_loop);       \
-                    return PRVALUE(thispathfile);              \
+                else if (get_frame_number) {                   \
+                    if (existsInFrame(frame, thispathassocwfileSymbol))\
+                        returnthis = (which);                  \
+                    else                                       \
+                        returnthis = ScalarInteger(NA_INTEGER);\
                 }                                              \
                 else {                                         \
-                    UNPROTECT(nprotect + nprotect_loop);       \
-                    /* if thispathfile has already been evaluated, return it */\
-                    /* otherwise, return the original file */  \
-                    if (PRVALUE(thispathfile) == R_UnboundValue)\
-                        return thispathofile;                  \
-                    else                                       \
-                        return PRVALUE(thispathfile);          \
+                    thispatherror = duplicate(thispatherror);  \
+                    PROTECT(thispatherror);                    \
+                    SET_VECTOR_ELT(thispatherror, 1, getCurrentCall(rho));\
+                    stop(thispatherror);                       \
+                    UNPROTECT(1);  /* thispatherror */         \
+                    /* should not reach here */                \
+                    returnthis = R_NilValue;                   \
                 }                                              \
             }                                                  \
-            if (original == TRUE)                              \
+            else if (get_frame_number)                         \
+                returnthis = (which);                          \
+            else if (thispathofile == R_UnboundValue)          \
+                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));\
+            else if (original == TRUE)                         \
                 returnthis = thispathofile;                    \
             else {                                             \
                 thispathfile = findVarInFrame(frame, thispathfileSymbol);\
@@ -709,28 +678,21 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));\
                 if (TYPEOF(thispathfile) != PROMSXP)           \
                     error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));\
-                if (promise_must_be_forced) {                  \
-                    if (PRVALUE(thispathfile) == R_UnboundValue)\
-                        error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));\
-                    returnthis = PRVALUE(thispathfile);        \
-                }                                              \
-                else {                                         \
-                    if (PRVALUE(thispathfile) == R_UnboundValue) {\
-                        if (original)                          \
-                            returnthis = thispathofile;        \
-                        else {                                 \
-                            if (PRSEEN(thispathfile)) {        \
-                                if (PRSEEN(thispathfile) == 1) {}\
-                                else SET_PRSEEN(thispathfile, 0);\
-                            }                                  \
-                            returnthis = eval(thispathfile, R_EmptyEnv);\
+                if (PRVALUE(thispathfile) == R_UnboundValue) { \
+                    if (original || for_msg)                   \
+                        returnthis = thispathofile;            \
+                    else {                                     \
+                        if (PRSEEN(thispathfile)) {            \
+                            if (PRSEEN(thispathfile) == 1) {}  \
+                            else SET_PRSEEN(thispathfile, 0);  \
                         }                                      \
+                        returnthis = eval(thispathfile, R_EmptyEnv);\
                     }                                          \
-                    else returnthis = PRVALUE(thispathfile);   \
                 }                                              \
+                else returnthis = PRVALUE(thispathfile);       \
             }                                                  \
             if (verbose) Rprintf("Source: call to function %s\n", fun_name);\
-            UNPROTECT(nprotect + nprotect_loop);               \
+            UNPROTECT(nprotect_loop + nprotect);               \
             return returnthis
 
 
@@ -738,7 +700,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ FALSE,
                 /* file_only              */ FALSE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ FALSE,
                 /* fun_name               */ "source"
             );
         }
@@ -748,16 +709,13 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s()",
                       name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
-                    if (PRSEEN(ofile) == 1) {
-                        /* if ofile is a promise already under evaluation */
-                        UNPROTECT(nprotect_loop);
-                        continue;
-                    }
+                    /* if ofile is a promise already under evaluation */
+                    if (PRSEEN(ofile) == 1) continue;
                     if (PRVALUE(ofile) == R_UnboundValue)
                         ofile = eval(ofile, R_EmptyEnv);
                     else
@@ -801,7 +759,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ TRUE,
                 /* file_only              */ TRUE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ FALSE,
                 /* fun_name               */ "sys.source"
             );
         }
@@ -811,16 +768,13 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s() in RStudio",
                       name, EncodeChar(PRINTNAME(debugSourceSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileNameSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
-                    if (PRSEEN(ofile) == 1) {
-                        /* if ofile is a promise already under evaluation */
-                        UNPROTECT(nprotect_loop);
-                        continue;
-                    }
+                    /* if ofile is a promise already under evaluation */
+                    if (PRSEEN(ofile) == 1) continue;
                     if (PRVALUE(ofile) == R_UnboundValue)
                         ofile = eval(ofile, R_EmptyEnv);
                     else
@@ -864,7 +818,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ TRUE,
                 /* file_only              */ FALSE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ FALSE,
                 /* fun_name               */ "debugSource in RStudio"
             );
         }
@@ -874,16 +827,13 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(pathSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
-                    if (PRSEEN(ofile) == 1) {
-                        /* if ofile is a promise already under evaluation */
-                        UNPROTECT(nprotect_loop);
-                        continue;
-                    }
+                    /* if ofile is a promise already under evaluation */
+                    if (PRSEEN(ofile) == 1) continue;
                     if (PRVALUE(ofile) == R_UnboundValue)
                         ofile = eval(ofile, R_EmptyEnv);
                     else
@@ -928,7 +878,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ TRUE,
                 /* file_only              */ TRUE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ FALSE,
                 /* fun_name               */ "source_file from package testthat"
             );
         }
@@ -938,15 +887,11 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
-                if (findVarInFrame(frame, oenvirSymbol) == R_UnboundValue) {
-                    UNPROTECT(nprotect_loop);
-                    continue;
-                }
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
+                if (!existsInFrame(frame, oenvirSymbol)) continue;
                 int missing_input = asLogical(eval(expr_missing_input, frame));
                 if (missing_input) {
                     assign_null(frame);
-                    UNPROTECT(nprotect_loop);
                     continue;
                 }
                 ofile = getInFrame(inputSymbol, frame, FALSE);
@@ -988,7 +933,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ FALSE,
                 /* file_only              */ FALSE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ FALSE,
                 /* fun_name               */ "knit from package knitr"
             );
         }
@@ -998,15 +942,11 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
-                UNPROTECT(nprotect_loop);
-                continue;
-            }
+            if (!existsInFrame(frame, thispathdoneSymbol)) continue;
             returnfile(
                 /* character_only         */ FALSE,
                 /* file_only              */ FALSE,
                 /* which                  */ getInFrame(thispathnSymbol, frame, FALSE),
-                /* promise_must_be_forced */ TRUE,
                 /* fun_name               */ "wrap.source from package this.path"
             );
         }
@@ -1016,7 +956,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
                 SEXP ofile = eval(expr_info_dollar_source_path, frame);
                 PROTECT(ofile);
                 checkfile(
@@ -1058,7 +998,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ TRUE,
                 /* file_only              */ TRUE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ TRUE,
                 /* fun_name               */ "load_from_source from package box"
             );
         }
@@ -1069,16 +1008,13 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
-            if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue) {
+            if (!existsInFrame(frame, thispathdoneSymbol)) {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
-                    if (PRSEEN(ofile) == 1) {
-                        /* if ofile is a promise already under evaluation */
-                        UNPROTECT(nprotect_loop);
-                        continue;
-                    }
+                    /* if ofile is a promise already under evaluation */
+                    if (PRSEEN(ofile) == 1) continue;
                     if (PRVALUE(ofile) == R_UnboundValue)
                         ofile = eval(ofile, R_EmptyEnv);
                     else
@@ -1122,37 +1058,25 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 /* character_only         */ TRUE,
                 /* file_only              */ TRUE,
                 /* which                  */ which,
-                /* promise_must_be_forced */ FALSE,
                 /* fun_name               */ "loadcmp from package compiler"
             );
         }
 
 
         else if ((setsyspathwashere = findVarInFrame(frame, setsyspathwashereSymbol)) != R_UnboundValue) {
-            // Rprintf("\nhere\n");
-            if (setsyspathwashere == R_MissingArg) {
-                UNPROTECT(nprotect_loop);
-                continue;
-            }
+            if (setsyspathwashere == R_MissingArg) continue;
             SEXP thispathn = findVarInFrame(frame, thispathnSymbol);
             if (TYPEOF(thispathn) != INTSXP || LENGTH(thispathn) != 1)
                 error(_("invalid '%s' value"), EncodeChar(PRINTNAME(thispathnSymbol)));
             /* this could happen with eval() or similar */
-            if (iwhich[0] != INTEGER(thispathn)[0]) {
-                UNPROTECT(nprotect_loop);
-                continue;
-            }
+            if (iwhich[0] != INTEGER(thispathn)[0]) continue;
             returnfile(
                 /* character_only         */ FALSE,
                 /* file_only              */ FALSE,
                 /* which                  */ thispathn,
-                /* promise_must_be_forced */ TRUE,
                 /* fun_name               */ CHAR(setsyspathwashere)
             );
         }
-
-
-        UNPROTECT(nprotect_loop);
     }
 
 
@@ -1180,14 +1104,14 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 }
 
 
-SEXP syspath(Rboolean verbose         , Rboolean original        ,
-             Rboolean for_msg         , Rboolean get_frame_number,
-             Rboolean local           , Rboolean contents        ,
-             int N                    , SEXP rho                 )
+SEXP syspath8(Rboolean verbose         , Rboolean original        ,
+              Rboolean for_msg         , Rboolean contents        ,
+              Rboolean local           , int N                    ,
+              Rboolean get_frame_number, SEXP rho                 )
 {
     SEXP value = _syspath(verbose         , original        , for_msg         ,
-                          get_frame_number, local           , contents        ,
-                          N               , rho             );
+                          contents        , local           , N               ,
+                          get_frame_number, rho             );
     if (!contents)
         return value;
     if (TYPEOF(value) == VECSXP) {
@@ -1203,19 +1127,20 @@ SEXP syspath(Rboolean verbose         , Rboolean original        ,
                 if (n) {
                     /* if the last line is a blank string, remove it */
                     if (STRING_ELT(value, n) == R_BlankString) {
-                        SEXP tmp = PROTECT(allocVector(STRSXP, n));
+                        SEXP tmp = allocVector(STRSXP, n);
+                        PROTECT(tmp);
                         for (R_xlen_t i = 0; i < n; i++) {
                             SET_STRING_ELT(tmp, i, STRING_ELT(value, i));
                         }
                         value = tmp;
-                        UNPROTECT(1);
+                        UNPROTECT(1); /* tmp */
                     }
                 }
                 else {
                     value = allocVector(STRSXP, 0);
                 }
             }
-            UNPROTECT(1);
+            UNPROTECT(1); /* value */
         }
         return value;
     }
@@ -1235,117 +1160,86 @@ SEXP syspath(Rboolean verbose         , Rboolean original        ,
 }
 
 
+SEXP syspath6(Rboolean verbose , Rboolean original, Rboolean for_msg ,
+              Rboolean contents, Rboolean local   , SEXP rho         )
+{
+    return syspath8(verbose, original, for_msg, contents, local,
+                    /* N */ NA_INTEGER, /* get_frame_number */ FALSE,  rho);
+}
+
+
+SEXP syspath3(Rboolean verbose, Rboolean local, SEXP rho)
+{
+    return syspath6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                    /* contents */ FALSE, local, rho);
+}
+
+
+SEXP syspath2(Rboolean local, SEXP rho)
+{
+    return syspath3(/* verbose */ FALSE, local, rho);
+}
+
+
+SEXP syspath1(SEXP rho)
+{
+    return syspath2(/* local */ FALSE, rho);
+}
+
+
+SEXP getframenumber(SEXP rho)
+{
+    return syspath8(/* verbose */ FALSE, /* original */ FALSE,
+                    /* for_msg */ FALSE, /* contents */ FALSE,
+                    /* local */ FALSE, /* N */ NA_INTEGER,
+                    /* get_frame_number */ TRUE, rho);
+}
+
+
 SEXP do_syspath do_formals
 {
     do_start_no_op("syspath", -1);
 
 
-    Rboolean verbose         , original        , for_msg         ,
-             get_frame_number, local           , contents        ;
-    int N;
+    Rboolean verbose  = FALSE,
+             original = FALSE,
+             for_msg  = FALSE,
+             contents = FALSE,
+             local    = FALSE;
 
 
     switch (length(args)) {
     case 0:
-        verbose          = FALSE;
-        original         = FALSE;
-        for_msg          = FALSE;
-        get_frame_number = FALSE;
-        local            = FALSE;
-        contents         = FALSE;
-        N                = NA_INTEGER;
         break;
     case 1:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = FALSE;
-        for_msg          = FALSE;
-        get_frame_number = FALSE;
-        local            = FALSE;
-        contents         = FALSE;
-        N                = NA_INTEGER;
+        local    = asLogical(CAR(args)); args = CDR(args);
         break;
     case 2:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = asLogical(CAR(args)); args = CDR(args);
-        for_msg          = FALSE;
-        get_frame_number = FALSE;
-        local            = FALSE;
-        contents         = FALSE;
-        N                = NA_INTEGER;
-        break;
-    case 3:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = asLogical(CAR(args)); args = CDR(args);
-        for_msg          = asLogical(CAR(args)); args = CDR(args);
-        get_frame_number = FALSE;
-        local            = FALSE;
-        contents         = FALSE;
-        N                = NA_INTEGER;
-        break;
-    case 4:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = asLogical(CAR(args)); args = CDR(args);
-        for_msg          = asLogical(CAR(args)); args = CDR(args);
-        get_frame_number = FALSE;
-        local            = FALSE;
-        contents         = asLogical(CAR(args)); args = CDR(args);
-        N                = NA_INTEGER;
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        local    = asLogical(CAR(args)); args = CDR(args);
         break;
     case 5:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = asLogical(CAR(args)); args = CDR(args);
-        for_msg          = asLogical(CAR(args)); args = CDR(args);
-        get_frame_number = FALSE;
-        local            = asLogical(CAR(args)); args = CDR(args);
-        contents         = asLogical(CAR(args)); args = CDR(args);
-        N                = NA_INTEGER;
-        break;
-    case 6:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = asLogical(CAR(args)); args = CDR(args);
-        for_msg          = asLogical(CAR(args)); args = CDR(args);
-        get_frame_number = FALSE;
-        local            = asLogical(CAR(args)); args = CDR(args);
-        contents         = asLogical(CAR(args)); args = CDR(args);
-        N                = asInteger(CAR(args)); args = CDR(args);
-        break;
-    case 7:
-        verbose          = asLogical(CAR(args)); args = CDR(args);
-        original         = asLogical(CAR(args)); args = CDR(args);
-        for_msg          = asLogical(CAR(args)); args = CDR(args);
-        get_frame_number = asLogical(CAR(args)); args = CDR(args);
-        local            = asLogical(CAR(args)); args = CDR(args);
-        contents         = asLogical(CAR(args)); args = CDR(args);
-        N                = asInteger(CAR(args)); args = CDR(args);
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        contents = asLogical(CAR(args)); args = CDR(args);
+        local    = asLogical(CAR(args)); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_syspath", "0, 1, 2, 3, 4, 5, 6, or 7"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_syspath", "0, 1, 2, or 5"));
         return R_NilValue;
     }
 
 
-    check_arguments(verbose         , original        , for_msg         ,
-                    get_frame_number, local           , contents        ,
-                    N               );
-
-
-    return syspath(verbose         , original        , for_msg         ,
-                   get_frame_number, local           , contents        ,
-                   N               , rho             );
+    check_arguments5(verbose, original, for_msg, contents, local);
+    return syspath6(verbose, original, for_msg, contents, local, rho);
 }
 
 
 SEXP do_getframenumber do_formals
 {
     do_start_no_call_op("getframenumber", 0);
-    return syspath(/* verbose          */ FALSE,
-                   /* original         */ FALSE,
-                   /* for_msg          */ FALSE,
-                   /* get_frame_number */ TRUE,
-                   /* local            */ FALSE,
-                   /* contents         */ FALSE,
-                   /* N                */ NA_INTEGER,
-                   rho);
+    return getframenumber(rho);
 }
 
 
@@ -1368,7 +1262,8 @@ SEXP topenv(SEXP target, SEXP envir)
 
 
 SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              SEXP target, SEXP envir, Rboolean unbound_ok, SEXP rho)
+              Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
+              SEXP rho)
 {
     if (envir == NULL) envir = eval(expr_parent_frame, rho);
     if (TYPEOF(envir) != ENVSXP) envir = rho;
@@ -1390,6 +1285,9 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         UNPROTECT(1);
     } else {
         getenv;
+
+
+#undef getenv
     }
 
 
@@ -1508,12 +1406,12 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
-SEXP envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
-             Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
-             SEXP rho)
+SEXP envpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
+              Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
+              SEXP rho)
 {
-    SEXP value = _envpath(verbose   , original  , for_msg   , target    ,
-                          envir     , unbound_ok, rho       );
+    SEXP value = _envpath(verbose   , original  , for_msg   , contents,
+                          target    , envir     , unbound_ok, rho       );
     if (unbound_ok && value == R_UnboundValue)
         return value;
     if (!contents)
@@ -1534,61 +1432,55 @@ SEXP envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
+SEXP envpath7(Rboolean verbose, Rboolean original, Rboolean for_msg,
+              Rboolean contents, SEXP target, SEXP envir, SEXP rho)
+{
+    return envpath8(verbose, original, for_msg, contents, target, envir,
+                    /* unbound_ok */ FALSE, rho);
+}
+
+
+SEXP envpath4(Rboolean verbose, SEXP target, SEXP envir, SEXP rho)
+{
+    return envpath7(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                    /* contents */ FALSE, target, envir, rho);
+}
+
+
+SEXP envpath3(SEXP target, SEXP envir, SEXP rho)
+{
+    return envpath4(/* verbose */ FALSE, target, envir, rho);
+}
+
+
+SEXP envpath1(SEXP rho)
+{
+    return envpath3(/* target */ NULL, /* envir */ NULL, rho);
+}
+
+
 SEXP do_envpath do_formals
 {
     do_start_no_op("envpath", -1);
 
 
-    Rboolean verbose, original, for_msg, contents;
-    SEXP envir, target;
+    Rboolean verbose  = FALSE,
+             original = FALSE,
+             for_msg  = FALSE,
+             contents = FALSE;
+    SEXP envir  = NULL,
+         target = NULL;
 
 
     switch (length(args)) {
     case 0:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        contents = FALSE;
-        envir    = NULL;
-        target   = NULL;
-        break;
-    case 1:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        contents = FALSE;
-        envir    = CAR(args); args = CDR(args);
-        target   = NULL;
         break;
     case 2:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        contents = FALSE;
         envir    = CAR(args); args = CDR(args);
         target   = CAR(args); args = CDR(args);
         break;
     case 3:
         verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = FALSE;
-        for_msg  = FALSE;
-        contents = FALSE;
-        envir    = CAR(args); args = CDR(args);
-        target   = CAR(args); args = CDR(args);
-        break;
-    case 4:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = FALSE;
-        contents = FALSE;
-        envir    = CAR(args); args = CDR(args);
-        target   = CAR(args); args = CDR(args);
-        break;
-    case 5:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = asLogical(CAR(args)); args = CDR(args);
-        contents = FALSE;
         envir    = CAR(args); args = CDR(args);
         target   = CAR(args); args = CDR(args);
         break;
@@ -1601,23 +1493,19 @@ SEXP do_envpath do_formals
         target   = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_envpath", "0, 1, 2, 3, 4, 5, or 6"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_envpath", "0, 2, 3, or 6"));
         return R_NilValue;
     }
 
 
-    check_arguments(verbose, original, for_msg, /* get_frame_number */ FALSE,
-                    /* local */ FALSE, contents, /* N */ 0);
-
-
-    return envpath(verbose, original, for_msg, contents, target, envir,
-                   /* unbound_ok */ FALSE, rho);
+    check_arguments4(verbose, original, for_msg, contents);
+    return envpath7(verbose, original, for_msg, contents, target, envir, rho);
 }
 
 
-SEXP _srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
-                  Rboolean contents, Rboolean unbound_ok,
-                  Rboolean *gave_contents, SEXP rho)
+SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
+              Rboolean contents, SEXP srcfile, Rboolean *gave_contents,
+              Rboolean get_lineno, Rboolean unbound_ok, SEXP rho)
 {
     *gave_contents = FALSE;
 
@@ -1625,8 +1513,151 @@ SEXP _srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     int nprotect = 0;
 
 
-    SEXP returnthis = NULL;
+    SEXP x, srcref, wholeSrcref;
+    x = srcfile;
+    srcfile = NULL;
+
+
     SEXP returnvalue;
+
+
+    if (x == NULL) {
+        x = PROTECT(eval(expr_sys_call, rho)); nprotect++;
+        // {
+        //     Rprintf("\n> sys.call()\n");
+        //     SEXP expr;
+        //     PROTECT_INDEX indx;
+        //     PROTECT_WITH_INDEX(expr = makeEVPROMISE(x, x), &indx);
+        //     REPROTECT(expr = CONS(expr, R_NilValue), indx);
+        //     REPROTECT(expr = LCONS(getFromBase(install("print")), expr), indx);
+        //     eval(expr, rho);
+        //     UNPROTECT(1);
+        // }
+        // {
+        //     Rprintf("\n> sys.call()\n");
+        //     SEXP expr;
+        //     PROTECT_INDEX indx;
+        //     PROTECT_WITH_INDEX(expr = duplicate(x), &indx);
+        //     setAttrib(expr, srcrefSymbol, R_NilValue);
+        //     REPROTECT(expr = makeEVPROMISE(expr, expr), indx);
+        //     REPROTECT(expr = CONS(expr, R_NilValue), indx);
+        //     REPROTECT(expr = LCONS(getFromBase(install("print")), expr), indx);
+        //     eval(expr, rho);
+        //     UNPROTECT(1);
+        // }
+    }
+
+
+    if (get_lineno) {
+        switch (TYPEOF(x)) {
+        case SYMSXP:
+        case CLOSXP:
+            srcref = PROTECT(getAttrib(x, srcrefSymbol)); nprotect++;
+            if (TYPEOF(srcref) == INTSXP) {
+
+
+#define return_lineno                                          \
+                returnvalue = ScalarInteger(INTEGER(srcref)[0]);\
+                UNPROTECT(nprotect);                           \
+                return returnvalue
+
+
+                return_lineno;
+            }
+            break;
+        case LANGSXP:
+            wholeSrcref = PROTECT(getAttrib(x, wholeSrcrefSymbol)); nprotect++;
+            if (TYPEOF(wholeSrcref) == INTSXP) {
+                srcref = wholeSrcref;
+                return_lineno;
+            }
+            srcref = PROTECT(getAttrib(x, srcrefSymbol)); nprotect++;
+            if (TYPEOF(srcref) == INTSXP) {
+                return_lineno;
+            }
+            if (TYPEOF(srcref) == VECSXP && LENGTH(srcref) &&
+                TYPEOF(srcref = VECTOR_ELT(srcref, 0)) == INTSXP)
+            {
+                return_lineno;
+            }
+            break;
+        case EXPRSXP:
+            wholeSrcref = PROTECT(getAttrib(x, wholeSrcrefSymbol)); nprotect++;
+            if (TYPEOF(wholeSrcref) == INTSXP) {
+                srcref = wholeSrcref;
+                return_lineno;
+            }
+            srcref = PROTECT(getAttrib(x, srcrefSymbol)); nprotect++;
+            if (TYPEOF(srcref) == VECSXP && LENGTH(srcref) &&
+                TYPEOF(srcref = VECTOR_ELT(srcref, 0)) == INTSXP)
+            {
+                return_lineno;
+            }
+            break;
+        case INTSXP:
+            srcref = x;
+            if (LENGTH(srcref) == 8) {
+                return_lineno;
+            }
+            break;
+        }
+        UNPROTECT(nprotect);
+        return ScalarInteger(NA_INTEGER);
+    }
+
+
+    switch (TYPEOF(x)) {
+    case SYMSXP:
+    case CLOSXP:
+        srcref = PROTECT(getAttrib(x, srcrefSymbol)); nprotect++;
+        if (TYPEOF(srcref) == INTSXP) {
+
+
+#define set_srcfile                                            \
+            srcfile = PROTECT(getAttrib(srcref, srcfileSymbol)); nprotect++;\
+            if (TYPEOF(srcfile) != ENVSXP) srcfile = NULL
+
+
+            set_srcfile;
+        }
+        break;
+    case LANGSXP:
+        srcfile = PROTECT(getAttrib(x, srcfileSymbol)); nprotect++;
+        if (TYPEOF(srcfile) == ENVSXP);
+        else {
+            srcfile = NULL;
+            srcref = PROTECT(getAttrib(x, srcrefSymbol)); nprotect++;
+            if (TYPEOF(srcref) == INTSXP) {
+                set_srcfile;
+            }
+        }
+        break;
+    case EXPRSXP:
+        srcfile = PROTECT(getAttrib(x, srcfileSymbol)); nprotect++;
+        if (TYPEOF(srcfile) == ENVSXP);
+        else {
+            srcfile = NULL;
+            srcref = PROTECT(getAttrib(x, srcrefSymbol)); nprotect++;
+            if (TYPEOF(srcref) == VECSXP && LENGTH(srcref) &&
+                TYPEOF(srcref = VECTOR_ELT(srcref, 0)) == INTSXP)
+            {
+                set_srcfile;
+            }
+        }
+        break;
+    case INTSXP:
+        srcref = x;
+        if (LENGTH(srcref) == 8) {
+            set_srcfile;
+        }
+        break;
+    case ENVSXP:
+        if (inherits(x, "srcfile")) srcfile = x;
+        break;
+    }
+
+
+    SEXP returnthis = NULL;
 
 
     SEXP thispathofile, thispathfile;
@@ -1641,86 +1672,86 @@ SEXP _srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                         (_is_srcfilecopy))
 
 
-    SEXP rcall = PROTECT(eval(expr_sys_call, rho)); nprotect++;
-    if (rcall != R_NilValue) {
-        /* it would be nice to use 'R_Srcref' but
-           this is not the most recent source reference */
-        SEXP srcref = PROTECT(getAttrib(rcall, srcrefSymbol)); nprotect++;
-        if (TYPEOF(srcref) == INTSXP) {
-            SEXP srcfile = PROTECT(getAttrib(srcref, srcfileSymbol)); nprotect++;
-            if (TYPEOF(srcfile) == ENVSXP) {
-                if (findVarInFrame(srcfile, thispathdoneSymbol) == R_UnboundValue) {
-                    if (is_srcfilecopy && asLogical(findVarInFrame(srcfile, isFileSymbol)) != TRUE) {
-                        assign_null(srcfile);
-                    } else {
-                        ofile = findVarInFrame(srcfile, filenameSymbol);
-                        if (ofile == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
-                        checkfile(
-                            /* call                   */ R_NilValue,
-                            /* sym                    */ filenameSymbol,
-                            /* ofile                  */ ofile,
-                            /* frame                  */ srcfile,
-                            /* check_not_directory    */ TRUE,
-                            /* forcepromise           */ TRUE,
-                            /* assign_returnvalue     */ FALSE,
-                            /* maybe_chdir            */ TRUE,
-                            /* getowd                 */ findVarInFrame(srcfile, wdSymbol),
-                            /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
-                            /* ofilearg               */ NULL,
-                            /* character_only         */ TRUE,
-                            /* conv2utf8              */ FALSE,
-                            /* allow_blank_string     */ TRUE,
-                            /* allow_clipboard        */ TRUE,
-                            /* allow_stdin            */ TRUE,
-                            /* allow_url              */ TRUE,
-                            /* allow_file_uri         */ TRUE,
-                            /* allow_unz              */ FALSE,
-                            /* allow_pipe             */ FALSE,
-                            /* allow_terminal         */ FALSE,
-                            /* allow_textConnection   */ FALSE,
-                            /* allow_rawConnection    */ FALSE,
-                            /* allow_sockconn         */ FALSE,
-                            /* allow_servsockconn     */ FALSE,
-                            /* allow_customConnection */ FALSE,
-                            /* ignore_blank_string    */ FALSE,
-                            /* ignore_clipboard       */ FALSE,
-                            /* ignore_stdin           */ FALSE,
-                            /* ignore_url             */ FALSE,
-                            /* ignore_file_uri        */ FALSE
-                        );
-                    }
-                }
-                thispathofile = findVarInFrame(srcfile, thispathofileSymbol);
-                if (thispathofile != R_NilValue) {
-                    if (thispathofile == R_UnboundValue)
-                        error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-                    if (contents && is_srcfilecopy) {
-                        returnthis = findVarInFrame(srcfile, linesSymbol);
-                        if (returnthis == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));
-                        if (TYPEOF(returnthis) != STRSXP)
-                            error(_("object '%s' of mode '%s' was not found"),
-                                  EncodeChar(PRINTNAME(linesSymbol)), "character");
-                        *gave_contents = TRUE;
-                    }
-                    else if (original == TRUE)
+    if (srcfile) {
+        if (!existsInFrame(srcfile, thispathdoneSymbol)) {
+            if (is_srcfilecopy && asLogical(findVarInFrame(srcfile, isFileSymbol)) != TRUE) {
+                assign_null(srcfile);
+            } else {
+                ofile = findVarInFrame(srcfile, filenameSymbol);
+                if (ofile == R_UnboundValue)
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
+                checkfile(
+                    /* call                   */ R_NilValue,
+                    /* sym                    */ filenameSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ srcfile,
+                    /* check_not_directory    */ TRUE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ findVarInFrame(srcfile, wdSymbol),
+                    /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ TRUE,
+                    /* allow_clipboard        */ TRUE,
+                    /* allow_stdin            */ TRUE,
+                    /* allow_url              */ TRUE,
+                    /* allow_file_uri         */ TRUE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE
+                );
+            }
+        }
+        thispathofile = findVarInFrame(srcfile, thispathofileSymbol);
+        if (thispathofile != R_NilValue) {
+            if (thispathofile == R_UnboundValue)
+                error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
+            else if (contents && is_srcfilecopy) {
+                returnthis = findVarInFrame(srcfile, linesSymbol);
+                if (returnthis == R_UnboundValue)
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));
+                if (TYPEOF(returnthis) != STRSXP)
+                    error(_("object '%s' of mode '%s' was not found"),
+                          EncodeChar(PRINTNAME(linesSymbol)), "character");
+                *gave_contents = TRUE;
+            }
+            else if (original == TRUE)
+                returnthis = thispathofile;
+            else {
+                thispathfile = findVarInFrame(srcfile, thispathfileSymbol);
+                if (thispathfile == R_UnboundValue)
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
+                if (TYPEOF(thispathfile) != PROMSXP)
+                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
+                if (PRVALUE(thispathfile) == R_UnboundValue) {
+                    if (original || for_msg)
                         returnthis = thispathofile;
                     else {
-                        thispathfile = findVarInFrame(srcfile, thispathfileSymbol);
-                        if (thispathfile == R_UnboundValue)
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfileSymbol)));
-                        if (TYPEOF(thispathfile) != PROMSXP)
-                            error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                        if (PRVALUE(thispathfile) == R_UnboundValue)
-                            error("invalid '%s', this promise should have already been forced", EncodeChar(PRINTNAME(thispathfileSymbol)));
-                        returnthis = PRVALUE(thispathfile);
+                        if (PRSEEN(thispathfile)) {
+                            if (PRSEEN(thispathfile) == 1) {}
+                            else SET_PRSEEN(thispathfile, 0);
+                        }
+                        returnthis = eval(thispathfile, R_EmptyEnv);
                     }
-                    if (verbose) Rprintf("Source: attr(,\"srcref\")attr(,\"srcfile\") of current expression\n");
-                    UNPROTECT(nprotect);
-                    return returnthis;
                 }
+                else returnthis = PRVALUE(thispathfile);
             }
+            if (verbose) Rprintf("Source: attr(,\"srcref\")attr(,\"srcfile\") of current expression\n");
+            UNPROTECT(nprotect);
+            return returnthis;
         }
     }
 
@@ -1746,14 +1777,17 @@ SEXP _srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
-SEXP srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
-                 Rboolean contents, Rboolean unbound_ok, SEXP rho)
+SEXP srcpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
+              Rboolean contents, SEXP srcfile, Rboolean lineno,
+              Rboolean unbound_ok, SEXP rho)
 {
     Rboolean gave_contents;
-    SEXP value = _srcfilepath(verbose       , original      , for_msg       ,
-                              contents      , unbound_ok    , &gave_contents,
-                              rho           );
+    SEXP value = _srcpath(verbose       , original      , for_msg       ,
+                          contents      , srcfile       , &gave_contents,
+                          lineno        , unbound_ok    , rho           );
     if (unbound_ok && value == R_UnboundValue)
+        return value;
+    if (lineno)
         return value;
     if (!contents)
         return value;
@@ -1771,57 +1805,96 @@ SEXP srcfilepath(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
-SEXP do_srcfilepath do_formals
+SEXP srcpath6(Rboolean verbose, Rboolean original, Rboolean for_msg,
+              Rboolean contents, SEXP srcfile, SEXP rho)
 {
-    do_start("srcfilepath", -1);
+    return srcpath8(verbose, original, for_msg, contents, srcfile,
+                    /* lineno */ FALSE, /* unbound_ok */ FALSE, rho);
+}
 
 
-    Rboolean verbose, original, for_msg, contents;
+SEXP srcpath3(Rboolean verbose, SEXP srcfile, SEXP rho)
+{
+    return srcpath6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                    /* contents */ FALSE, srcfile, rho);
+}
+
+
+SEXP srcpath2(SEXP srcfile, SEXP rho)
+{
+    return srcpath3(/* verbose */ FALSE, srcfile, rho);
+}
+
+
+SEXP srcpath1(SEXP rho)
+{
+    return srcpath2(/* srcfile */ NULL, rho);
+}
+
+
+SEXP do_srcpath do_formals
+{
+    do_start_no_op("srcpath", -1);
+
+
+    Rboolean verbose  = FALSE,
+             original = FALSE,
+             for_msg  = FALSE,
+             contents = FALSE;
+    SEXP srcfile = NULL;
 
 
     switch (length(args)) {
     case 0:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        contents = FALSE;
         break;
     case 1:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = FALSE;
-        for_msg  = FALSE;
-        contents = FALSE;
+        srcfile  = CAR(args); args = CDR(args);
         break;
     case 2:
         verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = FALSE;
-        contents = FALSE;
+        srcfile  = CAR(args); args = CDR(args);
         break;
-    case 3:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = asLogical(CAR(args)); args = CDR(args);
-        contents = FALSE;
-        break;
-    case 4:
+    case 5:
         verbose  = asLogical(CAR(args)); args = CDR(args);
         original = asLogical(CAR(args)); args = CDR(args);
         for_msg  = asLogical(CAR(args)); args = CDR(args);
         contents = asLogical(CAR(args)); args = CDR(args);
+        srcfile  = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_srcfilepath", "0, 1, 2, 3, or 4"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_srcpath", "0, 1, 2, or 5"));
         return R_NilValue;
     }
 
 
-    check_arguments(verbose, original, for_msg, /* get_frame_number */ FALSE,
-                    /* local */ FALSE, contents, /* N */ 0);
+    check_arguments4(verbose, original, for_msg, contents);
+    return srcpath6(verbose, original, for_msg, contents, srcfile, rho);
+}
 
 
-    return srcfilepath(verbose, original, for_msg, contents,
-                       /* unbound_ok */ FALSE, rho);
+SEXP do_srclineno do_formals
+{
+    do_start_no_call_op("srclineno", -1);
+
+
+    SEXP srcfile = NULL;
+
+
+    switch (length(args)) {
+    case 0:
+        break;
+    case 1:
+        srcfile = CAR(args); args = CDR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_srclineno", "0 or 1"));
+        return R_NilValue;
+    }
+
+
+    return srcpath8(/* verbose */ FALSE, /* original */ FALSE,
+                    /* for_msg */ FALSE, /* contents */ FALSE, srcfile,
+                    /* lineno */ TRUE, /* unbound_ok */ FALSE, rho);
 }
 
 
@@ -1830,123 +1903,61 @@ SEXP do_thispath do_formals
     do_start_no_op("thispath", -1);
 
 
-    Rboolean verbose, original, for_msg, local, contents;
-    int N;
-    SEXP envir, target;
+    Rboolean verbose  = FALSE,
+             original = FALSE,
+             for_msg  = FALSE,
+             contents = FALSE,
+             local    = FALSE;
+    SEXP envir   = NULL,
+         target  = NULL,
+         srcfile = NULL;
 
 
     switch (length(args)) {
     case 0:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        local    = FALSE;
-        contents = FALSE;
-        N        = NA_INTEGER;
-        envir    = NULL;
-        target   = NULL;
-        break;
-    case 1:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        local    = FALSE;
-        contents = FALSE;
-        N        = NA_INTEGER;
-        envir    = CAR(args); args = CDR(args);
-        target   = NULL;
-        break;
-    case 2:
-        verbose  = FALSE;
-        original = FALSE;
-        for_msg  = FALSE;
-        local    = FALSE;
-        contents = FALSE;
-        N        = NA_INTEGER;
-        envir    = CAR(args); args = CDR(args);
-        target   = CAR(args); args = CDR(args);
-        break;
-    case 3:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = FALSE;
-        for_msg  = FALSE;
-        local    = FALSE;
-        contents = FALSE;
-        N        = NA_INTEGER;
-        envir    = CAR(args); args = CDR(args);
-        target   = CAR(args); args = CDR(args);
         break;
     case 4:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = FALSE;
-        local    = FALSE;
-        contents = FALSE;
-        N        = NA_INTEGER;
+        local    = asLogical(CAR(args)); args = CDR(args);
         envir    = CAR(args); args = CDR(args);
         target   = CAR(args); args = CDR(args);
+        srcfile  = CAR(args); args = CDR(args);
         break;
     case 5:
         verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = asLogical(CAR(args)); args = CDR(args);
-        local    = FALSE;
-        contents = FALSE;
-        N        = NA_INTEGER;
-        envir    = CAR(args); args = CDR(args);
-        target   = CAR(args); args = CDR(args);
-        break;
-    case 6:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = asLogical(CAR(args)); args = CDR(args);
-        local    = FALSE;
-        contents = asLogical(CAR(args)); args = CDR(args);
-        N        = NA_INTEGER;
-        envir    = CAR(args); args = CDR(args);
-        target   = CAR(args); args = CDR(args);
-        break;
-    case 7:
-        verbose  = asLogical(CAR(args)); args = CDR(args);
-        original = asLogical(CAR(args)); args = CDR(args);
-        for_msg  = asLogical(CAR(args)); args = CDR(args);
         local    = asLogical(CAR(args)); args = CDR(args);
-        contents = asLogical(CAR(args)); args = CDR(args);
-        N        = NA_INTEGER;
         envir    = CAR(args); args = CDR(args);
         target   = CAR(args); args = CDR(args);
+        srcfile  = CAR(args); args = CDR(args);
         break;
     case 8:
         verbose  = asLogical(CAR(args)); args = CDR(args);
         original = asLogical(CAR(args)); args = CDR(args);
         for_msg  = asLogical(CAR(args)); args = CDR(args);
-        local    = asLogical(CAR(args)); args = CDR(args);
         contents = asLogical(CAR(args)); args = CDR(args);
-        N        = asInteger(CAR(args)); args = CDR(args);
+        local    = asLogical(CAR(args)); args = CDR(args);
         envir    = CAR(args); args = CDR(args);
         target   = CAR(args); args = CDR(args);
+        srcfile  = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_thispath", "0, 1, 2, 3, 4, 5, 6, 7, or 8"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_thispath", "0, 4, 5, or 8"));
         return R_NilValue;
     }
 
 
-    check_arguments(verbose, original, for_msg, /* get_frame_number */ FALSE,
-                    local, contents, N);
+    check_arguments5(verbose, original, for_msg, contents, local);
 
 
-    if (local) return syspath(verbose, original, for_msg, FALSE, local, contents, N, rho);
+    if (local) return syspath6(verbose, original, for_msg, contents, local, rho);
 
 
-    SEXP value = srcfilepath(verbose, original, for_msg, contents,
-                             /* unbound_ok */ TRUE, rho);
+    SEXP value = srcpath8(verbose, original, for_msg, contents, srcfile,
+                          /* lineno */ FALSE, /* unbound_ok */ TRUE, rho);
     if (value == R_UnboundValue) {
-        value = envpath(verbose, original, for_msg, contents, target, envir,
-                        /* unbound_ok */ TRUE, rho);
+        value = envpath8(verbose, original, for_msg, contents, target, envir,
+                         /* unbound_ok */ TRUE, rho);
         if (value == R_UnboundValue) {
-            value = syspath(verbose, original, for_msg, FALSE, local, contents,
-                            N, rho);
+            value = syspath6(verbose, original, for_msg, contents, local, rho);
         }
     }
     return value;

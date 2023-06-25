@@ -84,9 +84,6 @@ rm(tmp)
 }
 
 
-
-
-
 if (getRversion() < "3.0.0") {
 
 
@@ -210,6 +207,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(sys.LINENO)
     fix.External2.fun(env.LINENO)
     fix.External2.fun(LINENO)
+    fix.External2.fun(LINE)
 
 
     ## makefuns.R   ----
@@ -326,6 +324,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(try.sys.path)
     fix.External2.fun(try.env.path)
     fix.External2.fun(try.this.path)
+    fix.External2.fun(FILE)
 
 
     ## utils.R      ----

@@ -2,14 +2,22 @@
 \alias{path.functions}
 \title{Constructs Path Functions Similar to 'this.path()'}
 \description{
-  \code{path.functions()} accepts a pathname and constructs path-related
-  functions, similar to \code{this.path()} and associated.
+  \code{path.functions()} accepts a pathname and constructs a set of
+  path-related functions, similar to \code{this.path()} and associated.
 }
 \usage{
-path.functions(file)
+path.functions(file, local = FALSE, envir = parent.frame(),
+               matchThisEnv = getOption("topLevelEnvironment"),
+               srcfile = sys.call())
 }
 \arguments{
   \item{file}{a character string giving the pathname of the file or URL.}
+
+  \item{local}{See \code{?\link{sys.path}()}.}
+
+  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
+
+  \item{srcfile}{See \code{?\link{src.path}()}.}
 }
 \value{
   An environment with at least the following bindings:

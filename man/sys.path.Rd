@@ -7,14 +7,14 @@
   \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} path of
   the executing script.
 
-  \code{sys.dir()} returns the directory in which the executing script is
-  located.
+  \code{sys.dir()} returns the directory of \code{sys.path()}.
 }
 \usage{
 sys.path(verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, local = FALSE, contents = FALSE,
-    default, else.)
-sys.dir(verbose = getOption("verbose"), default, else.)
+         for.msg = FALSE, contents = FALSE, local = FALSE,
+         default, else.)
+sys.dir(verbose = getOption("verbose"), local = FALSE,
+        default, else.)
 }
 \arguments{
   \item{verbose}{\code{TRUE} or \code{FALSE}; should the method in which the
@@ -33,10 +33,6 @@ sys.dir(verbose = getOption("verbose"), default, else.)
     \code{for.msg = TRUE} will ignore \code{original = FALSE}, and will use
     \code{original = NA} instead.}
 
-  \item{local}{\code{TRUE} or \code{FALSE}; should the search for the executing
-    script be confined to the local environment in which
-    \code{\link{set.sys.path}()} was called?}
-
   \item{contents}{\code{TRUE} or \code{FALSE}; should the contents of the
     executing script be returned instead? In \sQuote{Jupyter}, a list of
     character vectors will be returned, the contents separated into cells.
@@ -48,6 +44,10 @@ sys.dir(verbose = getOption("verbose"), default, else.)
 
     This is intended for logging purposes. This is useful in \sQuote{RStudio}
     and \sQuote{VSCode} when the source document has contents but no path.}
+
+  \item{local}{\code{TRUE} or \code{FALSE}; should the search for the executing
+    script be confined to the local environment in which
+    \code{\link{set.sys.path}()} was called?}
 
   \item{default}{if there is no executing script, this value is returned.}
 
@@ -153,10 +153,6 @@ sys.dir(verbose = getOption("verbose"), default, else.)
   \codelink3{base:files}{file.remove}{()} or \codelink3{base}{unlink}{()} but
   still know its own path for the remainder of the script.
 
-  Within a script that contains calls to both \code{sys.path()} and
-  \codelink3{base:getwd}{setwd}{()}, \code{sys.path()} \emph{MUST} be used
-  \emph{AT LEAST} once before the first call to \code{setwd()}.
-
   Please \strong{DO NOT} use \code{sys.path()} inside the site-wide startup
   profile file, the user profile, nor the function \code{.First()} (see
   \ifelse{html}{\code{?\link[base]{Startup}}}{\code{?Startup}}). This has
@@ -224,17 +220,9 @@ Error in .sys.path.toplevel(FALSE, TRUE) :
   \code{else.} function for when one is specified.
 }
 \seealso{
-  \code{\link{here}()}
-
   \code{\link{shFILE}()}
 
   \code{\link{wrap.source}()}, \code{\link{set.sys.path}()}
-
-  \code{\link{this.path-package}}
-
-  \sourceslistlinks
-
-  \code{\link{R.from.shell}}
 }
 \examples{
 FILE1.R <- tempfile(fileext = ".R")

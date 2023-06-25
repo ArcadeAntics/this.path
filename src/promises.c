@@ -432,8 +432,7 @@ void unLockEnvironment(SEXP env, Rboolean bindings)
     if (bindings) {
         SEXP names = R_lsInternal3(env, /* all */ TRUE, /* sorted */ FALSE);
         PROTECT(names);
-        int n = length(names);
-        for (int i = 0; i < n; i++)
+        for (int i = 0, n = LENGTH(names); i < n; i++)
             R_unLockBinding(installTrChar(STRING_ELT(names, i)), env);
         UNPROTECT(1);
     }

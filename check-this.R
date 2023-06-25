@@ -29,7 +29,7 @@
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE,
+        check = TRUE, as.cran = TRUE,
 
         chdir = TRUE
     )
@@ -182,17 +182,17 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\.this\\.dir", x, value = TRUE)
+    x <- grep("as\\.list\\.environment", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
     x <- this.path:::.readFiles(Rfiles)
-    x <- grep("attr", x, value = TRUE)
+    x <- grep("as\\.list\\.environment", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
     x <- this.path:::.readFiles(Rdfiles)
-    x <- grep("\\\\encoding\\{", x, value = TRUE)
+    x <- grep("FILE <-", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
 

@@ -36,42 +36,82 @@
 
 sys.LINENO <- function ()
 {
-    failure <- TRUE
-    tryCatch({
+    success <- tryCatch({
         context.number <- .External2(.C_getframenumber)
         if (context.number == 0L)
             return(NA_integer_)
         path <- .External2(.C_syspath)
-        failure <- FALSE
-    }, error = function(e) NULL)
-    if (failure)
-        NA_integer_
-    else .LINENO(path, context.number + 1L)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        .LINENO(path, context.number + 1L)
+    else NA_integer_
 }
 
 
 env.LINENO <- function (envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
 {
-    ## force the promises
     envir
     matchThisEnv
-
-
-    failure <- TRUE
-    tryCatch({
+    success <- tryCatch({
         path <- .External2(.C_envpath, envir, matchThisEnv)
-        failure <- FALSE
-    }, error = function(e) NULL)
-    if (failure)
-        NA_integer_
-    else .LINENO(path)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        .LINENO(path)
+    else NA_integer_
 }
 
 
-LINENO <- eval(call("function", as.pairlist(alist(envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))), bquote({
-    value <- .(body(env.LINENO))
-    if (is.na(value))
-        .(body(sys.LINENO))
+src.LINENO <- function (srcfile = sys.call())
+{
+    srcfile
+    tryCatch({
+        .External2(.C_srclineno, srcfile)
+    }, error = function(e) NA_integer_)
+}
+
+
+LINENO <- eval(call("function", as.pairlist(alist(envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call())), bquote({
+    value <- .(body(src.LINENO))
+    if (is.na(value)) {
+        value <- .(body(env.LINENO))
+        if (is.na(value))
+            .(body(sys.LINENO))
+        else value
+    }
+    else value
+})))
+
+
+LINE <- eval(call("function", NULL, bquote({
+    value <- .(
+        local({
+            tmp <- src.LINENO
+            f <- formals(tmp)
+            tmp <- body(tmp)
+            tmp[seq_along(f) + 1L] <- lapply(seq_along(f), function(i) {
+                call("<-", as.symbol(names(f)[[i]]), f[[i]])
+            })
+            tmp
+        })
+    )
+    if (is.na(value)) {
+        value <- .(
+            local({
+                tmp <- env.LINENO
+                f <- formals(tmp)
+                tmp <- body(tmp)
+                tmp[seq_along(f) + 1L] <- lapply(seq_along(f), function(i) {
+                    call("<-", as.symbol(names(f)[[i]]), f[[i]])
+                })
+                tmp
+            })
+        )
+        if (is.na(value))
+            .(body(sys.LINENO))
+        else value
+    }
     else value
 })))
 

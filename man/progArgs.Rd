@@ -84,38 +84,38 @@ this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
     list(list(list("lists are recursed"))))
 
 
-FILE <- tempfile(fileext = ".R")
+FILE.R <- tempfile(fileext = ".R")
 this.path:::.write.code({
     this.path:::.withAutoprint({
         this.path::sys.path()
         this.path::fileArgs()
         this.path::progArgs()
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
-}, FILE)
+}, FILE.R)
 
 
 ## wrap your source call with a call to withArgs()
 this.path::withArgs(
-    source(FILE, local = TRUE, verbose = FALSE),
+    source(FILE.R, local = TRUE, verbose = FALSE),
     letters[6:10], pi, exp(1)
 )
 this.path::withArgs(
-    sys.source(FILE, environment()),
+    sys.source(FILE.R, environment()),
     letters[11:15], pi + 1i * exp(1)
 )
-this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE,
+this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE.R,
     this.path::asArgs(letters[16:20], pi, Sys.time())))
 ## fileArgs() will be character(0) because there is no executing script
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
-    rbind("-e", readLines(FILE)[-2L]),
+    rbind("-e", readLines(FILE.R)[-2L]),
     this.path::asArgs(letters[16:20], pi, Sys.time())))
 
 
 # ## with R >= 4.1.0, use the forward pipe operator '|>' to
 # ## make calls to withArgs() more intuitive:
-# source(FILE, local = TRUE, verbose = FALSE) |> this.path::withArgs(
+# source(FILE.R, local = TRUE, verbose = FALSE) |> this.path::withArgs(
 #     letters[6:10], pi, exp(1))
-# sys.source(FILE, environment()) |> this.path::withArgs(
+# sys.source(FILE.R, environment()) |> this.path::withArgs(
 #     letters[11:15], pi + 1i * exp(1))
 
 
@@ -127,7 +127,7 @@ sourcelike <- function (file, envir = parent.frame())
     exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
 }
-this.path::withArgs(sourcelike(FILE), letters[21:26])
+this.path::withArgs(sourcelike(FILE.R), letters[21:26])
 
 
 sourcelike2 <- function (file, envir = parent.frame())
@@ -141,9 +141,9 @@ sourcelike3 <- function (file, envir = parent.frame())
     envir <- as.environment(envir)
     wrap.source(sourcelike2(file = file, envir = envir))
 }
-this.path::withArgs(sourcelike3(FILE), LETTERS[1:5])
-this.path::withArgs(wrap.source(sourcelike2(FILE)), LETTERS[6:10])
+this.path::withArgs(sourcelike3(FILE.R), LETTERS[1:5])
+this.path::withArgs(wrap.source(sourcelike2(FILE.R)), LETTERS[6:10])
 
 
-unlink(FILE)
+unlink(FILE.R)
 }

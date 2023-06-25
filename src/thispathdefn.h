@@ -4,7 +4,7 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include "Rversiondefines.h"
+#include "rversiondefines.h"
 #include "translations.h"
 #include "defines.h"
 #include "thispathbackports.h"
@@ -18,8 +18,11 @@
 
 
 extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
-LibExtern SEXP R_SrcfileSymbol;
-LibExtern SEXP R_SrcrefSymbol;
+#if R_version_less_than(4, 2, 0)
+#define existsInFrame(rho, symbol) (findVarInFrame((rho), (symbol)) != R_UnboundValue)
+#else
+#define existsInFrame(rho, symbol) R_existsVarInFrame((rho), (symbol))
+#endif
 
 
 #if R_version_at_least(3, 1, 0)

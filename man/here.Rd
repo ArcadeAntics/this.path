@@ -1,6 +1,7 @@
 \name{here}
 \alias{sys.here}
 \alias{env.here}
+\alias{src.here}
 \alias{here}
 \alias{ici}
 \title{Construct Path to File, Starting with Current Directory}
@@ -10,22 +11,30 @@
   \code{\link{env.dir}()}, or \code{\link{this.dir}()}.
 }
 \usage{
-sys.here(..., .. = 0)
-env.here(..., .. = 0L, envir = parent.frame(),
+sys.here(..., .. = 0, local = FALSE)
+env.here(..., .. = 0, envir = parent.frame(),
          matchThisEnv = getOption("topLevelEnvironment"))
-here(..., .. = 0, envir = parent.frame(),
-     matchThisEnv = getOption("topLevelEnvironment"))
+src.here(..., .. = 0, srcfile = sys.call())
+
+here(..., .. = 0, local = FALSE, envir = parent.frame(),
+     matchThisEnv = getOption("topLevelEnvironment"),
+     srcfile = sys.call())
 
 ## alias for 'here'
-ici(..., .. = 0, envir = parent.frame(),
-    matchThisEnv = getOption("topLevelEnvironment"))
+ici(..., .. = 0, local = FALSE, envir = parent.frame(),
+    matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call())
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
 
   \item{..}{the number of directories to go back.}
 
-  \item{envir, matchThisEnv}{See \code{?\link{this.path}()}.}
+  \item{local}{See \code{?\link{sys.path}()}.}
+
+  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
+
+  \item{srcfile}{See \code{?\link{src.path}()}.}
 }
 \details{
   The path to a file starts with a base. The base is \code{..} number of
@@ -38,7 +47,7 @@ ici(..., .. = 0, envir = parent.frame(),
   the executing script's directory.
 }
 \examples{
-FILE <- tempfile(fileext = ".R")
+FILE.R <- tempfile(fileext = ".R")
 this.path:::.write.code({
 
 
@@ -55,11 +64,11 @@ this.path:::.write.code({
     this.path::here("script2.R")
 
 
-}, FILE)
+}, FILE.R)
 
 
-source(FILE, echo = TRUE, verbose = FALSE)
+source(FILE.R, echo = TRUE, verbose = FALSE)
 
 
-unlink(FILE)
+unlink(FILE.R)
 }

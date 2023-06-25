@@ -138,6 +138,7 @@ extern0 SEXP0
     moduleSymbol                           INI_as(install(".__module__.")),
     srcrefSymbol                           INI_as(install("srcref")),
     srcfileSymbol                          INI_as(install("srcfile")),
+    wholeSrcrefSymbol                      INI_as(install("wholeSrcref")),
     isFileSymbol                           INI_as(install("isFile"));
 
 

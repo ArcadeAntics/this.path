@@ -70,6 +70,9 @@ SEXP do_R_MB_CUR_MAX do_formals
 }
 
 
+SEXP _packageName;
+
+
 SEXP do_onLoad do_formals
 {
     do_start_no_call_op_rho("onLoad", 2);
@@ -86,9 +89,9 @@ SEXP do_onLoad do_formals
 
 
 #if R_version_at_least(3, 2, 0)
-    SEXP _packageName = installChar(STRING_ELT(pkgname, 0));
+    _packageName = installChar(STRING_ELT(pkgname, 0));
 #else
-    SEXP _packageName = install(CHAR(STRING_ELT(pkgname, 0)));
+    _packageName = install(CHAR(STRING_ELT(pkgname, 0)));
 #endif
 
 
@@ -174,12 +177,15 @@ SEXP do_onLoad do_formals
     } while (0)
 
 
+    /* ./R/lineno.R */
+    convertclosure2activebinding(install("LINE"));
+    /* ./R/ns-hooks.R */
     convertclosure2activebinding(install(".mbcslocale"));
     convertclosure2activebinding(install(".utf8locale"));
     convertclosure2activebinding(install(".latin1locale"));
     convertclosure2activebinding(install(".R_MB_CUR_MAX"));
-    // convertclosure2activebinding(install("FILE"));
-    // convertclosure2activebinding(install("LINE"));
+    /* ./R/thispath.R */
+    convertclosure2activebinding(install("FILE"));
 
 
     SEXP value = allocVector(VECSXP, 13);
@@ -542,10 +548,10 @@ SEXP do_onLoad do_formals
 
 SEXP do_onUnload do_formals
 {
-    do_start_no_call_op_rho("onUnload", 1);
+    do_start_no_call_op("onUnload", 1);
 
 
-    // SEXP libpath = CAR(args);
+    SEXP libpath = CAR(args);
 
 
     R_ReleaseObject(mynamespace);
@@ -571,6 +577,19 @@ SEXP do_onUnload do_formals
     R_ReleaseObject(expr__sys_path_toplevel                       );
     R_ReleaseObject(expr_getOption_topLevelEnvironment            );
     R_ReleaseObject(expr__toplevel_context_number                 );
+
+
+    {
+        SEXP expr;
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(expr = CONS(libpath, R_NilValue), &indx);
+        REPROTECT(expr = CONS(ScalarString(PRINTNAME(_packageName)), expr), indx);
+        REPROTECT(expr = LCONS(getFromBase(install("library.dynam.unload")), expr), indx);
+        REPROTECT(expr = CONS(expr, R_NilValue), indx);
+        REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
+        eval(expr, rho);
+        UNPROTECT(1);
+    }
 
 
     return R_NilValue;

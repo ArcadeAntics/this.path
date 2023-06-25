@@ -53,9 +53,9 @@ function (path, verbose = FALSE)
 })
 
 
-sys.proj <- function (...)
+sys.proj <- function (..., local = FALSE)
 {
-    base <- .External2(.C_syspath)
+    base <- .External2(.C_syspath, local)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -71,9 +71,19 @@ env.proj <- function (..., envir = parent.frame(), matchThisEnv = getOption("top
 }
 
 
-this.proj <- function (..., envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+src.proj <- function (..., srcfile = sys.call())
 {
-    base <- .External2(.C_thispath, envir, matchThisEnv)
+    base <- .External2(.C_srcpath, srcfile)
+    base <- .dir(base)
+    base <- .proj(base)
+    path.join(base, ...)
+}
+
+
+this.proj <- function (..., local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call())
+{
+    base <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)

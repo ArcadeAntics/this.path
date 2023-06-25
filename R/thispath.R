@@ -105,7 +105,8 @@ stop(.defunctError("shFILE", .(.pkgname), old = "normalized.shFILE"))
 
 
 
-readLines2 <- function(path, default = character(0)) {
+readLines2 <- function (path, default = character(0))
+{
     conn <- tryCatch({
         file(path, "rb", encoding = "")
     }, error = function(e) NULL)
@@ -118,6 +119,8 @@ readLines2 <- function(path, default = character(0)) {
     Encoding(txt) <- encoding
     txt
 }
+
+
 .r.editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
 .r.editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
 
@@ -347,7 +350,8 @@ delayedAssign(".untitled", {
 .sys.path.toplevel <- evalq(envir = new.env(), {
     assign(thispathofilejupyter, NA_character_)
     eval(call("delayedAssign", thispathfilejupyter, call(".normalizePath", as.symbol(thispathofilejupyter))))
-eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)), bquote({
+eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)), bquote(
+{
     if (.in.shell) {
 
 
@@ -595,8 +599,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     else if (.gui.rgui) {
 
 
-        .External2(.C_syspathrgui, names(utils::getWindowsHandles(minimized = TRUE)),
-            .untitled, .r.editor, verbose, original, for.msg, contents)
+        .External2(.C_syspathrgui, verbose, original, for.msg, contents,
+            names(utils::getWindowsHandles(minimized = TRUE)), .untitled, .r.editor)
     }
 
 
@@ -628,7 +632,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
             NA_character_
         else stop(.thisPathUnrecognizedMannerError())
     }
-}, splice = TRUE)))
+}
+, splice = TRUE)))
 })
 
 
@@ -768,46 +773,57 @@ normalizePath(path, winslash, mustWork)
 
 
 
-sys.path <- function (verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, local = FALSE, contents = FALSE, default, else.)
-.External2(.C_syspath, verbose, original, for.msg, local, contents)
+sys.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
+    contents = FALSE, local = FALSE, default, else.)
+.External2(.C_syspath, verbose, original, for.msg, contents, local)
 
 
-sys.dir <- function (verbose = getOption("verbose"), default, else.)
+sys.dir <- function (verbose = getOption("verbose"), local = FALSE, default, else.)
 {
-    value <- .External2(.C_syspath, verbose)
+    value <- .External2(.C_syspath, verbose, local)
     .dir(value)
 }
 
 
-env.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE,
-    contents = FALSE,
-    envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+env.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
+    contents = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
     default, else.)
 .External2(.C_envpath, verbose, original, for.msg, contents, envir, matchThisEnv)
 
 
-env.dir <- function (verbose = FALSE,
-    envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
-    default, else.)
+env.dir <- function (verbose = getOption("verbose"), envir = parent.frame(),
+    matchThisEnv = getOption("topLevelEnvironment"), default, else.)
 {
     value <- .External2(.C_envpath, verbose, envir, matchThisEnv)
     .dir(value)
 }
 
 
-this.path <- function (verbose = getOption("verbose"), original = FALSE,
-    for.msg = FALSE, local = FALSE, contents = FALSE,
-    envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
-    default, else.)
-.External2(.C_thispath, verbose, original, for.msg, local, contents, envir, matchThisEnv)
+src.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
+    contents = FALSE, srcfile = sys.call(), default, else.)
+.External2(.C_srcpath, verbose, original, for.msg, contents, srcfile)
 
 
-this.dir <- function (verbose = getOption("verbose"),
-    envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+src.dir <- function (verbose = getOption("verbose"), srcfile = sys.call(),
     default, else.)
 {
-    value <- .External2(.C_thispath, verbose, envir, matchThisEnv)
+    value <- .External2(.C_srcpath, verbose, srcfile)
+    .dir(value)
+}
+
+
+this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
+    contents = FALSE, local = FALSE, envir = parent.frame(),
+    matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call(),
+    default, else.)
+.External2(.C_thispath, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
+
+
+this.dir <- function (verbose = getOption("verbose"), local = FALSE, envir = parent.frame(),
+    matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call(),
+    default, else.)
+{
+    value <- .External2(.C_thispath, verbose, local, envir, matchThisEnv, srcfile)
     .dir(value)
 }
 
@@ -817,7 +833,8 @@ tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorCls[ \t]*\\\\[
 tmp <- str2lang(tmp)
 if (!is.character(tmp) || length(tmp) != 1L || is.na(tmp))
     stop("could not determine class name")
-tmpfun <- function(fun) {
+tmpfun <- function (fun)
+{
     R_BraceSymbol <- as.symbol("{")
     e <- body(fun)
     e2 <- e
@@ -852,6 +869,8 @@ sys.path  <- tmpfun(sys.path )
 sys.dir   <- tmpfun(sys.dir  )
 env.path  <- tmpfun(env.path )
 env.dir   <- tmpfun(env.dir  )
+src.path  <- tmpfun(src.path )
+src.dir   <- tmpfun(src.dir  )
 this.path <- tmpfun(this.path)
 this.dir  <- tmpfun(this.dir )
 rm(tmpfun, tmp)
@@ -899,9 +918,9 @@ stop(.defunctError("sys.dir(..., default = getwd())", .(.pkgname), old = "this.d
 }
 
 
-sys.here <- function (..., .. = 0L)
+sys.here <- function (..., .. = 0L, local = FALSE)
 {
-    base <- .External2(.C_syspath)
+    base <- .External2(.C_syspath, local)
     base <- .here(base, ..)
     path.join(base, ...)
 }
@@ -915,9 +934,18 @@ env.here <- function (..., .. = 0L, envir = parent.frame(), matchThisEnv = getOp
 }
 
 
-here <- function (..., .. = 0L, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+src.here <- function (..., .. = 0L, srcfile = sys.call())
 {
-    base <- .External2(.C_thispath, envir, matchThisEnv)
+    base <- .External2(.C_srcpath, srcfile)
+    base <- .here(base, ..)
+    path.join(base, ...)
+}
+
+
+here <- function (..., .. = 0L, local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call())
+{
+    base <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     base <- .here(base, ..)
     path.join(base, ...)
 }
@@ -944,40 +972,85 @@ try.shFILE <- function ()
 tryCatch(.shFILE(FALSE), error = function(e) .shFILE())
 
 
-try.sys.path <- function (contents = FALSE)
+try.sys.path <- function (contents = FALSE, local = FALSE)
 {
-    contents  ## force the promise before proceeding
-    tryCatch(.External2(.C_syspath, FALSE, FALSE, FALSE, FALSE, contents),
-        error = function(e) {
-            .External2(.C_syspath, FALSE, FALSE, TRUE, FALSE, contents)
-        })
+    ## force the promises before proceeding
+    contents
+    local
+    success <- tryCatch({
+        value <- .External2(.C_syspath, FALSE, FALSE, FALSE, contents, local)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        value
+    else {
+        .External2(.C_syspath, FALSE, FALSE, TRUE, contents, local)
+    }
 }
 
 
-try.env.path <- function (contents = FALSE, envir = parent.frame(),
-    matchThisEnv = getOption("topLevelEnvironment"))
+try.env.path <- function (contents = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
 {
     contents
     envir
     matchThisEnv
-    tryCatch(.External2(.C_envpath, FALSE, FALSE, FALSE, contents, envir, matchThisEnv),
-        error = function(e) {
-            .External2(.C_envpath, FALSE, FALSE, TRUE, contents, envir, matchThisEnv)
-        })
+    success <- tryCatch({
+        value <- .External2(.C_envpath, FALSE, FALSE, FALSE, contents, envir, matchThisEnv)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        value
+    else {
+        .External2(.C_envpath, FALSE, FALSE, TRUE, contents, envir, matchThisEnv)
+    }
 }
 
 
-try.this.path <- function (contents = FALSE, envir = parent.frame(),
-    matchThisEnv = getOption("topLevelEnvironment"))
+try.src.path <- function (contents = FALSE, srcfile = sys.call())
 {
     contents
+    srcfile
+    success <- tryCatch({
+        value <- .External2(.C_srcpath, FALSE, FALSE, FALSE, contents, srcfile)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        value
+    else {
+        .External2(.C_srcpath, FALSE, FALSE, TRUE, contents, srcfile)
+    }
+}
+
+
+try.this.path <- function (contents = FALSE, local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call())
+{
+    contents
+    local
     envir
     matchThisEnv
-    tryCatch(.External2(.C_thispath, FALSE, FALSE, FALSE, FALSE, contents, envir, matchThisEnv),
-        error = function(e) {
-            .External2(.C_thispath, FALSE, FALSE, TRUE, FALSE, contents, envir, matchThisEnv)
-        })
+    srcfile
+    success <- tryCatch({
+        value <- .External2(.C_thispath, FALSE, FALSE, FALSE, contents, local, envir, matchThisEnv, srcfile)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        value
+    else {
+        .External2(.C_thispath, FALSE, FALSE, TRUE, contents, local, envir, matchThisEnv, srcfile)
+    }
 }
+
+
+FILE <- local({
+    tmp <- try.this.path
+    f <- formals(tmp)
+    body(tmp)[seq_along(f) + 1L] <- lapply(seq_along(f), function(i) {
+        call("<-", as.symbol(names(f)[[i]]), f[[i]])
+    })
+    formals(tmp) <- NULL
+    tmp
+})
 
 
 

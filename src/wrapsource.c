@@ -624,9 +624,9 @@ SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
 
 
     if (unset) {
-        if (findVarInFrame(frame, setsyspathwashereSymbol) == R_UnboundValue)
+        if (!existsInFrame(frame, setsyspathwashereSymbol))
             error("%s cannot be called before set.sys.path()", name);
-        if (findVarInFrame(frame, thispathdoneSymbol) == R_UnboundValue)
+        if (!existsInFrame(frame, thispathdoneSymbol))
             error("%s cannot be called within this environment", name);
 #if defined(R_THIS_PATH_USE_removeFromFrame)
         SEXP names[] = {
@@ -657,9 +657,9 @@ SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
     }
 
 
-    if (findVarInFrame(frame, setsyspathwashereSymbol) != R_UnboundValue)
+    if (existsInFrame(frame, setsyspathwashereSymbol))
         error("%s cannot be called more than once within an environment", name);
-    if (findVarInFrame(frame, thispathdoneSymbol) != R_UnboundValue)
+    if (existsInFrame(frame, thispathdoneSymbol))
         error("%s cannot be called within this environment", name);
 
 

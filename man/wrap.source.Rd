@@ -284,10 +284,10 @@ wrapper <- function(path, ...) {
 }}
 }
 \examples{
-FILE <- tempfile(fileext = ".R")
+FILE.R <- tempfile(fileext = ".R")
 this.path:::.write.code({
     this.path::sys.path(verbose = TRUE)
-}, FILE)
+}, FILE.R)
 
 
 ## here we have a source-like function, suppose this
@@ -307,8 +307,8 @@ sourcelike <- function (file, envir = parent.frame())
 }
 
 
-sourcelike(FILE)
-sourcelike(con <- file(FILE)); close(con)
+sourcelike(FILE.R)
+sourcelike(con <- file(FILE.R)); close(con)
 
 
 ## here we have another source-like function, suppose this function
@@ -330,18 +330,18 @@ sourcelike2 <- function (pathname, envir = globalenv())
 ## expects a character string referring to an existing file
 ##
 ## with the following, you should be able
-## to use 'sys.path()' within 'FILE':
-wrap.source(sourcelike2(FILE), path.only = TRUE)
+## to use 'sys.path()' within 'FILE.R':
+wrap.source(sourcelike2(FILE.R), path.only = TRUE)
 
 
 # ## with R >= 4.1.0, use the forward pipe operator '|>' to
 # ## make calls to 'wrap.source' more intuitive:
-# sourcelike2(FILE) |> wrap.source(path.only = TRUE)
+# sourcelike2(FILE.R) |> wrap.source(path.only = TRUE)
 
 
 ## 'wrap.source' can recognize arguments by name, so they
 ## do not need to appear in the same order as the formals
-wrap.source(sourcelike2(envir = new.env(), pathname = FILE),
+wrap.source(sourcelike2(envir = new.env(), pathname = FILE.R),
     path.only = TRUE)
 
 
@@ -351,7 +351,7 @@ wrap.source(sourcelike2(...), path.only = TRUE)
 
 
 ## the same as before
-sourcelike3(FILE)
+sourcelike3(FILE.R)
 
 
 ## however, this is preferable:
@@ -361,7 +361,7 @@ sourcelike4 <- function (pathname, ...)
     pathname <- set.sys.path(pathname, path.only = TRUE)
     sourcelike2(pathname = pathname, ...)
 }
-sourcelike4(FILE)
+sourcelike4(FILE.R)
 
 
 ## perhaps you wish to run several scripts in the same function
@@ -375,5 +375,5 @@ fun <- function (paths, ...)
 }
 
 
-unlink(FILE)
+unlink(FILE.R)
 }
