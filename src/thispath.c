@@ -260,6 +260,85 @@ void check_arguments1(Rboolean verbose)
 }
 
 
+SEXP do_syspathjupyter do_formals
+{
+    do_start_no_call_op("syspathjupyter", 4);
+
+
+    Rboolean verbose, original, for_msg, contents;
+
+
+    verbose  = asLogical(CAR(args)); args = CDR(args);
+    original = asLogical(CAR(args)); args = CDR(args);
+    for_msg  = asLogical(CAR(args)); args = CDR(args);
+    contents = asLogical(CAR(args)); args = CDR(args);
+    check_arguments4(verbose, original, for_msg, contents);
+
+
+    if (verbose) Rprintf("Source: document in Jupyter\n");
+
+
+    if (contents) {
+
+
+#define get_thispathfilejupyter                                \
+        SEXP var = findVarInFrame(ENCLOS(rho), thispathfilejupyterSymbol);\
+        if (var == R_UnboundValue)                             \
+            error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathfilejupyterSymbol)));\
+        if (TYPEOF(var) != PROMSXP)                            \
+            error("invalid '%s', must be a promise", EncodeChar(PRINTNAME(thispathfilejupyterSymbol)))
+
+
+        get_thispathfilejupyter;
+
+
+        if (PRVALUE(var) == R_UnboundValue) {
+            if (PRSEEN(var)) {
+                if (PRSEEN(var) == 1) {}
+                else SET_PRSEEN(var, 0);
+            }
+        }
+
+
+        SEXP expr = LCONS(_getJupyterNotebookContentsSymbol, CONS(var, R_NilValue));
+        PROTECT(expr);
+        SEXP value = eval(expr, mynamespace);
+        UNPROTECT(1);
+        return value;
+    }
+
+
+    if (for_msg && !original) original = NA_LOGICAL;
+
+
+    if (original == NA_LOGICAL) {
+        get_thispathfilejupyter;
+
+
+        if (PRVALUE(var) == R_UnboundValue)
+            original = TRUE;
+        else
+            return PRVALUE(var);
+    }
+
+
+    if (original) {
+        return getInFrame(thispathofilejupyterSymbol, ENCLOS(rho), FALSE);
+    }
+    else {
+        get_thispathfilejupyter;
+        if (PRVALUE(var) == R_UnboundValue) {
+            if (PRSEEN(var)) {
+                if (PRSEEN(var) == 1) {}
+                else SET_PRSEEN(var, 0);
+            }
+            return eval(var, R_EmptyEnv);
+        }
+        else return PRVALUE(var);
+    }
+}
+
+
 SEXP do_syspathrgui do_formals
 {
     do_start_no_op("syspathrgui", 7);
@@ -1874,7 +1953,7 @@ SEXP do_srcpath do_formals
 
 SEXP do_srclineno do_formals
 {
-    do_start_no_call_op("srclineno", -1);
+    do_start_no_op("srclineno", -1);
 
 
     SEXP srcfile = NULL;

@@ -133,6 +133,7 @@ extern0 SEXP0
     inheritsSymbol                         INI_as(install("inherits")),
     for_msgSymbol                          INI_as(install("for.msg")),
     _getContentsSymbol                     INI_as(install(".getContents")),
+    _getJupyterNotebookContentsSymbol      INI_as(install(".getJupyterNotebookContents")),
     _projSymbol                            INI_as(install(".proj")),
     xSymbol                                INI_as(install("x")),
     moduleSymbol                           INI_as(install(".__module__.")),

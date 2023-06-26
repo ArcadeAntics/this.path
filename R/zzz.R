@@ -206,6 +206,7 @@ if (getRversion() < "3.0.0") {
 
     fix.External2.fun(sys.LINENO)
     fix.External2.fun(env.LINENO)
+    fix.External2.fun(src.LINENO)
     fix.External2.fun(LINENO)
     fix.External2.fun(LINE)
 
@@ -223,10 +224,6 @@ if (getRversion() < "3.0.0") {
     # fix.External2.fun(.utf8locale)
     # fix.External2.fun(.latin1locale)
     fix.External2.fun(.R_MB_CUR_MAX)
-
-
-    # fix.External2.fun(FILE)
-    # fix.External2.fun(LINE)
 
 
     fix.External2.fun(.onLoad)
@@ -281,6 +278,8 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(rel2sys.proj)
     fix.External2.fun(rel2env.dir)
     fix.External2.fun(rel2env.proj)
+    fix.External2.fun(rel2src.dir)
+    fix.External2.fun(rel2src.proj)
     fix.External2.fun(rel2here)
     fix.External2.fun(rel2proj)
 
@@ -290,6 +289,7 @@ if (getRversion() < "3.0.0") {
 
     fix.External2.fun(sys.proj)
     fix.External2.fun(env.proj)
+    fix.External2.fun(src.proj)
     fix.External2.fun(this.proj)
     fix.External2.fun(reset.proj)
 
@@ -315,14 +315,18 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(sys.dir)
     fix.External2.fun(env.path)
     fix.External2.fun(env.dir)
+    fix.External2.fun(src.path)
+    fix.External2.fun(src.dir)
     fix.External2.fun(this.path)
     fix.External2.fun(this.dir)
     fix.External2.fun(.here)
     fix.External2.fun(sys.here)
     fix.External2.fun(env.here)
+    fix.External2.fun(src.here)
     fix.External2.fun(here)
     fix.External2.fun(try.sys.path)
     fix.External2.fun(try.env.path)
+    fix.External2.fun(try.src.path)
     fix.External2.fun(try.this.path)
     fix.External2.fun(FILE)
 

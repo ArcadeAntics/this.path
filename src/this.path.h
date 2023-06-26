@@ -207,6 +207,7 @@ extern SEXP do_thisPathInAQUAError                      do_formals;
 
 extern SEXP do_isclipboard      do_formals;
 extern SEXP do_inittoolsrstudio do_formals;
+extern SEXP do_syspathjupyter   do_formals;
 extern SEXP do_syspathrgui      do_formals;
 extern SEXP do_syspath          do_formals;
 extern SEXP do_getframenumber   do_formals;

@@ -259,7 +259,7 @@ delayedAssign(".untitled", {
 }
 
 
-.getJupyterNotebookContents <- function (..., do.unlist = TRUE, give.f = TRUE)
+.getJupyterNotebookContents <- function (..., do.unlist = FALSE, give.f = TRUE)
 {
     lines <- .getContents(...)
     source <- jsonlite::fromJSON(lines)[[c("cells", "source")]]
@@ -268,7 +268,8 @@ delayedAssign(".untitled", {
         if (give.f)
             attr(value, "f") <- as.factor(rep(seq_along(source), lengths(source)))
         value
-    } else source
+    }
+    else source
 }
 
 
@@ -432,9 +433,9 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                     else
                         "Source: source document in RStudio\n"
                 )
-            if (original)
-                path
-            else .normalizePath(path)
+            if (.isfalse(original))
+                .normalizePath(path)
+            else path
         }
         else if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
@@ -478,9 +479,9 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         else if (nzchar(path <- context[["path"]])) {
             Encoding(path) <- "UTF-8"
             if (verbose) cat("Source: document in VSCode\n")
-            if (original)
-                path
-            else .normalizePath(path)
+            if (.isfalse(original))
+                .normalizePath(path)
+            else path
         }
         else if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
@@ -492,14 +493,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     else if (.gui.jupyter) {
 
 
-        if (!is.na(.(as.symbol(thispathofilejupyter)))) {
-            if (verbose) cat("Source: document in Jupyter\n")
-            if (contents)
-                return(.getJupyterNotebookContents(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
-            else if (original)
-                return(.(as.symbol(thispathofilejupyter)))
-            else return(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)))
-        }
+        if (!is.na(.(as.symbol(thispathofilejupyter))))
+            return(.External2(.C_syspathjupyter, verbose, original, for.msg, contents))
 
 
         if (is.null(initwd)) {
@@ -567,12 +562,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                                 for (expr in exprs) {
                                     if (identical(expr, call)) {
                                         .External2(.C_setsyspathjupyter, file, skipCheck = TRUE)
-                                        if (verbose) cat("Source: document in Jupyter\n")
-                                        if (contents)
-                                            return(.getJupyterNotebookContents(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)), do.unlist = FALSE))
-                                        else if (original)
-                                            return(.(as.symbol(thispathofilejupyter)))
-                                        else return(.External2(.C_getpromisewithoutwarning, .(thispathfilejupyter)))
+                                        return(.External2(.C_syspathjupyter, verbose, original, for.msg, contents))
                                     }
                                 }
                             }
