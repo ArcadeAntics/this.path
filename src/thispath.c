@@ -1748,14 +1748,10 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     SEXP srcfile_original;
 
 
-    Rboolean _is_srcfilecopy  = NA_LOGICAL,
-             _is_srcfilealias = NA_LOGICAL;
+    Rboolean _is_srcfilecopy = NA_LOGICAL;
 #define is_srcfilecopy  ((_is_srcfilecopy == NA_LOGICAL) ?     \
                          (_is_srcfilecopy = inherits(srcfile, "srcfilecopy")) :\
                          (_is_srcfilecopy))
-#define is_srcfilealias ((_is_srcfilealias == NA_LOGICAL) ?    \
-                         (_is_srcfilealias = inherits(srcfile, "srcfilealias")) :\
-                         (_is_srcfilealias))
 
 
     if (srcfile) {
@@ -1805,7 +1801,7 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         if (thispathofile != R_NilValue) {
             if (thispathofile == R_UnboundValue)
                 error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            else if (contents && (is_srcfilecopy || (is_srcfilealias &&
+            else if (contents && (is_srcfilecopy || (inherits(srcfile, "srcfilealias") &&
                      inherits(srcfile_original = findVarInFrame(srcfile, originalSymbol), "srcfilecopy") &&
                      (srcfile = srcfile_original))))
             {
