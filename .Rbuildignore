@@ -1,4 +1,4 @@
 ^\.Rproj\.user$
 ^\.gitignore$
-\.Rproj$
+^this\.path\.Rproj$
 ^check-this\.R$

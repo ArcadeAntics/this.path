@@ -6,14 +6,17 @@
   path-related functions, similar to \code{this.path()} and associated.
 }
 \usage{
-path.functions(file, local = FALSE, envir = parent.frame(),
+path.functions(file, local = FALSE, n = 0,
+               envir = parent.frame(n + 1),
                matchThisEnv = getOption("topLevelEnvironment"),
-               srcfile = sys.call())
+               srcfile = sys.call(if (n) sys.parent(n) else 0))
 }
 \arguments{
   \item{file}{a character string giving the pathname of the file or URL.}
 
   \item{local}{See \code{?\link{sys.path}()}.}
+
+  \item{n}{See \code{?\link{this.path}()}.}
 
   \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
 

@@ -576,3 +576,7 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 
 .isfalse <- function (x)
 .External2(.C_isfalse, x)
+
+
+.asInteger <- function (x)
+.External2(.C_asInteger, x)

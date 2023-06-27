@@ -169,6 +169,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"thispath"        , (DL_FUNC) &do_thispath        , -1},
     {"istrue"          , (DL_FUNC) &do_istrue          ,  1},
     {"isfalse"         , (DL_FUNC) &do_isfalse         ,  1},
+    {"asInteger"       , (DL_FUNC) &do_asInteger       ,  1},
 
 
     /* wrapsource.c */

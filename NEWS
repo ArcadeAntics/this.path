@@ -43,6 +43,9 @@ CHANGES IN this.path devel:
       source reference. Also added src.dir(), src.here(), src.proj(),
       rel2src.dir(), src.LINENO(), and try.src.path().
 
+    * this.path() now accepts arguments 'n', 'envir', 'matchThisEnv',
+      and 'srcfile' to finely control how the path will be retrieved.
+
     * Added rel2proj() for turning absolute paths into relative paths
       against the current script's project root. Also added
       rel2sys.proj(), rel2env.proj(), and rel2src.proj().
@@ -86,6 +89,9 @@ CHANGES IN this.path devel:
 
     * Fixed sys.path(contents = TRUE) in 'Jupyter' if the executing
       script had yet to be determined.
+
+    * Fixed sys.path(original = NA) in 'RStudio', 'VSCode', and
+      'Jupyter' saying 'missing value where TRUE/FALSE needed'.
 
     * Fixed relpath() on Windows when comparing paths with network
       shares.

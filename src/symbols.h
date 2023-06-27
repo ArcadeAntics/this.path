@@ -140,7 +140,10 @@ extern0 SEXP0
     srcrefSymbol                           INI_as(install("srcref")),
     srcfileSymbol                          INI_as(install("srcfile")),
     wholeSrcrefSymbol                      INI_as(install("wholeSrcref")),
-    isFileSymbol                           INI_as(install("isFile"));
+    isFileSymbol                           INI_as(install("isFile")),
+    fixedNewlinesSymbol                    INI_as(install("fixedNewlines")),
+    _fixNewlinesSymbol                     INI_as(install(".fixNewlines")),
+    originalSymbol                         INI_as(install("original"));
 
 
 #undef extern0

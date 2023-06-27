@@ -1745,10 +1745,17 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     SEXP ofile;
 
 
-    Rboolean _is_srcfilecopy = NA_LOGICAL;
-#define is_srcfilecopy ((_is_srcfilecopy == NA_LOGICAL) ?      \
-                        (_is_srcfilecopy = inherits(srcfile, "srcfilecopy")) :\
-                        (_is_srcfilecopy))
+    SEXP srcfile_original;
+
+
+    Rboolean _is_srcfilecopy  = NA_LOGICAL,
+             _is_srcfilealias = NA_LOGICAL;
+#define is_srcfilecopy  ((_is_srcfilecopy == NA_LOGICAL) ?     \
+                         (_is_srcfilecopy = inherits(srcfile, "srcfilecopy")) :\
+                         (_is_srcfilecopy))
+#define is_srcfilealias ((_is_srcfilealias == NA_LOGICAL) ?    \
+                         (_is_srcfilealias = inherits(srcfile, "srcfilealias")) :\
+                         (_is_srcfilealias))
 
 
     if (srcfile) {
@@ -1798,7 +1805,18 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         if (thispathofile != R_NilValue) {
             if (thispathofile == R_UnboundValue)
                 error(_("object '%s' not found"), EncodeChar(PRINTNAME(thispathofileSymbol)));
-            else if (contents && is_srcfilecopy) {
+            else if (contents && (is_srcfilecopy || (is_srcfilealias &&
+                     inherits(srcfile_original = findVarInFrame(srcfile, originalSymbol), "srcfilecopy") &&
+                     (srcfile = srcfile_original))))
+            {
+                SEXP tmp = findVarInFrame(srcfile, fixedNewlinesSymbol);
+                if (tmp == R_UnboundValue || tmp == R_NilValue) {
+                    SEXP expr = LCONS(_fixNewlinesSymbol, CONS(srcfile, R_NilValue));
+                    PROTECT(expr);
+                    eval(expr, mynamespace);
+                    set_R_Visible(TRUE);
+                    UNPROTECT(1);
+                }
                 returnthis = findVarInFrame(srcfile, linesSymbol);
                 if (returnthis == R_UnboundValue)
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));
@@ -2058,4 +2076,14 @@ SEXP do_isfalse do_formals
 
 
     return ScalarLogical(asLogical(CAR(args)) == FALSE);
+}
+
+
+
+SEXP do_asInteger do_formals
+{
+    do_start_no_call_op_rho("asInteger", 1);
+
+
+    return ScalarInteger(asInteger(CAR(args)));
 }

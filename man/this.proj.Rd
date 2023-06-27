@@ -15,13 +15,15 @@
 }
 \usage{
 sys.proj(..., local = FALSE)
-env.proj(..., envir = parent.frame(),
+env.proj(..., n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"))
-src.proj(..., srcfile = sys.call())
+src.proj(..., n = 0,
+         srcfile = sys.call(if (n) sys.parent(n) else 0))
 
-this.proj(..., local = FALSE, envir = parent.frame(),
+this.proj(..., local = FALSE, n = 0,
+          envir = parent.frame(n + 1),
           matchThisEnv = getOption("topLevelEnvironment"),
-          srcfile = sys.call())
+          srcfile = sys.call(if (n) sys.parent(n) else 0))
 
 reset.proj()
 }
@@ -29,6 +31,8 @@ reset.proj()
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
 
   \item{local}{See \code{?\link{sys.path}()}.}
+
+  \item{n}{See \code{?\link{this.path}()}.}
 
   \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
 

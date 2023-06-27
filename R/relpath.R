@@ -254,16 +254,18 @@ rel2sys.proj <- function (path, local = FALSE)
 }
 
 
-rel2env.dir <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+rel2env.dir <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
+    n <- .asInteger(n)
     relative.to <- .External2(.C_envpath, envir, matchThisEnv)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
 
 
-rel2env.proj <- function (path, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+rel2env.proj <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
+    n <- .asInteger(n)
     relative.to <- .External2(.C_envpath, envir, matchThisEnv)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
@@ -271,16 +273,18 @@ rel2env.proj <- function (path, envir = parent.frame(), matchThisEnv = getOption
 }
 
 
-rel2src.dir <- function (path, srcfile = sys.call())
+rel2src.dir <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
+    n <- .asInteger(n)
     relative.to <- .External2(.C_srcpath, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
 
 
-rel2src.proj <- function (path, srcfile = sys.call())
+rel2src.proj <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
+    n <- .asInteger(n)
     relative.to <- .External2(.C_srcpath, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
@@ -288,18 +292,22 @@ rel2src.proj <- function (path, srcfile = sys.call())
 }
 
 
-rel2here <- function (path, local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call())
+rel2here <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
+    matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
+    n <- .asInteger(n)
     relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
 
 
-rel2proj <- function (path, local = FALSE, envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call())
+rel2proj <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
+    matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
+    n <- .asInteger(n)
     relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)

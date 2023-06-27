@@ -25,20 +25,23 @@ relpath(path, relative.to = normalizePath(getwd(), "/", TRUE))
 rel2sys.dir(path, local = FALSE)
 rel2sys.proj(path, local = FALSE)
 
-rel2env.dir(path, envir = parent.frame(),
+rel2env.dir(path, n = 0, envir = parent.frame(n + 1),
             matchThisEnv = getOption("topLevelEnvironment"))
-rel2env.proj(path, envir = parent.frame(),
+rel2env.proj(path, n = 0, envir = parent.frame(n + 1),
              matchThisEnv = getOption("topLevelEnvironment"))
 
-rel2src.dir(path, srcfile = sys.call())
-rel2src.proj(path, srcfile = sys.call())
+rel2src.dir(path, n = 0,
+            srcfile = sys.call(if (n) sys.parent(n) else 0))
+rel2src.proj(path, n = 0,
+             srcfile = sys.call(if (n) sys.parent(n) else 0))
 
-rel2here(path, local = FALSE, envir = parent.frame(),
+rel2here(path, local = FALSE, n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
-         srcfile = sys.call())
-rel2proj(path, local = FALSE, envir = parent.frame(),
+         srcfile = sys.call(if (n) sys.parent(n) else 0))
+rel2proj(path, local = FALSE, n = 0,
+         envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
-         srcfile = sys.call())
+         srcfile = sys.call(if (n) sys.parent(n) else 0))
 }
 \arguments{
   \item{path}{character vector of file / / URL pathnames.}
@@ -47,6 +50,8 @@ rel2proj(path, local = FALSE, envir = parent.frame(),
     \code{path} relative to.}
 
   \item{local}{See \code{?\link{sys.path}()}.}
+
+  \item{n}{See \code{?\link{this.path}()}.}
 
   \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
 

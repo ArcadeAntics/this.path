@@ -1,28 +1,5 @@
 {
-    local({  ## change the Date in the DESCRIPTION to the current date
-        path <- this.path::here("DESCRIPTION")
-        x <- local({
-            conn <- file(path, "rb", encoding = "")
-            on.exit(close(conn))
-            readLines(conn)
-        })
-        n <- grep("^Date: ", x)
-        if (length(n) > 1L)
-            stop(gettextf("in '%s':\n multiple lines that start with \"Date: \"", "./DESCRIPTION"))
-        if (length(n) < 1L) {}
-        else {
-            date <- format(Sys.time(), "Date: %Y-%m-%d", "UTC")
-            if (x[[n]] != date) {
-                x[[n]] <- date
-                local({
-                    conn <- file(path, "w", encoding = "")
-                    on.exit(close(conn))
-                    writeLines(x, conn, useBytes = TRUE)
-                })
-            }
-        }
-        invisible()
-    })
+    essentials:::.update.DESCRIPTION.Date()
     Sys.setenv(`_R_CHECK_CRAN_INCOMING_` = "TRUE")
     essentials:::check.this(  ## this.path
         special = TRUE,

@@ -49,8 +49,9 @@ sys.LINENO <- function ()
 }
 
 
-env.LINENO <- function (envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"))
+env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
+    n <- .asInteger(n)
     envir
     matchThisEnv
     success <- tryCatch({
@@ -63,8 +64,9 @@ env.LINENO <- function (envir = parent.frame(), matchThisEnv = getOption("topLev
 }
 
 
-src.LINENO <- function (srcfile = sys.call())
+src.LINENO <- function (n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
+    n <- .asInteger(n)
     srcfile
     tryCatch({
         .External2(.C_srclineno, srcfile)
@@ -72,10 +74,10 @@ src.LINENO <- function (srcfile = sys.call())
 }
 
 
-LINENO <- eval(call("function", as.pairlist(alist(envir = parent.frame(), matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call())), bquote({
+LINENO <- eval(call("function", as.pairlist(alist(n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call(if (n) sys.parent(n) else 0L))), bquote({
     value <- .(body(src.LINENO))
     if (is.na(value)) {
-        value <- .(body(env.LINENO))
+        value <- .(body(env.LINENO)[-2L])
         if (is.na(value))
             .(body(sys.LINENO))
         else value
@@ -87,25 +89,20 @@ LINENO <- eval(call("function", as.pairlist(alist(envir = parent.frame(), matchT
 LINE <- eval(call("function", NULL, bquote({
     value <- .(
         local({
-            tmp <- src.LINENO
-            f <- formals(tmp)
-            tmp <- body(tmp)
-            tmp[seq_along(f) + 1L] <- lapply(seq_along(f), function(i) {
-                call("<-", as.symbol(names(f)[[i]]), f[[i]])
-            })
-            tmp
+           tmp <- src.LINENO
+           as.call(c(as.list(quote({
+               srcfile <- sys.call()
+           })), as.list(body(tmp)[-seq_len(length(formals(tmp)) + 1L)])))
         })
     )
     if (is.na(value)) {
         value <- .(
             local({
                 tmp <- env.LINENO
-                f <- formals(tmp)
-                tmp <- body(tmp)
-                tmp[seq_along(f) + 1L] <- lapply(seq_along(f), function(i) {
-                    call("<-", as.symbol(names(f)[[i]]), f[[i]])
-                })
-                tmp
+                as.call(c(as.list(quote({
+                    envir <- parent.frame()
+                    matchThisEnv <- getOption("topLevelEnvironment")
+                })), as.list(body(tmp)[-seq_len(length(formals(tmp)) + 1L)])))
             })
         )
         if (is.na(value))

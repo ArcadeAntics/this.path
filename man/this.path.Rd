@@ -26,32 +26,40 @@
 }
 \usage{
 env.path(verbose = getOption("verbose"), original = FALSE,
-         for.msg = FALSE, contents = FALSE, envir = parent.frame(),
+         for.msg = FALSE, contents = FALSE, n = 0,
+         envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
          default, else.)
-env.dir(verbose = getOption("verbose"), envir = parent.frame(),
+env.dir(verbose = getOption("verbose"), n = 0,
+        envir = parent.frame(n + 1),
         matchThisEnv = getOption("topLevelEnvironment"),
         default, else.)
 
 src.path(verbose = getOption("verbose"), original = FALSE,
-         for.msg = FALSE, contents = FALSE, srcfile = sys.call(),
+         for.msg = FALSE, contents = FALSE, n = 0,
+         srcfile = sys.call(if (n) sys.parent(n) else 0),
          default, else.)
-src.dir(verbose = getOption("verbose"), srcfile = sys.call(),
+src.dir(verbose = getOption("verbose"), n = 0,
+        srcfile = sys.call(if (n) sys.parent(n) else 0),
         default, else.)
 
 this.path(verbose = getOption("verbose"), original = FALSE,
           for.msg = FALSE, contents = FALSE, local = FALSE,
-          envir = parent.frame(),
+          n = 0, envir = parent.frame(n + 1),
           matchThisEnv = getOption("topLevelEnvironment"),
-          srcfile = sys.call(), default, else.)
+          srcfile = sys.call(if (n) sys.parent(n) else 0),
+          default, else.)
 this.dir(verbose = getOption("verbose"), local = FALSE,
-         envir = parent.frame(),
+         n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
-         srcfile = sys.call(), default, else.)
+         srcfile = sys.call(if (n) sys.parent(n) else 0),
+         default, else.)
 }
 \arguments{
   \item{verbose, original, for.msg, contents, local, default, else.}{See
     \code{?\link{sys.path}()}.}
+
+  \item{n}{the number of additional generations to go back.}
 
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level

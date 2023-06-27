@@ -12,18 +12,21 @@
 }
 \usage{
 sys.here(..., .. = 0, local = FALSE)
-env.here(..., .. = 0, envir = parent.frame(),
+env.here(..., .. = 0, n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"))
-src.here(..., .. = 0, srcfile = sys.call())
+src.here(..., .. = 0, n = 0,
+         srcfile = sys.call(if (n) sys.parent(n) else 0))
 
-here(..., .. = 0, local = FALSE, envir = parent.frame(),
+here(..., .. = 0, local = FALSE, n = 0,
+     envir = parent.frame(n + 1),
      matchThisEnv = getOption("topLevelEnvironment"),
-     srcfile = sys.call())
+     srcfile = sys.call(if (n) sys.parent(n) else 0))
 
 ## alias for 'here'
-ici(..., .. = 0, local = FALSE, envir = parent.frame(),
+ici(..., .. = 0, local = FALSE, n = 0,
+    envir = parent.frame(n + 1),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call())
+    srcfile = sys.call(if (n) sys.parent(n) else 0))
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
@@ -31,6 +34,8 @@ ici(..., .. = 0, local = FALSE, envir = parent.frame(),
   \item{..}{the number of directories to go back.}
 
   \item{local}{See \code{?\link{sys.path}()}.}
+
+  \item{n}{See \code{?\link{this.path}()}.}
 
   \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
 

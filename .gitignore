@@ -1,8 +1,4 @@
-.Rproj.user
-/.Rproj.user/
-/.Rproj.user/**
-*.Rcheck
-/*.Rcheck/
-/*.Rcheck/**
-/this.path*.tar.gz
-/this.path*.zip
+/.Rproj.user
+/this.path.Rcheck
+/this.path_*.tar.gz
+/this.path_*.zip

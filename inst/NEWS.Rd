@@ -46,6 +46,11 @@
         \code{src.proj()}, \code{rel2src.dir()}, \code{src.LINENO()}, and
         \code{try.src.path()}.}
 
+      \item{\code{this.path()} now accepts arguments \codeorsQuote{n},
+        \codeorsQuote{envir}, \codeorsQuote{matchThisEnv}, and
+        \codeorsQuote{srcfile} to finely control how the path will be
+        retrieved.}
+
       \item{Added \code{rel2proj()} for turning absolute paths into relative
         paths against the current script's project root. Also added
         \code{rel2sys.proj()}, \code{rel2env.proj()}, and
@@ -93,6 +98,10 @@
 
       \item{Fixed \code{sys.path(contents = TRUE)} in \sQuote{\Jupyter} if the
         executing script had yet to be determined.}
+
+      \item{Fixed \code{sys.path(original = NA)} in \sQuote{\RStudio},
+        \sQuote{\VSCode}, and \sQuote{\Jupyter} saying
+        \code{missing value where TRUE/FALSE needed}.}
 
       \item{Fixed \code{relpath()} on Windows when comparing paths with network
         shares.}

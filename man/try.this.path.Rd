@@ -17,19 +17,23 @@
 }
 \usage{
 try.sys.path(contents = FALSE, local = FALSE)
-try.env.path(contents = FALSE, envir = parent.frame(),
+try.env.path(contents = FALSE, n = 0,
+             envir = parent.frame(n + 1),
              matchThisEnv = getOption("topLevelEnvironment"))
-try.src.path(contents = FALSE, srcfile = sys.call())
+try.src.path(contents = FALSE, n = 0,
+             srcfile = sys.call(if (n) sys.parent(n) else 0))
 
-try.this.path(contents = FALSE, local = FALSE,
-              envir = parent.frame(),
+try.this.path(contents = FALSE, local = FALSE, n = 0,
+              envir = parent.frame(n + 1),
               matchThisEnv = getOption("topLevelEnvironment"),
-              srcfile = sys.call())
+              srcfile = sys.call(if (n) sys.parent(n) else 0))
 
 try.shFILE()
 }
 \arguments{
   \item{contents, local}{See \code{?\link{sys.path}()}.}
+
+  \item{n}{See \code{?\link{this.path}()}.}
 
   \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
 
