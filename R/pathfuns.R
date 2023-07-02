@@ -4,7 +4,7 @@ path.functions <- function (file, local = FALSE, n = 0L, envir = parent.frame(n 
     srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
     if (missing(file)) {
-        n <- .asInteger(n)
+        n <- .External2(.C_asIntegerGE0, n)
         ofile <- .External2(.C_thispath, FALSE, TRUE, FALSE, FALSE, local, envir, matchThisEnv, srcfile)
         file <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     }

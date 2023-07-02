@@ -4,7 +4,7 @@
 \alias{try.src.path}
 \alias{try.this.path}
 \alias{try.shFILE}
-\title{Attempt to Determine Current Script's Filename}
+\title{Attempt to Determine Script's Filename}
 \description{
   \code{try.sys.path()} attempts to return \code{\link{sys.path}()}, returning
   \code{sys.path(original = TRUE)} if that fails, returning
@@ -40,11 +40,11 @@ try.shFILE()
   \item{srcfile}{See \code{?\link{src.path}()}.}
 }
 \details{
-  This should \strong{NOT} be used to construct file paths against the current
-  script's directory. This should exclusively be used in the scenario that you
-  would like the normalized path of the executing script, perhaps for a
-  diagnostic message, but it is not required to exist and can be a relative
-  path or undefined.
+  This should \strong{NOT} be used to construct file paths against the script's
+  directory. This should exclusively be used in the scenario that you would
+  like the normalized path of the executing script, perhaps for a diagnostic
+  message, but it is not required to exist and can be a relative path or
+  undefined.
 }
 \value{
   character string.

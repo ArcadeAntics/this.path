@@ -77,7 +77,7 @@ sys.dir(verbose = getOption("verbose"), local = FALSE,
   / \code{\link{set.sys.path}()}.
 
   If no source call is found up the calling stack, then an attempt is made to
-  figure out how \R is currently being used.
+  figure out how \R is running.
 
   If \R is being run from a shell, the shell arguments are searched for
   \option{-f} \option{FILE} or \option{--file=FILE} (the two methods of taking

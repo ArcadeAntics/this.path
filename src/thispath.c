@@ -1340,6 +1340,20 @@ SEXP topenv(SEXP target, SEXP envir)
 #endif
 
 
+Rboolean IsModuleEnv(SEXP rho)
+{
+    if (TYPEOF(rho) == ENVSXP) {
+        SEXP info = findVarInFrame(rho, ModuleSymbol);
+        if (info != R_UnboundValue && TYPEOF(info) == ENVSXP) {
+            SEXP spec = findVarInFrame(info, specSymbol);
+            if (spec != R_UnboundValue && TYPEOF(spec) == STRSXP && LENGTH(spec) > 0)
+                return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
 SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
               Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
               SEXP rho)
@@ -1420,6 +1434,16 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
             }
         }
         error("invalid {box} namespace without an associated path");
+    }
+    else if (IsModuleEnv(env)) {
+        SEXP info = findVarInFrame(env, ModuleSymbol);
+        if (info != R_UnboundValue && TYPEOF(info) == ENVSXP) {
+            path = findVarInFrame(info, pathSymbol);
+            if (path != R_UnboundValue && TYPEOF(path) == STRSXP && XLENGTH(path) == 1) {
+                if (verbose) Rprintf("Source: path of a {module} namespace\n");
+                return ScalarString(STRING_ELT(path, 0));
+            }
+        }
     }
     else if (isString(path = getAttrib(env, original ? thispathofileSymbol : thispathfileSymbol))) {
         if (verbose) Rprintf("Source: attr(,\"path\") of the top level environment\n");
@@ -2082,4 +2106,17 @@ SEXP do_asInteger do_formals
 
 
     return ScalarInteger(asInteger(CAR(args)));
+}
+
+
+
+SEXP do_asIntegerGE0 do_formals
+{
+    do_start_no_call_op_rho("asIntegerGE0", 1);
+
+
+    int value = asInteger(CAR(args));
+    if (value == NA_INTEGER || value < 0)
+        error(_("invalid '%s' value"), "n");
+    return ScalarInteger(value);
 }

@@ -47,8 +47,8 @@ CHANGES IN this.path devel:
       and 'srcfile' to finely control how the path will be retrieved.
 
     * Added rel2proj() for turning absolute paths into relative paths
-      against the current script's project root. Also added
-      rel2sys.proj(), rel2env.proj(), and rel2src.proj().
+      against the script's project root. Also added rel2sys.proj(),
+      rel2env.proj(), and rel2src.proj().
 
     * set.sys.path() now accepts argument 'ofile' specifying the
       original file argument. This overwrites the value returned by

@@ -51,7 +51,7 @@ sys.LINENO <- function ()
 
 env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     envir
     matchThisEnv
     success <- tryCatch({
@@ -66,7 +66,7 @@ env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = get
 
 src.LINENO <- function (n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     srcfile
     tryCatch({
         .External2(.C_srclineno, srcfile)

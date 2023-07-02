@@ -137,6 +137,8 @@ extern0 SEXP0
     _projSymbol                            INI_as(install(".proj")),
     xSymbol                                INI_as(install("x")),
     moduleSymbol                           INI_as(install(".__module__.")),
+    ModuleSymbol                           INI_as(install(".__MODULE__.")),
+    specSymbol                             INI_as(install("spec")),
     srcrefSymbol                           INI_as(install("srcref")),
     srcfileSymbol                          INI_as(install("srcfile")),
     wholeSrcrefSymbol                      INI_as(install("wholeSrcref")),

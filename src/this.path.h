@@ -218,6 +218,7 @@ extern SEXP do_thispath         do_formals;
 extern SEXP do_istrue           do_formals;
 extern SEXP do_isfalse          do_formals;
 extern SEXP do_asInteger        do_formals;
+extern SEXP do_asIntegerGE0     do_formals;
 
 
 /* wrapsource.c */

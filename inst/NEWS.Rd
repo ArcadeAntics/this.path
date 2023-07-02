@@ -52,7 +52,7 @@
         retrieved.}
 
       \item{Added \code{rel2proj()} for turning absolute paths into relative
-        paths against the current script's project root. Also added
+        paths against the script's project root. Also added
         \code{rel2sys.proj()}, \code{rel2env.proj()}, and
         \code{rel2src.proj()}.}
 

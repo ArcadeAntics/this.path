@@ -4,7 +4,7 @@
 \alias{src.here}
 \alias{here}
 \alias{ici}
-\title{Construct Path to File, Starting with Current Directory}
+\title{Construct Path to File, Starting with Script's Directory}
 \description{
   Construct the path to a file from components / / paths in a
   platform-\strong{DEPENDENT} way, starting with \code{\link{sys.dir}()},

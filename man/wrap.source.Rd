@@ -4,8 +4,7 @@
 \alias{unset.sys.path}
 \title{Implement 'sys.path()' For Arbitrary 'source()'-Like Functions}
 \description{
-  Currently, \code{\link{sys.path}()} is implemented to work with
-  \sourcesandlistlinks.
+  \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.
 
   \code{wrap.source()} and \code{set.sys.path()} can be used to implement
   \code{sys.path()} for any other \sourcelink-like functions.
@@ -173,6 +172,32 @@ unset.sys.path()
     sourcelike(file)
 }}
 }
+\section{Using 'ofile'}{
+  \code{ofile} can be used when the \code{file} argument supplied to
+  \code{set.sys.path()} is not the same as the \code{file} argument supplied to
+  the \sourcenolink-like function:
+
+\preformatted{sourcelike <- function (file)
+{
+    ofile <- file
+    if (!is.character(ofile) || length(ofile) != 1)
+        stop(gettextf("'\%s' must be a character string", "file"))
+    ## if the file exists, do nothing
+    if (file.exists(file)) {
+    }
+    ## look for the file in the home directory
+    ## if it exists, do nothing
+    else if (file.exists(file <- this.path::path.join("~", ofile))) {
+    }
+    ## you could add other directories to look in,
+    ## but this is good enough for an example
+    else stop(gettextf("'\%s' is not an existing file", ofile))
+    file <- this.path::set.sys.path(file, ofile = ofile)
+    exprs <- parse(file)
+    for (i in seq_along(exprs)) eval(exprs[i], envir)
+    invisible()
+}}
+}
 \note{
   Both functions should only be called within another function.
 
@@ -256,32 +281,6 @@ wrapper <- function(path, ...) {
     invisible()
 }}}
   }
-}
-\section{Using \code{ofile}}{
-  \code{ofile} can be used when the \code{file} argument supplied to
-  \code{set.sys.path()} is not the same as the \code{file} argument supplied to
-  the \sourcenolink-like function:
-
-\preformatted{sourcelike <- function (file)
-{
-    ofile <- file
-    if (!is.character(ofile) || length(ofile) != 1)
-        stop(gettextf("'\%s' must be a character string", "file"))
-    ## if the file exists, do nothing
-    if (file.exists(file)) {
-    }
-    ## look for the file in the home directory
-    ## if it exists, do nothing
-    else if (file.exists(file <- this.path::path.join("~", ofile))) {
-    }
-    ## you could add other directories to look in,
-    ## but this is good enough for an example
-    else stop(gettextf("'\%s' is not an existing file", ofile))
-    file <- this.path::set.sys.path(file, ofile = ofile)
-    exprs <- parse(file)
-    for (i in seq_along(exprs)) eval(exprs[i], envir)
-    invisible()
-}}
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")

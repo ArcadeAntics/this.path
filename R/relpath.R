@@ -115,6 +115,9 @@ delayedAssign(".NET.USE.command", {
 })
 
 
+.all.drives <- paste0(c(LETTERS, letters), ":/")
+
+
 .relpath <- function (path, relative.to = getwd(), normalize = !missing(relative.to), normalize.path = TRUE)
 {
     if (!is.character(path))
@@ -146,19 +149,21 @@ delayedAssign(".NET.USE.command", {
                 ## get the first element of each path, the drive,
                 ## and then keep all the unique ones
                 u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
-                ## by drives I mean both network shares "//host/share/"
-                ## and letter drives "d:"
-                singular.drive <- if (length(u) == 1L) {
+                no.convert.local <- if (length(u) == 1L) {
                     TRUE
-                } else if (any(j <- grepl("^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:/$", u))) {
-                    u[j] <- .toupper.ASCII(u[j])
-                    length(unique(u)) == 1L
-                } else FALSE
-                if (singular.drive) {
+                } else if (!any(j <- u %in% .all.drives)) {
+                    TRUE
+                } else if (all(j)) {
+                    length(unique(.toupper.ASCII(u))) == 1L
+                } else {
+                    1L == length(u <- unique(.toupper.ASCII(u[j]))) &&
+                        u == .toupper.ASCII(paste0(Sys.getenv("SystemDrive"), "/"))
+                }
+                if (no.convert.local) {
                     fix.local <- identity
                 } else {
                     x <- system(.NET.USE.command, intern = TRUE)
-                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Microsoft Windows Network)?$", x)
+                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Web Client Network|Microsoft Windows Network)?$", x)
                     ## one for the whole match, another two for the parenthesized sub-expressions
                     if (any(keep <- lengths(m) == 3L)) {
                         x <- regmatches(x[keep], m[keep])
@@ -256,7 +261,7 @@ rel2sys.proj <- function (path, local = FALSE)
 
 rel2env.dir <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_envpath, envir, matchThisEnv)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -265,7 +270,7 @@ rel2env.dir <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEn
 
 rel2env.proj <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_envpath, envir, matchThisEnv)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
@@ -275,7 +280,7 @@ rel2env.proj <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisE
 
 rel2src.dir <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_srcpath, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -284,7 +289,7 @@ rel2src.dir <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) e
 
 rel2src.proj <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_srcpath, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
@@ -296,7 +301,7 @@ rel2here <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
     srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -307,7 +312,7 @@ rel2proj <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
     srcfile = sys.call(if (n) sys.parent(n) else 0L))
 {
-    n <- .asInteger(n)
+    n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)

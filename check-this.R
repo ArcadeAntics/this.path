@@ -6,7 +6,7 @@
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE,
+        check = TRUE, as.cran = TRUE,
 
         chdir = TRUE
     )
@@ -159,7 +159,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("as\\.list\\.environment", x, value = TRUE)
+    x <- grep("(?i)current", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
@@ -169,7 +169,7 @@ local({
 
 
     x <- this.path:::.readFiles(Rdfiles)
-    x <- grep("FILE <-", x, value = TRUE)
+    x <- grep("(?i)current", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 })
 
