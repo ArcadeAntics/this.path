@@ -62,8 +62,8 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   \item{n}{the number of additional generations to go back. By default,
     \code{this.path()} will look for a path based on the call to
     \code{this.path()} and the environment in which \code{this.path()} was
-    called. This can be changed to be based on the call \code{n} levels up the
-    call stack. See section \strong{Argument 'n'} for more details.}
+    called. This can be changed to be based on the call \code{n} generations up
+    the call stack. See section \strong{Argument 'n'} for more details.}
 
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level
@@ -139,8 +139,10 @@ fun()
   Both of these will return \string{file1.R} because that is where the call to
   \code{this.path()} is written.
 
-  Consider another scenario in which you instead want the path where the call
-  to \code{fun()} is written. Pass argument \code{n = 1} to do so: \preformatted{{
+  Consider another scenario in which you do not care where \code{this.path()}
+  is called, but instead want to know where \code{fun()} is called. Pass
+  argument \code{n = 1} to do so; \code{this.path()} will inspect the call and
+  the calling environment one generation up the stack: \preformatted{{
 #line 1 "file1.R"
 fun <- function() this.path::this.path(original = TRUE, n = 1)
 fun()
@@ -155,32 +157,33 @@ fun()
   These will return \string{file1.R} and \string{file2.R}, respectively,
   because those are where the calls to \code{fun()} are written.
 
-  If you have multiple interconnected functions that you would like to all
-  behave in the described manner, add a formal argument \code{n = 0} and pass
-  \code{n = n + 1} to each associated function: \preformatted{{
+  Consider another scenario in which someone wishes to make a second function
+  that uses \code{fun()}. They do not care where \code{fun()}, but instead want
+  to know where \code{fun2()} is called. Add a formal argument \code{n = 0} to
+  each function and pass \code{n = n + 1} to each sub-function: \preformatted{{
 #line 1 "file1.R"
-fun1 <- function(n = 0) {
+fun <- function(n = 0) {
     this.path::this.path(original = TRUE, n = n + 1)
 }
-fun1()
+fun()
 }
 
 
 {
 #line 1 "file2.R"
-fun2 <- function(n = 0) fun1(n = n + 1)
-list(fun1 = fun1(), fun2 = fun2())
+fun2 <- function(n = 0) fun(n = n + 1)
+list(fun = fun(), fun2 = fun2())
 }
 
 
 {
 #line 1 "file3.R"
 fun3 <- function(n = 0) fun2(n = n + 1)
-list(fun1 = fun1(), fun2 = fun2(), fun3 = fun3())
+list(fun = fun(), fun2 = fun2(), fun3 = fun3())
 }}
 
   Within each file, all these functions will return the path in which they are
-  called.
+  called, regardless of how deep \code{this.path()} is called.
 }
 \note{
   If you are using \code{this.path()} without modularizing your code, i.e.
