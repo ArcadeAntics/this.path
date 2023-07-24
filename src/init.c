@@ -159,7 +159,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
     {"isclipboard"     , (DL_FUNC) &do_isclipboard     ,  1},
     {"inittoolsrstudio", (DL_FUNC) &do_inittoolsrstudio, -1},
-    {"syspathjupyter"  , (DL_FUNC) &do_syspathjupyter  ,  4},
+    {"syspathjupyter"  , (DL_FUNC) &do_syspathjupyter  , -1},
     {"syspathrgui"     , (DL_FUNC) &do_syspathrgui     ,  7},
     {"syspath"         , (DL_FUNC) &do_syspath         , -1},
     {"getframenumber"  , (DL_FUNC) &do_getframenumber  ,  0},

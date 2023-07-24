@@ -4,9 +4,8 @@
 
 **this.path** aims to provide a mechanism for retrieving the path of an
 R script within itself without needing to explicitly write its path
-elsewhere. Additionally, it provides a mechanism for a script to read
-and write data relative to its directory without changing the working
-directory.
+elsewhere. Additionally, it provides a mechanism for a script to refer
+to files relative to its directory, independent of working directory.
 
 ## Installation
 

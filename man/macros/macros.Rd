@@ -21,11 +21,6 @@
 
 \newcommand{\sourcelink}{\codelink3{base}{source}{()}}
 \newcommand{\syssourcelink}{\codelink3{base}{sys.source}{()}}
-% we have to use \command{} instead of \code{} because \command{} is LaTeX-like
-% which supports macros in text, whereas \code{} is entered in R-like syntax in
-% which only macros \var{} and \link{} are interpreted within text
-%
-% both are displayed using typewriter font where possible
 \newcommand{\debugSourceinRStudiolink}{\ifelse{text}{\code{debugSource()} in \sQuote{RStudio}}{\href{https://support.posit.co/hc/en-us/articles/205612627-Debugging-with-the-RStudio-IDE}{\code{debugSource}}\code{()} in \sQuote{\RStudio}}}
 \newcommand{\testthatsourcefilelink}{\codelink3{testthat:source_file}{testthat::source_file}{()}}
 \newcommand{\knitrknitlink}{\codelink3{knitr:knit}{knitr::knit}{()}}
@@ -50,7 +45,7 @@
 \newcommand{\sourcesorlistnolinks}{\sourcenolink, \syssourcenolink, \debugSourceinRStudionolink, \testthatsourcefilenolink, \knitrknitnolink, \compilerloadcmpnolink, or \boxusenolink}
 \newcommand{\sourcesandlistnolinks}{\sourcenolink, \syssourcenolink, \debugSourceinRStudionolink, \testthatsourcefilenolink, \knitrknitnolink, \compilerloadcmpnolink, and \boxusenolink}
 
-% only excludes box::use
+%% only excludes box::use
 \newcommand{\sources1stargisfilelistlinks}{\sourcelink, \syssourcelink, \debugSourceinRStudiolink, \testthatsourcefilelink, \knitrknitlink, \compilerloadcmplink}
 \newcommand{\sources1stargisfileorlistlinks}{\sourcelink, \syssourcelink, \debugSourceinRStudiolink, \testthatsourcefilelink, \knitrknitlink, or \compilerloadcmplink}
 \newcommand{\sources1stargisfileandlistlinks}{\sourcelink, \syssourcelink, \debugSourceinRStudiolink, \testthatsourcefilelink, \knitrknitlink, and \compilerloadcmplink}
@@ -59,9 +54,9 @@
 \newcommand{\sources1stargisfileorlistnolinks}{\sourcenolink, \syssourcenolink, \debugSourceinRStudionolink, \testthatsourcefilenolink, \knitrknitnolink, or \compilerloadcmpnolink}
 \newcommand{\sources1stargisfileandlistnolinks}{\sourcenolink, \syssourcenolink, \debugSourceinRStudionolink, \testthatsourcefilenolink, \knitrknitnolink, and \compilerloadcmpnolink}
 
-% currently, all source()-like functions in which the first argument is the
-% file are also compatible with withArgs(), so the commands are the same.
-% this may change in the future
+%% currently, all source()-like functions in which the first argument is the
+%% file are also compatible with withArgs(), so the commands are the same.
+%% this may change in the future
 \newcommand{\sourcescompatiblewithwithArgslistlinks}{\sources1stargisfilelistlinks}
 \newcommand{\sourcescompatiblewithwithArgsorlistlinks}{\sources1stargisfileorlistlinks}
 \newcommand{\sourcescompatiblewithwithArgsandlistlinks}{\sources1stargisfileandlistlinks}

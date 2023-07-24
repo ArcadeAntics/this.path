@@ -1,4 +1,6 @@
 {
+    if (!file.exists(this.path::here("tools", "maintainers-copy")))
+        stop("unable to 'check.this()', not the maintainer's copy")
     essentials:::.update.DESCRIPTION.Date()
     Sys.setenv(`_R_CHECK_CRAN_INCOMING_` = "TRUE")
     essentials:::check.this(  ## this.path
@@ -6,7 +8,7 @@
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, as.cran = TRUE,
+        check = FALSE, as.cran = TRUE,
 
         chdir = TRUE
     )

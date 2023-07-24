@@ -3,15 +3,19 @@ main <- function ()
     devel <- TRUE
 
 
-    FILE <- "./tools/building-initial-tarball"
-    if (first <- file.exists(FILE)) {
-        if (!file.remove(FILE))
-            stop(sprintf("unable to remove file '%s'", FILE))
-    }
+    installing <- if (!is.null(wd <- getwd())) {
+        if (.Platform$OS.type == "windows")
+            wd <- chartr("\\", "/", wd)
+        !grepl("/Rtmp[0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ.]+/Rbuild[0123456789abcdef]+/this\\.path$", wd)
+    } else TRUE
 
 
-    FILE <- "./tools/for-r-mac-builder"
-    if (file.exists(FILE))
+    ## on the maintainer's computer, prevent the source from being destroyed
+    if (installing && file.exists("./tools/maintainers-copy"))
+        stop("must 'R CMD build' before 'R CMD INSTALL' since the files are destructively modified")
+
+
+    if (file.exists("./tools/for-r-mac-builder"))
         Sys.setenv(R_THIS_PATH_DEFINES = "TRUE")
 
 
@@ -72,42 +76,67 @@ main <- function ()
     }
 
 
-    if (first && devel) {
+    replace.devel.with.current.version <- if (devel) {
         ## replace 'devel' in files with the current package version
-        replace.devel.with.current.version <- function(file, old, new) {
-            x <- readLines2(file)
-            if (i <- match(old, x, 0L)) {
-                x[[i]] <- new
-                writeLines2(x, file)
+        function(file.in, old, new, file = sub("\\.in|in\\.", "", file.in)) {
+            if (file.exists(file.in)) {
+                x <- readLines2(file.in)
+                if (i <- match(old, x, 0L)) {
+                    x[[i]] <- new
+                    writeLines2(x, file)
+                    if (!file.remove(file.in))
+                        stop(sprintf("unable to remove file '%s'", file.in))
+                }
+                else if (!file.rename(file.in, file))
+                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
             }
         }
-
-
-        replace.devel.with.current.version(
-            "./NEWS",
-            sprintf("CHANGES IN %s devel:", desc["Package"]),
-            sprintf("CHANGES IN %s %s (%s):", desc["Package"], desc["Version"], desc["Date"])
-        )
-        replace.devel.with.current.version(
-            "./inst/NEWS.Rd",
-            "\\section{CHANGES IN VERSION devel}{",
-            sprintf("\\section{CHANGES IN VERSION %s (%s)}{", desc["Version"], desc["Date"])
-        )
-        replace.devel.with.current.version(
-            sprintf("./man/%s-defunct.Rd", desc["Package"]),
-            "# Defunct in devel",
-            sprintf("# Defunct in %s", desc["Version"])
-        )
+    } else {
+        ## just rename the files
+        function(file.in, old, new, file = sub("\\.in|in\\.", "", file.in)) {
+            if (file.exists(file.in)) {
+                if (!file.rename(file.in, file))
+                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
+            }
+        }
     }
+
+
+    replace.devel.with.current.version(
+        "./NEWS.in",
+        sprintf("CHANGES IN %s devel:", desc["Package"]),
+        sprintf("CHANGES IN %s %s (%s):", desc["Package"], desc["Version"], desc["Date"])
+    )
+    replace.devel.with.current.version(
+        "./inst/NEWS.in.in.Rd",
+        "\\section{CHANGES IN VERSION devel}{",
+        sprintf("\\section{CHANGES IN VERSION %s (%s)}{", desc["Version"], desc["Date"])
+    )
+    replace.devel.with.current.version(
+        sprintf("./man/%s-defunct.in.in.Rd", desc["Package"]),
+        "# Defunct in devel",
+        sprintf("# Defunct in %s", desc["Version"])
+    )
 
 
     ## we need to add the common macros to the files which do not
     ## have access. for R < 3.2.0, this is ALL of the Rd files.
     ## otherwise, only the news files will need them
-    Rdfiles <- if (first) list.files("./inst", "^NEWS(\\.[[:digit:]]+)?\\.Rd$", full.names = TRUE)
-    if (!first && getRversion() < "3.2.0")
-        Rdfiles <- c(Rdfiles, list.files("./man", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE))
-    if (length(Rdfiles)) {
+    Rdfiles.in <- list.files("./inst", "^NEWS(\\.[[:digit:]]+)?\\.in\\.Rd$", full.names = TRUE)
+    if (installing) {
+        files.in <- list.files("./man", "\\.in\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE)
+        if (getRversion() < "3.2.0")
+            Rdfiles.in <- c(Rdfiles.in, files.in)
+        else {
+            ## rename the files, do not add the common macros
+            files <- sub("\\.in(\\.Rd$)", "\\1", files.in, ignore.case = TRUE)
+            if (any(i <- !file.rename(files.in, files)))
+                stop(sprintf(ngettext(sum(i), "unable to rename file %s",
+                                              "unable to rename files %s"),
+                     paste(sQuote(files.in[i]), collapse = ", ")))
+        }
+    }
+    if (length(Rdfiles.in)) {
         macros <- c(
             unlist(lapply(list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE), readLines2)),
             if (getRversion() < "3.2.0") {
@@ -129,25 +158,27 @@ main <- function ()
                 )
             }
         )
-        for (Rdfile in Rdfiles) {
-            x <- readLines2(Rdfile)
+        for (Rdfile.in in Rdfiles.in) {
+            x <- readLines2(Rdfile.in)
             ## add the common macros directly before the title
             n <- grep("^\\\\title\\{", x) - 1L
             if (length(n) > 1L)
-                stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile))
+                stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile.in))
             if (length(n) < 1L)
-                stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile))
+                stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile.in))
             x <- if (n) {
                 c(x[seq_len(n)], macros, x[-seq_len(n)])
             } else c(macros, x)
-            writeLines2(x, Rdfile)
+            writeLines2(x, sub("\\.in(\\.Rd$)", "\\1", Rdfile.in, ignore.case = TRUE))
+            if (!file.remove(Rdfile.in))
+                stop(sprintf("unable to remove file '%s'", Rdfile.in))
         }
     }
-    if (!first && getRversion() < "3.2.0")
+    if (installing && getRversion() < "3.2.0")
         unlink("./man/macros", recursive = TRUE, force = TRUE)
 
 
-    if (!first) {
+    if (installing) {
         R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
         if (is.na(R_THIS_PATH_DEFINES)) {
             if (devel) {

@@ -17,10 +17,7 @@
                                                                \
                                                                \
     if (op == EXTGETS) {                                       \
-        /* ext<-(), duplicate 'path' if we need to */          \
-        if (MAYBE_REFERENCED(CAR(args))) {                     \
-            SETCAR(args, R_shallow_duplicate_attr(CAR(args))); \
-        }                                                      \
+        SETCAR(args, R_shallow_duplicate_attr(CAR(args)));     \
     }                                                          \
                                                                \
                                                                \

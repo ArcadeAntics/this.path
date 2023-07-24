@@ -1,4 +1,5 @@
 ^\.Rproj\.user$
+^tools/maintainers-copy$
 ^\.gitignore$
-^this\.path\.Rproj$
 ^check-this\.R$
+^this\.path\.Rproj$

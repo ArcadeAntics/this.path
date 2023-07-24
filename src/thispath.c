@@ -262,16 +262,30 @@ void check_arguments1(Rboolean verbose)
 
 SEXP do_syspathjupyter do_formals
 {
-    do_start_no_call_op("syspathjupyter", 4);
+    do_start_no_op("syspathjupyter", -1);
 
 
-    Rboolean verbose, original, for_msg, contents;
+    Rboolean verbose  = FALSE,
+             original = FALSE,
+             for_msg  = FALSE,
+             contents = FALSE;
 
 
-    verbose  = asLogical(CAR(args)); args = CDR(args);
-    original = asLogical(CAR(args)); args = CDR(args);
-    for_msg  = asLogical(CAR(args)); args = CDR(args);
-    contents = asLogical(CAR(args)); args = CDR(args);
+    switch (length(args)) {
+    case 0:
+        break;
+    case 4:
+        verbose  = asLogical(CAR(args)); args = CDR(args);
+        original = asLogical(CAR(args)); args = CDR(args);
+        for_msg  = asLogical(CAR(args)); args = CDR(args);
+        contents = asLogical(CAR(args)); args = CDR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_syspath", "0, 1, 2, or 5"));
+        return R_NilValue;
+    }
+
+
     check_arguments4(verbose, original, for_msg, contents);
 
 
