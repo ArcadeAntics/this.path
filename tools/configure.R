@@ -3,20 +3,39 @@ main <- function ()
     devel <- TRUE
 
 
-    installing <- if (!is.null(wd <- getwd())) {
+    pkgname <- Sys.getenv("R_PACKAGE_NAME")
+
+
+    regexQuote <- function(x) gsub("([.\\\\|()[{^$*+?])", "\\\\\\1", x)
+    RdQuote <- function(x) gsub("([%{}\\])", "\\\\\\1", x, useBytes = TRUE)
+
+
+    building <- if (is.null(wd <- getwd())) {
+        FALSE
+    } else {
         if (.Platform$OS.type == "windows")
             wd <- chartr("\\", "/", wd)
-        !grepl("/Rtmp[0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ.]+/Rbuild[0123456789abcdef]+/this\\.path$", wd)
-    } else TRUE
+        pattern <- paste0("/Rtmp[\001-\056\060-\177]{6}/Rbuild[0123456789abcdef]+/",
+                          regexQuote(pkgname), "$")
+        grepl(pattern, wd, useBytes = TRUE)
+    }
 
 
     ## on the maintainer's computer, prevent the source from being destroyed
-    if (installing && file.exists("./tools/maintainers-copy"))
+    if (!building && file.exists("./tools/maintainers-copy"))
         stop("must 'R CMD build' before 'R CMD INSTALL' since the files are destructively modified")
 
 
+    write.dcf(data.frame(
+        Timestamp = Sys.time(),
+        `Working Directory` = encodeString(getwd()),
+        building,
+        check.names = FALSE
+    ), "~/test69", append = TRUE, indent = 8, width = 72)
+
+
     if (file.exists("./tools/for-r-mac-builder"))
-        Sys.setenv(R_THIS_PATH_DEFINES = "TRUE")
+        options(R_THIS_PATH_DEFINES = TRUE)
 
 
     # if (devel)
@@ -55,7 +74,6 @@ main <- function ()
             } else desc <- iconv(desc, encoding, "", sub = "byte")
         }
     }
-    pkgname <- Sys.getenv("R_PACKAGE_NAME")
     if (pkgname != desc["Package"])
         stop(gettextf("DESCRIPTION file is for package '%s', not '%s'",
             desc["Package"], pkgname))
@@ -86,8 +104,7 @@ main <- function ()
                     writeLines2(x, file)
                     if (!file.remove(file.in))
                         stop(sprintf("unable to remove file '%s'", file.in))
-                }
-                else if (!file.rename(file.in, file))
+                } else if (!file.rename(file.in, file))
                     stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
             }
         }
@@ -119,15 +136,15 @@ main <- function ()
     )
 
 
-    ## we need to add the common macros to the files which do not
-    ## have access. for R < 3.2.0, this is ALL of the Rd files.
-    ## otherwise, only the news files will need them
-    Rdfiles.in <- list.files("./inst", "^NEWS(\\.[[:digit:]]+)?\\.in\\.Rd$", full.names = TRUE)
-    if (installing) {
+    if (!building) {
+        ## we need to add the common macros to the files which do not
+        ## have access. for R < 3.2.0, this is ALL of the Rd files.
+        ## otherwise, only the news files will need them
+        Rdfiles.in <- list.files("./inst", "^NEWS(\\.[[:digit:]]+)?\\.in\\.Rd$", full.names = TRUE)
         files.in <- list.files("./man", "\\.in\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE)
-        if (getRversion() < "3.2.0")
+        if (getRversion() < "3.2.0") {
             Rdfiles.in <- c(Rdfiles.in, files.in)
-        else {
+        } else {
             ## rename the files, do not add the common macros
             files <- sub("\\.in(\\.Rd$)", "\\1", files.in, ignore.case = TRUE)
             if (any(i <- !file.rename(files.in, files)))
@@ -135,51 +152,53 @@ main <- function ()
                                               "unable to rename files %s"),
                      paste(sQuote(files.in[i]), collapse = ", ")))
         }
-    }
-    if (length(Rdfiles.in)) {
-        macros <- c(
-            unlist(lapply(list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE), readLines2)),
-            if (getRversion() < "3.2.0") {
-                ## \packageAuthor{} and \packageMaintainer{} are not defined for
-                ## R < 3.2.0, we will define them here ourselves
-                fun <- function(x) {
-                    .fun <- function(x, include.hash = TRUE) {
-                        paste0("rawToChar(as.raw(c(", paste0(as.integer(charToRaw(x)), "L", collapse = ", "), if (include.hash) ", as.null(\"#1\")", ")))")
+        if (length(Rdfiles.in)) {
+            macros <- c(
+                unlist(lapply(list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE), readLines2)),
+                if (getRversion() < "3.2.0") {
+                    ## \packageAuthor{} and \packageMaintainer{} are not defined for
+                    ## R < 3.2.0, we will define them here ourselves
+                    RdQuote.and.conv2ASCII <- function(x) {
+                        conv2ASCII <- function(x, include.hash = TRUE) {
+                            paste0("rawToChar(as.raw(c(", paste0(as.integer(charToRaw(x)), "L", collapse = ", "), if (include.hash) ", as.null(\"#1\")", ")))")
+                        }
+                        value <- conv2ASCII(RdQuote(x))
+                        if (Encoding(x) != "unknown")
+                            value <- paste0("`Encoding<-`(", value, ", ", conv2ASCII(Encoding(x), include.hash = FALSE), ")")
+                        value
                     }
-                    value <- .fun(gsub("([%{}\\])", "\\\\\\1", x, useBytes = TRUE))
-                    if (Encoding(x) != "unknown")
-                        value <- paste0("`Encoding<-`(", value, ", ", .fun(Encoding(x), include.hash = FALSE), ")")
-                    value
+                    c(
+                        paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", RdQuote.and.conv2ASCII(desc["Author"])    , "}}"),
+                        paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", RdQuote.and.conv2ASCII(desc["Maintainer"]), "}}"),
+                        paste0("\\newcommand{\\CRANpkg"          , "}{\\href{https://CRAN.R-project.org/package=#1}{\\pkg{#1}}}")
+                    )
                 }
-                c(
-                    paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Author"])    , "}}"),
-                    paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", fun(desc["Maintainer"]), "}}"),
-                    paste0("\\newcommand{\\CRANpkg"          , "}{\\href{https://CRAN.R-project.org/package=#1}{\\pkg{#1}}}")
-                )
+            )
+            for (Rdfile.in in Rdfiles.in) {
+                x <- readLines2(Rdfile.in)
+                ## add the common macros directly before the title
+                n <- grep("^\\\\title\\{", x) - 1L
+                if (length(n) > 1L)
+                    stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile.in))
+                if (length(n) < 1L)
+                    stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile.in))
+                x <- if (n) {
+                    c(x[seq_len(n)], macros, x[-seq_len(n)])
+                } else c(macros, x)
+                writeLines2(x, sub("\\.in(\\.Rd$)", "\\1", Rdfile.in, ignore.case = TRUE))
+                if (!file.remove(Rdfile.in))
+                    stop(sprintf("unable to remove file '%s'", Rdfile.in))
             }
-        )
-        for (Rdfile.in in Rdfiles.in) {
-            x <- readLines2(Rdfile.in)
-            ## add the common macros directly before the title
-            n <- grep("^\\\\title\\{", x) - 1L
-            if (length(n) > 1L)
-                stop(gettextf("in '%s':\n multiple lines that start with \\title{", Rdfile.in))
-            if (length(n) < 1L)
-                stop(gettextf("in '%s':\n no lines that start with \\title{", Rdfile.in))
-            x <- if (n) {
-                c(x[seq_len(n)], macros, x[-seq_len(n)])
-            } else c(macros, x)
-            writeLines2(x, sub("\\.in(\\.Rd$)", "\\1", Rdfile.in, ignore.case = TRUE))
-            if (!file.remove(Rdfile.in))
-                stop(sprintf("unable to remove file '%s'", Rdfile.in))
         }
-    }
-    if (installing && getRversion() < "3.2.0")
-        unlink("./man/macros", recursive = TRUE, force = TRUE)
+        ## remove the macros folder so R CMD check will not complain about it
+        if (getRversion() < "3.2.0")
+            unlink("./man/macros", recursive = TRUE, force = TRUE)
 
 
-    if (installing) {
-        R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
+        ## (possibly) enable development features
+        R_THIS_PATH_DEFINES <- as.logical(getOption("R_THIS_PATH_DEFINES", NA))
+        if (is.na(R_THIS_PATH_DEFINES))
+            R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
         if (is.na(R_THIS_PATH_DEFINES)) {
             if (devel) {
                 libname <- Sys.getenv("R_LIBRARY_DIR")

@@ -2,13 +2,12 @@
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
     essentials:::.update.DESCRIPTION.Date()
-    Sys.setenv(`_R_CHECK_CRAN_INCOMING_` = "TRUE")
     essentials:::check.this(  ## this.path
         special = TRUE,
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE,
+        check = TRUE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
@@ -72,8 +71,8 @@ local({  ## testing relpath() and rel2here()
         NA,
         "",
         ".",
-        paste0(Sys.getenv("USERPROFILE"), "\\Documents\\\u03b4.R"),
-        paste0("//LOCALHOST/C$/Users/", Sys.info()[["user"]], "/Documents/this.path/inst/extdata/untitled_msvcrt.txt")
+        essentials::f.str("%{Sys.getenv('USERPROFILE')}s\\Documents\\\u{03b4}.R"),
+        essentials::f.str("//LOCALHOST/C$/Users/%{Sys.info()[['user']]}s/Documents/this.path/inst/extdata/untitled_msvcrt.txt")
     )
     owd <- getwd()
     if (is.null(owd))
@@ -161,7 +160,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)current", x, value = TRUE)
+    x <- grep("./tools", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

@@ -25,8 +25,8 @@ install.packages("this.path",
 The most important functions from **this.path** are `this.path()`,
 `this.dir()`, `here()`, and `this.proj()`:
 
-*   `this.path()` returns the normalized path of the script in which it is
-    written.
+*   `this.path()` returns the normalized path of the script in which it
+    is written.
 
 *   `this.dir()` returns the directory of `this.path()`.
 
@@ -119,15 +119,14 @@ The only equivalent to `this.path()` (that I have seen) is
 
 3.  When **whereami** is loaded or attached, it changes option
     `keep.source` to `TRUE`. A package should **never** be changing
-    global options without asking / / informing the user beforehand.
-    This may not harm your code, but it is still bad practice that
-    should be avoided, especially for a CRAN package.
+    global options without asking / / informing the user beforehand,
+    especially not a CRAN package.
 
-4.  When you call `whereami::thisfile()`, it forces **knitr** to be
-    loaded as well. Again, it is changing your environment without
-    permission. It should use something like
+4.  When `whereami::thisfile()` is called, it forces **knitr** to be
+    loaded as well. Again, it is changing the global environment
+    without permission. It should do something like
     `isNamespaceLoaded("knitr")` instead of `requireNamespace("knitr")`
-    because, contrary to what the package claims, **whereami** enhances
+    since, contrary to what the package claims, **whereami** enhances
     **knitr** rather than requires it.
 
 Code aside, **whereami** suggests that an R script needing to know its
@@ -140,9 +139,8 @@ bad practice.
 
 ## **this.path** vs **here**
 
-If you are not using **this.path** for the function `this.path()`, you
-are probably using it for `this.path::here()`. The only equivalent
-(that I know of) is R package **here** with its function
+**this.path** provides a function `this.path::here()`. The only
+equivalent (that I know of) is R package **here** with its function
 `here::here()`. **this.path** provides a mechanism for specifying a
 path relative to the executing script's directory, while **here**
 provides a mechanism for specifying a path relative to the project's
@@ -193,7 +191,7 @@ limiting.
 
 ### Change working directory
 
-You could always change the working directory to the directory of the
+The working directory could always be changed to the directory of the
 executing script before running it. This would be
 
 ```{bash}
@@ -207,29 +205,27 @@ or
 source("/path/to/file.R", chdir = TRUE)
 ```
 
-This works for a lot of use-cases, except for interactive use where you
-probably are not changing the working directory as you move amongst
-files, and it will not if your R script is stored on a website.
-Sometimes it is convenient to have the working directory set elsewhere.
-This also means that you cannot make R scripts that act like
-executables. If you need to call other scripts in the same directory,
-you could not call those other scripts without the original script's
-path.
+This works for a lot of use-cases, except for interactive use when
+moving between files in different directories, nor when an R script is
+stored on a website. Sometimes it is convenient to have the working
+directory set elsewhere. This also means that R scripts cannot be made
+to act like executables. If a script needs to call other scripts in the
+same directory, it could not do so without the its own path.
 
 ### `utils::getSrcFilename()`
 
-You could use `utils::getSrcFilename()`. Everywhere you would use
-`this.path()`, use
-`utils::getSrcFilename(function() NULL, full.names = TRUE)` instead
-(yes, it is quite lengthy), and everywhere you would use `this.dir()`,
-use `utils::getSrcDirectory(function() NULL)` (again, quite lengthy).
+Everywhere `this.path()` would be used, write
+`utils::getSrcFilename(function() NULL, full.names = TRUE)`
+instead (yes, it is quite lengthy), and everywhere `this.dir()` would
+be used, write `utils::getSrcDirectory(function() NULL)` (again,
+quite lengthy).
 
 While this will work for R scripts uploaded to a website, this will not
-work in interactive use since you have to `source()` your scripts.
-Also, it means you must set option `keep.source` to `TRUE`; once again
-this may not be a big deal, but something that may cause issues. This
-means you could not run your R scripts from a shell ever again, making
-it an incredibly inconvenient substitute.
+work in interactive use since scripts must be run with `source()`.
+Also, it means option `keep.source` must be set to `TRUE`; this may not
+be a big deal, but something to be aware of. This means R scripts could
+not be run from a shell ever again, making it an incredibly
+inconvenient substitute.
 
 ## Closing
 
