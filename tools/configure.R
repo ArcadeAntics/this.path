@@ -15,8 +15,13 @@ main <- function ()
     } else {
         if (.Platform$OS.type == "windows")
             wd <- chartr("\\", "/", wd)
-        pattern <- paste0("/Rtmp[\001-\056\060-\177]{6}/Rbuild[0123456789abcdef]+/",
-                          regexQuote(pkgname), "$")
+        ## we wish the check if the package is being built by
+        ## 'R CMD build' or being installed. we know a package is being
+        ## built if the working directory matches the following pattern
+        pattern <- sprintf("/Rtmp[\001-\056\060-\177]{6}/Rbuild[0123456789abcdef]+/%s$", regexQuote(pkgname))
+            ##                   ^^^^^^^^^^^^^^^^^^^^^^^                                 6 ASCII characters excluding \0 and /
+            ##                                                 ^^^^^^^^^^^^^^^^^^^       at least 1 hex digit
+            ##                                                                     ^^^   ends with the package name
         grepl(pattern, wd, useBytes = TRUE)
     }
 
@@ -24,14 +29,6 @@ main <- function ()
     ## on the maintainer's computer, prevent the source from being destroyed
     if (!building && file.exists("./tools/maintainers-copy"))
         stop("must 'R CMD build' before 'R CMD INSTALL' since the files are destructively modified")
-
-
-    write.dcf(data.frame(
-        Timestamp = Sys.time(),
-        `Working Directory` = encodeString(getwd()),
-        building,
-        check.names = FALSE
-    ), "~/test69", append = TRUE, indent = 8, width = 72)
 
 
     if (file.exists("./tools/for-r-mac-builder"))
