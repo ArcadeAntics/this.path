@@ -3,38 +3,6 @@ main <- function ()
     devel <- TRUE
 
 
-    pkgname <- Sys.getenv("R_PACKAGE_NAME")
-
-
-    regexQuote <- function(x) gsub("([.\\\\|()[{^$*+?])", "\\\\\\1", x)
-    RdQuote <- function(x) gsub("([%{}\\])", "\\\\\\1", x, useBytes = TRUE)
-
-
-    building <- if (is.null(wd <- getwd())) {
-        FALSE
-    } else {
-        if (.Platform$OS.type == "windows")
-            wd <- chartr("\\", "/", wd)
-        ## we wish the check if the package is being built by
-        ## 'R CMD build' or being installed. we know a package is being
-        ## built if the working directory matches the following pattern
-        pattern <- sprintf("/Rtmp[\001-\056\060-\177]{6}/Rbuild[0123456789abcdef]+/%s$", regexQuote(pkgname))
-            ##                   ^^^^^^^^^^^^^^^^^^^^^^^                                 6 ASCII characters excluding \0 and /
-            ##                                                 ^^^^^^^^^^^^^^^^^^^       at least 1 hex digit
-            ##                                                                     ^^^   ends with the package name
-        grepl(pattern, wd, useBytes = TRUE)
-    }
-
-
-    ## on the maintainer's computer, prevent the source from being destroyed
-    if (!building && file.exists("./tools/maintainers-copy"))
-        stop("must 'R CMD build' before 'R CMD INSTALL' since the files are destructively modified")
-
-
-    if (file.exists("./tools/for-r-mac-builder"))
-        options(R_THIS_PATH_DEFINES = TRUE)
-
-
     # if (devel)
     #     cat("\n",
     #         sprintf("getwd(): '%s'\n", encodeString(if (is.null(L <- getwd())) "NULL" else L, na.encode = FALSE)),
@@ -44,6 +12,56 @@ main <- function ()
     #         sprintf("R_PACKAGE_NAME: '%s'\n", encodeString(Sys.getenv("R_PACKAGE_NAME"), na.encode = FALSE)),
     #         sep = ""
     #     )
+
+
+    regexQuote <- function(x) gsub("([.\\\\|()[{^$*+?])", "\\\\\\1", x)
+    RdQuote <- function(x) gsub("([%{}\\])", "\\\\\\1", x, useBytes = TRUE)
+
+
+    readLines2 <- function(description, ...) {
+        conn <- file(description, "rb", encoding = "")
+        on.exit(close(conn))
+        readLines(con = conn, ...)
+    }
+
+
+    ## "w" will use the native line end, "wb" will use Unix (LF)
+    writeLines2 <- function(text, description, mode = "w", useBytes = TRUE) {
+        conn <- file(description, mode, encoding = "")
+        on.exit(close(conn))
+        writeLines(text, conn, useBytes = useBytes)
+    }
+
+
+    ## files which require modifications / / substitutions before installing
+    ## will end with ".in" or ".in.ext"
+    ## once they've been modified, the file must be renamed, so remove ".in"
+    remove.in <- function(x) sub("\\.in(\\.[^./]+)?$", "\\1", x)
+
+
+    replace.devel.with.current.version <- if (devel) {
+        ## replace 'devel' in files with the current package version
+        function(file.in, old, new, file = remove.in(file.in)) {
+            if (file.exists(file.in)) {
+                x <- readLines2(file.in)
+                if (i <- match(old, x, 0L)) {
+                    x[[i]] <- new
+                    writeLines2(x, file)
+                    if (!file.remove(file.in))
+                        stop(sprintf("unable to remove file '%s'", file.in))
+                } else if (!file.rename(file.in, file))
+                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
+            }
+        }
+    } else {
+        ## just rename the files
+        function(file.in, old, new, file = remove.in(file.in)) {
+            if (file.exists(file.in)) {
+                if (!file.rename(file.in, file))
+                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
+            }
+        }
+    }
 
 
     ## we need the contents of the DESCRIPTION file
@@ -71,49 +89,31 @@ main <- function ()
             } else desc <- iconv(desc, encoding, "", sub = "byte")
         }
     }
+    pkgname <- Sys.getenv("R_PACKAGE_NAME")
     if (pkgname != desc["Package"])
         stop(gettextf("DESCRIPTION file is for package '%s', not '%s'",
             desc["Package"], pkgname))
 
 
-    readLines2 <- function(description, ...) {
-        conn <- file(description, "rb", encoding = "")
-        on.exit(close(conn))
-        readLines(con = conn, ...)
-    }
-
-
-    ## "w" will use the native line end, "wb" will use Unix (LF)
-    writeLines2 <- function(text, description, mode = "w", useBytes = TRUE) {
-        conn <- file(description, mode, encoding = "")
-        on.exit(close(conn))
-        writeLines(text, conn, useBytes = useBytes)
-    }
-
-
-    replace.devel.with.current.version <- if (devel) {
-        ## replace 'devel' in files with the current package version
-        function(file.in, old, new, file = sub("\\.in|in\\.", "", file.in)) {
-            if (file.exists(file.in)) {
-                x <- readLines2(file.in)
-                if (i <- match(old, x, 0L)) {
-                    x[[i]] <- new
-                    writeLines2(x, file)
-                    if (!file.remove(file.in))
-                        stop(sprintf("unable to remove file '%s'", file.in))
-                } else if (!file.rename(file.in, file))
-                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
-            }
-        }
+    building <- if (is.null(wd <- getwd())) {
+        FALSE
     } else {
-        ## just rename the files
-        function(file.in, old, new, file = sub("\\.in|in\\.", "", file.in)) {
-            if (file.exists(file.in)) {
-                if (!file.rename(file.in, file))
-                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
-            }
-        }
+        if (.Platform$OS.type == "windows")
+            wd <- chartr("\\", "/", wd)
+        ## we wish the check if the package is being built by
+        ## 'R CMD build' or being installed. we know a package is being
+        ## built if the working directory matches the following pattern
+        pattern <- sprintf("/Rtmp[\001-\056\060-\177]{6}/Rbuild[0123456789abcdef]+/%s$", regexQuote(desc["Package"]))
+            ##                   ^^^^^^^^^^^^^^^^^^^^^^^                                 6 ASCII characters excluding \0 and /
+            ##                                                 ^^^^^^^^^^^^^^^^^^^       at least 1 hex digit
+            ##                                                                     ^^^   ends with the package name
+        grepl(pattern, wd, useBytes = TRUE)
     }
+
+
+    ## on the maintainer's computer, prevent the source from being destroyed
+    if (!building && file.exists("./tools/maintainers-copy"))
+        stop("must 'R CMD build' before 'R CMD INSTALL' since the files are destructively modified")
 
 
     replace.devel.with.current.version(
@@ -143,7 +143,7 @@ main <- function ()
             Rdfiles.in <- c(Rdfiles.in, files.in)
         } else {
             ## rename the files, do not add the common macros
-            files <- sub("\\.in(\\.Rd$)", "\\1", files.in, ignore.case = TRUE)
+            files <- remove.in(files.in)
             if (any(i <- !file.rename(files.in, files)))
                 stop(sprintf(ngettext(sum(i), "unable to rename file %s",
                                               "unable to rename files %s"),
@@ -182,29 +182,33 @@ main <- function ()
                 x <- if (n) {
                     c(x[seq_len(n)], macros, x[-seq_len(n)])
                 } else c(macros, x)
-                writeLines2(x, sub("\\.in(\\.Rd$)", "\\1", Rdfile.in, ignore.case = TRUE))
+                writeLines2(x, remove.in(Rdfile.in))
                 if (!file.remove(Rdfile.in))
                     stop(sprintf("unable to remove file '%s'", Rdfile.in))
             }
         }
-        ## remove the macros folder so R CMD check will not complain about it
+        ## remove the macros folder so 'R CMD check' will not complain about it
         if (getRversion() < "3.2.0")
             unlink("./man/macros", recursive = TRUE, force = TRUE)
 
 
         ## (possibly) enable development features
-        R_THIS_PATH_DEFINES <- as.logical(getOption("R_THIS_PATH_DEFINES", NA))
-        if (is.na(R_THIS_PATH_DEFINES))
-            R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
-        if (is.na(R_THIS_PATH_DEFINES)) {
-            if (devel) {
-                libname <- Sys.getenv("R_LIBRARY_DIR")
-                R_THIS_PATH_DEFINES <- !(
-                    is.na(libname)                                            ||
-                    !nzchar(libname)                                          ||
-                    grepl("/this\\.path\\.Rcheck$", libname, useBytes = TRUE)
-                )
-            } else R_THIS_PATH_DEFINES <- FALSE
+        if (file.exists("./tools/for-r-mac-builder")) {
+            R_THIS_PATH_DEFINES <- TRUE
+        } else {
+            R_THIS_PATH_DEFINES <- as.logical(getOption("R_THIS_PATH_DEFINES", NA))
+            if (is.na(R_THIS_PATH_DEFINES))
+                R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
+            if (is.na(R_THIS_PATH_DEFINES)) {
+                if (devel) {
+                    libname <- Sys.getenv("R_LIBRARY_DIR")
+                    R_THIS_PATH_DEFINES <- !(
+                        is.na(libname)                           ||
+                        !nzchar(libname)                         ||
+                        grepl("/this\\.path\\.Rcheck$", libname)
+                    )
+                } else R_THIS_PATH_DEFINES <- FALSE
+            }
         }
         if (R_THIS_PATH_DEFINES)
             writeLines2(c(

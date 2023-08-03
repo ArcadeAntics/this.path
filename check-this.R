@@ -7,7 +7,7 @@
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = FALSE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
