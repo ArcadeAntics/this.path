@@ -203,9 +203,8 @@ main <- function ()
                 if (devel) {
                     libname <- Sys.getenv("R_LIBRARY_DIR")
                     R_THIS_PATH_DEFINES <- !(
-                        is.na(libname)                           ||
-                        !nzchar(libname)                         ||
-                        grepl("/this\\.path\\.Rcheck$", libname)
+                        is.na(libname) || !nzchar(libname) ||
+                        grepl(sprintf("/%s\\.Rcheck$", regexQuote(desc["Package"])), libname)
                     )
                 } else R_THIS_PATH_DEFINES <- FALSE
             }
