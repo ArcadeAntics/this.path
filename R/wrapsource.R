@@ -26,6 +26,14 @@ unset.sys.path <- function ()
 .External2(.C_unsetsyspath)
 
 
+set.env.path <- function (envir, matchThisEnv = getOption("topLevelEnvironment"))
+.External2(.C_setenvpath, envir, matchThisEnv)
+
+
+set.src.path <- function (srcfile)
+.External2(.C_setsrcpath, srcfile)
+
+
 inside.source <- eval(call("function", as.pairlist(alist(file = , path.only = FALSE, character.only = path.only,
     file.only = path.only, conv2utf8 = FALSE, allow.blank.string = FALSE,
     allow.clipboard = !file.only, allow.stdin = !file.only, allow.url = !file.only,

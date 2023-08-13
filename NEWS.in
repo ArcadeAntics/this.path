@@ -2,6 +2,16 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  BUG FIXES:
+
+    * set.env.path() and set.src.path() now return their input instead
+      of returning NULL.
+
+    * set.src.path() now accepts an expression vector containing a
+      source file.
+
+CHANGES IN this.path 2.0.0 (2023-08-08):
+
   SIGNIFICANT USER-VISIBLE CHANGES:
 
     * this.path() was misleading users into believing it returns the
@@ -42,6 +52,9 @@ CHANGES IN this.path devel:
     * Added src.path() for determining the path associated with its
       source reference. Also added src.dir(), src.here(), src.proj(),
       rel2src.dir(), src.LINENO(), and try.src.path().
+
+    * Added set.env.path() and set.src.path() to work along side
+      set.sys.path().
 
     * this.path() now accepts arguments 'n', 'envir', 'matchThisEnv',
       and 'srcfile' to finely control how the path will be retrieved.

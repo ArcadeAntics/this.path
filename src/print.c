@@ -1,0 +1,299 @@
+#include "thispathdefn.h"
+
+
+
+
+
+Rboolean my_isMethodDispatchOn(void)
+{
+    SEXP expr = LCONS(_isMethodsDispatchOnSymbol, R_NilValue);
+    PROTECT(expr);
+    Rboolean value = asLogical(eval(expr, R_BaseEnv));
+    UNPROTECT(1);
+    return value;
+}
+
+
+void my_PrintObjectS4(SEXP s, SEXP env)
+{
+    SEXP methods = findVarInFrame(R_NamespaceRegistry, methodsSymbol);
+    if (methods == R_UnboundValue)
+        error("missing methods namespace: this should not happen");
+
+
+    SEXP show = getInFrame(showSymbol, methods, TRUE);
+    if (show == R_UnboundValue)
+        error("missing show() in methods namespace: this should not happen");
+
+
+    SEXP expr = PROTECT(lang2(show, s));
+    eval(expr, env);
+    UNPROTECT(1);
+}
+
+
+void my_PrintObjectS3(SEXP s, SEXP env)
+{
+    SEXP mask = PROTECT(R_NewEnv(env, FALSE, 0));
+    defineVar(xSymbol, s, mask);
+
+
+    SEXP print = PROTECT(findFunction(printSymbol, R_BaseNamespace));
+    SEXP expr = PROTECT(LCONS(print, CONS(xSymbol, R_NilValue)));
+
+
+    eval(expr, mask);
+
+
+    defineVar(xSymbol, R_NilValue, mask);
+    UNPROTECT(3);
+}
+
+
+void my_PrintObject(SEXP s, SEXP env)
+{
+    if (my_isMethodDispatchOn() && IS_S4_OBJECT(s))
+        my_PrintObjectS4(s, env);
+    else
+        my_PrintObjectS3(s, env);
+}
+
+
+void my_PrintValueRec(SEXP s, SEXP env)
+{
+    SEXP mask = PROTECT(R_NewEnv(env, FALSE, 0));
+    defineVar(xSymbol, s, mask);
+
+
+    SEXP print = PROTECT(findFunction(print_defaultSymbol, R_BaseNamespace));
+    SEXP expr = PROTECT(LCONS(print, CONS(xSymbol, R_NilValue)));
+
+
+    eval(expr, mask);
+
+
+    defineVar(xSymbol, R_NilValue, mask);
+    UNPROTECT(3);
+}
+
+
+void my_PrintDispatch(SEXP s, SEXP env)
+{
+    if (isObject(s))
+        my_PrintObject(s, env);
+    else
+        my_PrintValueRec(s, env);
+}
+
+
+void my_PrintValueEnv(SEXP s, SEXP env)
+{
+    PROTECT(s);
+
+
+    if (isFunction(s))
+        my_PrintObject(s, env);
+    else
+        my_PrintDispatch(s, env);
+
+
+    UNPROTECT(1);
+}
+
+
+SEXP do_PrintValueEnv do_formals
+{
+    do_start_no_call_op("PrintValueEnv", 2);
+    my_PrintValueEnv(CAR(args), CADR(args));
+    set_R_Visible(FALSE);
+    return CAR(args);
+}
+
+
+SEXP do_printThisPathInfo do_formals
+{
+    do_start_no_call_op("printThisPathInfo", 2);
+
+
+    SEXP x = CAR(args); args = CDR(args);
+    if (TYPEOF(x) != ENVSXP)
+        error(_("invalid '%s' value"), "x");
+    Rboolean quote = asLogical(CAR(args)); args = CDR(args);
+    if (quote == NA_LOGICAL)
+        error(_("invalid '%s' value"), "quote");
+
+
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(R_NilValue, R_NilValue), &indx);
+    SET_TAG(expr, R_QuoteSymbol);
+    REPROTECT(expr = LCONS(encodeStringSymbol, CONS(R_NilValue, expr)), indx);
+
+
+    SEXP klass = getAttrib(x, R_ClassSymbol);
+    int nklass;
+    if ((nklass = LENGTH(klass))) {
+        SETCADR(expr, klass);
+        SETCADDR(expr, mkString("\""));
+        SEXP tmp = eval(expr, R_BaseEnv);
+        PROTECT(tmp);
+        Rprintf("<object of class ");
+        for (int i = 0; i < nklass; i++)
+            if (i) Rprintf(", %s", CHAR(STRING_ELT(tmp, i)));
+            else   Rprintf("%s"  , CHAR(STRING_ELT(tmp, i)));
+        Rprintf(" at %p>\n", (void *) x);
+        UNPROTECT(1);
+    } else Rprintf("<object of class \"%s\" at %p>\n", type2char(TYPEOF(x)), (void *) x);
+
+
+    if (!quote) SETCADDR(expr, R_BlankScalarString);
+
+
+    SEXP sym;
+#define print_invalid_unbound   Rprintf("%s: <invalid, R_UnboundValue>\n", CHAR(PRINTNAME(sym)))
+#define print_null              Rprintf("%s: NULL\n", CHAR(PRINTNAME(sym)))
+#define print_invalid_null      Rprintf("%s: <invalid, NULL>\n", CHAR(PRINTNAME(sym)))
+#define print_invalid_type(var) Rprintf("%s: <invalid, type = \"%s\", length = %d>\n", CHAR(PRINTNAME(sym)), type2char(TYPEOF((var))), length((var)))
+
+
+    SEXP errcnd = findVarInFrame(x, sym = errcndSymbol);
+    if (errcnd != R_UnboundValue) {
+        if (errcnd == R_NilValue)
+            print_invalid_null;
+        else if (TYPEOF(errcnd) == VECSXP &&
+                 LENGTH(errcnd) >= 2 &&
+                 inherits(errcnd, "condition"))
+        {
+            Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+            my_PrintValueEnv(errcnd, rho);
+        }
+        else print_invalid_type(errcnd);
+
+
+        SEXP for_msg = findVarInFrame(x, sym = for_msgSymbol);
+        if (for_msg == R_UnboundValue)
+            print_invalid_unbound;
+        else if (for_msg == R_NilValue)
+            print_invalid_null;
+        else if (TYPEOF(for_msg) == STRSXP &&
+                 LENGTH(for_msg) == 1)
+        {
+            SETCADR(expr, for_msg);
+            SEXP tmp = eval(expr, R_BaseEnv);
+            PROTECT(tmp);
+            Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)), CHAR(STRING_ELT(tmp, 0)));
+            UNPROTECT(1);
+        }
+        else print_invalid_type(for_msg);
+
+
+        SEXP associated_with_file = findVarInFrame(x, sym = associated_with_fileSymbol);
+        if (associated_with_file != R_UnboundValue) {
+            if (associated_with_file == R_NilValue)
+                print_null;
+            else if (TYPEOF(associated_with_file) == LGLSXP &&
+                     LENGTH(associated_with_file) == 1)
+            {
+                Rboolean tmp = LOGICAL(associated_with_file)[0];
+                Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)),
+                    tmp == NA_LOGICAL ? "NA" : (tmp ? "TRUE" : "FALSE"));
+            }
+            else print_invalid_type(associated_with_file);
+        }
+    }
+    else {
+        SEXP ofile = findVarInFrame(x, sym = ofileSymbol);
+        if (ofile == R_UnboundValue)
+            print_invalid_unbound;
+        else if (ofile == R_NilValue)
+            print_null;
+        else if (TYPEOF(ofile) == STRSXP &&
+                 LENGTH(ofile) == 1)
+        {
+            SETCADR(expr, ofile);
+            SEXP tmp = eval(expr, R_BaseEnv);
+            PROTECT(tmp);
+            Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)), CHAR(STRING_ELT(tmp, 0)));
+            UNPROTECT(1);
+        }
+        else print_invalid_type(ofile);
+
+
+        SEXP wd = findVarInFrame(x, sym = wdSymbol);
+        if (wd != R_UnboundValue) {
+            if (wd == R_NilValue)
+                print_null;
+            else if (TYPEOF(wd) == STRSXP &&
+                     LENGTH(wd) == 1)
+            {
+                SETCADR(expr, wd);
+                SEXP tmp = eval(expr, R_BaseEnv);
+                PROTECT(tmp);
+                Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)), CHAR(STRING_ELT(tmp, 0)));
+                UNPROTECT(1);
+            }
+            else print_invalid_type(wd);
+        }
+
+
+        SEXP file = findVarInFrame(x, sym = fileSymbol);
+        if (file == R_UnboundValue)
+            print_invalid_unbound;
+        else if (file == R_NilValue)
+            print_invalid_null;
+        else if (TYPEOF(file) == PROMSXP) {
+            if (PRVALUE(file) == R_UnboundValue) {
+                Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+                my_PrintValueEnv(PREXPR(file), rho);
+            }
+            else if ((file = PRVALUE(file)) == R_NilValue) {
+                print_null;
+            }
+            else if (TYPEOF(file) == STRSXP &&
+                     LENGTH(file) == 1)
+            {
+                SETCADR(expr, file);
+                SEXP tmp = eval(expr, R_BaseEnv);
+                PROTECT(tmp);
+                Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)), CHAR(STRING_ELT(tmp, 0)));
+                UNPROTECT(1);
+            }
+            else print_invalid_type(file);
+        }
+        else print_invalid_type(file);
+    }
+
+
+    SEXP setsyspathwashere = findVarInFrame(x, sym = setsyspathwashereSymbol);
+    if (setsyspathwashere != R_UnboundValue) {
+        if (setsyspathwashere == R_NilValue)
+            print_invalid_null;
+        else if (setsyspathwashere == R_MissingArg)
+            Rprintf("%s: R_MissingArg\n", CHAR(PRINTNAME(sym)));
+        else if (TYPEOF(setsyspathwashere) == CHARSXP) {
+            Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+            my_PrintValueEnv(setsyspathwashere, rho);
+        }
+        else print_invalid_type(setsyspathwashere);
+    }
+
+
+    SEXP n = findVarInFrame(x, sym = nSymbol);
+    if (n == R_UnboundValue) {
+        if (setsyspathwashere != R_UnboundValue)
+            print_invalid_unbound;
+    }
+    else if (n == R_NilValue)
+        print_invalid_null;
+    else if (TYPEOF(n) == INTSXP &&
+             LENGTH(n) == 1)
+    {
+        Rprintf("%s: %d\n", CHAR(PRINTNAME(sym)), INTEGER(n)[0]);
+    }
+    else print_invalid_type(n);
+
+
+    set_R_Visible(FALSE);
+    UNPROTECT(1);
+    return x;
+}

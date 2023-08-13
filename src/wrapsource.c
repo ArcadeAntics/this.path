@@ -146,6 +146,7 @@ SEXP do_wrapsource do_formals
     SEXP frame = rho;
     SEXP ptr;
     SEXP promises = R_NilValue;
+    SEXP thispathinfo;
 
 
     /* we will be modifying the PRSEEN values of the promises,
@@ -211,16 +212,12 @@ SEXP do_wrapsource do_formals
         error("invalid '%s', must be a call", EncodeChar(PRINTNAME(exprSymbol)));
 
 
-#define set_thispathn(n, frame)                                \
-    do {                                                       \
-        INCREMENT_NAMED_defineVar(thispathnSymbol, ScalarInteger((n)), (frame));\
-        R_LockBinding(thispathnSymbol, (frame));               \
-    } while (0)
+#define set_n(n, thispathinfo) INCREMENT_NAMED_defineVar(nSymbol, ScalarInteger((n)), (thispathinfo))
 
 
 #define set_prvalues_then_return(val)                          \
     do {                                                       \
-        set_thispathn(context_number, frame);                  \
+        set_n(context_number, thispathinfo);                   \
         SEXP tmp = (val);                                      \
         PROTECT(tmp); nprotect++;                              \
         ENSURE_NAMEDMAX(tmp);                                  \
@@ -237,7 +234,11 @@ SEXP do_wrapsource do_formals
 
 
     if (length(expr) < 2) {
-        assign_null(frame);
+        PROTECT(thispathinfo = ThisPathInfo());
+        assign_null(thispathinfo);
+        INCREMENT_NAMED_defineVar(thispathinfoSymbol, thispathinfo, frame);
+        R_LockBinding(thispathinfoSymbol, frame);
+        UNPROTECT(1);
         set_R_Visible(TRUE);
         set_prvalues_then_return(eval(PRCODE(promise), env));
     }
@@ -254,7 +255,7 @@ SEXP do_wrapsource do_formals
     SEXP fun     = CAR(expr),
          funargs = CDR(expr);
     if (TYPEOF(fun) == SYMSXP)
-        fun = findFunction(fun, env, expr);
+        fun = findFunction3(fun, env, expr);
     else
         fun = eval(fun, env);
     /* change the function so that it is not evaluated twice */
@@ -414,7 +415,11 @@ SEXP do_wrapsource do_formals
         }
     }
     if (s == NULL) {
-        assign_null(frame);
+        PROTECT(thispathinfo = ThisPathInfo());
+        assign_null(thispathinfo);
+        INCREMENT_NAMED_defineVar(thispathinfoSymbol, thispathinfo, frame);
+        R_LockBinding(thispathinfoSymbol, frame);
+        UNPROTECT(1);
         set_R_Visible(TRUE);
         set_prvalues_then_return(eval(expr, env));
     }
@@ -457,16 +462,12 @@ SEXP do_wrapsource do_formals
     SEXP returnvalue;  /* this is never used */
 
 
-#if R_version_at_least(3, 4, 0)
-#define checkfile_call R_CurrentExpression
-#else
-#define checkfile_call R_NilValue
-#endif
     checkfile(
-        /* call                   */ checkfile_call,
+        /* call                   */ R_CurrentExpression,
         /* sym                    */ fileSymbol,
         /* ofile                  */ ofile,
         /* frame                  */ frame,
+        /* as_binding             */ TRUE,
         /* check_not_directory    */ TRUE,
         /* forcepromise           */ TRUE,
         /* assign_returnvalue     */ FALSE,
@@ -504,12 +505,30 @@ SEXP do_wrapsource do_formals
 }
 
 
-SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
+#define SETSYSPATH_OP   0
+#define UNSETSYSPATH_OP 1
+#define SETENVPATH_OP   2
+#define SETSRCPATH_OP   3
+
+
+extern Rboolean IsModuleEnv(SEXP rho);
+
+
+SEXP setpath(SEXP args, int op, SEXP rho)
 {
     int nprotect = 0;
 
 
-    const char *name = (unset ? "'unset.sys.path()'" : "'set.sys.path()'");
+    const char *name;
+    switch (op) {
+    case SETSYSPATH_OP:   name = "'set.sys.path()'";   break;
+    case UNSETSYSPATH_OP: name = "'unset.sys.path()'"; break;
+    case SETENVPATH_OP:   name = "'set.env.path()'";   break;
+    case SETSRCPATH_OP:   name = "'set.src.path()'";   break;
+    default:
+        error(_("invalid '%s' value"), "op");
+        return R_NilValue;
+    }
 
 
     int sys_parent = get_sys_parent(1, rho);
@@ -597,7 +616,7 @@ SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
     UNPROTECT(1);  /* function */
 
 
-    SEXP ofile, frame;
+    SEXP ofile, frame, thispathinfo;
 
 
     frame = eval(expr_parent_frame, rho);
@@ -623,53 +642,81 @@ SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
         error("%s cannot be used within a locked environment", name);
 
 
-    if (unset) {
-        if (!existsInFrame(frame, setsyspathwashereSymbol))
+    if (op) {
+        thispathinfo = findVarInFrame(frame, thispathinfoSymbol);
+        if (thispathinfo == R_UnboundValue ||
+            TYPEOF(thispathinfo) != ENVSXP ||
+            !existsInFrame(thispathinfo, setsyspathwashereSymbol))
+        {
             error("%s cannot be called before set.sys.path()", name);
-        if (!existsInFrame(frame, thispathdoneSymbol))
-            error("%s cannot be called within this environment", name);
-#if defined(R_THIS_PATH_USE_removeFromFrame)
-        SEXP names[] = {
-            thispathofileSymbol     ,
-            thispathfileSymbol      ,
-            thispathformsgSymbol    ,
-            thispatherrorSymbol     ,
-            thispathassocwfileSymbol,
-            thispathdoneSymbol      ,
-            setsyspathwashereSymbol ,
-            thispathnSymbol         ,
-            NULL
-        };
-        removeFromFrame(names, frame);
-#else
-        R_removeVarFromFrame(thispathofileSymbol     , frame);
-        R_removeVarFromFrame(thispathfileSymbol      , frame);
-        R_removeVarFromFrame(thispathformsgSymbol    , frame);
-        R_removeVarFromFrame(thispatherrorSymbol     , frame);
-        R_removeVarFromFrame(thispathassocwfileSymbol, frame);
-        R_removeVarFromFrame(thispathdoneSymbol      , frame);
-        R_removeVarFromFrame(setsyspathwashereSymbol , frame);
-        R_removeVarFromFrame(thispathnSymbol         , frame);
-#endif
+        }
+        SEXP returnthis = R_NilValue;
+        switch (op) {
+        case UNSETSYSPATH_OP:
+        {
+            R_removeVarFromFrame(thispathinfoSymbol, frame);
+            break;
+        }
+        case SETENVPATH_OP:
+        {
+            SEXP envir = CAR(args); args = CDR(args);
+            returnthis = envir;
+            if (TYPEOF(envir) != ENVSXP) break;
+            SEXP target = CAR(args); args = CDR(args);
+            if (target != R_NilValue && TYPEOF(target) != ENVSXP) target = R_NilValue;
+            SEXP env = topenv(target, envir);
+            if (env == R_GlobalEnv ||
+                env == R_BaseEnv || env == R_BaseNamespace ||
+                R_IsPackageEnv(env) || R_IsNamespaceEnv(env));
+            else if (inherits(env, "box$ns"));
+            else if (IsModuleEnv(env));
+            else setAttrib(env, thispathinfoSymbol, thispathinfo);
+            break;
+        }
+        case SETSRCPATH_OP:
+        {
+            SEXP x = CAR(args); args = CDR(args);
+            returnthis = x;
+            SEXP srcfile = NULL;
+            switch (TYPEOF(x)) {
+            case EXPRSXP:
+                srcfile = PROTECT(getAttrib(x, srcfileSymbol)); nprotect++;
+                if (TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
+                break;
+            case ENVSXP:
+                if (inherits(x, "srcfile")) srcfile = x;
+                break;
+            }
+            if (srcfile) {
+                INCREMENT_NAMED_defineVar(thispathinfoSymbol, thispathinfo, srcfile);
+                R_LockBinding(thispathinfoSymbol, srcfile);
+            }
+            break;
+        }
+        default:
+            error(_("invalid '%s' value"), "op");
+            return R_NilValue;
+        }
         set_R_Visible(FALSE);
         UNPROTECT(nprotect);
-        return R_NilValue;
+        return returnthis;
     }
 
 
-    if (existsInFrame(frame, setsyspathwashereSymbol))
+    if (existsInFrame(frame, thispathinfoSymbol))
         error("%s cannot be called more than once within an environment", name);
-    if (existsInFrame(frame, thispathdoneSymbol))
-        error("%s cannot be called within this environment", name);
 
 
     /* why would this be NA??? idk but might as well test for it anyway */
     Rboolean missing_file = asFlag(eval(expr_missing_file, rho), "missing(file)");
     if (missing_file) {
-        assign_null(frame);
-        defineVar(setsyspathwashereSymbol, R_MissingArg, frame);
-        R_LockBinding(setsyspathwashereSymbol, frame);
-        set_thispathn(sys_parent, frame);
+        PROTECT(thispathinfo = ThisPathInfo());
+        assign_null(thispathinfo);
+        INCREMENT_NAMED_defineVar(thispathinfoSymbol, thispathinfo, frame);
+        R_LockBinding(thispathinfoSymbol, frame);
+        UNPROTECT(1);
+        defineVar(setsyspathwashereSymbol, R_MissingArg, thispathinfo);
+        set_n(sys_parent, thispathinfo);
         set_R_Visible(TRUE);
         UNPROTECT(nprotect);
         return R_MissingArg;
@@ -767,10 +814,11 @@ SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
 
     SEXP returnvalue = R_NilValue;
     checkfile(
-        /* call                   */ checkfile_call,
+        /* call                   */ R_CurrentExpression,
         /* sym                    */ fileSymbol,
         /* ofile                  */ ofile,
         /* frame                  */ frame,
+        /* as_binding             */ TRUE,
         /* check_not_directory    */ TRUE,
         /* forcepromise           */ TRUE,
         /* assign_returnvalue     */ TRUE,
@@ -801,28 +849,41 @@ SEXP setsyspath(SEXP args, Rboolean unset, SEXP rho)
     );
 
 
-    INCREMENT_NAMED_defineVar(setsyspathwashereSymbol, fun_name, frame);
-    R_LockBinding(setsyspathwashereSymbol, frame);
-    set_thispathn(sys_parent, frame);
+    INCREMENT_NAMED_defineVar(setsyspathwashereSymbol, fun_name, thispathinfo);
+    set_n(sys_parent, thispathinfo);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
     return returnvalue;
 }
 
 
+#undef flag_definitions
+#undef flag_declarations
+#undef set_n
+
+
 SEXP do_setsyspath do_formals
 {
     do_start_no_call_op("setsyspath", 21);
-    return setsyspath(args, FALSE, rho);
+    return setpath(args, SETSYSPATH_OP, rho);
 }
 
 
 SEXP do_unsetsyspath do_formals
 {
     do_start_no_call_op("unsetsyspath", 0);
-    return setsyspath(args, TRUE, rho);
+    return setpath(args, UNSETSYSPATH_OP, rho);
 }
 
 
-#undef flag_definitions
-#undef flag_declarations
-#undef set_thispathn
+SEXP do_setenvpath do_formals
+{
+    do_start_no_call_op("setenvpath", 2);
+    return setpath(args, SETENVPATH_OP, rho);
+}
+
+
+SEXP do_setsrcpath do_formals
+{
+    do_start_no_call_op("setsrcpath", 1);
+    return setpath(args, SETSRCPATH_OP, rho);
+}

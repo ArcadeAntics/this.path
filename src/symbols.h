@@ -26,28 +26,15 @@ extern0 SEXP0
     R_DoubleColonSymbol                    INI_as(install("::")),
     R_TripleColonSymbol                    INI_as(install(":::")),
 #endif
-    /* formatted weird on purpose, do not modify */
-    thispathofileSymbol                    INI_as(install(
-        ".this.path::ofile"
-    )),
-    thispathfileSymbol                     INI_as(install(
-        ".this.path::file"
-    )),
-    thispathofilejupyterSymbol             INI_as(install(
-        ".this.path::ofile.jupyter"
-    )),
-    thispathfilejupyterSymbol              INI_as(install(
-        ".this.path::file.jupyter"
-    )),
-    thispathformsgSymbol                   INI_as(install(".this.path::for msg")),
-    thispatherrorSymbol                    INI_as(install(".this.path::error")),
-    thispathassocwfileSymbol               INI_as(install(".this.path::associated with file")),
-    thispathdoneSymbol                     INI_as(install(".this.path::done")),
-    setsyspathwashereSymbol                INI_as(install(".this.path::set.sys.path() was here")),
-    thispathnSymbol                        INI_as(install(".this.path::n")),
+    thispathinfoSymbol                     INI_as(install(".this.path::info")),
+    errcndSymbol                           INI_as(install("errcnd")),
+    associated_with_fileSymbol             INI_as(install("associated.with.file")),
+    setsyspathwashereSymbol                INI_as(install("set.sys.path.was.here")),
+    nSymbol                                INI_as(install("n")),
     _normalizePathSymbol                   INI_as(install(".normalizePath")),
     _normalizeNotDirectorySymbol           INI_as(install(".normalizeNotDirectory")),
     _normalizeAgainstSymbol                INI_as(install(".normalizeAgainst")),
+    _isMethodsDispatchOnSymbol             INI_as(install(".isMethodsDispatchOn")),
     stopSymbol                             INI_as(install("stop")),
     delayedAssignSymbol                    INI_as(install("delayedAssign")),
     _normalizeURL_1Symbol                  INI_as(install(".normalizeURL.1")),
@@ -73,6 +60,11 @@ extern0 SEXP0
     info_source_pathSymbol                 INI_as(install("info$source_path")),
     compilerSymbol                         INI_as(install("compiler")),
     loadcmpSymbol                          INI_as(install("loadcmp")),
+    methodsSymbol                          INI_as(install("methods")),
+    showSymbol                             INI_as(install("show")),
+#if R_version_less_than(4, 1, 0)
+    new_envSymbol                          INI_as(install("new.env")),
+#endif
     sys_callSymbol                         INI_as(install("sys.call")),
     sys_frameSymbol                        INI_as(install("sys.frame")),
     sys_functionSymbol                     INI_as(install("sys.function")),
@@ -91,6 +83,8 @@ extern0 SEXP0
     inputSymbol                            INI_as(install("input")),
     missingSymbol                          INI_as(install("missing")),
     _sys_path_toplevelSymbol               INI_as(install(".sys.path.toplevel")),
+    _sys_path_jupyterSymbol                INI_as(install(".sys.path.jupyter")),
+    _shFILESymbol                          INI_as(install(".shFILE")),
     encodeStringSymbol                     INI_as(install("encodeString")),
     na_encodeSymbol                        INI_as(install("na.encode")),
     exprSymbol                             INI_as(install("expr")),
@@ -120,6 +114,7 @@ extern0 SEXP0
     _maybe_unembedded_shellSymbol          INI_as(install(".maybe.unembedded.shell")),
     setsyspathfrompackageSymbol            INI_as(install("set.sys.path from package this.path")),
     printSymbol                            INI_as(install("print")),
+    print_defaultSymbol                    INI_as(install("print.default")),
     _xDataSymbol                           INI_as(install(".xData")),
     _DataSymbol                            INI_as(install(".Data")),
     _validJupyterRNotebookSymbol           INI_as(install(".validJupyterRNotebook")),

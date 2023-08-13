@@ -232,7 +232,7 @@ delayedAssign(".gui.rstudio",
     if (.Platform$GUI == "RStudio") { .External2(.C_inittoolsrstudio, skipCheck = TRUE); TRUE }
     else (
         (.os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none")) ||
-        (.os.windows && .Platform$GUI  ==    "Rgui")
+        (.os.windows && .Platform$GUI == "Rgui")
     )
 )
 

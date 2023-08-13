@@ -115,6 +115,13 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"pathunsplit"       , (DL_FUNC) &do_pathunsplit       , 0},
 
 
+    /* print.c */
+
+
+    {"PrintValueEnv"    , (DL_FUNC) &do_PrintValueEnv    , 2},
+    {"printThisPathInfo", (DL_FUNC) &do_printThisPathInfo, 2},
+
+
     /* progargs.c */
 
 
@@ -180,6 +187,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"wrapsource"  , (DL_FUNC) &do_wrapsource  , 20},
     {"setsyspath"  , (DL_FUNC) &do_setsyspath  , 21},
     {"unsetsyspath", (DL_FUNC) &do_unsetsyspath,  0},
+    {"setenvpath"  , (DL_FUNC) &do_setenvpath  ,  2},
+    {"setsrcpath"  , (DL_FUNC) &do_setsrcpath  ,  1},
 
 
     {NULL, NULL, 0}

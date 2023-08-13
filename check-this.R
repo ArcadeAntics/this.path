@@ -1,17 +1,35 @@
-{
+local({
+    submit2CRAN <- FALSE
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
+    if (submit2CRAN) {
+        info.dcf <- this.path::here("tools", "info.dcf")
+        info <- read.dcf(info.dcf)
+        if (nrow(info) != 1L)
+            stop("contains a blank line", call. = FALSE)
+        info <- info[1L, ]
+        info[["devel"]] <- "FALSE"
+        FILE.dcf <- tempfile(fileext = ".dcf")
+        if (!file.copy(info.dcf, FILE.dcf, overwrite = TRUE, copy.date = TRUE))
+            stop(sprintf("unable to copy file '%s' to '%s'", info.dcf, FILE.dcf))
+        on.exit({
+            if (!file.copy(FILE.dcf, info.dcf, overwrite = TRUE, copy.date = TRUE))
+                stop(sprintf("unable to copy file '%s' to '%s'", FILE.dcf, info.dcf))
+        }, add = TRUE, after = FALSE)
+        write.dcf(t(info), info.dcf, useBytes = !l10n_info()[["UTF-8"]],
+            keep.white = names(info))
+    }
     essentials:::.update.DESCRIPTION.Date()
     essentials:::check.this(  ## this.path
         special = TRUE,
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = TRUE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
-}
+})
 
 
 local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
@@ -160,7 +178,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("./tools", x, value = TRUE)
+    x <- grep("findFunction", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

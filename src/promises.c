@@ -327,14 +327,14 @@ SEXP do_setsyspathjupyter do_formals
     else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
 
 
-    SEXP sym, env = getFromMyNS(_sys_path_toplevelSymbol);
+    SEXP sym, env = getFromMyNS(_sys_path_jupyterSymbol);
     if (TYPEOF(env) != CLOSXP)
-        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_sys_path_toplevelSymbol)));
+        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_sys_path_jupyterSymbol)));
     env = CLOENV(env);
 
 
     /* attempt to get the promise */
-    sym = thispathfilejupyterSymbol;
+    sym = fileSymbol;
     SEXP e = findVarInFrame(env, sym);
     if (e == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
@@ -343,7 +343,7 @@ SEXP do_setsyspathjupyter do_formals
 
 
     /* attempt to unlock the original file's binding */
-    sym = thispathofilejupyterSymbol;
+    sym = ofileSymbol;
     R_unLockBinding(sym, env);
 
 

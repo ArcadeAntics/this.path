@@ -1,6 +1,17 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \section{CHANGES IN VERSION devel}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{\code{set.env.path()} and \code{set.src.path()} now return their
+        input instead of returning \code{NULL}.}
+
+      \item{\code{set.src.path()} now accepts an expression vector containing a
+        source file.}
+    }
+  }
+}
+\section{CHANGES IN VERSION 2.0.0 (2023-08-08)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item{\code{this.path()} was misleading users into believing it returns
@@ -45,6 +56,9 @@
         its source reference. Also added \code{src.dir()}, \code{src.here()},
         \code{src.proj()}, \code{rel2src.dir()}, \code{src.LINENO()}, and
         \code{try.src.path()}.}
+
+      \item{Added \code{set.env.path()} and \code{set.src.path()} to work along
+        side \code{set.sys.path()}.}
 
       \item{\code{this.path()} now accepts arguments \codeorsQuote{n},
         \codeorsQuote{envir}, \codeorsQuote{matchThisEnv}, and

@@ -4,17 +4,6 @@
 
 
 
-void Rprint(SEXP x, SEXP rho)
-{
-    SEXP expr;
-    PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
-    REPROTECT(expr = LCONS(getFromBase(printSymbol), expr), indx);
-    eval(expr, rho);
-    UNPROTECT(1);
-}
-
-
 #define print_char_array(_ac_, _av_)                           \
     do {                                                       \
         SEXP tmp10 = allocVector(STRSXP, (_ac_));              \
@@ -22,7 +11,7 @@ void Rprint(SEXP x, SEXP rho)
         for (int indx = 0; indx < (_ac_); indx++) {            \
             SET_STRING_ELT(tmp10, indx, mkChar((_av_)[indx])); \
         }                                                      \
-        Rprint(tmp10, R_BaseEnv);                              \
+        my_PrintValueEnv(tmp10, R_BaseEnv);                    \
         UNPROTECT(1);                                          \
     } while (0)
 
@@ -66,23 +55,29 @@ SEXP do_shFILE do_formals
     if (for_msg && !original) original = NA_LOGICAL;
 
 
+    SEXP env = getFromMyNS(_shFILESymbol);
+    if (TYPEOF(env) != CLOSXP)
+        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_shFILESymbol)));
+    env = CLOENV(env);
+
+
     if (original == NA_LOGICAL) {
 
 
 #define get_and_check(var, sym)                                \
-        SEXP var = findVarInFrame(ENCLOS(rho), (sym));         \
+        SEXP var = findVarInFrame(env, (sym));                 \
         if (var == R_UnboundValue)                             \
             error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
         if (TYPEOF(var) != PROMSXP)                            \
             error("invalid '%s', must be a promise", EncodeChar(PRINTNAME((sym))))
 
 
-        get_and_check(thispathfile, thispathfileSymbol);
+        get_and_check(file, fileSymbol);
         /* if the promise has not already been forced, just get the original */
-        if (PRVALUE(thispathfile) == R_UnboundValue)
+        if (PRVALUE(file) == R_UnboundValue)
             original = TRUE;
         else
-            return PRVALUE(thispathfile);
+            return PRVALUE(file);
     }
     if (original) {
 #define get_and_return(var, sym)                               \
@@ -100,10 +95,10 @@ SEXP do_shFILE do_formals
             return PRVALUE(var)
 
 
-        get_and_return(thispathofile, thispathofileSymbol);
+        get_and_return(ofile, ofileSymbol);
     }
     else {
-        get_and_return(thispathfile, thispathfileSymbol);
+        get_and_return(file, fileSymbol);
     }
 
 
@@ -146,11 +141,8 @@ static void env_command_line(int *pac, const char **argv)
 
 
 // https://github.com/wch/r-source/blob/trunk/src/main/CommandLineArgs.c#L94
-void common_command_line(int *pac, const char **argv, char *enc, Rboolean *has_enc)
+void common_command_line(int *pac, const char **argv, char *enc, Rboolean *has_enc, Rboolean *no_echo)
 {
-    *has_enc = FALSE;
-
-
     int ac = *pac, newac = 1;
     const char *p;
     const char **av = argv;
@@ -192,6 +184,7 @@ void common_command_line(int *pac, const char **argv, char *enc, Rboolean *has_e
                      !strcmp(*av, "--slave") ||
                      !strcmp(*av, "-s"))
             {
+                *no_echo = TRUE;
             }
             else if (!strcmp(*av, "--no-site-file")) {
             }
@@ -347,20 +340,23 @@ SEXP do_shINFO do_formals
 #endif
 
 
-#define return_shINFO(_ENC_, _FILE_, _EXPR_, _HAS_INPUT_)      \
+#define return_shINFO(_ENC_, _NO_ECHO_, _FILE_, _EXPR_, _HAS_INPUT_)\
         do {                                                   \
-            SEXP value = allocVector(VECSXP, 4);               \
+            SEXP value = allocVector(VECSXP, 5);               \
             PROTECT(value);                                    \
-            SEXP names = allocVector(STRSXP, 4);               \
+            SEXP names = allocVector(STRSXP, 5);               \
             setAttrib(value, R_NamesSymbol, names);            \
-            SET_STRING_ELT(names, 0, mkChar("ENC"));           \
-            SET_VECTOR_ELT(value, 0, (_ENC_));                 \
-            SET_STRING_ELT(names, 1, mkChar("FILE"));          \
-            SET_VECTOR_ELT(value, 1, (_FILE_));                \
-            SET_STRING_ELT(names, 2, mkChar("EXPR"));          \
-            SET_VECTOR_ELT(value, 2, (_EXPR_));                \
-            SET_STRING_ELT(names, 3, mkChar("has.input"));     \
-            SET_VECTOR_ELT(value, 3, (_HAS_INPUT_));           \
+            int indx = -1;                                     \
+            SET_STRING_ELT(names, ++indx, mkChar("ENC"));      \
+            SET_VECTOR_ELT(value,   indx, (_ENC_));            \
+            SET_STRING_ELT(names, ++indx, mkChar("no.echo"));  \
+            SET_VECTOR_ELT(value,   indx, (_NO_ECHO_));        \
+            SET_STRING_ELT(names, ++indx, mkChar("FILE"));     \
+            SET_VECTOR_ELT(value,   indx, (_FILE_));           \
+            SET_STRING_ELT(names, ++indx, mkChar("EXPR"));     \
+            SET_VECTOR_ELT(value,   indx, (_EXPR_));           \
+            SET_STRING_ELT(names, ++indx, mkChar("has.input"));\
+            SET_VECTOR_ELT(value,   indx, (_HAS_INPUT_));      \
             debugRprint(value, R_BaseEnv);                     \
             UNPROTECT(1);                                      \
             return value;                                      \
@@ -369,6 +365,7 @@ SEXP do_shINFO do_formals
 
         return_shINFO(
             ScalarString(NA_STRING),
+            R_LogicalNAValue,
             ScalarString(NA_STRING),
             ScalarString(NA_STRING),
             R_LogicalNAValue
@@ -396,12 +393,14 @@ SEXP do_shINFO do_formals
     char cmdlines[10000];
     cmdlines[0] = '\0';
     Rboolean has_input = FALSE;
+    Rboolean no_echo = FALSE;
 
 
     if (ARGC <= 1) {
         UNPROTECT(1);
         return_shINFO(
             ScalarString(has_enc ? mkChar(enc) : NA_STRING),
+            ScalarLogical(no_echo),
             ScalarString(FILE ? mkChar(FILE) : NA_STRING),
             ScalarString(strlen(cmdlines) ? mkChar(cmdlines) : NA_STRING),
             ScalarLogical(has_input)
@@ -455,7 +454,7 @@ SEXP do_shINFO do_formals
 
 
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1176
-    common_command_line(&ac, av, enc, &has_enc);
+    common_command_line(&ac, av, enc, &has_enc, &no_echo);
     // Rprintf("--encoding=%s\nhas encoding: %s\n", enc, has_enc ? "TRUE" : "FALSE");
 
 
@@ -552,7 +551,7 @@ SEXP do_shINFO do_formals
 
 
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
-    common_command_line(&ac, av, enc, &has_enc);
+    common_command_line(&ac, av, enc, &has_enc, &no_echo);
     // Rprintf("--encoding=%s\nhas encoding: %s\n", enc, has_enc ? "TRUE" : "FALSE");
 
 
@@ -631,6 +630,7 @@ SEXP do_shINFO do_formals
 
     return_shINFO(
         ScalarString(has_enc ? mkChar(enc) : NA_STRING),
+        ScalarLogical(no_echo),
         ScalarString(FILE ? mkChar(FILE) : NA_STRING),
         ScalarString(strlen(cmdlines) ? mkChar(cmdlines) : NA_STRING),
         ScalarLogical(has_input)

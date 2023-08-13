@@ -163,6 +163,13 @@ extern SEXP do_unixpathunsplit    do_formals;
 extern SEXP do_pathunsplit        do_formals;
 
 
+/* print.c */
+
+
+extern SEXP do_PrintValueEnv     do_formals;
+extern SEXP do_printThisPathInfo do_formals;
+
+
 /* progargs.c */
 
 
@@ -228,6 +235,8 @@ extern SEXP do_setprseen2   do_formals;
 extern SEXP do_wrapsource   do_formals;
 extern SEXP do_setsyspath   do_formals;
 extern SEXP do_unsetsyspath do_formals;
+extern SEXP do_setenvpath   do_formals;
+extern SEXP do_setsrcpath   do_formals;
 
 
 #endif  /* #ifndef THIS_PATH_H */

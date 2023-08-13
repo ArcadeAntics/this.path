@@ -6,8 +6,9 @@
 #undef R_THIS_PATH_INITIALIZE_SYMBOLS
 
 
-SEXP mynamespace = NULL,
-     promiseenv  = NULL;
+SEXP mynamespace     = NULL,
+     promiseenv      = NULL,
+     ThisPathInfoCls = NULL;
 
 
 SEXP expr_commandArgs                               = NULL,
@@ -102,19 +103,7 @@ SEXP do_onLoad do_formals
     R_PreserveObject(mynamespace);
 
 
-#if R_version_at_least(4, 1, 0)
     promiseenv = R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 1);
-#else
-    {
-        SEXP expr = LCONS(install("new.env"),
-                          CONS(/* hash */ R_TrueValue,
-                               CONS(/* parent */ R_EmptyEnv,
-                                    CONS(/* size */ ScalarInteger(1), R_NilValue))));
-        PROTECT(expr);
-        promiseenv = eval(expr, R_BaseEnv);
-        UNPROTECT(1);
-    }
-#endif
     PROTECT(promiseenv);
     INCREMENT_NAMED_defineVar(xSymbol, R_NilValue, promiseenv);
     R_LockEnvironment(promiseenv, FALSE);
@@ -136,8 +125,8 @@ SEXP do_onLoad do_formals
     LockCLOENV(install(".find.root"), TRUE);
     LockCLOENV(install(".proj"), FALSE);
     /* ./R/thispath.R */
-    LockCLOENV(install(".shFILE"), TRUE);
-    LockCLOENV(_sys_path_toplevelSymbol, TRUE);
+    LockCLOENV(_shFILESymbol, TRUE);
+    LockCLOENV(_sys_path_jupyterSymbol, TRUE);
     /* ./R/zzz.R */
     // LockCLOENV(install("eval.with.message"), FALSE);
 
@@ -542,6 +531,20 @@ SEXP do_onLoad do_formals
     UNPROTECT(1);
 
 
+    /* ThisPathInfoCls */
+    const char *cls[] = {
+        "ThisPathInfo",
+        "environment",
+        NULL
+    };
+    int numCls = 0;
+    while (cls[numCls]) ++numCls;
+    ThisPathInfoCls = allocVector(STRSXP, numCls);
+    R_PreserveObject(ThisPathInfoCls);
+    for (int i = 0; i < numCls; i++)
+        SET_STRING_ELT(ThisPathInfoCls, i, mkChar(cls[i]));
+
+
     return R_NilValue;
 }
 
@@ -577,6 +580,7 @@ SEXP do_onUnload do_formals
     R_ReleaseObject(expr__sys_path_toplevel                       );
     R_ReleaseObject(expr_getOption_topLevelEnvironment            );
     R_ReleaseObject(expr__toplevel_context_number                 );
+    R_ReleaseObject(ThisPathInfoCls);
 
 
     {

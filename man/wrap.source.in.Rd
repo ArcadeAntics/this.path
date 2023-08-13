@@ -1,13 +1,20 @@
 \name{wrap.source}
 \alias{wrap.source}
 \alias{set.sys.path}
+\alias{set.env.path}
+\alias{set.src.path}
 \alias{unset.sys.path}
-\title{Implement 'sys.path()' For Arbitrary 'source()'-Like Functions}
+\title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
   \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.
 
   \code{wrap.source()} and \code{set.sys.path()} can be used to implement
-  \code{sys.path()} for any other \sourcelink-like functions.
+  \code{sys.path()} for any other \sourcenolink-like functions.
+
+  \code{set.env.path()} and \code{set.src.path()} can be used along side
+  \code{set.sys.path()} to implement \code{\link{env.path}()} and
+  \code{\link{src.path}()}, though \code{set.env.path()} only makes sense if
+  the code is being modularized, see examples.
 
   \code{unset.sys.path()} will undo a call to \code{set.sys.path()}. You will
   need to use this if you wish to call \code{set.sys.path()} multiple times
@@ -69,6 +76,10 @@ set.sys.path(file,
     ignore.file.uri = ignore.all,
     Function = NULL, ofile)
 
+set.env.path(envir, matchThisEnv = getOption("topLevelEnvironment"))
+
+set.src.path(srcfile)
+
 unset.sys.path()
 }
 \arguments{
@@ -127,6 +138,12 @@ unset.sys.path()
     \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
     character string specifying the original file argument. This overwrites the
     value returned by \code{\link{sys.path}(original = TRUE)}.}
+
+  \item{envir, matchThisEnv}{arguments passed to
+    \codelink3{base:ns-topenv}{topenv}{()} to determine the top level
+    environment in which to assign an associated path.}
+
+  \item{srcfile}{source file in which to assign a pathname.}
 }
 \details{
   \code{set.sys.path()} should be added to the body of your \sourcenolink-like
@@ -286,6 +303,9 @@ wrapper <- function(path, ...) {
 FILE.R <- tempfile(fileext = ".R")
 this.path:::.write.code({
     this.path::sys.path(verbose = TRUE)
+    try(this.path::env.path(verbose = TRUE))
+    this.path::src.path(verbose = TRUE)
+    this.path::this.path(verbose = TRUE)
 }, FILE.R)
 
 
@@ -293,21 +313,30 @@ this.path:::.write.code({
 ## function is in a package for which you have write permission
 sourcelike <- function (file, envir = parent.frame())
 {
-    file <- set.sys.path(file)
-    envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = file)
-    ## this prints nicely
-    this.path:::.withAutoprint(exprs = exprs, evaluated = TRUE,
-        local = envir, spaced = TRUE, verbose = FALSE,
-        width.cutoff = 60L)
-    # ## you could alternatively do:
-    # for (i in seq_along(exprs)) eval(exprs[i], envir)
-    # ## which does no pretty printing
+    ofile <- file
+    file <- set.sys.path(file, Function = "sourcelike")
+    lines <- readLines(file, warn = FALSE)
+    filename <- sys.path(local = TRUE, for.msg = TRUE)
+    isFile <- !is.na(filename)
+    if (isFile) {
+        timestamp <- file.mtime(filename)[1]
+        ## in case 'ofile' is a URL pathname / / 'unz' connection
+        if (is.na(timestamp))
+            timestamp <- Sys.time()
+    }
+    else {
+        filename <- if (is.character(ofile)) ofile else "<connection>"
+        timestamp <- Sys.time()
+    }
+    srcfile <- srcfilecopy(filename, lines, timestamp, isFile)
+    set.src.path(srcfile)
+    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    invisible(source.exprs(exprs, evaluated = TRUE, envir = envir))
 }
 
 
 sourcelike(FILE.R)
-sourcelike(con <- file(FILE.R)); close(con)
+sourcelike(conn <- file(FILE.R)); close(conn)
 
 
 ## here we have another source-like function, suppose this function
@@ -318,10 +347,10 @@ sourcelike2 <- function (pathname, envir = globalenv())
         stop(gettextf("'\%s' is not an existing file",
              pathname, domain = "R-base"))
     envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = pathname)
-    this.path:::.withAutoprint(exprs = exprs, evaluated = TRUE,
-        local = envir, spaced = TRUE, verbose = FALSE,
-        width.cutoff = 60L)
+    lines <- readLines(pathname, warn = FALSE)
+    srcfile <- srcfilecopy(pathname, lines, isFile = TRUE)
+    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    invisible(source.exprs(exprs, evaluated = TRUE, envir = envir))
 }
 
 
@@ -372,6 +401,65 @@ fun <- function (paths, ...)
         unset.sys.path(pathname)
     }
 }
+
+
+## here we have a source-like function which modularizes its code
+sourcelike5 <- function (file)
+{
+    ofile <- file
+    file <- set.sys.path(file, Function = "sourcelike5")
+    lines <- readLines(file, warn = FALSE)
+    filename <- sys.path(local = TRUE, for.msg = TRUE)
+    isFile <- !is.na(filename)
+    if (isFile) {
+        timestamp <- file.mtime(filename)[1]
+        ## in case 'ofile' is a URL pathname / / 'unz' connection
+        if (is.na(timestamp))
+            timestamp <- Sys.time()
+    }
+    else {
+        filename <- if (is.character(ofile)) ofile else "<connection>"
+        timestamp <- Sys.time()
+    }
+    srcfile <- srcfilecopy(filename, lines, timestamp, isFile)
+    set.src.path(srcfile)
+    envir <- new.env(hash = TRUE, parent = .BaseNamespaceEnv)
+    envir$.packageName <- filename
+    oopt <- options(topLevelEnvironment = envir)
+    on.exit(options(oopt))
+    set.env.path(envir)
+    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    source.exprs(exprs, evaluated = TRUE, envir = envir)
+    envir
+}
+
+
+sourcelike5(FILE.R)
+
+
+## the code can be made much simpler in some cases
+sourcelike6 <- function (file)
+{
+    ## we expect a character string refering to a file
+    ofile <- file
+    filename <- set.sys.path(file, path.only = TRUE, ignore.all = TRUE,
+        Function = "sourcelike6")
+    lines <- readLines(filename, warn = FALSE)
+    timestamp <- file.mtime(filename)[1]
+    srcfile <- srcfilecopy(filename, lines, timestamp, isFile = TRUE)
+    set.src.path(srcfile)
+    envir <- new.env(hash = TRUE, parent = .BaseNamespaceEnv)
+    envir$.packageName <- filename
+    oopt <- options(topLevelEnvironment = envir)
+    on.exit(options(oopt))
+    set.env.path(envir)
+    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    source.exprs(exprs, evaluated = TRUE, envir = envir)
+    envir
+}
+
+
+sourcelike6(FILE.R)
 
 
 unlink(FILE.R)

@@ -33,17 +33,17 @@ SEXP do_asArgs do_formals
     int n;
 
 
-    int nargs = length(args);
-    if (nargs == 0) {
+    switch (length(args)) {
+    case 0:
         n = 0;
-    }
-    else if (nargs == 1) {
+        break;
+    case 1:
         n = asInteger(CAR(args));
         if (n == NA_INTEGER || n < 0)
             errorcall(call, _("argument must be coercible to non-negative integer"));
-    }
-    else {
-        errorcall(call, wrong_nargs_to_External(nargs, ".C_asArgs", "0 or 1"));
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_asArgs", "0 or 1"));
         return R_NilValue;
     }
 

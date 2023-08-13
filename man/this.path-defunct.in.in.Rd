@@ -34,7 +34,7 @@ local.path(verbose = getOption("verbose"), original = FALSE,
 Sys.path()
 Sys.dir()
 
-# Defunct in devel
+# Defunct in 2.0.0
 reset.this.proj()
 set.this.path.jupyter(...)
 inside.source(file, path.only = FALSE, character.only = path.only,

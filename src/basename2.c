@@ -492,25 +492,25 @@ SEXP dirname2(SEXP path, int times)
 #define do_dirname2_check_nargs(name)                          \
     SEXP path;                                                 \
     int times;                                                 \
-    int nargs = length(args);                                  \
-    if (nargs == 1) {                                          \
+    switch (length(args)) {                                    \
+    case 1:                                                    \
         path = CAR(args);                                      \
         if (TYPEOF(path) != STRSXP)                            \
             error(_("a character vector argument expected"));  \
         times = 0;                                             \
-    }                                                          \
-    else if (nargs == 2) {                                     \
+        break;                                                 \
+    case 2:                                                    \
         path = CAR(args);                                      \
         if (TYPEOF(path) != STRSXP)                            \
             error(_("a character vector argument expected"));  \
         times = asInteger(CADR(args));                         \
         if (times == NA_INTEGER || times < 0)                  \
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");\
-    }                                                          \
-    else {                                                     \
-        errorcall(call, wrong_nargs_to_External(nargs, (name), "1 or 2"));\
+        break;                                                 \
+    default:                                                   \
+        errorcall(call, wrong_nargs_to_External(length(args), (name), "1 or 2"));\
         return R_NilValue;                                     \
-    }
+    }                                                          \
 
 
 SEXP do_windowsdirname2 do_formals

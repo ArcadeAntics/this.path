@@ -61,6 +61,14 @@ export(path.join)
 export(path.split  , path.split.1, path.unsplit)
 
 
+## print.R      ----
+
+
+S3method(print       , ThisPathInfo)
+S3method(format      , ThisPathInfo)
+S3method(as.character, ThisPathInfo)
+
+
 ## progargs.R   ----
 
 
@@ -116,8 +124,15 @@ export(shFILE               , normalized.shFILE    ,
 export(tryCatch2)
 
 
+## utils.R      ----
+
+
+export(source.exprs)
+
+
 ## wrapsource.R ----
 
 
 export(wrap.source    , set.sys.path   , unset.sys.path ,
-       inside.source  , set.this.path  , unset.this.path)
+       set.env.path   , set.src.path   , inside.source  ,
+       set.this.path  , unset.this.path)

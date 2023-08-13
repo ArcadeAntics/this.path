@@ -1,6 +1,10 @@
 main <- function ()
 {
-    devel <- TRUE
+    info <- read.dcf("./tools/info.dcf", fields = "devel")
+    if (nrow(info) != 1L)
+        stop("contains a blank line", call. = FALSE)
+    info <- info[1L, ]
+    devel <- if (info[["devel"]]) TRUE else FALSE
 
 
     # if (devel)
@@ -39,27 +43,17 @@ main <- function ()
     remove.in <- function(x) sub("\\.in(\\.[^./]+)?$", "\\1", x)
 
 
-    replace.devel.with.current.version <- if (devel) {
-        ## replace 'devel' in files with the current package version
-        function(file.in, old, new, file = remove.in(file.in)) {
-            if (file.exists(file.in)) {
-                x <- readLines2(file.in)
-                if (i <- match(old, x, 0L)) {
-                    x[[i]] <- new
-                    writeLines2(x, file)
-                    if (!file.remove(file.in))
-                        stop(sprintf("unable to remove file '%s'", file.in))
-                } else if (!file.rename(file.in, file))
-                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
-            }
-        }
-    } else {
-        ## just rename the files
-        function(file.in, old, new, file = remove.in(file.in)) {
-            if (file.exists(file.in)) {
-                if (!file.rename(file.in, file))
-                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
-            }
+    ## replace 'devel' in files with the current package version
+    replace.devel.with.current.version <- function(file.in, old, new, file = remove.in(file.in)) {
+        if (file.exists(file.in)) {
+            x <- readLines2(file.in)
+            if (i <- match(old, x, 0L)) {
+                x[[i]] <- new
+                writeLines2(x, file)
+                if (!file.remove(file.in))
+                    stop(sprintf("unable to remove file '%s'", file.in))
+            } else if (!file.rename(file.in, file))
+                stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
         }
     }
 
@@ -112,6 +106,9 @@ main <- function ()
 
 
     ## on the maintainer's computer, prevent the source from being destroyed
+    ##
+    ## file './tools/maintainers-copy' should not exist on other computers
+    ## because it is excluded by the build process and does not exist on GitHub
     if (!building && file.exists("./tools/maintainers-copy"))
         stop("must 'R CMD build' before 'R CMD INSTALL' since the files are destructively modified")
 

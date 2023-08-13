@@ -15,6 +15,21 @@ const char *EncodeChar(SEXP x)
 }
 
 
+#if R_version_less_than(4, 1, 0)
+SEXP R_NewEnv(SEXP enclos, int hash, int size)
+{
+    SEXP expr = LCONS(new_envSymbol,
+        CONS(/* hash */ ScalarLogical(hash),
+            CONS(/* parent */ enclos,
+                CONS(/* size */ ScalarInteger(size), R_NilValue))));
+    PROTECT(expr);
+    SEXP value = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return value;
+}
+#endif
+
+
 #if R_version_less_than(4, 2, 0)
 Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
 {
@@ -87,7 +102,7 @@ SEXP installTrChar(SEXP x)
 #endif
 
 
-SEXP findFunction(SEXP symbol, SEXP rho, SEXP call)
+SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call)
 {
     SEXP vl;
     for (; rho != R_EmptyEnv; rho = ENCLOS(rho)) {
@@ -132,7 +147,6 @@ int IS_ASCII(SEXP x)
 
 
 #if R_version_less_than(4, 0, 0)
-#define R_THIS_PATH_USE_removeFromFrame
 void R_removeVarFromFrame(SEXP name, SEXP env)
 {
     if (TYPEOF(env) == NILSXP)
@@ -153,56 +167,6 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
     REPROTECT(expr = LCONS(removeSymbol, CONS(name, expr)), indx);
     eval(expr, R_BaseEnv);
     UNPROTECT(1);
-}
-
-
-void removeFromFrame(SEXP *names, SEXP env)
-{
-    if (TYPEOF(env) == NILSXP)
-        error(_("use of NULL environment is defunct"));
-
-    if (!isEnvironment(env))
-        error(_("argument to '%s' is not an environment"), "removeFromFrame");
-
-    int n;
-    for (n = 0; names[n]; n++) {
-        if (TYPEOF(names[n]) != SYMSXP)
-            error(_("not a symbol"));
-    }
-
-    SEXP expr, list;
-    PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
-    SET_TAG(expr, inheritsSymbol);
-    REPROTECT(expr = CONS(env, expr), indx);
-    SET_TAG(expr, envirSymbol);
-    REPROTECT(expr = CONS(list = allocVector(STRSXP, n), expr), indx);
-    SET_TAG(expr, listSymbol);
-    REPROTECT(expr = LCONS(removeSymbol, expr), indx);
-
-    for (n = 0; names[n]; n++)
-        SET_STRING_ELT(list, n, PRINTNAME(names[n]));
-
-    eval(expr, R_BaseEnv);
-    UNPROTECT(1);
-}
-#else
-void removeFromFrame(SEXP *names, SEXP env)
-{
-    if (TYPEOF(env) == NILSXP)
-        error(_("use of NULL environment is defunct"));
-
-    if (!isEnvironment(env))
-        error(_("argument to '%s' is not an environment"), "removeFromFrame");
-
-    int i;
-    for (i = 0; names[i]; i++) {
-        if (TYPEOF(names[i]) != SYMSXP)
-            error(_("not a symbol"));
-    }
-
-    for (i = 0; names[i]; i++)
-        R_removeVarFromFrame(names[i], env);
 }
 #endif
 
@@ -410,7 +374,7 @@ SEXP simpleError(const char *msg, SEXP call)
 
 #define funbody(class_as_CHARSXP, summConn)                    \
     const char *klass = EncodeChar((class_as_CHARSXP));        \
-    const char *format = "'sys.path' not implemented when source()-ing a connection of class '%s'";\
+    const char *format = "'this.path' not implemented when source()-ing a connection of class '%s'";\
     const int n = strlen(format) + strlen(klass) + 1;          \
     char msg[n];                                               \
     snprintf(msg, n, format, klass);                           \
@@ -475,7 +439,7 @@ SEXP thisPathNotExistsError(const char *msg, SEXP call)
 
 SEXP thisPathInZipFileError(SEXP call, SEXP description)
 {
-    const char *msg = "'sys.path' cannot be used within a zip file";
+    const char *msg = "'this.path' cannot be used within a zip file";
     SEXP cond = errorCondition1(msg, call, "this.path::thisPathInZipFileError", 1);
     PROTECT(cond);
     SEXP names = getAttrib(cond, R_NamesSymbol);
@@ -511,50 +475,50 @@ void stop(SEXP cond)
 }
 
 
-void assign_done(SEXP frame)
+SEXP ThisPathInfo(void)
 {
-    defineVar(thispathdoneSymbol, R_NilValue, frame);
-    R_LockBinding(thispathdoneSymbol, frame);
+    SEXP thispathinfo = R_NewEnv(mynamespace, TRUE, 10);
+    PROTECT(thispathinfo);
+    setAttrib(thispathinfo, R_ClassSymbol, ThisPathInfoCls);
+    UNPROTECT(1);
+    return thispathinfo;
 }
 
 
-#define _assign(file, frame)                                   \
-    INCREMENT_NAMED_defineVar(thispathofileSymbol, (file), (frame));\
-    R_LockBinding(thispathofileSymbol, (frame));               \
-    SEXP e;                                                    \
-    defineVar(thispathfileSymbol, e = makePROMISE(R_NilValue, R_EmptyEnv), (frame));\
-    R_LockBinding(thispathfileSymbol, (frame));                \
-    assign_done((frame))
+#define _assign(file, thispathinfo)                                    \
+    INCREMENT_NAMED_defineVar(ofileSymbol, (file), (thispathinfo));    \
+    SEXP e = makePROMISE(R_NilValue, (thispathinfo));                  \
+    defineVar(fileSymbol, e, (thispathinfo))
 
 
-void assign_default(SEXP file, SEXP frame, Rboolean check_not_directory)
+void assign_default(SEXP file, SEXP thispathinfo, Rboolean check_not_directory)
 {
-    _assign(file, frame);
-    SET_PRCODE(e, lang2(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol, file));
-    SET_PRENV(e, mynamespace);
+    _assign(file, thispathinfo);
+    SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
+                        CONS(file, R_NilValue)));
 }
 
 
-void assign_null(SEXP frame)
+void assign_null(SEXP thispathinfo)
 {
     /* make and force the promise */
-    _assign(R_NilValue, frame);
+    _assign(R_NilValue, thispathinfo);
     eval(e, R_EmptyEnv);
 }
 
 
-void assign_chdir(SEXP file, SEXP owd, SEXP frame)
+void assign_chdir(SEXP file, SEXP owd, SEXP thispathinfo)
 {
-    _assign(file, frame);
-    SET_PRCODE(e, lang3(_normalizeAgainstSymbol, owd, file));
-    SET_PRENV(e, mynamespace);
+    _assign(file, thispathinfo);
+    INCREMENT_NAMED_defineVar(wdSymbol, owd, thispathinfo);
+    SET_PRCODE(e, LCONS(_normalizeAgainstSymbol, CONS(wdSymbol, CONS(file, R_NilValue))));
     return;
 }
 
 
-void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, Rboolean check_not_directory)
+void assign_file_uri(SEXP ofile, SEXP file, SEXP thispathinfo, Rboolean check_not_directory)
 {
-    _assign(ofile, frame);
+    _assign(ofile, thispathinfo);
 
 
     /* translate the string, then extract the string after file://
@@ -584,12 +548,12 @@ void assign_file_uri(SEXP ofile, SEXP file, SEXP frame, Rboolean check_not_direc
 #endif
 
 
-    SET_PRCODE(e, lang2(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol, ScalarString(mkCharCE(url, ienc))));
-    SET_PRENV(e, mynamespace);
+    SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
+                        CONS(ScalarString(mkCharCE(url, ienc)), R_NilValue)));
 }
 
 
-void assign_file_uri2(SEXP description, SEXP frame, Rboolean check_not_directory)
+void assign_file_uri2(SEXP description, SEXP thispathinfo, Rboolean check_not_directory)
 {
     char _buf[7 + strlen(CHAR(description)) + 1];
     char *buf = _buf;
@@ -601,15 +565,15 @@ void assign_file_uri2(SEXP description, SEXP frame, Rboolean check_not_directory
     SEXP ofile = ScalarString(mkCharCE(buf, getCharCE(description)));
 
 
-    _assign(ofile, frame);
-    SET_PRCODE(e, lang2(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol, ScalarString(description)));
-    SET_PRENV(e, mynamespace);
+    _assign(ofile, thispathinfo);
+    SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
+                        CONS(ScalarString(description), R_NilValue)));
 }
 
 
-void assign_url(SEXP ofile, SEXP file, SEXP frame)
+void assign_url(SEXP ofile, SEXP file, SEXP thispathinfo)
 {
-    _assign(ofile, frame);
+    _assign(ofile, thispathinfo);
 
 
 #ifdef _WIN32
@@ -618,8 +582,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame)
 #endif
 
 
-    SET_PRCODE(e, lang2(_normalizeURL_1Symbol, ofile));
-    SET_PRENV(e, mynamespace);
+    SET_PRCODE(e, LCONS(_normalizeURL_1Symbol, CONS(ofile, R_NilValue)));
 
 
     /* force the promise */
@@ -630,16 +593,9 @@ void assign_url(SEXP ofile, SEXP file, SEXP frame)
 #undef _assign
 
 
-void overwrite_ofile(SEXP ofilearg, SEXP frame)
+void overwrite_ofile(SEXP ofilearg, SEXP thispathinfo)
 {
-    // if (R_BindingIsLocked(thispathofileSymbol, frame)) {
-        R_unLockBinding(thispathofileSymbol, frame);
-        INCREMENT_NAMED_defineVar(thispathofileSymbol, ofilearg, frame);
-        R_LockBinding(thispathofileSymbol, frame);
-    // }
-    // else {
-    //     INCREMENT_NAMED_defineVar(thispathofileSymbol, ofilearg, frame);
-    // }
+    INCREMENT_NAMED_defineVar(ofileSymbol, ofilearg, thispathinfo);
 }
 
 
