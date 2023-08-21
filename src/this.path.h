@@ -135,8 +135,9 @@ extern SEXP do_mbcslocale   do_formals;
 // extern SEXP do_latin1locale do_formals;
 extern SEXP do_R_MB_CUR_MAX do_formals;
 
-extern SEXP do_onLoad   do_formals;
-extern SEXP do_onUnload do_formals;
+extern SEXP do_onLoad         do_formals;
+extern SEXP do_unLockBindings do_formals;
+extern SEXP do_onUnload       do_formals;
 
 
 /* pathjoin.c */
@@ -166,8 +167,8 @@ extern SEXP do_pathunsplit        do_formals;
 /* print.c */
 
 
-extern SEXP do_PrintValueEnv     do_formals;
-extern SEXP do_printThisPathInfo do_formals;
+extern SEXP do_PrintValueEnv                do_formals;
+extern SEXP do_printThisPathDocumentContext do_formals;
 
 
 /* progargs.c */
@@ -226,6 +227,14 @@ extern SEXP do_istrue           do_formals;
 extern SEXP do_isfalse          do_formals;
 extern SEXP do_asInteger        do_formals;
 extern SEXP do_asIntegerGE0     do_formals;
+
+
+/* trycatch.c */
+
+
+extern SEXP do_lastcondition do_formals;
+extern SEXP do_tryCatch2     do_formals;
+extern SEXP do_tryCatch3     do_formals;
 
 
 /* wrapsource.c */

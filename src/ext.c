@@ -49,7 +49,7 @@
             else if (isSymbol(CAR(args)))                      \
                 SETCAR(args, ScalarString(PRINTNAME(CAR(args))));\
             else SETCAR(args, coerceVector(CAR(args), STRSXP));\
-            if (!isString(CAR(args)))                        \
+            if (!isString(CAR(args)))                          \
                 errorcall(call, _("non-string argument to '%s'"), ".C_extgets");\
         }                                                      \
                                                                \

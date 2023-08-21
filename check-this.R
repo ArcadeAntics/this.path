@@ -8,6 +8,15 @@ local({
         if (nrow(info) != 1L)
             stop("contains a blank line", call. = FALSE)
         info <- info[1L, ]
+
+
+        ## re-read the file, providing 'keep.white' this time
+        info <- read.dcf(info.dcf, keep.white = names(info))
+        if (nrow(info) != 1L)
+            stop("contains a blank line", call. = FALSE)
+        info <- info[1L, ]
+
+
         info[["devel"]] <- "FALSE"
         FILE.dcf <- tempfile(fileext = ".dcf")
         if (!file.copy(info.dcf, FILE.dcf, overwrite = TRUE, copy.date = TRUE))
@@ -25,7 +34,7 @@ local({
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = FALSE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
@@ -178,8 +187,11 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("findFunction", x, value = TRUE)
+    x <- grep("(?i)ThisPathInfo", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
+
+
+    ## ^.{0,62}\\$|^.{63,65535} +\\$
 
 
     x <- this.path:::.readFiles(Rfiles)

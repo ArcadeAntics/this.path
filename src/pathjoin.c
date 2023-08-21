@@ -74,7 +74,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
                 if (drivewidth < nchar) {
 
 
-                    /* if the start of the pathspec is / or \
+                    /* if the start of the pathspec is slash or backslash
                      * then record this index as the last absolute path
                      */
                     if (ptr[drivewidth] == '/' || ptr[drivewidth] == '\\')
@@ -86,7 +86,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
 
                     /* if there are characters already in the buffer
-                     * and this pathspec does not end with / or \
+                     * and this pathspec does not end with slash nor backslash
                      * then we will need to add one manually
                      *
                      * record this index as needing a trailing slash
@@ -204,7 +204,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
                     if (maybe_drivewidth < maybe_nchar) {
 
 
-                        /* if the start of the pathspec is / or \
+                        /* if the start of the pathspec is slash or backslash
                          * then record this index as the last absolute path
                          */
                         if (maybe_ptr[maybe_drivewidth] == '/' ||
@@ -220,7 +220,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
                         /* if there are characters already in the buffer (excluding the drive)
                          * or there are characters already in the maybe buffer
-                         * and this pathspec does not end with / or \
+                         * and this pathspec does not end with slash nor back
                          * then we will need to add one manually
                          *
                          * record this index as needing a trailing slash

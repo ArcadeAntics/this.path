@@ -22,6 +22,12 @@
 #endif
 
 
+#if R_version_less_than(3, 2, 0)
+#define R_THIS_PATH_NEED_BLANKSCALARSTRING
+extern SEXP R_BlankScalarString;
+#endif
+
+
 extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 #if R_version_less_than(4, 2, 0)
 #define existsInFrame(rho, symbol) (findVarInFrame((rho), (symbol)) != R_UnboundValue)
@@ -61,15 +67,17 @@ LibExtern SEXP R_LogicalNAValue;
 #include "symbols.h"
 
 
-extern SEXP mynamespace    ,
-            promiseenv     ,
-            ThisPathInfoCls;
+extern SEXP mynamespace       ,
+            DocumentContextCls,
+            last_condition    ;
+
+
+extern SEXP DocumentContext(void);
+extern SEXP ofile_is_NULL(SEXP documentcontext);
 
 
 extern SEXP expr_commandArgs                              ,
-#if defined(R_THIS_PATH_HAVE_invisibleSymbol)
             expr_invisible                                ,
-#endif
             expr_parent_frame                             ,
             expr_sys_call                                 ,
             expr_sys_nframe                               ,
@@ -78,12 +86,12 @@ extern SEXP expr_commandArgs                              ,
             expr_missing_input                            ,
             expr_missing_ofile                            ,
             expr_info_dollar_source_path                  ,
-            expr_delayedAssign_x                          ,
             expr_knitr_output_dir                         ,
             expr_testthat_source_file_uses_brio_read_lines,
             expr__sys_path_toplevel                       ,
             expr_getOption_topLevelEnvironment            ,
-            expr__toplevel_context_number                 ;
+            expr__toplevel_context_number                 ,
+            expr__isMethodsDispatchOn                     ;
 
 
 extern SEXP makePROMISE(SEXP expr, SEXP env);
@@ -122,15 +130,15 @@ void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
 void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
 
 
-#if defined(R_THIS_PATH_HAVE_invisibleSymbol)
-#define set_R_Visible(v) (eval((v) ? R_NilValue : expr_invisible, R_EmptyEnv))
-#else
+#if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
 /* R_Visible is not part of the R API. DO NOT USE OR MODIFY IT unless you are
    absolutely certain it is what you wish to do. it is subject to change
    without notice nor back-compatibility. only the development version of this
    package uses this variable. */
 extern Rboolean R_Visible;
 #define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
+#else
+#define set_R_Visible(v) (eval((v) ? R_NilValue : expr_invisible, R_EmptyEnv))
 #endif
 
 
@@ -179,6 +187,10 @@ extern int IS_UTF8(SEXP x);
 
 
 extern const char *EncodeChar(SEXP x);
+
+
+extern SEXP R_NewEnv(SEXP enclos, int hash, int size);
+extern SEXP topenv(SEXP target, SEXP envir);
 
 
 extern void R_LockBinding(SEXP sym, SEXP env);
@@ -231,6 +243,9 @@ extern SEXP thisPathInAQUAError                     (SEXP call);
 extern void stop(SEXP cond);
 
 
+extern void my_PrintValueEnv(SEXP s, SEXP env);
+
+
 #ifdef _WIN32
 #define isclipboard(url) (                                             \
                               strcmp ((url), "clipboard"     ) == 0 || \
@@ -248,13 +263,13 @@ extern void stop(SEXP cond);
 #endif
 
 
-extern void assign_default(SEXP file, SEXP thispathinfo, Rboolean check_not_directory);
-extern void assign_null(SEXP thispathinfo);
-extern void assign_chdir(SEXP file, SEXP owd, SEXP thispathinfo);
-extern void assign_file_uri(SEXP ofile, SEXP file, SEXP thispathinfo, Rboolean check_not_directory);
-extern void assign_file_uri2(SEXP description, SEXP thispathinfo, Rboolean check_not_directory);
-extern void assign_url(SEXP ofile, SEXP file, SEXP thispathinfo);
-extern void overwrite_ofile(SEXP ofilearg, SEXP thispathinfo);
+extern void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory);
+extern void assign_null(SEXP documentcontext);
+extern void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext);
+extern void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, Rboolean check_not_directory);
+extern void assign_file_uri2(SEXP description, SEXP documentcontext, Rboolean check_not_directory);
+extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
+extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
 
 
 #define isurl(url) (                                           \
@@ -263,6 +278,7 @@ extern void overwrite_ofile(SEXP ofilearg, SEXP thispathinfo);
                         strncmp((url), "ftp://"  , 6) == 0 ||  \
                         strncmp((url), "ftps://" , 7) == 0     \
                    )
+#define isfileuri(url) (strncmp((url), "file://", 7) == 0)
 
 
 #if defined(R_CONNECTIONS_VERSION_1)
@@ -301,8 +317,8 @@ typedef struct gzconn {
 
 
 /* it is undesirable to have this as a #define but we also cannot
-   evaluate all the arguments. used in _syspath(), do_wrapsource(), and
-   setsyspath()
+   evaluate all the arguments. used in _syspath(), _envpath(), _srcpath(),
+   do_wrapsource(), and setpath()
  */
 #define checkfile(call, sym, ofile, frame, as_binding,         \
     check_not_directory, forcepromise, assign_returnvalue,     \
@@ -313,9 +329,9 @@ typedef struct gzconn {
     allow_textConnection, allow_rawConnection, allow_sockconn, \
     allow_servsockconn, allow_customConnection,                \
     ignore_blank_string, ignore_clipboard, ignore_stdin,       \
-    ignore_url, ignore_file_uri)                               \
+    ignore_url, ignore_file_uri, source)                       \
 do {                                                           \
-    PROTECT(thispathinfo = ThisPathInfo());                    \
+    PROTECT(documentcontext = DocumentContext());              \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
@@ -345,7 +361,7 @@ do {                                                           \
         else url = CHAR(file);                                 \
         if (!ignore_blank_string && !(LENGTH(file) > 0)) {     \
             if (allow_blank_string) {                          \
-                assign_null(thispathinfo);                     \
+                assign_null(documentcontext);                  \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
             }                                                  \
@@ -354,7 +370,7 @@ do {                                                           \
         }                                                      \
         else if (!ignore_clipboard && isclipboard(url)) {      \
             if (allow_clipboard) {                             \
-                assign_null(thispathinfo);                     \
+                assign_null(documentcontext);                  \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
             }                                                  \
@@ -363,7 +379,7 @@ do {                                                           \
         }                                                      \
         else if (!ignore_stdin && streql(url, "stdin")) {      \
             if (allow_stdin) {                                 \
-                assign_null(thispathinfo);                     \
+                assign_null(documentcontext);                  \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
             }                                                  \
@@ -372,26 +388,26 @@ do {                                                           \
         }                                                      \
         else if (!ignore_url && isurl(url)) {                  \
             if (allow_url) {                                   \
-                assign_url(ofile, file, thispathinfo);         \
+                assign_url(ofile, file, documentcontext);      \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
                 if (ofilearg != NULL)                          \
-                    overwrite_ofile(ofilearg, thispathinfo);   \
+                    overwrite_ofile(ofilearg, documentcontext);\
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(sym)));\
         }                                                      \
-        else if (!ignore_file_uri && strncmp(url, "file://", 7) == 0) {\
+        else if (!ignore_file_uri && isfileuri(url)) {         \
             if (allow_file_uri) {                              \
-                assign_file_uri(ofile, file, thispathinfo, check_not_directory);\
+                assign_file_uri(ofile, file, documentcontext, check_not_directory);\
                 if (assign_returnvalue) {                      \
                     returnvalue = PROTECT(shallow_duplicate(ofile));\
-                    SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, thispathinfo, FALSE), 0));\
+                    SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
                 }                                              \
                 else if (forcepromise)                         \
-                    getInFrame(fileSymbol, thispathinfo, FALSE);\
+                    getInFrame(fileSymbol, documentcontext, FALSE);\
                 if (ofilearg != NULL)                          \
-                    overwrite_ofile(ofilearg, thispathinfo);   \
+                    overwrite_ofile(ofilearg, documentcontext);\
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', cannot be a file URI", EncodeChar(PRINTNAME(sym)));\
@@ -400,19 +416,19 @@ do {                                                           \
             if (maybe_chdir) {                                 \
                 SEXP owd = getowd;                             \
                 if (hasowd)                                    \
-                    assign_chdir(ofile, owd, thispathinfo);    \
+                    assign_chdir(ofile, owd, documentcontext); \
                 else                                           \
-                    assign_default(ofile, thispathinfo, check_not_directory);\
+                    assign_default(ofile, documentcontext, check_not_directory);\
             }                                                  \
-            else assign_default(ofile, thispathinfo, check_not_directory);\
+            else assign_default(ofile, documentcontext, check_not_directory);\
             if (assign_returnvalue) {                          \
                 returnvalue = PROTECT(shallow_duplicate(ofile));\
-                SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, thispathinfo, FALSE), 0));\
+                SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
             }                                                  \
             else if (forcepromise)                             \
-                getInFrame(fileSymbol, thispathinfo, FALSE);   \
+                getInFrame(fileSymbol, documentcontext, FALSE);\
             if (ofilearg != NULL)                              \
-                overwrite_ofile(ofilearg, thispathinfo);       \
+                overwrite_ofile(ofilearg, documentcontext);    \
         }                                                      \
     }                                                          \
     else {                                                     \
@@ -434,15 +450,15 @@ do {                                                           \
                 streql(klass, "xzfile") ||                     \
                 streql(klass, "fifo"  ))                       \
             {                                                  \
-                assign_file_uri2(description, thispathinfo, check_not_directory);\
-                if (forcepromise) getInFrame(fileSymbol, thispathinfo, FALSE);\
+                assign_file_uri2(description, documentcontext, check_not_directory);\
+                if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
                 streql(klass, "url-wininet"))                  \
             {                                                  \
                 if (allow_url) {                               \
-                    assign_url(ScalarString(description), description, thispathinfo);\
-                    if (forcepromise) getInFrame(fileSymbol, thispathinfo, FALSE);\
+                    assign_url(ScalarString(description), description, documentcontext);\
+                    if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a URL connection", EncodeChar(PRINTNAME(sym)));\
@@ -464,52 +480,52 @@ do {                                                           \
                  represented by a single string)               \
                  */                                            \
                 if (allow_unz) {                               \
-                    INCREMENT_NAMED_defineVar(errcndSymbol              , thisPathInZipFileError(R_NilValue, description), thispathinfo);\
-                    INCREMENT_NAMED_defineVar(for_msgSymbol             , ScalarString(description)                      , thispathinfo);\
-                                    defineVar(associated_with_fileSymbol, R_TrueValue                                    , thispathinfo);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol              , thisPathInZipFileError(R_NilValue, description), documentcontext);\
+                    INCREMENT_NAMED_defineVar(for_msgSymbol             , ScalarString(description)                      , documentcontext);\
+                                    defineVar(associated_with_fileSymbol, R_TrueValue                                    , documentcontext);\
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a unz connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (isclipboard(klass)) {                     \
                 if (allow_clipboard)                           \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a clipboard connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "pipe")) {                  \
                 if (allow_pipe)                                \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a pipe connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "terminal")) {              \
                 if (allow_terminal)                            \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a terminal connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "textConnection")) {        \
                 if (allow_textConnection)                      \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a textConnection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "rawConnection")) {         \
                 if (allow_rawConnection)                       \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a rawConnection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "sockconn")) {              \
                 if (allow_sockconn)                            \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a sockconn", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "servsockconn")) {          \
                 if (allow_servsockconn)                        \
-                    assign_null(thispathinfo);                 \
+                    assign_null(documentcontext);              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a servsockconn", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
@@ -524,8 +540,8 @@ do {                                                           \
                      know if this connection has an            \
                      associated file                           \
                      */                                        \
-                    INCREMENT_NAMED_defineVar(errcndSymbol , thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary(Rcon, summary)), thispathinfo);\
-                    INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)                                                           , thispathinfo);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol , thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary(Rcon, summary)), documentcontext);\
+                    INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)                                                           , documentcontext);\
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\
@@ -534,19 +550,16 @@ do {                                                           \
         }                                                      \
         if (assign_returnvalue) returnvalue = PROTECT(ofile);  \
     }                                                          \
+    INCREMENT_NAMED_defineVar(sourceSymbol, (source), documentcontext);\
     if (as_binding) {                                          \
-        INCREMENT_NAMED_defineVar(thispathinfoSymbol, thispathinfo, frame);\
-        R_LockBinding(thispathinfoSymbol, frame);              \
+        INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);\
+        R_LockBinding(documentcontextSymbol, frame);           \
     } else {                                                   \
-        setAttrib(frame, thispathinfoSymbol, thispathinfo);    \
+        setAttrib(frame, documentcontextSymbol, documentcontext);\
     }                                                          \
     UNPROTECT(1);                                              \
     set_R_Visible(TRUE);                                       \
 } while (0)
-
-
-extern SEXP ThisPathInfoCls;
-extern SEXP ThisPathInfo(void);
 
 
 extern SEXP sys_call(SEXP which, SEXP rho);

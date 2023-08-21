@@ -370,11 +370,12 @@ SEXP do_mkPROMISE do_formals
     do_start_no_call_op_rho("mkPROMISE", 2);
 
 
-    if (!isEnvironment(CADR(args)))
-        error(_("not an environment"));
+    SEXP expr = CAR(args); args = CDR(args);
+    SEXP env  = CAR(args); args = CDR(args);
+    if (!isEnvironment(env)) error(_("not an environment"));
 
 
-    return makePROMISE(CAR(args), CADR(args));
+    return makePROMISE(expr, env);
 }
 
 

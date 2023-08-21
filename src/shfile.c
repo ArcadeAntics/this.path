@@ -41,7 +41,7 @@ SEXP do_shFILE do_formals
      */
 
 
-    do_start_no_call_op("shFILE", 2);
+    do_start_no_op_rho("shFILE", 2);
 
 
     /* see ?shFILE */

@@ -1,9 +1,9 @@
 \name{source.exprs}
 \alias{source.exprs}
-\title{Evaluating and Print Expressions}
+\title{Evaluate and Print Expressions}
 \description{
   \code{source.exprs()} evaluates and auto-prints expression as if in a
-  toplevel contenxt.
+  toplevel context.
 }
 \usage{
 source.exprs(exprs, evaluated = FALSE, envir = parent.frame(),

@@ -438,7 +438,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                 call = sys.call()))
         })
         if (verbose) cat("Source: shell argument 'FILE'\n")
-        return(value)
+        value
     }
 
 
@@ -466,29 +466,19 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         if (verbose) {
             context <- .rs.api.getActiveDocumentContext()
             active <- context[["id"]] != "#console"
-            if (!active) {
+            if (!active)
                 context <- .rs.api.getSourceEditorContext()
-                if (is.null(context)) {
-                    if (for.msg)
-                        return(NA_character_)
-                    else stop(.thisPathNotExistsError(
-                        "R is running from RStudio with no documents open\n",
-                        " (or source document has no path)"))
-                }
-            }
-        } else {
-            context <- .rs.api.getSourceEditorContext()
-            if (is.null(context)) {
-                if (for.msg)
-                    return(NA_character_)
-                else stop(.thisPathNotExistsError(
-                    "R is running from RStudio with no documents open\n",
-                    " (or source document has no path)"))
-            }
+        } else context <- .rs.api.getSourceEditorContext()
+
+
+        if (is.null(context)) {
+            if (for.msg)
+                NA_character_
+            else stop(.thisPathNotExistsError(
+                "R is running from RStudio with no documents open\n",
+                " (or source document has no path)"))
         }
-
-
-        if (contents) {
+        else if (contents) {
             if (verbose)
                 cat(
                     if (active)
@@ -527,30 +517,34 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     else if (.gui.vscode) {
 
 
-        context <- rstudioapi::getSourceEditorContext()
+        ## evaluate this BEFORE the tryCatch in case the package
+        ## is not installed or the object is not exported
+        rstudioapi::getSourceEditorContext
+        ## now do the tryCatch
+        tryCatch3({
+            context <- rstudioapi::getSourceEditorContext()
+        }, error = {
+            # stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding\n  the following to your site-wide startup profile file or your user\n  profile (see ?Startup):\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  run the following code to do so:\n\n```R\ncat(\"\\n\\noptions(vsc.rstudioapi = TRUE)\\n\", file = \"~/.Rprofile\", append = TRUE)\n```\n\n  then restart the R session and try again", sys.call()))
+            stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding:\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  to your site-wide startup profile file or your user profile (see ?Startup),\n  then restart the R session and try again", sys.call()))
+        })
+
+
         if (is.null(context)) {
             if (for.msg)
-                return(NA_character_)
+                NA_character_
             else stop(.thisPathNotExistsError(
                 "R is running from VSCode with no documents open\n",
                 " (or document has no path)"
             ))
         }
-
-
-        if (startsWith(context[["id"]], "untitled:")) {
-            if (for.msg) {
-                if (contents)
-                    return(NA_character_)
-                else return(gettext("Untitled", domain = "RGui", trim = FALSE))
-            }
-            else stop("document in VSCode does not exist")
-        }
-
-
-        if (contents) {
+        else if (contents) {
             if (verbose) cat("Source: document in VSCode\n")
-            context["context"]
+            context["contents"]
+        }
+        else if (startsWith(context[["id"]], "untitled:")) {
+            if (for.msg)
+                context[["path"]]
+            else stop("document in VSCode does not exist")
         }
         else if (nzchar(path <- context[["path"]])) {
             Encoding(path) <- "UTF-8"

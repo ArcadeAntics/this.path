@@ -26,7 +26,7 @@ extern0 SEXP0
     R_DoubleColonSymbol                    INI_as(install("::")),
     R_TripleColonSymbol                    INI_as(install(":::")),
 #endif
-    thispathinfoSymbol                     INI_as(install(".this.path::info")),
+    documentcontextSymbol                  INI_as(install(".this.path::document.context")),
     errcndSymbol                           INI_as(install("errcnd")),
     associated_with_fileSymbol             INI_as(install("associated.with.file")),
     setsyspathwashereSymbol                INI_as(install("set.sys.path.was.here")),
@@ -55,6 +55,8 @@ extern0 SEXP0
     wrap_sourceSymbol                      INI_as(install("wrap.source")),
     boxSymbol                              INI_as(install("box")),
     load_from_sourceSymbol                 INI_as(install("load_from_source")),
+    exprsSymbol                            INI_as(install("exprs")),
+    mod_nsSymbol                           INI_as(install("mod_ns")),
     infoSymbol                             INI_as(install("info")),
     source_pathSymbol                      INI_as(install("source_path")),
     info_source_pathSymbol                 INI_as(install("info$source_path")),
@@ -96,13 +98,7 @@ extern0 SEXP0
     _setprseen2Symbol                      INI_as(install(".setprseen2")),
 #endif
     parent_frameSymbol                     INI_as(install("parent.frame")),
-#if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
-#else
-#ifndef R_THIS_PATH_HAVE_invisibleSymbol
-#define R_THIS_PATH_HAVE_invisibleSymbol
-#endif
     invisibleSymbol                        INI_as(install("invisible")),
-#endif
     as_environmentSymbol                   INI_as(install("as.environment")),
     oenvirSymbol                           INI_as(install("oenvir")),
     withArgsSymbol                         INI_as(install("withArgs")),
@@ -112,7 +108,6 @@ extern0 SEXP0
     _asArgsSymbol                          INI_as(install(".asArgs")),
     commandArgsSymbol                      INI_as(install("commandArgs")),
     _maybe_unembedded_shellSymbol          INI_as(install(".maybe.unembedded.shell")),
-    setsyspathfrompackageSymbol            INI_as(install("set.sys.path from package this.path")),
     printSymbol                            INI_as(install("print")),
     print_defaultSymbol                    INI_as(install("print.default")),
     _xDataSymbol                           INI_as(install(".xData")),
@@ -140,7 +135,16 @@ extern0 SEXP0
     isFileSymbol                           INI_as(install("isFile")),
     fixedNewlinesSymbol                    INI_as(install("fixedNewlines")),
     _fixNewlinesSymbol                     INI_as(install(".fixNewlines")),
-    originalSymbol                         INI_as(install("original"));
+    originalSymbol                         INI_as(install("original")),
+    else_Symbol                            INI_as(install("else.")),
+    finallySymbol                          INI_as(install("finally")),
+    funSymbol                              INI_as(install("fun")),
+    _last_conditionSymbol                  INI_as(install(".last.condition")),
+    cSymbol                                INI_as(install("c")),
+    funsSymbol                             INI_as(install("funs")),
+    tryCatchSymbol                         INI_as(install("tryCatch")),
+    do_elseSymbol                          INI_as(install("do_else")),
+    AssignSymbol                           INI_as(install("<-"));
 
 
 #undef extern0

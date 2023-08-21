@@ -252,6 +252,14 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(path.unsplit)
 
 
+    ## print.R      ----
+
+
+    fix.External2.fun(.PrintValueEnv)
+    fix.External2.fun(.maybePrintValueEnv)
+    fix.External2.fun(print.ThisPathDocumentContext)
+
+
     ## progargs.R   ----
 
 
@@ -308,6 +316,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(.is.unevaluated.promise)
     fix.External2.fun(.promise.is.unevaluated)
     fix.External2.fun(.is.clipboard)
+    fix.External2.fun(.sys.path.jupyter)
     fix.External2.fun(.sys.path.toplevel)
     fix.External2.fun(set.sys.path.jupyter)
     fix.External2.fun(.faster.subsequent.times.test)
@@ -331,6 +340,15 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(FILE)
 
 
+    ## trycatch.R   ----
+
+
+    fix.External2.fun(tryCatch2)
+    fix.External2.fun(.last.condition)
+    fix.External2.fun(last.condition)
+    fix.External2.fun(tryCatch3)
+
+
     ## utils.R      ----
 
 
@@ -352,6 +370,8 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(wrap.source)
     fix.External2.fun(set.sys.path)
     fix.External2.fun(unset.sys.path)
+    fix.External2.fun(set.env.path)
+    fix.External2.fun(set.src.path)
 
 
     rm(fix.External2.promise, fix.External2.fun, fix.External2)

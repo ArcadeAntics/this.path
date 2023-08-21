@@ -1,20 +1,20 @@
-\name{print.ThisPathInfo}
-\alias{print.ThisPathInfo}
-\alias{format.ThisPathInfo}
-\alias{as.character.ThisPathInfo}
-\title{Printing "ThisPathInfo" Objects}
+\name{print.ThisPathDocumentContext}
+\alias{print.ThisPathDocumentContext}
+\alias{format.ThisPathDocumentContext}
+\alias{as.character.ThisPathDocumentContext}
+\title{Printing "ThisPathDocumentContext" Objects}
 \description{
-  Print a \string{ThisPathInfo} object.
+  Print a \string{ThisPathDocumentContext} object.
 }
 \usage{
-\method{print}{ThisPathInfo}(x, ..., quote = TRUE)
+\method{print}{ThisPathDocumentContext}(x, ..., quote = TRUE)
 
-\method{format}{ThisPathInfo}(x, ...)
+\method{format}{ThisPathDocumentContext}(x, ...)
 
-\method{as.character}{ThisPathInfo}(x, ...)
+\method{as.character}{ThisPathDocumentContext}(x, ...)
 }
 \arguments{
-  \item{x}{object of class \string{ThisPathInfo}.}
+  \item{x}{object of class \string{ThisPathDocumentContext}.}
 
   \item{\dots}{unused.}
 
@@ -22,7 +22,7 @@
     with surrounding quotes.}
 }
 \details{
-  An object of class \string{ThisPathInfo} is generated upon calling
+  An object of class \string{ThisPathDocumentContext} is generated upon calling
   \code{\link{set.sys.path}()}, \code{\link{wrap.source}()},
   \code{\link{sys.path}()}, \code{\link{env.path}()}, or
   \code{\link{src.path}()}, and by extension \code{\link{this.path}()}. It
@@ -31,17 +31,18 @@
   These objects are not usually user-visible.
 }
 \value{
-  for \code{print.ThisPathInfo()}, \code{x} invisibly.
+  for \code{print.ThisPathDocumentContext()}, \code{x} invisibly.
 
-  for \code{format.ThisPathInfo()}, a character vector of lines.
+  for \code{format.ThisPathDocumentContext()}, a character vector of lines.
 
-  for \code{as.character.ThisPathInfo()}, a character string.
+  for \code{as.character.ThisPathDocumentContext()}, a character string of
+  concatenated lines.
 }
 \examples{
 fun <- function (file)
 {
     set.sys.path(file, Function = "fun")
-    `.this.path::info`
+    `.this.path::document.context`
 }
 
 

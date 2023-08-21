@@ -87,8 +87,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     // {"latin1locale", (DL_FUNC) &do_latin1locale, 0},
     {"R_MB_CUR_MAX", (DL_FUNC) &do_R_MB_CUR_MAX, 0},
 
-    {"onLoad"  , (DL_FUNC) &do_onLoad  , 2},
-    {"onUnload", (DL_FUNC) &do_onUnload, 1},
+    {"onLoad"        , (DL_FUNC) &do_onLoad        , 2},
+    {"onUnload"      , (DL_FUNC) &do_onUnload      , 1},
 
 
     /* pathjoin.c */
@@ -118,8 +118,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* print.c */
 
 
-    {"PrintValueEnv"    , (DL_FUNC) &do_PrintValueEnv    , 2},
-    {"printThisPathInfo", (DL_FUNC) &do_printThisPathInfo, 2},
+    {"PrintValueEnv"               , (DL_FUNC) &do_PrintValueEnv               , 2},
+    {"printThisPathDocumentContext", (DL_FUNC) &do_printThisPathDocumentContext, 2},
 
 
     /* progargs.c */
@@ -178,6 +178,14 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"isfalse"         , (DL_FUNC) &do_isfalse         ,  1},
     {"asInteger"       , (DL_FUNC) &do_asInteger       ,  1},
     {"asIntegerGE0"    , (DL_FUNC) &do_asIntegerGE0    ,  1},
+
+
+    /* trycatch.c */
+
+
+    {"lastcondition", (DL_FUNC) &do_lastcondition, -1},
+    {"tryCatch2"    , (DL_FUNC) &do_tryCatch2    ,  0},
+    {"tryCatch3"    , (DL_FUNC) &do_tryCatch3    ,  0},
 
 
     /* wrapsource.c */

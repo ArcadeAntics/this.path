@@ -104,7 +104,7 @@ normalizePath("/path/to/file")
     p++;
 
 
-    /* third character must NOT be / or \
+    /* third character must NOT be slash nor backslash
      * this is the start of the host name of the network share
      */
     if (*p == '/' || *p == '\\') return 0;
@@ -264,7 +264,7 @@ int is_abs_path_windows(const char *s)
     p++;
 
 
-    /* third character must NOT be / or \
+    /* third character must NOT be slash nor backslash
      * this is the start of the host name of the network share
      */
     if (*p == '/' || *p == '\\') return 0;

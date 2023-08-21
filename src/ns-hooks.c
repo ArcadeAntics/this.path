@@ -6,15 +6,18 @@
 #undef R_THIS_PATH_INITIALIZE_SYMBOLS
 
 
-SEXP mynamespace     = NULL,
-     promiseenv      = NULL,
-     ThisPathInfoCls = NULL;
+SEXP mynamespace        = NULL,
+     DocumentContextCls = NULL,
+     last_condition     = NULL;
+
+
+#ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
+SEXP R_BlankScalarString = NULL;
+#endif
 
 
 SEXP expr_commandArgs                               = NULL,
-#if defined(R_THIS_PATH_HAVE_invisibleSymbol)
      expr_invisible                                 = NULL,
-#endif
      expr_parent_frame                              = NULL,
      expr_sys_call                                  = NULL,
      expr_sys_nframe                                = NULL,
@@ -23,12 +26,12 @@ SEXP expr_commandArgs                               = NULL,
      expr_missing_input                             = NULL,
      expr_missing_ofile                             = NULL,
      expr_info_dollar_source_path                   = NULL,
-     expr_delayedAssign_x                           = NULL,
      expr_knitr_output_dir                          = NULL,
      expr_testthat_source_file_uses_brio_read_lines = NULL,
      expr__sys_path_toplevel                        = NULL,
      expr_getOption_topLevelEnvironment             = NULL,
-     expr__toplevel_context_number                  = NULL;
+     expr__toplevel_context_number                  = NULL,
+     expr__isMethodsDispatchOn                      = NULL;
 
 
 LibExtern Rboolean mbcslocale;
@@ -103,12 +106,23 @@ SEXP do_onLoad do_formals
     R_PreserveObject(mynamespace);
 
 
-    promiseenv = R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 1);
-    PROTECT(promiseenv);
-    INCREMENT_NAMED_defineVar(xSymbol, R_NilValue, promiseenv);
-    R_LockEnvironment(promiseenv, FALSE);
-    R_PreserveObject(promiseenv);
-    UNPROTECT(1);
+    const char *cls[] = { "ThisPathDocumentContext", "environment", NULL };
+    int numCls = 0;
+    while (cls[numCls]) ++numCls;
+    DocumentContextCls = allocVector(STRSXP, numCls);
+    R_PreserveObject(DocumentContextCls);
+    for (int i = 0; i < numCls; i++)
+        SET_STRING_ELT(DocumentContextCls, i, mkChar(cls[i]));
+
+
+    last_condition = CONS(R_NilValue, R_NilValue);
+    R_PreserveObject(last_condition);
+
+
+#ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
+    R_BlankScalarString = mkString("");
+    R_PreserveObject(R_BlankScalarString);
+#endif
 
 
 #define LockCLOENV(symbol, bindings)                           \
@@ -149,10 +163,11 @@ SEXP do_onLoad do_formals
 
 #if R_version_less_than(3, 0, 0)
     INCREMENT_NAMED_defineVar(install(".NAMEDMAX"), PROTECT(ScalarInteger(NA_INTEGER)), mynamespace);
+    UNPROTECT(1);
 #else
     INCREMENT_NAMED_defineVar(install(".NAMEDMAX"), PROTECT(ScalarInteger(NAMEDMAX)), mynamespace);
-#endif
     UNPROTECT(1);
+#endif
 
 
 #define convertclosure2activebinding(symbol)                   \
@@ -175,229 +190,212 @@ SEXP do_onLoad do_formals
     convertclosure2activebinding(install(".R_MB_CUR_MAX"));
     /* ./R/thispath.R */
     convertclosure2activebinding(install("FILE"));
+    /* ./R/tryCatch2.R */
+    convertclosure2activebinding(install("last.condition"));
 
 
     SEXP value = allocVector(VECSXP, 13);
-    PROTECT(value);
+    MARK_NOT_MUTABLE_defineVar(install("OS.type"), value, mynamespace);
     SEXP names = allocVector(STRSXP, 13);
     setAttrib(value, R_NamesSymbol, names);
 
 
-    int i = 0;
+    int i = -1;
 
 
-    SET_STRING_ELT(names, i, mkChar("AIX"));
+    SET_STRING_ELT(names, ++i, mkChar("AIX"));
 #if defined(_AIX)
     /* IBM AIX. ------------------------------------------------- */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, i, R_FalseValue);
 #endif
 
 
-//     SET_STRING_ELT(names, i, mkChar("BSD"));
+//     SET_STRING_ELT(names, ++i, mkChar("BSD"));
 // #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 // #include <sys/param.h>
 // #if defined(BSD)
 //     /* BSD (DragonFly BSD, FreeBSD, OpenBSD, NetBSD). ----------- */
-//     SET_VECTOR_ELT(value, i++, R_TrueValue);
+//     SET_VECTOR_ELT(value, i, R_TrueValue);
 // #else
-//     SET_VECTOR_ELT(value, i++, R_FalseValue);
+//     SET_VECTOR_ELT(value, i, R_FalseValue);
 // #endif
 // #else
-//     SET_VECTOR_ELT(value, i++, R_FalseValue);
+//     SET_VECTOR_ELT(value, i, R_FalseValue);
 // #endif
 
 
-    SET_STRING_ELT(names, i, mkChar("HPUX"));
+    SET_STRING_ELT(names, ++i, mkChar("HPUX"));
 #if defined(__hpux)
     /* Hewlett-Packard HP-UX. ----------------------------------- */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, i, R_FalseValue);
 #endif
 
 
-    SET_STRING_ELT(names, i, mkChar("linux"));
+    SET_STRING_ELT(names, ++i, mkChar("linux"));
 #if defined(__linux__)
     /* Linux. --------------------------------------------------- */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, i, R_FalseValue);
 #endif
 
 
-    SET_STRING_ELT(names, i + 0, mkChar("darwin"));
-    SET_STRING_ELT(names, i + 1, mkChar("iOS.simulator"));
-    SET_STRING_ELT(names, i + 2, mkChar("iOS"));
-    SET_STRING_ELT(names, i + 3, mkChar("macOS"));
+    SET_STRING_ELT(names, i + 1, mkChar("darwin"));
+    SET_STRING_ELT(names, i + 2, mkChar("iOS.simulator"));
+    SET_STRING_ELT(names, i + 3, mkChar("iOS"));
+    SET_STRING_ELT(names, i + 4, mkChar("macOS"));
 #if defined(__APPLE__) && defined(__MACH__)
     /* Apple OSX and iOS (Darwin). ------------------------------ */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
 #include <TargetConditionals.h>
 #if TARGET_IPHONE_SIMULATOR == 1
     /* iOS in Xcode simulator */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
 #elif TARGET_OS_IPHONE == 1
     /* iOS on iPhone, iPad, etc. */
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
 #elif TARGET_OS_MAC == 1
     /* OSX */
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
 #endif
-#else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+#else /* #if defined(__APPLE__) && defined(__MACH__) */
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
 #endif
 
 
-    SET_STRING_ELT(names, i, mkChar("solaris"));
+    SET_STRING_ELT(names, ++i, mkChar("solaris"));
 #if defined(__sun) && defined(__SVR4)
     /* Solaris. ------------------------------------------------- */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, i, R_FalseValue);
 #endif
 
 
-    SET_STRING_ELT(names, i, mkChar("cygwin"));
+    SET_STRING_ELT(names, ++i, mkChar("cygwin"));
 #if defined(__CYGWIN__) && !defined(_WIN32)
     /* Cygwin POSIX under Microsoft Windows. -------------------- */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, i, R_FalseValue);
 #endif
 
 
-    SET_STRING_ELT(names, i + 0, mkChar("windows"));
-    SET_STRING_ELT(names, i + 1, mkChar("win64"));
-    SET_STRING_ELT(names, i + 2, mkChar("win32"));
+    SET_STRING_ELT(names, i + 1, mkChar("windows"));
+    SET_STRING_ELT(names, i + 2, mkChar("win64"));
+    SET_STRING_ELT(names, i + 3, mkChar("win32"));
 #if defined(_WIN64)
     /* Microsoft Windows (64-bit). ------------------------------ */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
 #elif defined(_WIN32)
     /* Microsoft Windows (32-bit). ------------------------------ */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
+    SET_VECTOR_ELT(value, ++i, R_FalseValue);
 #endif
 
 
-//     SET_STRING_ELT(names, i + 0, mkChar("UNIX"));
-//     SET_STRING_ELT(names, i + 1, mkChar("POSIX"));
+//     SET_STRING_ELT(names, i + 1, mkChar("UNIX"));
+//     SET_STRING_ELT(names, i + 2, mkChar("POSIX"));
 // #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
 //     /* UNIX-style OS. ------------------------------------------- */
-//     SET_VECTOR_ELT(value, i++, R_TrueValue);
+//     SET_VECTOR_ELT(value, ++i, R_TrueValue);
 // // #include <unistd.h>
 // #if defined(_POSIX_VERSION)
 //     /* POSIX compliant */
-//     SET_VECTOR_ELT(value, i++, R_TrueValue);
+//     SET_VECTOR_ELT(value, ++i, R_TrueValue);
 // #else
-//     SET_VECTOR_ELT(value, i++, R_FalseValue);
+//     SET_VECTOR_ELT(value, ++i, R_FalseValue);
 // #endif
 // #else
-//     SET_VECTOR_ELT(value, i++, R_FalseValue);
-//     SET_VECTOR_ELT(value, i++, R_FalseValue);
+//     SET_VECTOR_ELT(value, ++i, R_FalseValue);
+//     SET_VECTOR_ELT(value, ++i, R_FalseValue);
 // #endif
 
 
-    SET_STRING_ELT(names, i, mkChar("UNIX"));
+    SET_STRING_ELT(names, ++i, mkChar("UNIX"));
 #if !defined(_WIN32) && (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
     /* UNIX-style OS. ------------------------------------------- */
-    SET_VECTOR_ELT(value, i++, R_TrueValue);
+    SET_VECTOR_ELT(value, i, R_TrueValue);
 #else
-    SET_VECTOR_ELT(value, i++, R_FalseValue);
+    SET_VECTOR_ELT(value, i, R_FalseValue);
 #endif
-
-
-    MARK_NOT_MUTABLE_defineVar(install("OS.type"), value, mynamespace);
-    UNPROTECT(1);  /* value */
 
 
     expr_commandArgs = LCONS(getFromBase(commandArgsSymbol), R_NilValue);
-    PROTECT(expr_commandArgs);
+    R_PreserveObject(expr_commandArgs);
     if (!isFunction(CAR(expr_commandArgs)))
         error(_("object '%s' of mode '%s' was not found"),
               EncodeChar(PRINTNAME(commandArgsSymbol)), "function");
-    R_PreserveObject(expr_commandArgs);
-    UNPROTECT(1);
 
 
-#if defined(R_THIS_PATH_HAVE_invisibleSymbol)
     expr_invisible = LCONS(getFromBase(invisibleSymbol), R_NilValue);
-    PROTECT(expr_invisible);
+    R_PreserveObject(expr_invisible);
     if (!isFunction(CAR(expr_invisible)))
         error(_("object '%s' of mode '%s' was not found"),
               EncodeChar(PRINTNAME(invisibleSymbol)), "function");
-    R_PreserveObject(expr_invisible);
-    UNPROTECT(1);
-#endif
 
 
     expr_parent_frame = LCONS(getFromBase(parent_frameSymbol), R_NilValue);
-    PROTECT(expr_parent_frame);
+    R_PreserveObject(expr_parent_frame);
     if (!isFunction(CAR(expr_parent_frame)))
         error(_("object '%s' of mode '%s' was not found"),
               EncodeChar(PRINTNAME(parent_frameSymbol)), "function");
-    R_PreserveObject(expr_parent_frame);
-    UNPROTECT(1);
 
 
     expr_sys_call = LCONS(getFromBase(sys_callSymbol), R_NilValue);
-    PROTECT(expr_sys_call);
+    R_PreserveObject(expr_sys_call);
     if (!isFunction(CAR(expr_sys_call)))
         error(_("object '%s' of mode '%s' was not found"),
               EncodeChar(PRINTNAME(sys_callSymbol)), "function");
-    R_PreserveObject(expr_sys_call);
-    UNPROTECT(1);
 
 
     expr_sys_nframe = LCONS(getFromBase(sys_nframeSymbol), R_NilValue);
-    PROTECT(expr_sys_nframe);
+    R_PreserveObject(expr_sys_nframe);
     if (!isFunction(CAR(expr_sys_nframe)))
         error(_("object '%s' of mode '%s' was not found"),
               EncodeChar(PRINTNAME(sys_nframeSymbol)), "function");
-    R_PreserveObject(expr_sys_nframe);
-    UNPROTECT(1);
 
 
     expr_sys_parents = LCONS(getFromBase(sys_parentsSymbol), R_NilValue);
-    PROTECT(expr_sys_parents);
+    R_PreserveObject(expr_sys_parents);
     if (!isFunction(CAR(expr_sys_parents)))
         error(_("object '%s' of mode '%s' was not found"),
               EncodeChar(PRINTNAME(sys_parentsSymbol)), "function");
-    R_PreserveObject(expr_sys_parents);
-    UNPROTECT(1);
 
 
     {
         SEXP tmp;
         PROTECT(tmp = getFromBase(missingSymbol));
         expr_missing_file = LCONS(tmp, CONS(fileSymbol, R_NilValue));
-        PROTECT(expr_missing_file);
+        R_PreserveObject(expr_missing_file);
+        UNPROTECT(1);
         if (!isFunction(CAR(expr_missing_file)))
             error(_("object '%s' of mode '%s' was not found"),
                   EncodeChar(PRINTNAME(missingSymbol)), "function");
-        R_PreserveObject(expr_missing_file);
-        UNPROTECT(2);
     }
 
 
@@ -405,12 +403,11 @@ SEXP do_onLoad do_formals
         SEXP tmp;
         PROTECT(tmp = getFromBase(missingSymbol));
         expr_missing_input = LCONS(tmp, CONS(inputSymbol, R_NilValue));
-        PROTECT(expr_missing_input);
+        R_PreserveObject(expr_missing_input);
+        UNPROTECT(1);
         if (!isFunction(CAR(expr_missing_input)))
             error(_("object '%s' of mode '%s' was not found"),
                   EncodeChar(PRINTNAME(missingSymbol)), "function");
-        R_PreserveObject(expr_missing_input);
-        UNPROTECT(2);
     }
 
 
@@ -418,12 +415,11 @@ SEXP do_onLoad do_formals
         SEXP tmp;
         PROTECT(tmp = getFromBase(missingSymbol));
         expr_missing_ofile = LCONS(tmp, CONS(ofileSymbol, R_NilValue));
-        PROTECT(expr_missing_ofile);
+        R_PreserveObject(expr_missing_ofile);
+        UNPROTECT(1);
         if (!isFunction(CAR(expr_missing_ofile)))
             error(_("object '%s' of mode '%s' was not found"),
                   EncodeChar(PRINTNAME(missingSymbol)), "function");
-        R_PreserveObject(expr_missing_ofile);
-        UNPROTECT(2);
     }
 
 
@@ -433,35 +429,16 @@ SEXP do_onLoad do_formals
         expr_info_dollar_source_path = LCONS(tmp,
                                              CONS(infoSymbol,
                                                   CONS(source_pathSymbol, R_NilValue)));
-        PROTECT(expr_info_dollar_source_path);
+        R_PreserveObject(expr_info_dollar_source_path);
+        UNPROTECT(1);
         if (!isFunction(CAR(expr_info_dollar_source_path)))
             error(_("object '%s' of mode '%s' was not found"),
                   EncodeChar(PRINTNAME(R_DollarSymbol)), "function");
-        R_PreserveObject(expr_info_dollar_source_path);
-        UNPROTECT(2);
-    }
-
-
-    {
-        SEXP tmp, tmp2;
-        PROTECT(tmp = getFromBase(delayedAssignSymbol));
-        PROTECT(tmp2 = ScalarString(PRINTNAME(xSymbol)));
-        expr_delayedAssign_x = LCONS(tmp,
-                                     CONS(/* x */ tmp2,
-                                          CONS(/* value */ R_NilValue,
-                                               CONS(/* eval.env */ R_EmptyEnv,
-                                                    CONS(/* assign.env */ promiseenv, R_NilValue)))));
-        PROTECT(expr_delayedAssign_x);
-        if (!isFunction(CAR(expr_delayedAssign_x)))
-            error(_("object '%s' of mode '%s' was not found"),
-                  EncodeChar(PRINTNAME(delayedAssignSymbol)), "function");
-        R_PreserveObject(expr_delayedAssign_x);
-        UNPROTECT(3);
     }
 
 
     expr_knitr_output_dir = allocList(2);
-    PROTECT(expr_knitr_output_dir);
+    R_PreserveObject(expr_knitr_output_dir);
     SET_TYPEOF(expr_knitr_output_dir, LANGSXP);
     {
         SEXP tmp;
@@ -479,12 +456,10 @@ SEXP do_onLoad do_formals
             }
         }
     }
-    R_PreserveObject(expr_knitr_output_dir);
-    UNPROTECT(1);
 
 
     expr_testthat_source_file_uses_brio_read_lines = allocList(3);
-    PROTECT(expr_testthat_source_file_uses_brio_read_lines);
+    R_PreserveObject(expr_testthat_source_file_uses_brio_read_lines);
     SET_TYPEOF(expr_testthat_source_file_uses_brio_read_lines, LANGSXP);
     {
         SEXP tmp;
@@ -501,48 +476,34 @@ SEXP do_onLoad do_formals
             }
         }
     }
-    R_PreserveObject(expr_testthat_source_file_uses_brio_read_lines);
-    UNPROTECT(1);
 
 
     expr__sys_path_toplevel = LCONS(_sys_path_toplevelSymbol, R_NilValue);
-    PROTECT(expr__sys_path_toplevel);
     R_PreserveObject(expr__sys_path_toplevel);
-    UNPROTECT(1);
 
 
     {
         SEXP tmp;
         PROTECT(tmp = getFromBase(install("getOption")));
         expr_getOption_topLevelEnvironment = LCONS(tmp, CONS(mkString("topLevelEnvironment"), R_NilValue));
-        PROTECT(expr_getOption_topLevelEnvironment);
+        R_PreserveObject(expr_getOption_topLevelEnvironment);
+        UNPROTECT(1);
         if (!isFunction(CAR(expr_getOption_topLevelEnvironment)))
             error(_("object '%s' of mode '%s' was not found"), "getOption", "function");
-        R_PreserveObject(expr_getOption_topLevelEnvironment);
-        UNPROTECT(2);
     }
 
 
     expr__toplevel_context_number = LCONS(getFromMyNS(install(".toplevel.context.number")), R_NilValue);
-    PROTECT(expr__toplevel_context_number);
+    R_PreserveObject(expr__toplevel_context_number);
     if (!isFunction(CAR(expr__toplevel_context_number)))
         error(_("object '%s' of mode '%s' was not found"), ".toplevel.context.number", "function");
-    R_PreserveObject(expr__toplevel_context_number);
-    UNPROTECT(1);
 
 
-    /* ThisPathInfoCls */
-    const char *cls[] = {
-        "ThisPathInfo",
-        "environment",
-        NULL
-    };
-    int numCls = 0;
-    while (cls[numCls]) ++numCls;
-    ThisPathInfoCls = allocVector(STRSXP, numCls);
-    R_PreserveObject(ThisPathInfoCls);
-    for (int i = 0; i < numCls; i++)
-        SET_STRING_ELT(ThisPathInfoCls, i, mkChar(cls[i]));
+    expr__isMethodsDispatchOn = LCONS(getFromBase(_isMethodsDispatchOnSymbol), R_NilValue);
+    R_PreserveObject(expr__isMethodsDispatchOn);
+    if (!isFunction(CAR(expr__isMethodsDispatchOn)))
+        error(_("object '%s' of mode '%s' was not found"),
+            EncodeChar(PRINTNAME(_isMethodsDispatchOnSymbol)), "function");
 
 
     return R_NilValue;
@@ -557,30 +518,35 @@ SEXP do_onUnload do_formals
     SEXP libpath = CAR(args);
 
 
-    R_ReleaseObject(mynamespace);
-    R_ReleaseObject(promiseenv);
+#define maybe_release(var) if ((var)) R_ReleaseObject((var))
 
 
-    R_ReleaseObject(expr_commandArgs                              );
-#if defined(R_THIS_PATH_HAVE_invisibleSymbol)
-    R_ReleaseObject(expr_invisible                                );
+    maybe_release(mynamespace);
+    maybe_release(DocumentContextCls);
+    maybe_release(last_condition);
+
+
+#ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
+    maybe_release(R_BlankScalarString);
 #endif
-    R_ReleaseObject(expr_parent_frame                             );
-    R_ReleaseObject(expr_sys_call                                 );
-    R_ReleaseObject(expr_sys_nframe                               );
-    R_ReleaseObject(expr_sys_parents                              );
-    R_ReleaseObject(expr_missing_file                             );
-    R_ReleaseObject(expr_missing_input                            );
-    R_ReleaseObject(expr_missing_input                            );
 
-    R_ReleaseObject(expr_info_dollar_source_path                  );
-    R_ReleaseObject(expr_delayedAssign_x                          );
-    R_ReleaseObject(expr_knitr_output_dir                         );
-    R_ReleaseObject(expr_testthat_source_file_uses_brio_read_lines);
-    R_ReleaseObject(expr__sys_path_toplevel                       );
-    R_ReleaseObject(expr_getOption_topLevelEnvironment            );
-    R_ReleaseObject(expr__toplevel_context_number                 );
-    R_ReleaseObject(ThisPathInfoCls);
+
+    maybe_release(expr_commandArgs                              );
+    maybe_release(expr_invisible                                );
+    maybe_release(expr_parent_frame                             );
+    maybe_release(expr_sys_call                                 );
+    maybe_release(expr_sys_nframe                               );
+    maybe_release(expr_sys_parents                              );
+    maybe_release(expr_missing_file                             );
+    maybe_release(expr_missing_input                            );
+    maybe_release(expr_missing_input                            );
+    maybe_release(expr_info_dollar_source_path                  );
+    maybe_release(expr_knitr_output_dir                         );
+    maybe_release(expr_testthat_source_file_uses_brio_read_lines);
+    maybe_release(expr__sys_path_toplevel                       );
+    maybe_release(expr_getOption_topLevelEnvironment            );
+    maybe_release(expr__toplevel_context_number                 );
+    maybe_release(expr__isMethodsDispatchOn                     );
 
 
     {

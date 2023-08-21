@@ -57,12 +57,13 @@ Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
 
 SEXP makePROMISE(SEXP expr, SEXP env)
 {
-    eval(expr_delayedAssign_x, R_EmptyEnv);
-    SEXP s = findVarInFrame(promiseenv, xSymbol);
-    if (TYPEOF(s) != PROMSXP)
-        error(_("object '%s' of mode '%s' was not found"), "x", "promise");
+    ENSURE_NAMEDMAX(expr);
+    SEXP s = allocSExp(PROMSXP);
     SET_PRCODE(s, expr);
     SET_PRENV(s, env);
+    SET_PRVALUE(s, R_UnboundValue);
+    SET_PRSEEN(s, 0);
+    SET_ATTRIB(s, R_NilValue);
     return s;
 }
 
@@ -475,50 +476,61 @@ void stop(SEXP cond)
 }
 
 
-SEXP ThisPathInfo(void)
+SEXP DocumentContext(void)
 {
-    SEXP thispathinfo = R_NewEnv(mynamespace, TRUE, 10);
-    PROTECT(thispathinfo);
-    setAttrib(thispathinfo, R_ClassSymbol, ThisPathInfoCls);
+    SEXP documentcontext = R_NewEnv(mynamespace, TRUE, 10);
+    PROTECT(documentcontext);
+    setAttrib(documentcontext, R_ClassSymbol, DocumentContextCls);
     UNPROTECT(1);
-    return thispathinfo;
+    return documentcontext;
 }
 
 
-#define _assign(file, thispathinfo)                                    \
-    INCREMENT_NAMED_defineVar(ofileSymbol, (file), (thispathinfo));    \
-    SEXP e = makePROMISE(R_NilValue, (thispathinfo));                  \
-    defineVar(fileSymbol, e, (thispathinfo))
-
-
-void assign_default(SEXP file, SEXP thispathinfo, Rboolean check_not_directory)
+SEXP ofile_is_NULL(SEXP documentcontext)
 {
-    _assign(file, thispathinfo);
+    if (documentcontext != NULL &&
+        documentcontext != R_UnboundValue &&
+        TYPEOF(documentcontext) == ENVSXP &&
+        findVarInFrame(documentcontext, ofileSymbol) == R_NilValue)
+        return documentcontext;
+    return NULL;
+}
+
+
+#define _assign(file, documentcontext)                         \
+    INCREMENT_NAMED_defineVar(ofileSymbol, (file), (documentcontext));\
+    SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
+    defineVar(fileSymbol, e, (documentcontext))
+
+
+void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory)
+{
+    _assign(file, documentcontext);
     SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
                         CONS(file, R_NilValue)));
 }
 
 
-void assign_null(SEXP thispathinfo)
+void assign_null(SEXP documentcontext)
 {
     /* make and force the promise */
-    _assign(R_NilValue, thispathinfo);
+    _assign(R_NilValue, documentcontext);
     eval(e, R_EmptyEnv);
 }
 
 
-void assign_chdir(SEXP file, SEXP owd, SEXP thispathinfo)
+void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext)
 {
-    _assign(file, thispathinfo);
-    INCREMENT_NAMED_defineVar(wdSymbol, owd, thispathinfo);
+    _assign(file, documentcontext);
+    INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
     SET_PRCODE(e, LCONS(_normalizeAgainstSymbol, CONS(wdSymbol, CONS(file, R_NilValue))));
     return;
 }
 
 
-void assign_file_uri(SEXP ofile, SEXP file, SEXP thispathinfo, Rboolean check_not_directory)
+void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, Rboolean check_not_directory)
 {
-    _assign(ofile, thispathinfo);
+    _assign(ofile, documentcontext);
 
 
     /* translate the string, then extract the string after file://
@@ -553,7 +565,7 @@ void assign_file_uri(SEXP ofile, SEXP file, SEXP thispathinfo, Rboolean check_no
 }
 
 
-void assign_file_uri2(SEXP description, SEXP thispathinfo, Rboolean check_not_directory)
+void assign_file_uri2(SEXP description, SEXP documentcontext, Rboolean check_not_directory)
 {
     char _buf[7 + strlen(CHAR(description)) + 1];
     char *buf = _buf;
@@ -565,15 +577,15 @@ void assign_file_uri2(SEXP description, SEXP thispathinfo, Rboolean check_not_di
     SEXP ofile = ScalarString(mkCharCE(buf, getCharCE(description)));
 
 
-    _assign(ofile, thispathinfo);
+    _assign(ofile, documentcontext);
     SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
                         CONS(ScalarString(description), R_NilValue)));
 }
 
 
-void assign_url(SEXP ofile, SEXP file, SEXP thispathinfo)
+void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 {
-    _assign(ofile, thispathinfo);
+    _assign(ofile, documentcontext);
 
 
 #ifdef _WIN32
@@ -593,9 +605,9 @@ void assign_url(SEXP ofile, SEXP file, SEXP thispathinfo)
 #undef _assign
 
 
-void overwrite_ofile(SEXP ofilearg, SEXP thispathinfo)
+void overwrite_ofile(SEXP ofilearg, SEXP documentcontext)
 {
-    INCREMENT_NAMED_defineVar(ofileSymbol, ofilearg, thispathinfo);
+    INCREMENT_NAMED_defineVar(ofileSymbol, ofilearg, documentcontext);
 }
 
 

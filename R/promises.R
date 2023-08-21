@@ -251,7 +251,14 @@ delayedAssign(".os.windows.console.radian", .os.windows && .Platform$GUI %in% c(
 delayedAssign(".console.radian", .os.unix.console.radian || .os.windows.console.radian)
 
 
-delayedAssign(".gui.vscode", interactive() && isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") && (is.na(.shINFO[["ENC"]]) && isFALSE(.shINFO[["has.input"]]) || .console.radian))
+delayedAssign(".gui.vscode",
+    interactive() &&
+    isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") &&
+    (
+        (is.na(.shINFO[["ENC"]]) && isFALSE(.shINFO[["has.input"]])) ||
+        .console.radian
+    )
+)
 
 
 .IRkernel.main.call <- as.call(list(call("::", as.symbol("IRkernel"), as.symbol("main"))))
@@ -308,19 +315,29 @@ delayedAssign(".os.windows.in.shell", .os.windows.maybe.unembedded.shell && !.gu
 delayedAssign(".in.shell", .os.unix.in.shell || .os.windows.in.shell)
 
 
-delayedAssign(".unrecognized.manner", !.in.shell && !.gui.rstudio && !.gui.vscode && !.gui.jupyter && !.gui.rgui && !.gui.aqua && !.gui.tk)
+delayedAssign(".unrecognized.manner",
+    !.in.shell &&
+    !.gui.rstudio &&
+    !.gui.vscode &&
+    !.gui.jupyter &&
+    !.gui.rgui &&
+    !.gui.aqua &&
+    !.gui.tk
+)
 
 
 delayedAssign("initwd", getwd())
-delayedAssign(".ucrt"  , identical(R.version[["crt"]], "ucrt"))
-delayedAssign(".GUI", if (.in.shell) .Platform$GUI
-                     else if (.gui.rstudio) "RStudio"
-                     else if (.gui.vscode) "vscode"
-                     else if (.gui.jupyter) "jupyter"
-                     # else if (.gui.rgui) "Rgui"
-                     # else if (.gui.aqua) "AQUA"
-                     # else if (.gui.tk) "Tk"
-                     else .Platform$GUI)
+delayedAssign(".ucrt", identical(R.version[["crt"]], "ucrt"))
+delayedAssign(".GUI",
+    if (.in.shell) .Platform$GUI
+    else if (.gui.rstudio) "RStudio"
+    else if (.gui.vscode) "vscode"
+    else if (.gui.jupyter) "jupyter"
+    # else if (.gui.rgui) "Rgui"
+    # else if (.gui.aqua) "AQUA"
+    # else if (.gui.tk) "Tk"
+    else .Platform$GUI
+)
 
 
 getinitwd <- function ()
