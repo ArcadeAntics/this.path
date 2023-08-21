@@ -361,9 +361,7 @@ source.exprs <- function (exprs, evaluated = FALSE, envir = parent.frame(), echo
         exprs <- substitute(exprs)
         if (is.call(exprs)) {
             if (typeof(exprs[[1]]) == "symbol" && exprs[[1]] == "{")
-                exprs <- structure(as.list(exprs)[-1],
-                    srcfile = attr(exprs, "srcfile"),
-                    wholeSrcref = attr(exprs, "wholeSrcref"))
+                exprs <- as.list(exprs)[-1]
         }
     }
     if (!is.expression(exprs))
@@ -389,6 +387,8 @@ source.exprs <- function (exprs, evaluated = FALSE, envir = parent.frame(), echo
             if (!is.null(srcref)) {
                 firstl <- srcref[7L]
                 lastl <- srcref[8L]
+                if (i == 1L)
+                    lastshown <- firstl - 1L
                 if (lastshown < lastl) {
                     srcfile <- attr(srcref, "srcfile")
                     dep <- trySrcLines(srcfile, lastshown + 1L, lastl)

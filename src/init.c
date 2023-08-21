@@ -87,8 +87,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
     // {"latin1locale", (DL_FUNC) &do_latin1locale, 0},
     {"R_MB_CUR_MAX", (DL_FUNC) &do_R_MB_CUR_MAX, 0},
 
-    {"onLoad"        , (DL_FUNC) &do_onLoad        , 2},
-    {"onUnload"      , (DL_FUNC) &do_onUnload      , 1},
+    {"onLoad"  , (DL_FUNC) &do_onLoad        , 2},
+    {"onUnload", (DL_FUNC) &do_onUnload      , 1},
 
 
     /* pathjoin.c */

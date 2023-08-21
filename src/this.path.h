@@ -136,7 +136,6 @@ extern SEXP do_mbcslocale   do_formals;
 extern SEXP do_R_MB_CUR_MAX do_formals;
 
 extern SEXP do_onLoad         do_formals;
-extern SEXP do_unLockBindings do_formals;
 extern SEXP do_onUnload       do_formals;
 
 

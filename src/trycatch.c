@@ -123,7 +123,7 @@ SEXP tryCatch (int op, SEXP rho)
                                       expr), indx);
                 SET_TAG(expr, TAG(dot));
                 if (TAG(dot) == R_NilValue)
-                    error("condition handlers must be specified with a condition class (test)");
+                    error("condition handlers must be specified with a condition class");
             }
             break;
         }
