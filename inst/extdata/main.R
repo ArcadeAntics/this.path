@@ -105,7 +105,7 @@ if (sys.nframe() != 0L) {
 
 
         exe <- "Rscript.exe"
-        path <- R.home("..")
+        path <- normalizePath(R.home(".."), "/", TRUE)
         path <- list.files(path, full.names = TRUE)
         path <- file.path(path, "bin", exe)
         path <- path[file.exists(path)]
@@ -113,13 +113,7 @@ if (sys.nframe() != 0L) {
 
 
         # args <- c("--version")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "writeLines(.Platform$r_arch)")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "strrep")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(file.info)")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "formals(sys.source)")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "isTRUE")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "tools:::.read_description")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "sys.source")
+        # args <- c("--default-packages=NULL", "--vanilla", "-e", "utils::capture.output")
         # args <- paste(shQuote(args), collapse = " ")
         # command <- paste(shQuote(path), args)
         # names(command) <- path

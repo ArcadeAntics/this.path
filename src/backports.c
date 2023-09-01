@@ -12,19 +12,14 @@ R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
         SEXP expr;
         PROTECT_INDEX indx;
         PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
-        switch (TYPEOF(x)) {
-        case BCODESXP:
-        case SYMSXP:
-        case PROMSXP:
-        case LANGSXP:
-        case DOTSXP:
+        if (needQuote(x)) {
             REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
             REPROTECT(expr = CONS(expr, R_NilValue), indx);
         }
         REPROTECT(expr = LCONS(getFromBase(R_LengthSymbol), expr), indx);
-        expr = PROTECT(eval(expr, rho));
+        SEXP res = PROTECT(eval(expr, rho));
         R_xlen_t value = (R_xlen_t)
-            (TYPEOF(expr) == REALSXP ? REAL(expr)[0] : asInteger(expr));
+            ((TYPEOF(res) == REALSXP) ? REAL(res)[0] : asInteger(res));
         UNPROTECT(2);
         return value;
     }
@@ -39,22 +34,13 @@ SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
         PROTECT(expr);
         SET_TYPEOF(expr, LANGSXP);
         SETCAR(expr, getFromBase(R_Bracket2Symbol));
-        switch (TYPEOF(x)) {
-            case BCODESXP:
-            case SYMSXP:
-            case PROMSXP:
-            case LANGSXP:
-            case DOTSXP:
-            {
-                SEXP expr2;
-                SETCADR(expr, expr2 = allocList(2)); SET_TYPEOF(expr2, LANGSXP);
-                SETCAR (expr2, getFromBase(R_QuoteSymbol));
-                SETCADR(expr2, x);
-                break;
-            }
-            default:
-                SETCADR(expr, x);
+        if (needQuote(x)) {
+            SEXP expr2;
+            SETCADR(expr, expr2 = allocList(2)); SET_TYPEOF(expr2, LANGSXP);
+            SETCAR (expr2, getFromBase(R_QuoteSymbol));
+            SETCADR(expr2, x);
         }
+        else SETCADR(expr, x);
         SETCADDR(expr, ScalarReal(((double) i) + 1));
         expr = eval(expr, rho);
         UNPROTECT(1);
@@ -91,226 +77,281 @@ SEXP lengths_real(SEXP x, R_xlen_t len, SEXP rho)
 }
 
 
-#if R_version_less_than(3, 5, 0)
+#if R_version_less_than(3, 1, 0)
 
 
-SEXP do_dotslength do_formals
+SEXP lazy_duplicate(SEXP s)
 {
-    do_start_no_call_op("dotslength", 0);
-
-
-    SEXP env = eval(expr_parent_frame, rho);
-    SEXP vl = findVar(R_DotsSymbol, env);
-    if (vl == R_UnboundValue)
-        error(_("incorrect context: the current call has no '...' to look in"));
-    return ScalarInteger((TYPEOF(vl) == DOTSXP ? length(vl) : 0));
+    switch (TYPEOF(s)) {
+    case NILSXP:
+    case SYMSXP:
+    case ENVSXP:
+    case SPECIALSXP:
+    case BUILTINSXP:
+    case EXTPTRSXP:
+    case BCODESXP:
+    case WEAKREFSXP:
+    case CHARSXP:
+    case PROMSXP:
+        break;
+    case CLOSXP:
+    case LISTSXP:
+    case LANGSXP:
+    case DOTSXP:
+    case EXPRSXP:
+    case VECSXP:
+    case LGLSXP:
+    case INTSXP:
+    case REALSXP:
+    case CPLXSXP:
+    case RAWSXP:
+    case STRSXP:
+    case S4SXP:
+        ENSURE_NAMEDMAX(s);
+        break;
+    default:
+        UNIMPLEMENTED_TYPE("lazy_duplicate", s);
+    }
+    return s;
 }
 
 
-#endif
-
-
-#if R_version_less_than(3, 3, 0)
-
-
-SEXP do_strrep do_formals
+SEXP shallow_duplicate(SEXP s)
 {
-    do_start_no_call_op_rho("strrep", 2);
+    return duplicate(s);
+}
 
 
-    SEXP x = CAR(args); args = CDR(args);
-    SEXP times = CAR(args);
+Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho);
 
 
-    R_xlen_t x_length     = XLENGTH(x    ),
-             times_length = XLENGTH(times);
-    if (x_length == 0 || times_length == 0)
-        return allocVector(STRSXP, 0);
+Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
+{
+    if (OBJECT(x)) {
+        SEXP expr = LCONS(R_NilValue, CONS(x, CONS((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)));
+        PROTECT(expr);
+        SETCAR(expr, getFromMyNS(anyNA_dispatchSymbol));
+        SEXP res = PROTECT(eval(expr, rho));
+        Rboolean value = (asLogical(res) == TRUE);
+        UNPROTECT(2);
+        return value;
+    }
+    else return anyNA_default(x, recursive, rho);
+}
 
 
-    R_xlen_t len = (x_length > times_length) ? x_length : times_length;
+Rboolean anyNA_data_frame(SEXP x, Rboolean recursive, SEXP rho)
+{
+    for (R_xlen_t i = 0, n = xlength(x); i < n; i++) {
+        if (anyNA(VECTOR_ELT(x, i), recursive, rho))
+            return TRUE;
+    }
+    return FALSE;
+}
 
 
-    SEXP value = allocVector(STRSXP, len);
-    PROTECT(value);
-
-
-    R_xlen_t x_indx     = 0,
-             times_indx = 0;
-    for (R_xlen_t i = 0; i < len; i++) {
-        SEXP x0 = STRING_ELT(x, x_indx);
-        int times0 = INTEGER(times)[times_indx];
-        if (x0 == NA_STRING || times0 == NA_INTEGER) {
-            SET_STRING_ELT(value, i, NA_STRING);
-        } else {
-            if (times0 < 0)
-                error(_("invalid '%s' value"), "times");
-            const char *str = CHAR(x0);
-            int nchar = (int) strlen(str);
-
-
-            double nchar_out = ((double) nchar) * times0;
-            if (nchar_out > INT_MAX)
-                error("R character strings are limited to 2^31-1 bytes");
-
-
-            char _buf[nchar * times0 + 1];
-            char *buf = _buf;
-            const char *cbuf = _buf;
-            for (int j = 0; j < times0; j++) {
-                strcpy(buf, str);
-                buf += nchar;
-            }
-            buf[0] = '\0';
-            SET_STRING_ELT(value, i, mkCharCE(cbuf, getCharCE(x0)));
+Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
+{
+    SEXPTYPE type = TYPEOF(x);
+    if (OBJECT(x) || (!recursive && (type == VECSXP || type == LISTSXP))) {
+        SEXP expr;
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
+        if (needQuote(x)) {
+            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
+            REPROTECT(expr = CONS(expr, R_NilValue), indx);
         }
-        if (++x_indx     == x_length    ) x_indx     = 0;
-        if (++times_indx == times_length) times_indx = 0;
+        REPROTECT(expr = LCONS(getFromBase(is_naSymbol), expr), indx);
+        REPROTECT(expr = CONS(expr, R_NilValue), indx);
+        REPROTECT(expr = LCONS(getFromBase(anySymbol), expr), indx);
+        SEXP res = PROTECT(eval(expr, rho));
+        Rboolean value = (asLogical(res) == TRUE);
+        UNPROTECT(2);
+        return value;
     }
 
 
-    if (x_length == len) {
-        SEXP names = getAttrib(x, R_NamesSymbol);
-        if (names != R_NilValue)
-            setAttrib(value, R_NamesSymbol, names);
+    R_xlen_t i, n = xlength(x);
+    switch (type) {
+    case REALSXP:
+    {
+        double *rx = REAL(x);
+        for (i = 0; i < n; i++) {
+            if (ISNAN(rx[i]))
+                return TRUE;
+        }
+        break;
+    }
+    case INTSXP:
+    {
+        int *ix = INTEGER(x);
+        for (i = 0; i < n; i++) {
+            if (ix[i] == NA_INTEGER)
+                return TRUE;
+        }
+        break;
+    }
+    case LGLSXP:
+    {
+        int *lx = LOGICAL(x);
+        for (i = 0; i < n; i++) {
+            if (lx[i] == NA_LOGICAL)
+                return TRUE;
+        }
+        break;
+    }
+    case CPLXSXP:
+    {
+        Rcomplex *cx = COMPLEX(x);
+        for (i = 0; i < n; i++) {
+            if (ISNAN(cx[i].r) || ISNAN(cx[i].i))
+                return TRUE;
+        }
+        break;
+    }
+    case STRSXP:
+    {
+        for (i = 0; i < n; i++) {
+            if (STRING_ELT(x, i) == NA_STRING)
+                return TRUE;
+        }
+        break;
+    }
+    case RAWSXP:
+        return FALSE;
+    case NILSXP:
+        return FALSE;
+    case VECSXP:
+    {
+        for (i = 0; i < n; i++) {
+            if (anyNA(VECTOR_ELT(x, i), recursive, rho))
+                return TRUE;
+        }
+        break;
+    }
+    case LISTSXP:
+    {
+        for (i = 0; i < n; i++, x = CDR(x)) {
+            if (anyNA(CAR(x), recursive, rho))
+                return TRUE;
+        }
+        break;
+    }
+    default:
+        error("anyNA() applied to non-(list or vector) of type '%s'", type2char(type));
+    }
+    return FALSE;
+}
+
+
+SEXP do_anyNA do_formals
+{
+    do_start_no_op("anyNA", -1);
+
+
+    SEXP x;
+    Rboolean recursive = FALSE;
+
+
+    switch (length(args)) {
+    case 2:
+        recursive = asLogical(CADR(args));
+    case 1:
+        x = CAR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNA", "1 or 2"));
+        return R_NilValue;
     }
 
 
-    UNPROTECT(1);
-    return value;
+    return ScalarLogical(anyNA(x, recursive, rho));
 }
 
 
-#define do_startsWith_body(startsWith)                         \
-    SEXP x = CAR(args); args = CDR(args);                      \
-    SEXP xxxfix = CAR(args);                                   \
-    if (!isString(x) || !isString(xxxfix))                     \
-        error(_("non-character object(s)"));                   \
-                                                               \
-                                                               \
-    R_xlen_t x_length      = XLENGTH(x     ),                  \
-             xxxfix_length = XLENGTH(xxxfix);                  \
-    if (x_length == 0 || xxxfix_length == 0)                   \
-        return allocVector(LGLSXP, 0);                         \
-                                                               \
-                                                               \
-    R_xlen_t len = (x_length > xxxfix_length) ? x_length : xxxfix_length;\
-                                                               \
-                                                               \
-    SEXP value = allocVector(LGLSXP, len);                     \
-    PROTECT(value);                                            \
-    int *lvalue = LOGICAL(value);                              \
-                                                               \
-                                                               \
-    if (xxxfix_length == 1) {                                  \
-        SEXP xxxfix0 = STRING_ELT(xxxfix, 0);                  \
-        if (xxxfix0 == NA_STRING) {                            \
-            for (R_xlen_t i = 0; i < len; i++)                 \
-                lvalue[i] = NA_LOGICAL;                        \
-        } else {                                               \
-            const char *xxxfix0_str = translateCharUTF8(xxxfix0);\
-            int xxxfix0_nchar = (int) strlen(xxxfix0_str);     \
-            for (R_xlen_t i = 0; i < len; i++) {               \
-                SEXP x0 = STRING_ELT(x, i);                    \
-                if (x0 == NA_STRING) {                         \
-                    lvalue[i] = NA_LOGICAL;                    \
-                } else {                                       \
-                    const char *x0_str = translateCharUTF8(x0);\
-                    if ((startsWith)) {                        \
-                        lvalue[i] = strncmp(x0_str, xxxfix0_str, xxxfix0_nchar) == 0;\
-                    } else {                                   \
-                        int shift = ((int) strlen(x0_str)) - xxxfix0_nchar;\
-                        if (shift < 0)                         \
-                            lvalue[i] = FALSE;                 \
-                        else                                   \
-                            lvalue[i] = memcmp(x0_str + shift, xxxfix0_str, xxxfix0_nchar) == 0;\
-                    }                                          \
-                }                                              \
-            }                                                  \
-        }                                                      \
-    } else {                                                   \
-        const char **x_str      = (const char **) R_alloc(x_length     , sizeof(char *));\
-        const char **xxxfix_str = (const char **) R_alloc(xxxfix_length, sizeof(char *));\
-        int *x_nchar      = (int *) R_alloc(x_length     , sizeof(int));\
-        int *xxxfix_nchar = (int *) R_alloc(xxxfix_length, sizeof(int));\
-        for (R_xlen_t i = 0; i < x_length; i++) {              \
-            SEXP x0 = STRING_ELT(x, i);                        \
-            if (x0 == NA_STRING)                               \
-                x_nchar[i] = -1;                               \
-            else {                                             \
-                x_str[i] = translateCharUTF8(x0);              \
-                x_nchar[i] = (int) strlen(x_str[i]);           \
-            }                                                  \
-        }                                                      \
-        for (R_xlen_t i = 0; i < xxxfix_length; i++) {         \
-            SEXP x0 = STRING_ELT(x, i);                        \
-            if (x0 == NA_STRING)                               \
-                xxxfix_nchar[i] = -1;                          \
-            else {                                             \
-                xxxfix_str[i] = translateCharUTF8(x0);         \
-                xxxfix_nchar[i] = (int) strlen(xxxfix_str[i]); \
-            }                                                  \
-        }                                                      \
-        R_xlen_t x_indx      = 0,                              \
-                 xxxfix_indx = 0;                              \
-        if ((startsWith)) {                                    \
-            for (R_xlen_t i = 0; i < len; i++) {               \
-                if (x_nchar[x_indx] < 0 || xxxfix_nchar[xxxfix_indx] < 0)\
-                    lvalue[i] = NA_LOGICAL;                    \
-                else if (x_nchar[x_indx] < xxxfix_nchar[xxxfix_indx])\
-                    lvalue[i] = FALSE;                         \
-                else                                           \
-                    lvalue[i] = memcmp(x_str[x_indx], xxxfix_str[xxxfix_indx], xxxfix_nchar[xxxfix_indx]) == 0;\
-                if (++x_indx      == x_length     ) x_indx      = 0;\
-                if (++xxxfix_indx == xxxfix_length) xxxfix_indx = 0;\
-            }                                                  \
-        } else {                                               \
-            for (R_xlen_t i = 0; i < len; i++) {               \
-                if (x_nchar[x_indx] < 0 || xxxfix_nchar[xxxfix_indx] < 0)\
-                    lvalue[i] = NA_LOGICAL;                    \
-                else {                                         \
-                    int shift = x_nchar[x_indx] - xxxfix_nchar[xxxfix_indx];\
-                    if (shift < 0)                             \
-                        lvalue[i] = FALSE;                     \
-                    else                                       \
-                        lvalue[i] = memcmp(x_str[x_indx] + shift, xxxfix_str[xxxfix_indx], xxxfix_nchar[xxxfix_indx]) == 0;\
-                }                                              \
-                if (++x_indx      == x_length     ) x_indx      = 0;\
-                if (++xxxfix_indx == xxxfix_length) xxxfix_indx = 0;\
-            }                                                  \
-        }                                                      \
-    }                                                          \
-                                                               \
-                                                               \
-    UNPROTECT(1);                                              \
-    return value
-
-
-SEXP do_startsWith do_formals
+SEXP do_anyNAdataframe do_formals
 {
-    do_start_no_call_op_rho("startsWith", 2);
+    do_start_no_op("anyNAdataframe", -1);
 
 
-    do_startsWith_body(TRUE);
+    SEXP x;
+    Rboolean recursive = FALSE;
+
+
+    switch (length(args)) {
+    case 2:
+        recursive = asLogical(CADR(args));
+    case 1:
+        x = CAR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNAdataframe", "1 or 2"));
+        return R_NilValue;
+    }
+
+
+    return ScalarLogical(anyNA_data_frame(x, recursive, rho));
 }
 
 
-SEXP do_endsWith do_formals
+SEXP do_anyNAdefault do_formals
 {
-    do_start_no_call_op_rho("endsWith", 2);
+    do_start_no_op("anyNAdefault", -1);
 
 
-    do_startsWith_body(FALSE);
+    SEXP x;
+    Rboolean recursive = FALSE;
+
+
+    switch (length(args)) {
+    case 2:
+        recursive = asLogical(CADR(args));
+    case 1:
+        x = CAR(args);
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNAdefault", "1 or 2"));
+        return R_NilValue;
+    }
+
+
+    return ScalarLogical(anyNA_default(x, recursive, rho));
 }
-
-
-#undef do_startsWith_body
 
 
 #endif
 
 
 #if R_version_less_than(3, 2, 0)
+
+
+SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted)
+{
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(sorted ? R_TrueValue : R_FalseValue, R_NilValue), &indx);
+    SET_TAG(expr, sortedSymbol);
+    REPROTECT(expr = CONS(all ? R_TrueValue : R_FalseValue, expr), indx);
+    SET_TAG(expr, all_namesSymbol);
+    REPROTECT(expr = CONS(env, expr), indx);
+    SET_TAG(expr, envirSymbol);
+    REPROTECT(expr = LCONS(getFromBase(lsSymbol), expr), indx);
+
+
+    SEXP value = eval(expr, R_EmptyEnv);
+    UNPROTECT(1);
+    return value;
+}
+
+
+SEXP topenv(SEXP target, SEXP envir)
+{
+    SEXP expr = LCONS(topenvSymbol, CONS(envir, CONS(target, R_NilValue)));
+    PROTECT(expr);
+    SEXP value = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return value;
+}
 
 
 SEXP do_direxists do_formals
@@ -456,133 +497,314 @@ SEXP do_isRegisteredNamespace do_formals
 #endif
 
 
-#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3, 3, 0)
 
 
-Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
+SEXP do_strrep do_formals
 {
-    SEXPTYPE type = TYPEOF(x);
-    Rboolean isList = (type == VECSXP || type == LISTSXP);
+    do_start_no_call_op_rho("strrep", 2);
 
 
-    if (OBJECT(x) || (isList && !recursive)) {
-        SEXP expr;
-        PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
-        switch (TYPEOF(x)) {
-        case BCODESXP:
-        case SYMSXP:
-        case PROMSXP:
-        case LANGSXP:
-        case DOTSXP:
-            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
-            REPROTECT(expr = CONS(expr, R_NilValue), indx);
+    SEXP x = CAR(args); args = CDR(args);
+    SEXP times = CAR(args);
+
+
+    R_xlen_t x_length     = XLENGTH(x    ),
+             times_length = XLENGTH(times);
+    if (x_length == 0 || times_length == 0)
+        return allocVector(STRSXP, 0);
+
+
+    R_xlen_t len = (x_length > times_length) ? x_length : times_length;
+
+
+    SEXP value = allocVector(STRSXP, len);
+    PROTECT(value);
+
+
+    R_xlen_t x_indx     = 0,
+             times_indx = 0;
+    for (R_xlen_t i = 0; i < len; i++) {
+        SEXP x0 = STRING_ELT(x, x_indx);
+        int times0 = INTEGER(times)[times_indx];
+        if (x0 == NA_STRING || times0 == NA_INTEGER) {
+            SET_STRING_ELT(value, i, NA_STRING);
+        } else {
+            if (times0 < 0)
+                error(_("invalid '%s' value"), "times");
+            const char *str = CHAR(x0);
+            int nchar = (int) strlen(str);
+
+
+            double nchar_out = ((double) nchar) * times0;
+            if (nchar_out > INT_MAX)
+                error("R character strings are limited to 2^31-1 bytes");
+
+
+            char _buf[nchar * times0 + 1];
+            char *buf = _buf;
+            const char *cbuf = _buf;
+            for (int j = 0; j < times0; j++) {
+                strcpy(buf, str);
+                buf += nchar;
+            }
+            buf[0] = '\0';
+            SET_STRING_ELT(value, i, mkCharCE(cbuf, getCharCE(x0)));
         }
-        REPROTECT(expr = LCONS(getFromBase(is_naSymbol), expr), indx);
-        REPROTECT(expr = CONS(expr, R_NilValue), indx);
-        REPROTECT(expr = LCONS(getFromBase(anySymbol), expr), indx);
-        SEXP res = PROTECT(eval(expr, rho));
-        Rboolean value = (asLogical(res) == TRUE);
-        UNPROTECT(2);
-        return value;
+        if (++x_indx     == x_length    ) x_indx     = 0;
+        if (++times_indx == times_length) times_indx = 0;
     }
 
 
-    R_xlen_t i, n = xlength(x);
-    switch (type) {
-    case REALSXP:
-    {
-        double *rx = REAL(x);
-        for (i = 0; i < n; i++) {
-            if (ISNAN(rx[i]))
-                return TRUE;
-        }
-        break;
+    if (x_length == len) {
+        SEXP names = getAttrib(x, R_NamesSymbol);
+        if (names != R_NilValue)
+            setAttrib(value, R_NamesSymbol, names);
     }
-    case INTSXP:
-    {
-        int *ix = INTEGER(x);
-        for (i = 0; i < n; i++) {
-            if (ix[i] == NA_INTEGER)
-                return TRUE;
-        }
-        break;
-    }
-    case LGLSXP:
-    {
-        int *lx = LOGICAL(x);
-        for (i = 0; i < n; i++) {
-            if (lx[i] == NA_LOGICAL)
-                return TRUE;
-        }
-        break;
-    }
-    case CPLXSXP:
-    {
-        Rcomplex *cx = COMPLEX(x);
-        for (i = 0; i < n; i++) {
-            if (ISNAN(cx[i].r) || ISNAN(cx[i].i))
-                return TRUE;
-        }
-        break;
-    }
-    case STRSXP:
-    {
-        for (i = 0; i < n; i++) {
-            if (STRING_ELT(x, i) == NA_STRING)
-                return TRUE;
-        }
-        break;
-    }
-    case RAWSXP:
-        return FALSE;
-    case NILSXP:
-        return FALSE;
-    case VECSXP:
-    {
-        for (i = 0; i < n; i++) {
-            if (anyNA(VECTOR_ELT(x, i), recursive, rho))
-                return TRUE;
-        }
-        break;
-    }
-    case LISTSXP:
-    {
-        for (i = 0; i < n; i++, x = CDR(x)) {
-            if (anyNA(CAR(x), recursive, rho))
-                return TRUE;
-        }
-        break;
-    }
-    default:
-        error("anyNA() applied to non-(list or vector) of type '%s'", type2char(type));
-    }
-    return FALSE;
+
+
+    UNPROTECT(1);
+    return value;
 }
 
 
-SEXP do_anyNA do_formals
+static R_INLINE
+SEXP startsWith(SEXP args, int op)
 {
-    do_start_no_op("anyNA", -1);
+    SEXP x = CAR(args); args = CDR(args);
+    SEXP xxxfix = CAR(args);
+    if (!isString(x) || !isString(xxxfix))
+        error(_("non-character object(s)"));
 
 
-    SEXP x;
-    Rboolean recursive = FALSE;
+    R_xlen_t x_length      = XLENGTH(x     ),
+             xxxfix_length = XLENGTH(xxxfix);
+    if (x_length == 0 || xxxfix_length == 0)
+        return allocVector(LGLSXP, 0);
 
 
-    switch (length(args)) {
-    case 2:
-        recursive = asLogical(CADR(args));
-    case 1:
-        x = CAR(args);
-        break;
-    default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNA", "1 or 2"));
-        return R_NilValue;
+    R_xlen_t len = (x_length > xxxfix_length) ? x_length : xxxfix_length;
+
+
+    SEXP value = allocVector(LGLSXP, len);
+    PROTECT(value);
+    int *lvalue = LOGICAL(value);
+
+
+    if (xxxfix_length == 1) {
+        SEXP xxxfix0 = STRING_ELT(xxxfix, 0);
+        if (xxxfix0 == NA_STRING) {
+            for (R_xlen_t i = 0; i < len; i++)
+                lvalue[i] = NA_LOGICAL;
+        } else {
+            const char *xxxfix0_str = translateCharUTF8(xxxfix0);
+            int xxxfix0_nchar = (int) strlen(xxxfix0_str);
+            for (R_xlen_t i = 0; i < len; i++) {
+                SEXP x0 = STRING_ELT(x, i);
+                if (x0 == NA_STRING) {
+                    lvalue[i] = NA_LOGICAL;
+                } else {
+                    const char *x0_str = translateCharUTF8(x0);
+                    if (op) {
+                        lvalue[i] = strncmp(x0_str, xxxfix0_str, xxxfix0_nchar) == 0;
+                    } else {
+                        int shift = ((int) strlen(x0_str)) - xxxfix0_nchar;
+                        if (shift < 0)
+                            lvalue[i] = FALSE;
+                        else
+                            lvalue[i] = memcmp(x0_str + shift, xxxfix0_str, xxxfix0_nchar) == 0;
+                    }
+                }
+            }
+        }
+    } else {
+        const char **x_str      = (const char **) R_alloc(x_length     , sizeof(char *));
+        const char **xxxfix_str = (const char **) R_alloc(xxxfix_length, sizeof(char *));
+        int *x_nchar      = (int *) R_alloc(x_length     , sizeof(int));
+        int *xxxfix_nchar = (int *) R_alloc(xxxfix_length, sizeof(int));
+        for (R_xlen_t i = 0; i < x_length; i++) {
+            SEXP x0 = STRING_ELT(x, i);
+            if (x0 == NA_STRING)
+                x_nchar[i] = -1;
+            else {
+                x_str[i] = translateCharUTF8(x0);
+                x_nchar[i] = (int) strlen(x_str[i]);
+            }
+        }
+        for (R_xlen_t i = 0; i < xxxfix_length; i++) {
+            SEXP x0 = STRING_ELT(x, i);
+            if (x0 == NA_STRING)
+                xxxfix_nchar[i] = -1;
+            else {
+                xxxfix_str[i] = translateCharUTF8(x0);
+                xxxfix_nchar[i] = (int) strlen(xxxfix_str[i]);
+            }
+        }
+        R_xlen_t x_indx      = 0,
+                 xxxfix_indx = 0;
+        if (op) {
+            for (R_xlen_t i = 0; i < len; i++) {
+                if (x_nchar[x_indx] < 0 || xxxfix_nchar[xxxfix_indx] < 0)
+                    lvalue[i] = NA_LOGICAL;
+                else if (x_nchar[x_indx] < xxxfix_nchar[xxxfix_indx])
+                    lvalue[i] = FALSE;
+                else
+                    lvalue[i] = memcmp(x_str[x_indx], xxxfix_str[xxxfix_indx], xxxfix_nchar[xxxfix_indx]) == 0;
+                if (++x_indx      == x_length     ) x_indx      = 0;
+                if (++xxxfix_indx == xxxfix_length) xxxfix_indx = 0;
+            }
+        } else {
+            for (R_xlen_t i = 0; i < len; i++) {
+                if (x_nchar[x_indx] < 0 || xxxfix_nchar[xxxfix_indx] < 0)
+                    lvalue[i] = NA_LOGICAL;
+                else {
+                    int shift = x_nchar[x_indx] - xxxfix_nchar[xxxfix_indx];
+                    if (shift < 0)
+                        lvalue[i] = FALSE;
+                    else
+                        lvalue[i] = memcmp(x_str[x_indx] + shift, xxxfix_str[xxxfix_indx], xxxfix_nchar[xxxfix_indx]) == 0;
+                }
+                if (++x_indx      == x_length     ) x_indx      = 0;
+                if (++xxxfix_indx == xxxfix_length) xxxfix_indx = 0;
+            }
+        }
     }
 
 
-    return ScalarLogical(anyNA(x, recursive, rho));
+    UNPROTECT(1);
+    return value;
+}
+
+
+SEXP do_startsWith do_formals
+{
+    do_start_no_call_op_rho("startsWith", 2);
+    return startsWith(args, TRUE);
+}
+
+
+SEXP do_endsWith do_formals
+{
+    do_start_no_call_op_rho("endsWith", 2);
+    return startsWith(args, FALSE);
+}
+
+
+#endif
+
+
+#if R_version_less_than(3, 5, 0)
+
+
+SEXP do_dotslength do_formals
+{
+    do_start_no_call_op("dotslength", 0);
+
+
+    SEXP env = eval(expr_parent_frame, rho);
+    SEXP vl = findVar(R_DotsSymbol, env);
+    if (vl == R_UnboundValue)
+        error(_("incorrect context: the current call has no '...' to look in"));
+    return ScalarInteger((TYPEOF(vl) == DOTSXP ? length(vl) : 0));
+}
+
+
+#endif
+
+
+#if R_version_less_than(3, 6, 0)
+
+
+SEXP R_shallow_duplicate_attr(SEXP x) { return shallow_duplicate(x); }
+
+
+SEXP installTrChar(SEXP x)
+{
+    return install(translateChar(x));
+}
+
+
+#endif
+
+
+#if R_version_less_than(4, 0, 0)
+
+
+void R_removeVarFromFrame(SEXP name, SEXP env)
+{
+    if (TYPEOF(env) == NILSXP)
+        error(_("use of NULL environment is defunct"));
+
+    if (!isEnvironment(env))
+        error(_("argument to '%s' is not an environment"), "R_removeVarFromFrame");
+
+    if (TYPEOF(name) != SYMSXP)
+        error(_("not a symbol"));
+
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
+    SET_TAG(expr, inheritsSymbol);
+    REPROTECT(expr = CONS(env, expr), indx);
+    SET_TAG(expr, envirSymbol);
+    REPROTECT(expr = LCONS(removeSymbol, CONS(name, expr)), indx);
+    eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+}
+
+
+#endif
+
+
+#if R_version_less_than(4, 1, 0)
+
+
+SEXP R_NewEnv(SEXP enclos, int hash, int size)
+{
+    SEXP expr = LCONS(new_envSymbol,
+        CONS(/* hash */ ScalarLogical(hash),
+            CONS(/* parent */ enclos,
+                CONS(/* size */ ScalarInteger(size), R_NilValue))));
+    PROTECT(expr);
+    SEXP value = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return value;
+}
+
+
+int IS_ASCII(SEXP x)
+{
+    for (const char *s = CHAR(x); *s; s++) {
+        if (*s > 0x7f) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+
+#endif
+
+
+#if R_version_less_than(4, 2, 0)
+
+
+Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
+{
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
+    SET_TAG(expr, inheritsSymbol);
+    REPROTECT(expr = CONS(rho, expr), indx);
+    SET_TAG(expr, envirSymbol);
+    REPROTECT(expr = CONS(ScalarString(PRINTNAME(symbol)), expr), indx);
+    REPROTECT(expr = LCONS(getFromBase(existsSymbol), expr), indx);
+    SEXP value = PROTECT(eval(expr, R_EmptyEnv));
+    if (TYPEOF(value) != LGLSXP || XLENGTH(value) != 1)
+        error(_("invalid '%s' value"), "exists()");
+    Rboolean lvalue = LOGICAL(value)[0];
+    UNPROTECT(2);
+    return lvalue;
 }
 
 

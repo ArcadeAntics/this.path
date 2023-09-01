@@ -3,10 +3,22 @@
 
 
 #if defined(R_THIS_PATH_DEFINE_SYMBOLS)
+#undef      R_THIS_PATH_DEFINE_SYMBOLS
+#ifndef R_THIS_PATH_ALREADY_DEFINED_SYMBOLS
+#define R_THIS_PATH_ALREADY_DEFINED_SYMBOLS
+#else
+#error "symbols must not be defined multiple times"
+#endif
 #define extern0
 #define SEXP0
 #define INI_as(v) = v
 #elif defined(R_THIS_PATH_INITIALIZE_SYMBOLS)
+#undef        R_THIS_PATH_INITIALIZE_SYMBOLS
+#ifndef R_THIS_PATH_ALREADY_INITIALIZED_SYMBOLS
+#define R_THIS_PATH_ALREADY_INITIALIZED_SYMBOLS
+#else
+#error "symbols must not be initialized multiple times"
+#endif
 #define extern0
 #define SEXP0 SEXP
 #define INI_as(v) = NULL
@@ -18,13 +30,32 @@
 
 
 extern0 SEXP0
-#if R_version_less_than(3, 4, 0)
-    R_AsCharacterSymbol                    INI_as(install("as.character")),
+#if R_version_less_than(3, 0, 0)
+    _setprseen2Symbol                      INI_as(install(".setprseen2")),
+#else
+    _External2Symbol                       INI_as(install(".External2")),
+    _C_setprseen2Symbol                    INI_as(install(".C_setprseen2")),
+#endif
+#if R_version_less_than(3, 1, 0)
+    anyNA_dispatchSymbol                   INI_as(install("anyNA_dispatch")),
 #endif
 #if R_version_less_than(3, 2, 0)
     R_dot_packageName                      INI_as(install(".packageName")),
     R_DoubleColonSymbol                    INI_as(install("::")),
     R_TripleColonSymbol                    INI_as(install(":::")),
+    sortedSymbol                           INI_as(install("sorted")),
+    all_namesSymbol                        INI_as(install("all.names")),
+    lsSymbol                               INI_as(install("ls")),
+    topenvSymbol                           INI_as(install("topenv")),
+#endif
+#if R_version_less_than(3, 4, 0)
+    R_AsCharacterSymbol                    INI_as(install("as.character")),
+#endif
+#if R_version_less_than(4, 1, 0)
+    new_envSymbol                          INI_as(install("new.env")),
+#endif
+#if R_version_less_than(4, 2, 0)
+    existsSymbol                           INI_as(install("exists")),
 #endif
     documentcontextSymbol                  INI_as(install(".this.path::document.context")),
     errcndSymbol                           INI_as(install("errcnd")),
@@ -64,9 +95,6 @@ extern0 SEXP0
     loadcmpSymbol                          INI_as(install("loadcmp")),
     methodsSymbol                          INI_as(install("methods")),
     showSymbol                             INI_as(install("show")),
-#if R_version_less_than(4, 1, 0)
-    new_envSymbol                          INI_as(install("new.env")),
-#endif
     sys_callSymbol                         INI_as(install("sys.call")),
     sys_frameSymbol                        INI_as(install("sys.frame")),
     sys_functionSymbol                     INI_as(install("sys.function")),
@@ -91,12 +119,6 @@ extern0 SEXP0
     na_encodeSymbol                        INI_as(install("na.encode")),
     exprSymbol                             INI_as(install("expr")),
     on_exitSymbol                          INI_as(install("on.exit")),
-#if R_version_at_least(3, 0, 0)
-    _External2Symbol                       INI_as(install(".External2")),
-    _C_setprseen2Symbol                    INI_as(install(".C_setprseen2")),
-#else
-    _setprseen2Symbol                      INI_as(install(".setprseen2")),
-#endif
     parent_frameSymbol                     INI_as(install("parent.frame")),
     invisibleSymbol                        INI_as(install("invisible")),
     as_environmentSymbol                   INI_as(install("as.environment")),
@@ -126,6 +148,7 @@ extern0 SEXP0
     _getJupyterNotebookContentsSymbol      INI_as(install(".getJupyterNotebookContents")),
     _projSymbol                            INI_as(install(".proj")),
     xSymbol                                INI_as(install("x")),
+    objectSymbol                           INI_as(install("object")),
     moduleSymbol                           INI_as(install(".__module__.")),
     ModuleSymbol                           INI_as(install(".__MODULE__.")),
     specSymbol                             INI_as(install("spec")),

@@ -274,91 +274,24 @@ SEXP do_PRINFO do_formals
 
 
 
-Rboolean validJupyterRNotebook(SEXP path)
+SEXP makePROMISE(SEXP expr, SEXP env)
 {
-    SEXP expr = LCONS(_validJupyterRNotebookSymbol, CONS(path, R_NilValue));
-    PROTECT(expr);
-    SEXP value = eval(expr, mynamespace);
-    if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL(value)[0] == NA_LOGICAL)
-        errorcall(expr, "invalid return value");
-    UNPROTECT(1);
-    return LOGICAL(value)[0];
+    ENSURE_NAMEDMAX(expr);
+    SEXP s = allocSExp(PROMSXP);
+    SET_PRCODE(s, expr);
+    SET_PRENV(s, env);
+    SET_PRVALUE(s, R_UnboundValue);
+    SET_PRSEEN(s, 0);
+    SET_ATTRIB(s, R_NilValue);
+    return s;
 }
 
 
-#include "drivewidth.h"
-
-
-SEXP do_setsyspathjupyter do_formals
+SEXP makeEVPROMISE(SEXP expr, SEXP value)
 {
-    do_start_no_op_rho("setsyspathjupyter", -1);
-
-
-    SEXP path;
-    Rboolean skipCheck = FALSE;
-    switch (length(args)) {
-    case 1:
-        path = CAR(args);
-        break;
-    case 2:
-        path = CAR(args);
-        skipCheck = asLogical(CADR(args));
-        if (skipCheck == NA_LOGICAL)
-            errorcall(call, _("invalid '%s' argument"), "skipCheck");
-        break;
-    default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_setsyspathjupyter", "1 or 2"));
-        return R_NilValue;
-    }
-
-
-    if (TYPEOF(path) != STRSXP || LENGTH(path) != 1L)
-        errorcall(call, _("'%s' must be a character string"), "path");
-    if (STRING_ELT(path, 0) == NA_STRING) {}
-#ifdef _WIN32
-    else if (is_abs_path_windows(CHAR(STRING_ELT(path, 0)))) {}
-#else
-    else if (is_abs_path_unix(CHAR(STRING_ELT(path, 0)))) {}
-#endif
-    else errorcall(call, _("invalid '%s' argument"), "path");
-
-
-    if (skipCheck || STRING_ELT(path, 0) == NA_STRING || validJupyterRNotebook(path)) {}
-    else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
-
-
-    SEXP sym, env = getFromMyNS(_sys_path_jupyterSymbol);
-    if (TYPEOF(env) != CLOSXP)
-        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_sys_path_jupyterSymbol)));
-    env = CLOENV(env);
-
-
-    /* attempt to get the promise */
-    sym = fileSymbol;
-    SEXP e = findVarInFrame(env, sym);
-    if (e == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
-    if (TYPEOF(e) != PROMSXP)
-        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
-
-
-    /* attempt to unlock the original file's binding */
-    sym = ofileSymbol;
-    R_unLockBinding(sym, env);
-
-
-    /* restore the promise to its original state */
-    SET_PRENV(e, env);
-    SET_PRVALUE(e, R_UnboundValue);
-
-
-    /* define the variable and re-lock the binding */
-    INCREMENT_NAMED_defineVar(sym, path, env);
-    R_LockBinding(sym, env);
-
-
-    set_R_Visible(FALSE);
-    return path;
+    SEXP prom = makePROMISE(expr, R_NilValue);
+    SET_PRVALUE(prom, value);
+    return prom;
 }
 
 
@@ -382,45 +315,15 @@ SEXP do_mkPROMISE do_formals
 SEXP do_mkEVPROMISE do_formals
 {
     do_start_no_call_op_rho("mkEVPROMISE", 2);
-
-
     return makeEVPROMISE(CAR(args), CADR(args));
 }
 
 
+
+
+
 #define FRAME_LOCK_MASK (1<<14)
 #define UNLOCK_FRAME(e) SET_ENVFLAGS(e, ENVFLAGS(e) & (~ FRAME_LOCK_MASK))
-
-
-#if R_version_less_than(3, 2, 0)
-SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted)
-{
-    static SEXP sortedSymbol    = NULL,
-                all_namesSymbol = NULL,
-                lsSymbol        = NULL;
-    if (sortedSymbol == NULL) {
-        sortedSymbol    = install("sorted");
-        all_namesSymbol = install("all.names");
-        lsSymbol        = install("ls");
-    }
-
-
-    SEXP expr;
-    PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
-    SET_TAG(expr, sortedSymbol);
-    REPROTECT(expr = CONS(R_TrueValue, expr), indx);
-    SET_TAG(expr, all_namesSymbol);
-    REPROTECT(expr = CONS(env, expr), indx);
-    SET_TAG(expr, envirSymbol);
-    REPROTECT(expr = LCONS(getFromBase(lsSymbol), expr), indx);
-
-
-    SEXP value = eval(expr, R_EmptyEnv);
-    UNPROTECT(1);
-    return value;
-}
-#endif
 
 
 void unLockEnvironment(SEXP env, Rboolean bindings)

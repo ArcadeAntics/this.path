@@ -7,6 +7,70 @@ useDynLib(this.path, .registration = TRUE, .fixes = ".C_")
 export(Sys.putenv)
 
 
+## backports.R  ----
+
+
+if (getRversion() < "3.0.0") {
+    export(.mapply)
+    export(parse)
+}
+
+
+if (getRversion() < "3.1.0") {
+    export(anyNA)
+    S3method(anyNA, data.frame)
+    S3method(anyNA, numeric_version)
+    S3method(anyNA, POSIXlt)
+    S3method(anyNA, default)
+}
+
+
+if (getRversion() < "3.2.0") {
+    export(isNamespaceLoaded)
+    export(dir.exists)
+    export(lengths)
+    export(file.mtime)
+    export(file.info)
+}
+
+
+if (getRversion() < "3.3.0") {
+    export(strrep)
+    export(startsWith)
+    export(endsWith)
+}
+
+
+if (getRversion() < "3.5.0") {
+    export(...length)
+    export(isTRUE)
+    export(isFALSE)
+}
+
+
+if (getRversion() < "3.6.0") {
+    export(errorCondition)
+    export(str2expression)
+    export(str2lang)
+}
+
+
+if (getRversion() < "4.0.0") {
+    export(deparse1)
+}
+
+
+if (getRversion() < "4.1.0") {
+    export(bquote)
+}
+
+
+if (getRversion() < "4.2.0") {
+    export(gettext)
+    export(gettextf)
+}
+
+
 ## basename2.R  ----
 
 
@@ -119,7 +183,7 @@ export(shFILE               , normalized.shFILE    ,
        local.path           )
 
 
-## trycatch2.R  ----
+## trycatch.R   ----
 
 
 export(tryCatch2, tryCatch3, last.condition)

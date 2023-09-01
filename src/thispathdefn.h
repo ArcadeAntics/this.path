@@ -4,47 +4,35 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include "rversiondefines.h"
-#include "translations.h"
+#include "backports.h"
 #include "defines.h"
-#include "thispathbackports.h"
+#include "ns-hooks.h"
+#include "print.h"
+#include "promises.h"
+#include "rversiondefines.h"
+#include "symbols.h"
+#include "translations.h"
 
 
-#if R_version_less_than(3, 4, 0)
-#define R_CurrentExpression R_NilValue
-#endif
+/* R */
 
 
-#if R_version_less_than(3, 0, 0)
-#define XLENGTH LENGTH
-#define xlength length
-#define R_xlen_t R_len_t
-#endif
+extern Rboolean pmatch(SEXP, SEXP, Rboolean);
 
 
-#if R_version_less_than(3, 2, 0)
-#define R_THIS_PATH_NEED_BLANKSCALARSTRING
-extern SEXP R_BlankScalarString;
-#endif
+extern void SET_PRCODE (SEXP x, SEXP v);
+extern void SET_PRENV  (SEXP x, SEXP v);
+extern void SET_PRSEEN (SEXP x, int  v);
+extern void SET_PRVALUE(SEXP x, SEXP v);
 
 
-extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
-#if R_version_less_than(4, 2, 0)
-#define existsInFrame(rho, symbol) (findVarInFrame((rho), (symbol)) != R_UnboundValue)
-#else
-#define existsInFrame(rho, symbol) R_existsVarInFrame((rho), (symbol))
-#endif
+extern SEXP topenv(SEXP target, SEXP envir);
 
 
-#if R_version_at_least(3, 1, 0)
-LibExtern SEXP R_TrueValue;
-LibExtern SEXP R_FalseValue;
-LibExtern SEXP R_LogicalNAValue;
-#else
-#define R_TrueValue ScalarLogical(TRUE)
-#define R_FalseValue ScalarLogical(FALSE)
-#define R_LogicalNAValue ScalarLogical(NA_LOGICAL)
-#endif
+extern void R_LockBinding(SEXP sym, SEXP env);
+
+
+/* handle R_THIS_PATH_DEFINES */
 
 
 #if R_version_at_least(3, 3, 0)
@@ -64,72 +52,6 @@ LibExtern SEXP R_LogicalNAValue;
 #endif
 
 
-#include "symbols.h"
-
-
-extern SEXP mynamespace       ,
-            DocumentContextCls,
-            last_condition    ;
-
-
-extern SEXP DocumentContext(void);
-extern SEXP ofile_is_NULL(SEXP documentcontext);
-
-
-extern SEXP expr_commandArgs                              ,
-            expr_invisible                                ,
-            expr_parent_frame                             ,
-            expr_sys_call                                 ,
-            expr_sys_nframe                               ,
-            expr_sys_parents                              ,
-            expr_missing_file                             ,
-            expr_missing_input                            ,
-            expr_missing_ofile                            ,
-            expr_info_dollar_source_path                  ,
-            expr_knitr_output_dir                         ,
-            expr_testthat_source_file_uses_brio_read_lines,
-            expr__sys_path_toplevel                       ,
-            expr_getOption_topLevelEnvironment            ,
-            expr__toplevel_context_number                 ,
-            expr__isMethodsDispatchOn                     ;
-
-
-extern SEXP makePROMISE(SEXP expr, SEXP env);
-extern SEXP makeEVPROMISE(SEXP expr, SEXP value);
-
-
-#if R_version_less_than(3, 1, 0)
-
-
-#if R_version_less_than(3, 0, 0)
-#define NAMEDMAX 2
-#define NO_REFERENCES(x) (NAMED(x) == 0)
-#define MAYBE_REFERENCED(x) (! NO_REFERENCES(x))
-#define MARK_NOT_MUTABLE(x) SET_NAMED(x, NAMEDMAX)
-#endif
-
-
-#define INCREMENT_NAMED(x) do {                                \
-    SEXP _x_ = (x);                                            \
-    if (NAMED(_x_) != NAMEDMAX)                                \
-        SET_NAMED(_x_, NAMED(_x_) + 1);                        \
-} while (0)
-
-
-#endif /* R_version_less_than(3, 1, 0) */
-
-
-#if R_version_less_than(3, 5, 0)
-#define ENSURE_NAMEDMAX(_x_) SET_NAMED((_x_), NAMEDMAX)
-#else
-extern void (ENSURE_NAMEDMAX)(SEXP x);
-#endif
-
-
-void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
-void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
-
-
 #if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
 /* R_Visible is not part of the R API. DO NOT USE OR MODIFY IT unless you are
    absolutely certain it is what you wish to do. it is subject to change
@@ -142,58 +64,17 @@ extern Rboolean R_Visible;
 #endif
 
 
-extern SEXP R_shallow_duplicate_attr(SEXP x);
-extern SEXP installTrChar(SEXP x);
 
 
-#define streql(str1, str2) (strcmp((str1), (str2)) == 0)
 
-
-#define findFunction(symbol, rho) findFunction3(symbol, rho, R_CurrentExpression)
-extern SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call);
-extern Rboolean pmatch(SEXP, SEXP, Rboolean);
-
-
-extern void SET_PRCODE (SEXP x, SEXP v);
-extern void SET_PRENV  (SEXP x, SEXP v);
-extern void SET_PRSEEN (SEXP x, int  v);
-extern void SET_PRVALUE(SEXP x, SEXP v);
-
-
-// extern int IS_BYTES(SEXP x);
-#define IS_BYTES(x) (getCharCE((x)) == CE_BYTES)
-// extern int IS_LATIN1(SEXP x);
-extern int IS_ASCII(SEXP x);
-
-
-extern void R_removeVarFromFrame(SEXP name, SEXP env);
+extern Rboolean needQuote(SEXP x);
 
 
 extern void UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t);
 extern void UNIMPLEMENTED_TYPE(const char *s, SEXP x);
 
 
-#if R_version_less_than(3, 1, 0)
-extern SEXP lazy_duplicate(SEXP s);
-extern SEXP shallow_duplicate(SEXP s);
-#endif
-
-
-#if R_version_at_least(4, 1, 0)
-extern int IS_UTF8(SEXP x);
-#else
-#define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
-#endif
-
-
-extern const char *EncodeChar(SEXP x);
-
-
-extern SEXP R_NewEnv(SEXP enclos, int hash, int size);
-extern SEXP topenv(SEXP target, SEXP envir);
-
-
-extern void R_LockBinding(SEXP sym, SEXP env);
+extern const char *EncodeChar(SEXP);
 
 
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
@@ -201,20 +82,19 @@ extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 #define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))
 
 
+void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
+void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
+
+
+extern SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call);
+extern SEXP findFunction(SEXP symbol, SEXP rho);
+
+
 extern SEXP as_environment_char(const char *what);
-
-
-#if defined(R_CONNECTIONS_VERSION_1)
-extern SEXP summaryconnection(Rconnection Rcon);
-#else
-extern SEXP summaryconnection(SEXP sConn);
-#endif
 
 
 extern SEXP errorCondition (const char *msg, SEXP call, const char **cls, int numFields);
 extern SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int numFields);
-
-
 extern SEXP simpleError(const char *msg, SEXP call);
 
 
@@ -229,8 +109,10 @@ extern SEXP simpleError(const char *msg, SEXP call);
 
 
 #if defined(R_CONNECTIONS_VERSION_1)
+extern SEXP summaryconnection(Rconnection Rcon);
 extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
 #else
+extern SEXP summaryconnection(SEXP sConn);
 extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
 #endif
 extern SEXP thisPathUnrecognizedMannerError         (SEXP call);
@@ -243,24 +125,8 @@ extern SEXP thisPathInAQUAError                     (SEXP call);
 extern void stop(SEXP cond);
 
 
-extern void my_PrintValueEnv(SEXP s, SEXP env);
-
-
-#ifdef _WIN32
-#define isclipboard(url) (                                             \
-                              strcmp ((url), "clipboard"     ) == 0 || \
-                              strncmp((url), "clipboard-", 10) == 0    \
-                         )
-#define mustnotbeclipboardmessage "must not be \"clipboard\" nor start with \"clipboard-\""
-#else
-#define isclipboard(url) (                                           \
-                              strcmp((url), "clipboard"    ) == 0 || \
-                              strcmp((url), "X11_primary"  ) == 0 || \
-                              strcmp((url), "X11_secondary") == 0 || \
-                              strcmp((url), "X11_clipboard") == 0    \
-                         )
-#define mustnotbeclipboardmessage "must not be \"clipboard\", \"X11_primary\", \"X11_secondary\", nor \"X11_clipboard\""
-#endif
+extern SEXP DocumentContext(void);
+extern SEXP ofile_is_NULL(SEXP documentcontext);
 
 
 extern void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory);
@@ -272,27 +138,43 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
 extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
 
 
-#define isurl(url) (                                           \
-                        strncmp((url), "http://" , 7) == 0 ||  \
-                        strncmp((url), "https://", 8) == 0 ||  \
-                        strncmp((url), "ftp://"  , 6) == 0 ||  \
-                        strncmp((url), "ftps://" , 7) == 0     \
-                   )
-#define isfileuri(url) (strncmp((url), "file://", 7) == 0)
+extern SEXP sys_call(SEXP which, SEXP rho);
+#define getCurrentCall(rho) eval(expr_sys_call, (rho))
+extern int sys_parent(int n, SEXP rho);
 
 
-#if defined(R_CONNECTIONS_VERSION_1)
-#define get_connection_description(Rcon) mkCharCE((Rcon)->description, ((Rcon)->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE)
-#define get_connection_class(Rcon) ((Rcon)->class)
-#else
-#define get_connection_description(summary) STRING_ELT(VECTOR_ELT((summary), 0), 0)
-#define get_connection_class(summary) CHAR(STRING_ELT(VECTOR_ELT((summary), 1), 0))
-#endif
+extern int gui_rstudio;
+extern Rboolean has_tools_rstudio;
+extern Rboolean init_tools_rstudio(Rboolean skipCheck);
+#define in_rstudio                                             \
+    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getFromMyNS(_gui_rstudioSymbol))))
+#define get_debugSource                                        \
+    ((has_tools_rstudio) ? getFromMyNS(_debugSourceSymbol) : R_UnboundValue)
+
+
+extern int maybe_unembedded_shell;
+#define is_maybe_unembedded_shell                              \
+    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
+
+
+#define streql(str1, str2) (strcmp((str1), (str2)) == 0)
+
+
+// extern int IS_BYTES(SEXP x);
+#define IS_BYTES(x) (getCharCE((x)) == CE_BYTES)
+// extern int IS_LATIN1(SEXP x);
+
+
+extern int is_clipboard(const char *url);
+extern const char *must_not_be_clipboard_message;
+extern int is_url(const char *url);
+extern int is_file_uri(const char *url);
 
 
 #if defined(R_CONNECTIONS_VERSION_1)
 typedef struct gzconn {
     Rconnection con;
+    /* there are other components to an Rgzconn, but only 'con' is needed */
 } *Rgzconn;
 #define get_description_and_class                              \
             /* as I said before, R_GetConnection() is not a part of the R API.\
@@ -303,16 +185,18 @@ typedef struct gzconn {
                 Rcon = (((Rgzconn)(Rcon->private))->con);      \
                 if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\
             }                                                  \
-            SEXP description = get_connection_description(Rcon);\
-            const char *klass = get_connection_class(Rcon)
-#define Rcon_or_summary(Rcon, summary) Rcon
+            SEXP description = mkCharCE(Rcon->description, (Rcon->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE);\
+            PROTECT(description); nprotect++;                  \
+            const char *klass = Rcon->class
+#define Rcon_or_summary Rcon
 #else
 #define get_description_and_class                              \
             SEXP summary = summaryconnection(ofile);           \
-            SEXP description = get_connection_description(summary);\
-            const char *klass = get_connection_class(summary); \
-            if (streql(klass, "gzcon")) error("'sys.path' not implemented for a gzcon()")
-#define Rcon_or_summary(Rcon, summary) summary
+            PROTECT(summary); nprotect++;                      \
+            SEXP description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
+            const char *klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
+            if (streql(klass, "gzcon")) error("'this.path' not implemented for a gzcon()")
+#define Rcon_or_summary summary
 #endif
 
 
@@ -331,7 +215,8 @@ typedef struct gzconn {
     ignore_blank_string, ignore_clipboard, ignore_stdin,       \
     ignore_url, ignore_file_uri, source)                       \
 do {                                                           \
-    PROTECT(documentcontext = DocumentContext());              \
+    int nprotect = 0;                                          \
+    PROTECT(documentcontext = DocumentContext()); nprotect++;  \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
@@ -356,6 +241,7 @@ do {                                                           \
             else {                                             \
                 url = translateCharUTF8(file);                 \
                 file = mkCharCE(url, CE_UTF8);                 \
+                PROTECT(file); nprotect++;                     \
             }                                                  \
         }                                                      \
         else url = CHAR(file);                                 \
@@ -368,14 +254,14 @@ do {                                                           \
             else                                               \
                 errorcall(call, "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(sym)));\
         }                                                      \
-        else if (!ignore_clipboard && isclipboard(url)) {      \
+        else if (!ignore_clipboard && is_clipboard(url)) {     \
             if (allow_clipboard) {                             \
                 assign_null(documentcontext);                  \
                 if (assign_returnvalue)                        \
                     returnvalue = PROTECT(ofile);              \
             }                                                  \
             else                                               \
-                errorcall(call, "invalid '%s', %s", EncodeChar(PRINTNAME(sym)), mustnotbeclipboardmessage);\
+                errorcall(call, "invalid '%s', %s", EncodeChar(PRINTNAME(sym)), must_not_be_clipboard_message);\
         }                                                      \
         else if (!ignore_stdin && streql(url, "stdin")) {      \
             if (allow_stdin) {                                 \
@@ -386,7 +272,7 @@ do {                                                           \
             else                                               \
                 errorcall(call, "invalid '%s', must not be \"stdin\"", EncodeChar(PRINTNAME(sym)));\
         }                                                      \
-        else if (!ignore_url && isurl(url)) {                  \
+        else if (!ignore_url && is_url(url)) {                 \
             if (allow_url) {                                   \
                 assign_url(ofile, file, documentcontext);      \
                 if (assign_returnvalue)                        \
@@ -397,7 +283,7 @@ do {                                                           \
             else                                               \
                 errorcall(call, "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(sym)));\
         }                                                      \
-        else if (!ignore_file_uri && isfileuri(url)) {         \
+        else if (!ignore_file_uri && is_file_uri(url)) {       \
             if (allow_file_uri) {                              \
                 assign_file_uri(ofile, file, documentcontext, check_not_directory);\
                 if (assign_returnvalue) {                      \
@@ -487,7 +373,7 @@ do {                                                           \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a unz connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
-            else if (isclipboard(klass)) {                     \
+            else if (is_clipboard(klass)) {                    \
                 if (allow_clipboard)                           \
                     assign_null(documentcontext);              \
                 else                                           \
@@ -540,8 +426,8 @@ do {                                                           \
                      know if this connection has an            \
                      associated file                           \
                      */                                        \
-                    INCREMENT_NAMED_defineVar(errcndSymbol , thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary(Rcon, summary)), documentcontext);\
-                    INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)                                                           , documentcontext);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol , thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary), documentcontext);\
+                    INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)                                            , documentcontext);\
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\
@@ -557,13 +443,9 @@ do {                                                           \
     } else {                                                   \
         setAttrib(frame, documentcontextSymbol, documentcontext);\
     }                                                          \
-    UNPROTECT(1);                                              \
+    UNPROTECT(nprotect);                                       \
     set_R_Visible(TRUE);                                       \
 } while (0)
-
-
-extern SEXP sys_call(SEXP which, SEXP rho);
-#define getCurrentCall(rho) eval(expr_sys_call, (rho))
 
 
 /* doesn't work in general, for example sys.function() duplicates its return value */
@@ -593,34 +475,10 @@ extern SEXP sys_call(SEXP which, SEXP rho);
 #define identical(x, y) R_compute_identical((x), (y), 127)
 
 
-extern int gui_rstudio;
-extern Rboolean has_tools_rstudio;
-extern Rboolean init_tools_rstudio(Rboolean skipCheck);
-
-
-#define in_rstudio                                             \
-    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getFromMyNS(_gui_rstudioSymbol))))
-
-
-extern int maybe_unembedded_shell;
-
-
-#define is_maybe_unembedded_shell                              \
-    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
-
-
-#define get_debugSource                                        \
-    ((has_tools_rstudio) ? getFromMyNS(_debugSourceSymbol) : R_UnboundValue)
-
-
 #define wrong_nargs_to_External(nargs, name, expected_nargs)   \
     (((nargs) == 1) ? "%d argument passed to .External(%s) which requires %s" :\
                       "%d arguments passed to .External(%s) which requires %s"),\
                      (nargs), (name), (expected_nargs)
-
-
-extern SEXP get_sys_parents(SEXP rho);
-extern int get_sys_parent(int n, SEXP rho);
 
 
 #endif /* #ifndef THISPATHDEFN_H */

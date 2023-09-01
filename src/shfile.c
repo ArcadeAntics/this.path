@@ -1,21 +1,6 @@
 #include "thispathdefn.h"
 
 
-
-
-
-#define print_char_array(_ac_, _av_)                           \
-    do {                                                       \
-        SEXP tmp10 = allocVector(STRSXP, (_ac_));              \
-        PROTECT(tmp10);                                        \
-        for (int indx = 0; indx < (_ac_); indx++) {            \
-            SET_STRING_ELT(tmp10, indx, mkChar((_av_)[indx])); \
-        }                                                      \
-        my_PrintValueEnv(tmp10, R_BaseEnv);                    \
-        UNPROTECT(1);                                          \
-    } while (0)
-
-
 // #define debug
 
 
@@ -280,6 +265,18 @@ static char *unescape_arg(char *p, const char *avp)
 #endif
 
 
+#define print_char_array(_ac_, _av_)                           \
+    do {                                                       \
+        SEXP tmp10 = allocVector(STRSXP, (_ac_));              \
+        PROTECT(tmp10);                                        \
+        for (int indx = 0; indx < (_ac_); indx++) {            \
+            SET_STRING_ELT(tmp10, indx, mkChar((_av_)[indx])); \
+        }                                                      \
+        my_PrintValueEnv(tmp10, R_BaseEnv);                    \
+        UNPROTECT(1);                                          \
+    } while (0)
+
+
 SEXP do_shINFO do_formals
 {
     /*
@@ -334,7 +331,7 @@ SEXP do_shINFO do_formals
 
 
 #ifdef debug
-#define debugRprint(x, env) Rprint((x), (env))
+#define debugRprint(x, env) my_PrintValueEnv((x), (env))
 #else
 #define debugRprint(x, env) do {} while (0)
 #endif
@@ -383,7 +380,7 @@ SEXP do_shINFO do_formals
 
 #ifdef debug
     Rprintf("\noriginal arguments:\n");
-    Rprint(ARGV, R_BaseEnv);
+    my_PrintValueEnv(ARGV, R_BaseEnv);
 #endif
 
 

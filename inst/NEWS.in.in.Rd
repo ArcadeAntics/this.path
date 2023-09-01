@@ -1,6 +1,18 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \section{CHANGES IN VERSION devel}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{Added \code{tryCatch3()} which accepts condition expressions
+        instead of condition handlers. Added active binding
+        \codeorsQuote{last.condition} which will be the last thrown-and-caught
+        condition in \code{tryCatch3()}.}
+
+      \item{When \code{tryCatch2()} and \code{tryCatch3()} catch a condition
+        but the respective handler / / expression is missing, the next
+        non-missing handler / / expression is used instead.}
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item{\code{set.env.path()} and \code{set.src.path()} now return their

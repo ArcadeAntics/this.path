@@ -1,33 +1,17 @@
-#include "thispathdefn.h"
 #include "drivewidth.h"
-
-
-#define errorbody                                              \
-    if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||      \
-        STRING_ELT(CAR(args), 0) == NA_STRING)                 \
-    {                                                          \
-        errorcall(call, _("invalid first argument"));          \
-    }                                                          \
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0)); args = CDR(args);\
-    SEXP call2 = CAR(args); args = CDR(args);                  \
-    ENSURE_NAMEDMAX(call2)
+#include "thispathdefn.h"
 
 
 SEXP do_thisPathUnrecognizedConnectionClassError do_formals
 {
     do_start_no_call_op_rho("thisPathUnrecognizedConnectionClassError", 2);
-
-
-    SEXP call2 = CAR(args); args = CDR(args);
-    ENSURE_NAMEDMAX(call2);
 #if defined(R_CONNECTIONS_VERSION_1)
-    return thisPathUnrecognizedConnectionClassError(call2,
-        /* as I said before, R_GetConnection() is not a part of the R API.
-           DO NOT USE IT unless you are certain of what you are doing and
-           accept the potential consequences and drawbacks */
-        R_GetConnection(CAR(args)));
+    /* as I said before, R_GetConnection() is not a part of the R API.
+       DO NOT USE IT unless you are certain of what you are doing and
+       accept the potential consequences and drawbacks */
+    return thisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), R_GetConnection(CADR(args)));
 #else
-    return thisPathUnrecognizedConnectionClassError(call2, summaryconnection(CAR(args)));
+    return thisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summaryconnection(CADR(args)));
 #endif
 }
 
@@ -35,39 +19,40 @@ SEXP do_thisPathUnrecognizedConnectionClassError do_formals
 SEXP do_thisPathUnrecognizedMannerError do_formals
 {
     do_start_no_call_op_rho("thisPathUnrecognizedMannerError", 1);
-
-
-    ENSURE_NAMEDMAX(CAR(args));
-    return thisPathUnrecognizedMannerError(CAR(args));
+    return thisPathUnrecognizedMannerError(lazy_duplicate(CAR(args)));
 }
 
 
 SEXP do_thisPathNotImplementedError do_formals
 {
     do_start_no_op_rho("thisPathNotImplementedError", 2);
-
-
-    errorbody;
-    return thisPathNotImplementedError(msg, call2);
+    if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||
+        STRING_ELT(CAR(args), 0) == NA_STRING)
+    {
+        errorcall(call, _("invalid first argument"));
+    }
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
+    return thisPathNotImplementedError(msg, lazy_duplicate(CADR(args)));
 }
 
 
 SEXP do_thisPathNotExistsError do_formals
 {
     do_start_no_op_rho("thisPathNotExistsError", 2);
-
-
-    errorbody;
-    return thisPathNotExistsError(msg, call2);
+    if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||
+        STRING_ELT(CAR(args), 0) == NA_STRING)
+    {
+        errorcall(call, _("invalid first argument"));
+    }
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
+    return thisPathNotExistsError(msg, lazy_duplicate(CADR(args)));
 }
 
 
 SEXP do_thisPathInZipFileError do_formals
 {
     do_start_no_op_rho("thisPathInZipFileError", 2);
-
-
-    SEXP call2 = CAR(args); args = CDR(args);
+    SEXP call2 = lazy_duplicate(CAR(args)); args = CDR(args);
     if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1 ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
@@ -81,13 +66,8 @@ SEXP do_thisPathInZipFileError do_formals
 SEXP do_thisPathInAQUAError do_formals
 {
     do_start_no_call_op_rho("thisPathInAQUAError", 1);
-
-
     return thisPathInAQUAError(lazy_duplicate(CAR(args)));
 }
-
-
-#undef errorbody
 
 
 SEXP do_isclipboard do_formals
@@ -102,11 +82,8 @@ SEXP do_isclipboard do_formals
     SEXP value = allocVector(LGLSXP, n);
     PROTECT(value);
     int *ivalue = INTEGER(value);
-    const char *url;
-    for (int i = 0; i < n; i++) {
-        url = CHAR(STRING_ELT(file, i));
-        ivalue[i] = isclipboard(url);
-    }
+    for (int i = 0; i < n; i++)
+        ivalue[i] = is_clipboard(CHAR(STRING_ELT(file, i)));
     UNPROTECT(1);
     return value;
 }
@@ -359,6 +336,91 @@ SEXP do_syspathjupyter do_formals
 }
 
 
+Rboolean validJupyterRNotebook(SEXP path)
+{
+    SEXP expr = LCONS(_validJupyterRNotebookSymbol, CONS(path, R_NilValue));
+    PROTECT(expr);
+    SEXP value = eval(expr, mynamespace);
+    if (TYPEOF(value) != LGLSXP || LENGTH(value) != 1L || LOGICAL(value)[0] == NA_LOGICAL)
+        errorcall(expr, "invalid return value");
+    UNPROTECT(1);
+    return LOGICAL(value)[0];
+}
+
+
+SEXP do_setsyspathjupyter do_formals
+{
+    do_start_no_op_rho("setsyspathjupyter", -1);
+
+
+    SEXP path;
+    Rboolean skipCheck = FALSE;
+    switch (length(args)) {
+    case 1:
+        path = CAR(args);
+        break;
+    case 2:
+        path = CAR(args);
+        skipCheck = asLogical(CADR(args));
+        if (skipCheck == NA_LOGICAL)
+            errorcall(call, _("invalid '%s' argument"), "skipCheck");
+        break;
+    default:
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_setsyspathjupyter", "1 or 2"));
+        return R_NilValue;
+    }
+
+
+    if (TYPEOF(path) != STRSXP || LENGTH(path) != 1L)
+        errorcall(call, _("'%s' must be a character string"), "path");
+    if (STRING_ELT(path, 0) == NA_STRING) {}
+#ifdef _WIN32
+    else if (is_abs_path_windows(CHAR(STRING_ELT(path, 0)))) {}
+#else
+    else if (is_abs_path_unix(CHAR(STRING_ELT(path, 0)))) {}
+#endif
+    else errorcall(call, _("invalid '%s' argument"), "path");
+
+
+    if (skipCheck || STRING_ELT(path, 0) == NA_STRING || validJupyterRNotebook(path)) {}
+    else errorcall(call, "invalid '%s' argument; must be a valid Jupyter R notebook", "path");
+
+
+    SEXP sym, env = getFromMyNS(_sys_path_jupyterSymbol);
+    if (TYPEOF(env) != CLOSXP)
+        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_sys_path_jupyterSymbol)));
+    env = CLOENV(env);
+
+
+    /* attempt to get the promise */
+    sym = fileSymbol;
+    SEXP e = findVarInFrame(env, sym);
+    if (e == R_UnboundValue)
+        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+    if (TYPEOF(e) != PROMSXP)
+        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+
+
+    /* attempt to unlock the original file's binding */
+    sym = ofileSymbol;
+    R_unLockBinding(sym, env);
+
+
+    /* restore the promise to its original state */
+    SET_PRENV(e, env);
+    SET_PRVALUE(e, R_UnboundValue);
+
+
+    /* define the variable and re-lock the binding */
+    INCREMENT_NAMED_defineVar(sym, path, env);
+    R_LockBinding(sym, env);
+
+
+    set_R_Visible(FALSE);
+    return path;
+}
+
+
 SEXP do_syspathrgui do_formals
 {
     do_start_no_op("syspathrgui", 7);
@@ -513,7 +575,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
     if (N == NA_INTEGER) {
         if (local)
-            N = get_sys_parent(1, rho);
+            N = sys_parent(1, rho);
         else {
             N = asInteger(eval(expr_sys_nframe, rho));
             if (N) --N;
@@ -549,10 +611,12 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         documentcontext = findVarInFrame(frame, documentcontextSymbol);
-        if (documentcontext == R_UnboundValue || TYPEOF(documentcontext) != ENVSXP)
+        if (documentcontext == R_UnboundValue ||
+            TYPEOF(documentcontext) != ENVSXP ||
+            !existsInFrame(documentcontext, setsyspathwashereSymbol))
+        {
             error("%s cannot be called within this environment", name);
-        if (!existsInFrame(documentcontext, setsyspathwashereSymbol))
-            error("%s cannot be called within this environment", name);
+        }
 
 
         UNPROTECT(1);  /* frame */
@@ -861,13 +925,13 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 const char *url = CHAR(file);
                 if (!(LENGTH(file) > 0))
                     errorcall(sys_call(which, rho), "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(fileSymbol)));
-                else if (isclipboard(url))
-                    errorcall(sys_call(which, rho), "invalid '%s', %s", EncodeChar(PRINTNAME(fileSymbol)), mustnotbeclipboardmessage);
+                else if (is_clipboard(url))
+                    errorcall(sys_call(which, rho), "invalid '%s', %s", EncodeChar(PRINTNAME(fileSymbol)), must_not_be_clipboard_message);
                 else if (streql(url, "stdin"))
                     errorcall(sys_call(which, rho), "invalid '%s', must not be \"stdin\"", EncodeChar(PRINTNAME(fileSymbol)));
-                else if (isurl(url))
+                else if (is_url(url))
                     errorcall(sys_call(which, rho), "invalid '%s', cannot be a URL", EncodeChar(PRINTNAME(fileSymbol)));
-                else if (isfileuri(url))
+                else if (is_file_uri(url))
                     errorcall(sys_call(which, rho), "invalid '%s', cannot be a file URI", EncodeChar(PRINTNAME(fileSymbol)));
                 INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
                 R_LockBinding(documentcontextSymbol, frame);
@@ -1540,24 +1604,6 @@ SEXP do_getframenumber do_formals
 }
 
 
-#if R_version_at_least(3, 2, 0)
-extern SEXP topenv(SEXP target, SEXP envir);
-#else
-SEXP topenv(SEXP target, SEXP envir)
-{
-    static SEXP topenvSymbol = NULL;
-    if (topenvSymbol == NULL) {
-        topenvSymbol = install("topenv");
-    }
-    SEXP expr = LCONS(topenvSymbol, CONS(envir, CONS(target, R_NilValue)));
-    PROTECT(expr);
-    SEXP value = eval(expr, R_BaseEnv);
-    UNPROTECT(1);
-    return value;
-}
-#endif
-
-
 SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
               Rboolean contents, SEXP target, SEXP envir,
               Rboolean *gave_contents, Rboolean unbound_ok, SEXP rho)
@@ -1659,9 +1705,9 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         const char *str = CHAR(STRING_ELT(ofile, 0));
         if (
 #ifdef _WIN32
-             is_abs_path_windows(str) || isurl(str) || isfileuri(str)
+             is_abs_path_windows(str) || is_url(str) || is_file_uri(str)
 #else
-             is_abs_path_unix(str)    || isurl(str) || isfileuri(str)
+             is_abs_path_unix(str)    || is_url(str) || is_file_uri(str)
 #endif
         )
         {
@@ -1850,24 +1896,14 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         x = PROTECT(eval(expr_sys_call, rho)); nprotect++;
         // {
         //     Rprintf("\n> sys.call()\n");
-        //     SEXP expr;
-        //     PROTECT_INDEX indx;
-        //     PROTECT_WITH_INDEX(expr = makeEVPROMISE(x, x), &indx);
-        //     REPROTECT(expr = CONS(expr, R_NilValue), indx);
-        //     REPROTECT(expr = LCONS(getFromBase(install("print")), expr), indx);
-        //     eval(expr, rho);
-        //     UNPROTECT(1);
+        //     my_PrintValueEnv(x, rho);
         // }
         // {
-        //     Rprintf("\n> sys.call()\n");
-        //     SEXP expr;
-        //     PROTECT_INDEX indx;
-        //     PROTECT_WITH_INDEX(expr = duplicate(x), &indx);
-        //     setAttrib(expr, srcrefSymbol, R_NilValue);
-        //     REPROTECT(expr = makeEVPROMISE(expr, expr), indx);
-        //     REPROTECT(expr = CONS(expr, R_NilValue), indx);
-        //     REPROTECT(expr = LCONS(getFromBase(install("print")), expr), indx);
-        //     eval(expr, rho);
+        //     SEXP y;
+        //     PROTECT(y = duplicate(x));
+        //     setAttrib(y, srcrefSymbol, R_NilValue);
+        //     Rprintf("\n> removeSource(sys.call())\n");
+        //     my_PrintValueEnv(y, rho);
         //     UNPROTECT(1);
         // }
     }

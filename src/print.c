@@ -12,9 +12,16 @@ Rboolean my_isMethodDispatchOn(void)
 
 void my_PrintObjectS4(SEXP s, SEXP env)
 {
+    int nprotect = 0;
+
+
     SEXP methods = findVarInFrame(R_NamespaceRegistry, methodsSymbol);
     if (methods == R_UnboundValue)
         error("missing methods namespace: this should not happen");
+
+
+    SEXP mask = R_NewEnv(env, FALSE, 0);
+    PROTECT(mask); nprotect++;
 
 
     SEXP show = getInFrame(showSymbol, methods, TRUE);
@@ -22,27 +29,46 @@ void my_PrintObjectS4(SEXP s, SEXP env)
         error("missing show() in methods namespace: this should not happen");
 
 
-    SEXP expr = PROTECT(lang2(show, s));
+    defineVar(showSymbol, show, mask);
+    defineVar(objectSymbol, makeEVPROMISE(s, s), mask);
+
+
+    SEXP expr = LCONS(showSymbol, CONS(objectSymbol, R_NilValue));
+    PROTECT(expr); nprotect++;
     eval(expr, env);
-    UNPROTECT(1);
+
+
+    defineVar(showSymbol, R_NilValue, mask);
+    defineVar(objectSymbol, R_NilValue, mask);
+
+
+    UNPROTECT(nprotect);
 }
 
 
 void my_PrintObjectS3(SEXP s, SEXP env)
 {
-    SEXP mask = PROTECT(R_NewEnv(env, FALSE, 0));
-    defineVar(xSymbol, s, mask);
+    int nprotect = 0;
 
 
-    SEXP print = PROTECT(findFunction(printSymbol, R_BaseNamespace));
-    SEXP expr = PROTECT(LCONS(print, CONS(xSymbol, R_NilValue)));
+    SEXP mask = R_NewEnv(env, FALSE, 0);
+    PROTECT(mask); nprotect++;
 
 
+    defineVar(printSymbol, findFunction(printSymbol, R_BaseNamespace), mask);
+    defineVar(xSymbol, makeEVPROMISE(s, s), mask);
+
+
+    SEXP expr = LCONS(printSymbol, CONS(xSymbol, R_NilValue));
+    PROTECT(expr); nprotect++;
     eval(expr, mask);
 
 
+    defineVar(printSymbol, R_NilValue, mask);
     defineVar(xSymbol, R_NilValue, mask);
-    UNPROTECT(3);
+
+
+    UNPROTECT(nprotect);
 }
 
 
@@ -57,19 +83,27 @@ void my_PrintObject(SEXP s, SEXP env)
 
 void my_PrintValueRec(SEXP s, SEXP env)
 {
-    SEXP mask = PROTECT(R_NewEnv(env, FALSE, 0));
+    int nprotect = 0;
+
+
+    SEXP mask = R_NewEnv(env, FALSE, 0);
+    PROTECT(mask); nprotect++;
+
+
+    defineVar(print_defaultSymbol, findFunction(print_defaultSymbol, R_BaseNamespace), mask);
     defineVar(xSymbol, makeEVPROMISE(s, s), mask);
 
 
-    SEXP print = PROTECT(findFunction(print_defaultSymbol, R_BaseNamespace));
-    SEXP expr = PROTECT(LCONS(print, CONS(xSymbol, R_NilValue)));
-
-
+    SEXP expr = LCONS(print_defaultSymbol, CONS(xSymbol, R_NilValue));
+    PROTECT(expr); nprotect++;
     eval(expr, mask);
 
 
+    defineVar(print_defaultSymbol, R_NilValue, mask);
     defineVar(xSymbol, R_NilValue, mask);
-    UNPROTECT(3);
+
+
+    UNPROTECT(2);
 }
 
 
@@ -127,8 +161,8 @@ SEXP do_printThisPathDocumentContext do_formals
 
 
     SEXP klass = getAttrib(x, R_ClassSymbol);
-    int nklass;
-    if ((nklass = LENGTH(klass))) {
+    int nklass = LENGTH(klass);
+    if (nklass) {
         SETCADR(expr, klass);
         SETCADDR(expr, mkString("\""));
         SEXP tmp = eval(expr, R_BaseEnv);
@@ -139,7 +173,11 @@ SEXP do_printThisPathDocumentContext do_formals
             else   Rprintf("%s"  , CHAR(STRING_ELT(tmp, i)));
         Rprintf(" at %p>\n", (void *) x);
         UNPROTECT(1);
-    } else Rprintf("<object of class \"%s\" at %p>\n", type2char(TYPEOF(x)), (void *) x);
+    }
+    else {
+        Rprintf("<object of class \"%s\" at %p>\n",
+                type2char(TYPEOF(x)), (void *) x);
+    }
 
 
     if (!quote) SETCADDR(expr, R_BlankScalarString);
@@ -197,7 +235,7 @@ SEXP do_printThisPathDocumentContext do_formals
             {
                 Rboolean tmp = LOGICAL(associated_with_file)[0];
                 Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)),
-                    tmp == NA_LOGICAL ? "NA" : (tmp ? "TRUE" : "FALSE"));
+                    (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
             }
             else print_invalid_type(associated_with_file);
         }

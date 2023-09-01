@@ -50,7 +50,7 @@ becomes:
 
 
 #include <Rinternals.h>         /* need definition of SEXP */
-#include "thispathbackports.h"  /* need definition of do_formals */
+#include "backports.h"          /* need definition of do_formals */
 #include "rversiondefines.h"    /* need definition of R_version_less_than */
 
 
@@ -63,15 +63,10 @@ extern SEXP do_aquarootscript do_formals;
 /* backports.c */
 
 
-#if R_version_less_than(3, 5, 0)
-extern SEXP do_dotslength do_formals;
-#endif
-
-
-#if R_version_less_than(3, 3, 0)
-extern SEXP do_strrep     do_formals;
-extern SEXP do_startsWith do_formals;
-extern SEXP do_endsWith   do_formals;
+#if R_version_less_than(3, 1, 0)
+extern SEXP do_anyNA          do_formals;
+extern SEXP do_anyNAdataframe do_formals;
+extern SEXP do_anyNAdefault   do_formals;
 #endif
 
 
@@ -82,8 +77,15 @@ extern SEXP do_isRegisteredNamespace do_formals;
 #endif
 
 
-#if R_version_less_than(3, 1, 0)
-extern SEXP do_anyNA do_formals;
+#if R_version_less_than(3, 3, 0)
+extern SEXP do_strrep     do_formals;
+extern SEXP do_startsWith do_formals;
+extern SEXP do_endsWith   do_formals;
+#endif
+
+
+#if R_version_less_than(3, 5, 0)
+extern SEXP do_dotslength do_formals;
 #endif
 
 
@@ -183,7 +185,6 @@ extern SEXP do_isunevaluatedpromise     do_formals;
 extern SEXP do_promiseisunevaluated     do_formals;
 extern SEXP do_getpromisewithoutwarning do_formals;
 extern SEXP do_PRINFO                   do_formals;
-extern SEXP do_setsyspathjupyter        do_formals;
 extern SEXP do_mkPROMISE                do_formals;
 extern SEXP do_mkEVPROMISE              do_formals;
 extern SEXP do_unlockEnvironment        do_formals;
@@ -212,20 +213,21 @@ extern SEXP do_thisPathNotExistsError                   do_formals;
 extern SEXP do_thisPathInZipFileError                   do_formals;
 extern SEXP do_thisPathInAQUAError                      do_formals;
 
-extern SEXP do_isclipboard      do_formals;
-extern SEXP do_inittoolsrstudio do_formals;
-extern SEXP do_syspathjupyter   do_formals;
-extern SEXP do_syspathrgui      do_formals;
-extern SEXP do_syspath          do_formals;
-extern SEXP do_getframenumber   do_formals;
-extern SEXP do_envpath          do_formals;
-extern SEXP do_srcpath          do_formals;
-extern SEXP do_srclineno        do_formals;
-extern SEXP do_thispath         do_formals;
-extern SEXP do_istrue           do_formals;
-extern SEXP do_isfalse          do_formals;
-extern SEXP do_asInteger        do_formals;
-extern SEXP do_asIntegerGE0     do_formals;
+extern SEXP do_isclipboard       do_formals;
+extern SEXP do_inittoolsrstudio  do_formals;
+extern SEXP do_syspathjupyter    do_formals;
+extern SEXP do_setsyspathjupyter do_formals;
+extern SEXP do_syspathrgui       do_formals;
+extern SEXP do_syspath           do_formals;
+extern SEXP do_getframenumber    do_formals;
+extern SEXP do_envpath           do_formals;
+extern SEXP do_srcpath           do_formals;
+extern SEXP do_srclineno         do_formals;
+extern SEXP do_thispath          do_formals;
+extern SEXP do_istrue            do_formals;
+extern SEXP do_isfalse           do_formals;
+extern SEXP do_asInteger         do_formals;
+extern SEXP do_asIntegerGE0      do_formals;
 
 
 /* trycatch.c */

@@ -1,7 +1,8 @@
 #include "thispathdefn.h"
 
 
-static R_INLINE Rboolean asFlag(SEXP x, const char *name)
+static R_INLINE
+Rboolean asFlag(SEXP x, const char *name)
 {
     Rboolean val = asLogical(x);
     if (val == NA_LOGICAL)
@@ -72,9 +73,9 @@ SEXP do_wrapsource do_formals
     else if (nframe < 2)
         context_number = 1;
     else {
-        int sys_parent = get_sys_parent(1, rho);
-        // Rprintf("\nsys.parent(): %d\n", sys_parent);
-        if (nframe - 1 != sys_parent)
+        int parent = sys_parent(1, rho);
+        // Rprintf("\nsys.parent(): %d\n", parent);
+        if (nframe - 1 != parent)
             /* this will happen for something like:
                wrapper <- function(...) {
                    force(wrap.source(sourcelike(...)))
@@ -89,7 +90,7 @@ SEXP do_wrapsource do_formals
         else {
             SEXP tmp;
             PROTECT_INDEX indx;
-            PROTECT_WITH_INDEX(tmp = CONS(ScalarInteger(sys_parent), R_NilValue), &indx);
+            PROTECT_WITH_INDEX(tmp = CONS(ScalarInteger(parent), R_NilValue), &indx);
             REPROTECT(tmp = LCONS(getFromBase(sys_functionSymbol), tmp), indx);
             SEXP function = eval(tmp, rho);
             PROTECT(function);
@@ -98,7 +99,7 @@ SEXP do_wrapsource do_formals
             else if (identical(function, getFromMyNS(withArgsSymbol)))
                 context_number = nframe;
             else
-                context_number = sys_parent;
+                context_number = parent;
             UNPROTECT(2);
         }
     }
@@ -212,7 +213,8 @@ SEXP do_wrapsource do_formals
         error("invalid '%s', must be a call", EncodeChar(PRINTNAME(exprSymbol)));
 
 
-#define set_n(n, documentcontext) INCREMENT_NAMED_defineVar(nSymbol, ScalarInteger((n)), (documentcontext))
+#define set_n(n, documentcontext)                              \
+    MARK_NOT_MUTABLE_defineVar(nSymbol, ScalarInteger((n)), (documentcontext))
 
 
 #define set_prvalues_then_return(val)                          \
@@ -239,7 +241,6 @@ SEXP do_wrapsource do_formals
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
         UNPROTECT(1);
-        set_R_Visible(TRUE);
         set_prvalues_then_return(eval(PRCODE(promise), env));
     }
 
@@ -529,14 +530,14 @@ SEXP setpath(SEXP args, int op, SEXP rho)
     }
 
 
-    int sys_parent = get_sys_parent(1, rho);
-    if (sys_parent < 1)
+    int parent = sys_parent(1, rho);
+    if (parent < 1)
         error("%s cannot be used within the global environment", name);
 
 
     SEXP expr;
     PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(ScalarInteger(sys_parent), R_NilValue), &indx);
+    PROTECT_WITH_INDEX(expr = CONS(ScalarInteger(parent), R_NilValue), &indx);
     REPROTECT(expr = LCONS(getFromBase(sys_functionSymbol), expr), indx);
     SEXP function = eval(expr, rho);
     UNPROTECT(1);  /* expr */
@@ -687,8 +688,8 @@ SEXP setpath(SEXP args, int op, SEXP rho)
                 break;
             }
             if (srcfile) {
-                if (findVarInFrame(srcfile, documentcontextSymbol) != R_UnboundValue)
-                    error("cannot overwrite existing '%s' binding", EncodeChar(PRINTNAME(documentcontextSymbol)));
+                if (R_existsVarInFrame(srcfile, documentcontextSymbol))
+                    error("cannot overwrite existing binding '%s'", EncodeChar(PRINTNAME(documentcontextSymbol)));
                 INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
                 R_LockBinding(documentcontextSymbol, srcfile);
             }
@@ -714,10 +715,10 @@ SEXP setpath(SEXP args, int op, SEXP rho)
         PROTECT(documentcontext = DocumentContext());
         assign_null(documentcontext);
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
-        UNPROTECT(1);
         R_LockBinding(documentcontextSymbol, frame);
+        UNPROTECT(1);
         defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
-        set_n(sys_parent, documentcontext);
+        set_n(parent, documentcontext);
         set_R_Visible(TRUE);
         UNPROTECT(nprotect);
         return R_MissingArg;
@@ -856,7 +857,7 @@ SEXP setpath(SEXP args, int op, SEXP rho)
 
 
     defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
-    set_n(sys_parent, documentcontext);
+    set_n(parent, documentcontext);
     UNPROTECT(nprotect + 1);  /* +1 for returnvalue */
     return returnvalue;
 }

@@ -141,21 +141,15 @@ if (getRversion() < "3.0.0") {
     ## backports.R  ----
 
 
-    if (getRversion() < "3.3.0") {
-        fix.External2.fun(strrep)
-        fix.External2.fun(startsWith)
-        fix.External2.fun(endsWith)
-    }
-    if (getRversion() < "3.2.0") {
-        fix.External2.fun(dir.exists)
-        fix.External2.fun(lengths)
-    }
-    if (getRversion() < "3.1.0") {
-        fix.External2.fun(anyNA)
-    }
-    if (getRversion() < "3.0.0") {
-        fix.External2.fun(.setprseen2)
-    }
+    fix.External2.fun(strrep)
+    fix.External2.fun(startsWith)
+    fix.External2.fun(endsWith)
+    fix.External2.fun(dir.exists)
+    fix.External2.fun(lengths)
+    fix.External2.fun(anyNA)
+    fix.External2.fun(anyNA.data.frame)
+    fix.External2.fun(anyNA.default)
+    fix.External2.fun(.setprseen2)
 
 
     ## basename2.R  ----

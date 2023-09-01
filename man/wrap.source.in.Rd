@@ -210,7 +210,7 @@ unset.sys.path()
     ## but this is good enough for an example
     else stop(gettextf("'\%s' is not an existing file", ofile))
     file <- this.path::set.sys.path(file, ofile = ofile)
-    exprs <- parse(file)
+    exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
     invisible()
 }}
@@ -330,7 +330,7 @@ sourcelike <- function (file, envir = parent.frame())
     }
     srcfile <- srcfilecopy(filename, lines, timestamp, isFile)
     set.src.path(srcfile)
-    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
     invisible(source.exprs(exprs, evaluated = TRUE, envir = envir))
 }
 
@@ -349,7 +349,7 @@ sourcelike2 <- function (pathname, envir = globalenv())
     envir <- as.environment(envir)
     lines <- readLines(pathname, warn = FALSE)
     srcfile <- srcfilecopy(pathname, lines, isFile = TRUE)
-    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
     invisible(source.exprs(exprs, evaluated = TRUE, envir = envir))
 }
 
@@ -428,7 +428,7 @@ sourcelike5 <- function (file)
     oopt <- options(topLevelEnvironment = envir)
     on.exit(options(oopt))
     set.env.path(envir)
-    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
     source.exprs(exprs, evaluated = TRUE, envir = envir)
     envir
 }
@@ -453,7 +453,7 @@ sourcelike6 <- function (file)
     oopt <- options(topLevelEnvironment = envir)
     on.exit(options(oopt))
     set.env.path(envir)
-    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
     source.exprs(exprs, evaluated = TRUE, envir = envir)
     envir
 }

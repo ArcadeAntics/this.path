@@ -233,7 +233,8 @@ delayedAssign(".untitled", {
 .getJupyterNotebookContents <- function (..., do.unlist = FALSE, give.f = TRUE)
 {
     lines <- .getContents(...)
-    source <- jsonlite::fromJSON(lines)[[c("cells", "source")]]
+    source <- jsonlite::parse_json(lines, simplifyVector = TRUE)
+    source <- .getNamedElement(source, c("cells", "source"))
     if (do.unlist) {
         value <- unlist(source)
         if (give.f)
@@ -391,9 +392,9 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 
 
                 if (is.character(language) && length(language) == 1L && !is.na(language) && language == "R" &&
-                        is.character(name)     && length(name)     == 1L && !is.na(name)     && name     == "R" &&
-                        is.character(version)  && length(version)  == 1L && !is.na(version)  && version  == as.character(getRversion()) &&
-                        is.list(source)        && length(source)         && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
+                    is.character(name)     && length(name)     == 1L && !is.na(name)     && name     == "R" &&
+                    is.character(version)  && length(version)  == 1L && !is.na(version)  && version  == as.character(getRversion()) &&
+                    is.list(source)        && length(source)         && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
                 {
                     for (source0 in source) {
                         exprs <- tryCatch(parse(text = source0, n = -1, keep.source = FALSE, srcfile = NULL),

@@ -47,8 +47,9 @@
         else as.character(xx)
     }, how = "replace")
     value <- unlist(value, recursive = TRUE, use.names = FALSE)
-    if (anyNA(value))
-        value[is.na(value)] <- "NA"
+    # if (anyNA(value))
+    #     value[is.na(value)] <- "NA"
+    if (any(i <- is.na(value))) value[i] <- "NA"
     return(value)
 }
 

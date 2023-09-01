@@ -34,11 +34,14 @@ local({
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = TRUE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
 })
+
+
+this.path:::anyNA(data.frame(V1 = I(as.POSIXlt(NA, origin = "1970-01-01"))))
 
 
 local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
@@ -187,7 +190,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)ThisPathInfo", x, value = TRUE)
+    x <- grep("(?i)tryCatch2\\.R", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

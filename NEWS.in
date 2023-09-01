@@ -2,6 +2,16 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  NEW FEATURES:
+
+    * Added tryCatch3() which accepts condition expressions instead of
+      condition handlers. Added active binding 'last.condition' which
+      will be the last thrown-and-caught condition in tryCatch3().
+
+    * When tryCatch2() and tryCatch3() catch a condition but the
+      respective handler / / expression is missing, the next
+      non-missing handler / / expression is used instead.
+
   BUG FIXES:
 
     * set.env.path() and set.src.path() now return their input instead

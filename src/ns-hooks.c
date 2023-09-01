@@ -3,7 +3,6 @@
 
 #define R_THIS_PATH_INITIALIZE_SYMBOLS
 #include "symbols.h"
-#undef R_THIS_PATH_INITIALIZE_SYMBOLS
 
 
 SEXP mynamespace        = NULL,
@@ -82,9 +81,14 @@ SEXP do_onLoad do_formals
     do_start_no_call_op_rho("onLoad", 2);
 
 
+    static int been_here_before = 0;
+    if (been_here_before)
+        error("cannot call 'onLoad' more than once (wtf are you doing\?\?\?)");
+    been_here_before = 1;
+
+
 #define R_THIS_PATH_DEFINE_SYMBOLS
 #include "symbols.h"
-#undef R_THIS_PATH_DEFINE_SYMBOLS
 
 
     /* these arguments are passed from .onLoad() */
@@ -115,6 +119,14 @@ SEXP do_onLoad do_formals
         SET_STRING_ELT(DocumentContextCls, i, mkChar(cls[i]));
 
 
+    /* it might seem more intuitive to say
+     * last_condition = R_NilValue;
+     *
+     * but that means every time last_condition gets updated,
+     * we must release the old SEXP and preserve the new one
+     *
+     * this is preferable because we only preserve and release one object
+     */
     last_condition = CONS(R_NilValue, R_NilValue);
     R_PreserveObject(last_condition);
 
@@ -190,7 +202,7 @@ SEXP do_onLoad do_formals
     convertclosure2activebinding(install(".R_MB_CUR_MAX"));
     /* ./R/thispath.R */
     convertclosure2activebinding(install("FILE"));
-    /* ./R/tryCatch2.R */
+    /* ./R/trycatch.R */
     convertclosure2activebinding(install("last.condition"));
 
 

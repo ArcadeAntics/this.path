@@ -1,5 +1,5 @@
+#include <R.h>  /* need definition of 'R_ExpandFileName' */
 #include <string.h>
-#include <R.h>
 
 
 
