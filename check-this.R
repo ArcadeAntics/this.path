@@ -187,7 +187,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)R_THIS_PATH_DEFINES", x, value = TRUE)
+    x <- grep("(?i)\\.lengths\\.dispatch", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

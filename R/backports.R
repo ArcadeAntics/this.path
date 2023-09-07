@@ -80,10 +80,6 @@ lengths <- function (x, use.names = TRUE)
 .External2(.C_lengths, x, use.names)
 
 
-.lengths.dispatch <- function (x, use.names = TRUE)
-UseMethod("lengths")
-
-
 .lengths.default <- function (x, use.names = TRUE)
 .External2(.C_lengthsdefault, x, use.names)
 
