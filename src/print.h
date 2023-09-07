@@ -1,5 +1,5 @@
-#ifndef R_THIS_PATH_PRINT
-#define R_THIS_PATH_PRINT
+#ifndef R_THISPATH_PRINT_H
+#define R_THISPATH_PRINT_H
 
 
 #include <Rinternals.h>       /* need definition of SEXP */
@@ -8,4 +8,4 @@
 extern void my_PrintValueEnv(SEXP s, SEXP env);
 
 
-#endif /* R_THIS_PATH_PRINT */
+#endif

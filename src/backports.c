@@ -50,28 +50,11 @@ SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
 }
 
 
-R_xlen_t getElementLength(SEXP x, R_xlen_t i, SEXP rho)
+R_xlen_t dispatch_subset2_xlength(SEXP x, R_xlen_t i, SEXP rho)
 {
     SEXP x0 = dispatch_subset2(x, i, rho);
     PROTECT(x0);
     R_xlen_t value = dispatch_xlength(x0, rho);
-    UNPROTECT(1);
-    return value;
-}
-
-
-SEXP lengths_real(SEXP x, R_xlen_t len, SEXP rho)
-{
-    SEXP value;
-    R_xlen_t i;
-    double *rvalue;
-
-
-    value = allocVector(REALSXP, len);
-    PROTECT(value);
-    for (i = 0, rvalue = REAL(value); i < len; i++, rvalue++) {
-        *rvalue = (double) getElementLength(x, i, rho);
-    }
     UNPROTECT(1);
     return value;
 }
@@ -128,25 +111,24 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho);
 Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
 {
     if (OBJECT(x)) {
-        SEXP expr = LCONS(R_NilValue, CONS(x, CONS((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)));
-        PROTECT(expr);
-        SETCAR(expr, getFromMyNS(anyNA_dispatchSymbol));
-        SEXP res = PROTECT(eval(expr, rho));
+        SEXP expr;
+        PROTECT_INDEX indx;
+        if (needQuote(x)) {
+            PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
+            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
+            REPROTECT(expr = CONS(expr, CONS((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), indx);
+        } else {
+            PROTECT_WITH_INDEX(expr = CONS(x, CONS((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), &indx);
+        }
+        REPROTECT(expr = LCONS(getFromMyNS(_anyNA_dispatchSymbol), expr), indx);
+        SEXP env = eval(expr_parent_frame, rho);
+        PROTECT(env);
+        SEXP res = PROTECT(eval(expr, env));
         Rboolean value = (asLogical(res) == TRUE);
-        UNPROTECT(2);
+        UNPROTECT(3);
         return value;
     }
     else return anyNA_default(x, recursive, rho);
-}
-
-
-Rboolean anyNA_data_frame(SEXP x, Rboolean recursive, SEXP rho)
-{
-    for (R_xlen_t i = 0, n = xlength(x); i < n; i++) {
-        if (anyNA(VECTOR_ELT(x, i), recursive, rho))
-            return TRUE;
-    }
-    return FALSE;
 }
 
 
@@ -164,9 +146,11 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
         REPROTECT(expr = LCONS(getFromBase(is_naSymbol), expr), indx);
         REPROTECT(expr = CONS(expr, R_NilValue), indx);
         REPROTECT(expr = LCONS(getFromBase(anySymbol), expr), indx);
-        SEXP res = PROTECT(eval(expr, rho));
+        SEXP env = eval(expr_parent_frame, rho);
+        PROTECT(env);
+        SEXP res = PROTECT(eval(expr, env));
         Rboolean value = (asLogical(res) == TRUE);
-        UNPROTECT(2);
+        UNPROTECT(3);
         return value;
     }
 
@@ -246,76 +230,44 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
 
 SEXP do_anyNA do_formals
 {
-    do_start_no_op("anyNA", -1);
-
-
-    SEXP x;
-    Rboolean recursive = FALSE;
-
-
-    switch (length(args)) {
-    case 2:
-        recursive = asLogical(CADR(args));
-    case 1:
-        x = CAR(args);
-        break;
-    default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNA", "1 or 2"));
-        return R_NilValue;
-    }
-
-
-    return ScalarLogical(anyNA(x, recursive, rho));
+    do_start_no_call_op("anyNA", 2);
+    return ScalarLogical(anyNA(CAR(args), asLogical(CADR(args)), rho));
 }
 
 
 SEXP do_anyNAdataframe do_formals
 {
-    do_start_no_op("anyNAdataframe", -1);
+    do_start_no_call_op("anyNAdataframe", 2);
 
 
-    SEXP x;
-    Rboolean recursive = FALSE;
-
-
-    switch (length(args)) {
-    case 2:
-        recursive = asLogical(CADR(args));
-    case 1:
-        x = CAR(args);
-        break;
-    default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNAdataframe", "1 or 2"));
-        return R_NilValue;
+    SEXP x = CAR(args);
+    Rboolean recursive = asLogical(CADR(args));
+    for (R_xlen_t i = 0, n = xlength(x); i < n; i++) {
+        if (anyNA(VECTOR_ELT(x, i), recursive, rho))
+            return R_TrueValue;
     }
+    return R_FalseValue;
+}
 
 
-    return ScalarLogical(anyNA_data_frame(x, recursive, rho));
+SEXP do_anyNAnumericversion do_formals
+{
+    do_start_no_call_op("anyNAnumericversion", 1);
+
+
+    SEXP x = CAR(args);
+    for (R_xlen_t i = 0, n = xlength(x); i < n; i++) {
+        if (dispatch_xlength(VECTOR_ELT(x, i), rho) <= 0)
+            return R_TrueValue;
+    }
+    return R_FalseValue;
 }
 
 
 SEXP do_anyNAdefault do_formals
 {
-    do_start_no_op("anyNAdefault", -1);
-
-
-    SEXP x;
-    Rboolean recursive = FALSE;
-
-
-    switch (length(args)) {
-    case 2:
-        recursive = asLogical(CADR(args));
-    case 1:
-        x = CAR(args);
-        break;
-    default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_anyNAdefault", "1 or 2"));
-        return R_NilValue;
-    }
-
-
-    return ScalarLogical(anyNA_default(x, recursive, rho));
+    do_start_no_call_op("anyNAdefault", 2);
+    return ScalarLogical(anyNA_default(CAR(args), asLogical(CADR(args)), rho));
 }
 
 
@@ -396,11 +348,9 @@ SEXP do_direxists do_formals
 }
 
 
-SEXP do_lengths do_formals
+static R_INLINE
+SEXP lengths_default(SEXP args, SEXP rho)
 {
-    do_start_no_call_op("lengths", 2);
-
-
     SEXP x = CAR(args), value;
     R_xlen_t len, i;
     int *ivalue;
@@ -432,12 +382,24 @@ SEXP do_lengths do_formals
 
     if (isList) {
         for (i = 0, ivalue = INTEGER(value); i < len; i++, ivalue++) {
-            R_xlen_t x0_len = getElementLength(x, i, rho);
+            R_xlen_t x0_len = dispatch_subset2_xlength(x, i, rho);
 #ifdef LONG_VECTOR_SUPPORT
             if (x0_len > INT_MAX) {
-                value = lengths_real(x, len, rho);
-                UNPROTECT(1);
+                SEXP oldvalue = value;
+                R_xlen_t oldi = i;
+                value = allocVector(REALSXP, len);
                 PROTECT(value);
+                double *rvalue;
+                /* copy old values to new vector */
+                for (i = 0, ivalue = INTEGER(oldvalue), rvalue = REAL(value); i < oldi; i++, ivalue++, rvalue++)
+                    *rvalue = (double) *ivalue;
+                UNPROTECT(2);  /* oldvalue and value */
+                PROTECT(value);
+                /* place current value in new vector */
+                *rvalue = (double) x0_len;
+                i++, rvalue++;
+                for (; i < len; i++, rvalue++)
+                    *rvalue = (double) dispatch_subset2_xlength(x, i, rho);
                 break;
             }
 #endif
@@ -461,6 +423,29 @@ SEXP do_lengths do_formals
 
     UNPROTECT(1);
     return value;
+}
+
+
+SEXP do_lengths do_formals
+{
+    do_start_no_call_op("lengths", 2);
+
+
+    SEXP x = CAR(args);
+    int useNames = asLogical(CADR(args));
+    if (useNames == NA_LOGICAL)
+        error(_("invalid '%s' value"), "use.names");
+
+
+    if (OBJECT(x)) return eval(expr_UseMethod_lengths, rho);
+    else return lengths_default(args, rho);
+}
+
+
+SEXP do_lengthsdefault do_formals
+{
+    do_start_no_call_op("lengths", 2);
+    return lengths_default(args, rho);
 }
 
 

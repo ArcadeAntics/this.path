@@ -1,5 +1,5 @@
-#ifndef R_THIS_PATH_NS_HOOKS
-#define R_THIS_PATH_NS_HOOKS
+#ifndef R_THISPATH_NSHOOKS_H
+#define R_THISPATH_NSHOOKS_H
 
 
 #include <Rinternals.h>       /* need definition of SEXP */
@@ -25,7 +25,8 @@ extern SEXP expr_commandArgs                              ,
             expr__sys_path_toplevel                       ,
             expr_getOption_topLevelEnvironment            ,
             expr__toplevel_context_number                 ,
-            expr__isMethodsDispatchOn                     ;
+            expr__isMethodsDispatchOn                     ,
+            expr_UseMethod_lengths                        ;
 
 
-#endif /* R_THIS_PATH_NS_HOOKS */
+#endif /* R_THISPATH_NSHOOKS_H */

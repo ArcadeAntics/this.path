@@ -42,7 +42,7 @@ anyNA <- function (x, recursive = FALSE)
 .External2(.C_anyNA, x, recursive)
 
 
-anyNA_dispatch <- function (x, recursive = FALSE)
+.anyNA.dispatch <- function (x, recursive = FALSE)
 UseMethod("anyNA")
 
 
@@ -51,14 +51,14 @@ anyNA.data.frame <- function (x, recursive = FALSE)
 
 
 anyNA.numeric_version <- function (x, recursive = FALSE)
-any(lengths(x) <= 0L)
+.External2(.C_anyNAnumericversion, x)
 
 
 anyNA.POSIXlt <- function (x, recursive = FALSE)
-anyNA(as.POSIXct(x))
+anyNA(as.POSIXct.POSIXlt(x))
 
 
-anyNA.default <- function (x, recursive = FALSE)
+.anyNA.default <- function (x, recursive = FALSE)
 .External2(.C_anyNAdefault, x, recursive)
 
 
@@ -78,6 +78,14 @@ dir.exists <- function (paths)
 
 lengths <- function (x, use.names = TRUE)
 .External2(.C_lengths, x, use.names)
+
+
+.lengths.dispatch <- function (x, use.names = TRUE)
+UseMethod("lengths")
+
+
+.lengths.default <- function (x, use.names = TRUE)
+.External2(.C_lengthsdefault, x, use.names)
 
 
 ## file.info() did not have argument 'extra_cols' at this time

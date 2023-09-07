@@ -8,12 +8,12 @@
 
 
 
-#define SPLITEXT  (0)
-#define REMOVEEXT (1)
-#define EXT       (2)
-#define EXTGETS   (3)
+typedef enum {EXTOP_SPLITEXT ,
+              EXTOP_REMOVEEXT,
+              EXTOP_EXT      ,
+              EXTOP_EXTGETS  } EXTOP;
 static R_INLINE
-SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
+SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
 {
     int nprotect = 0;
 
@@ -30,7 +30,7 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
 
     SEXP newext = NULL;
     int length_newext = -1;
-    if (op == EXTGETS) {
+    if (op == EXTOP_EXTGETS) {
         if (!isString(CAR(args))) {
             if (OBJECT(CAR(args))) {
                 /* as.character(quote(CAR(args))) */
@@ -70,7 +70,8 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
 
     SEXP value;
     n = LENGTH(path);
-    if (op == SPLITEXT) {
+    switch (op) {
+    case EXTOP_SPLITEXT:
         value = allocMatrix(STRSXP, 2, n);
         PROTECT(value); nprotect++;
         SEXP dimnames = allocVector(VECSXP, 2);
@@ -79,12 +80,12 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         SET_VECTOR_ELT(dimnames, 0, rownames);
         SET_STRING_ELT(rownames, 0, mkChar("root"));
         SET_STRING_ELT(rownames, 1, mkChar("ext"));
-    }
-    else if (op == EXTGETS) {
+        break;
+    case EXTOP_EXTGETS:
         value = R_shallow_duplicate_attr(path);
         PROTECT(value); nprotect++;
-    }
-    else {
+        break;
+    default:
         value = allocVector(STRSXP, n);
         PROTECT(value); nprotect++;
     }
@@ -100,30 +101,33 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         }
         if (STRING_ELT(path, i) == NA_STRING) {
             if (debug) Rprintf("NA\n");
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 SET_STRING_ELT(value, 2 * i    , NA_STRING);
                 SET_STRING_ELT(value, 2 * i + 1, NA_STRING);
                 if (debug) {
                     Rprintf("assigning: NA\n");
                     Rprintf("assigning: NA\n");
                 }
-            }
-            else if (op == REMOVEEXT || op == EXT) {
+                break;
+            case EXTOP_REMOVEEXT:
+            case EXTOP_EXT:
                 SET_STRING_ELT(value, i, NA_STRING);
                 if (debug) {
                     Rprintf("assigning: NA\n");
                 }
-            }
-            else if (op == EXTGETS) {
+                break;
+            case EXTOP_EXTGETS:
                 if (debug) {
                     Rprintf("assigning: NA\n");
                 }
+                break;
             }
             continue;
         }
 
 
-        if (op == EXTGETS) {
+        if (op == EXTOP_EXTGETS) {
             if (STRING_ELT(newext, i % length_newext) == NA_STRING) {
                 SET_STRING_ELT(value, i, NA_STRING);
                 continue;
@@ -138,12 +142,14 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
             Rprintf("%d bytes long\n", nchar);
         }
         if (nchar == 0) {
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                     Rprintf("assigning: \"\"\n");
                 }
-            } else {
+                break;
+            default:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                 }
@@ -158,29 +164,31 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         }
         if (nchar == drivewidth) {
             if (debug) Rprintf("pathspec is 0 bytes long\n");
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 SET_STRING_ELT(value, 2 * i, mkCharCE(ptr, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", ptr);
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == REMOVEEXT) {
+                break;
+            case EXTOP_REMOVEEXT:
                 SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", ptr);
                 }
-            }
-            else if (op == EXT) {
+                break;
+            case EXTOP_EXT:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == EXTGETS) {
+                break;
+            case EXTOP_EXTGETS:
                 SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", ptr);
                 }
+                break;
             }
             continue;
         }
@@ -188,7 +196,7 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
 
         const char *ptr_ext;
         const char *cext = NULL;
-        if (op == EXTGETS) {
+        if (op == EXTOP_EXTGETS) {
             if (i < length_newext) {
                 ptr_ext = translateCharUTF8(STRING_ELT(newext, i));
                 if (windows) {
@@ -302,7 +310,7 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         }
 
 
-        char _buf[(op != EXTGETS) ? (nchar + 1) : (nchar + strlen(cext) + 1)];
+        char _buf[(op != EXTOP_EXTGETS) ? (nchar + 1) : (nchar + strlen(cext) + 1)];
         buf = _buf;
         strcpy(buf, ptr);
         if (debug) {
@@ -342,29 +350,31 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         /* then the basename is non-existent, return empty string  */
         if (last_char < pathspec) {
             if (debug) Rprintf("pathspec is /\n");
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 SET_STRING_ELT(value, 2 * i, mkCharCE(ptr, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", ptr);
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == REMOVEEXT) {
+                break;
+            case EXTOP_REMOVEEXT:
                 SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", ptr);
                 }
-            }
-            else if (op == EXT) {
+                break;
+            case EXTOP_EXT:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == EXTGETS) {
+                break;
+            case EXTOP_EXTGETS:
                 SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", ptr);
                 }
+                break;
             }
             continue;
         }
@@ -400,25 +410,26 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         nchar_basename = strlen(basename);
         if (nchar_basename < 3) {
             if (debug) Rprintf("basename contains less than 3 characters\n");
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == REMOVEEXT) {
+                break;
+            case EXTOP_REMOVEEXT:
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                 }
-            }
-            else if (op == EXT) {
+                break;
+            case EXTOP_EXT:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == EXTGETS) {
+                break;
+            case EXTOP_EXTGETS:
                 found_non_dot = 0;
                 for (tmp = basename; *tmp; tmp++) {
                     if (*tmp != '.') {
@@ -433,6 +444,7 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                 }
+                break;
             }
             continue;
         }
@@ -478,7 +490,8 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
                         }
                     }
                     if (found_non_dot) {
-                        if (op == SPLITEXT) {
+                        switch (op) {
+                        case EXTOP_SPLITEXT:
                             SET_STRING_ELT(value, 2 * i + 1, mkCharCE(dot, CE_UTF8));
                             *dot = '\0';
                             SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
@@ -486,26 +499,27 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
                                 Rprintf("assigning: \"%s\"\n", buf);
                                 Rprintf("assigning: \"%s\"\n", CHAR(STRING_ELT(value, 2 * i + 1)));
                             }
-                        }
-                        else if (op == REMOVEEXT) {
+                            break;
+                        case EXTOP_REMOVEEXT:
                             *dot = '\0';
                             SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                             if (debug) {
                                 Rprintf("assigning: \"%s\"\n", buf);
                             }
-                        }
-                        else if (op == EXT) {
+                            break;
+                        case EXTOP_EXT:
                             SET_STRING_ELT(value, i, mkCharCE(dot, CE_UTF8));
                             if (debug) {
                                 Rprintf("assigning: \"%s\"\n", dot);
                             }
-                        }
-                        else if (op == EXTGETS) {
+                            break;
+                        case EXTOP_EXTGETS:
                             strcpy(dot, cext);
                             SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                             if (debug) {
                                 Rprintf("assigning: \"%s\"\n", buf);
                             }
+                            break;
                         }
                         continue;
                     }
@@ -520,25 +534,26 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         /* if we could not find a dot or dot is the first/last character */
         if (!dot || dot == last_char || dot == basename) {
             if (debug) Rprintf("basename does not contain a dot, or dot is first/last character\n");
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == REMOVEEXT) {
+                break;
+            case EXTOP_REMOVEEXT:
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                 }
-            }
-            else if (op == EXT) {
+                break;
+            case EXTOP_EXT:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == EXTGETS) {
+                break;
+            case EXTOP_EXTGETS:
                 found_non_dot = 0;
                 for (tmp = basename; *tmp; tmp++) {
                     if (*tmp != '.') {
@@ -553,6 +568,7 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                 }
+                break;
             }
             continue;
         }
@@ -568,35 +584,38 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
         }
         if (!found_non_dot) {
             if (debug) Rprintf("basename contains only leading dots\n");
-            if (op == SPLITEXT) {
+            switch (op) {
+            case EXTOP_SPLITEXT:
                 SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == REMOVEEXT) {
+                break;
+            case EXTOP_REMOVEEXT:
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                 }
-            }
-            else if (op == EXT) {
+                break;
+            case EXTOP_EXT:
                 if (debug) {
                     Rprintf("assigning: \"\"\n");
                 }
-            }
-            else if (op == EXTGETS) {
+                break;
+            case EXTOP_EXTGETS:
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
                 if (debug) {
                     Rprintf("assigning: \"%s\"\n", buf);
                 }
+                break;
             }
             continue;
         }
 
 
-        if (op == SPLITEXT) {
+        switch (op) {
+        case EXTOP_SPLITEXT:
             SET_STRING_ELT(value, 2 * i + 1, mkCharCE(dot, CE_UTF8));
             *dot = '\0';
             SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
@@ -604,26 +623,27 @@ SEXP ext(SEXP call, int op, int windows, SEXP args, SEXP rho)
                 Rprintf("assigning: \"%s\"\n", buf);
                 Rprintf("assigning: \"%s\"\n", CHAR(STRING_ELT(value, 2 * i + 1)));
             }
-        }
-        else if (op == REMOVEEXT) {
+            break;
+        case EXTOP_REMOVEEXT:
             *dot = '\0';
             SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
             if (debug) {
                 Rprintf("assigning: \"%s\"\n", buf);
             }
-        }
-        else if (op == EXT) {
+            break;
+        case EXTOP_EXT:
             SET_STRING_ELT(value, i, mkCharCE(dot, CE_UTF8));
             if (debug) {
                 Rprintf("assigning: \"%s\"\n", dot);
             }
-        }
-        else if (op == EXTGETS) {
+            break;
+        case EXTOP_EXTGETS:
             strcpy(dot, cext);
             SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
             if (debug) {
                 Rprintf("assigning: \"%s\"\n", buf);
             }
+            break;
         }
     }
 
@@ -640,7 +660,7 @@ SEXP do_windowssplitext do_formals
 {
     do_start_no_op("windowssplitext", 2);
     if (debug) Rprintf("in do_windowssplitext\n\n");
-    return ext(call, SPLITEXT, TRUE, args, rho);
+    return ext(call, EXTOP_SPLITEXT, TRUE, args, rho);
 }
 
 
@@ -648,7 +668,7 @@ SEXP do_unixsplitext do_formals
 {
     do_start_no_op("unixsplitext", 2);
     if (debug) Rprintf("in do_unixsplitext\n\n");
-    return ext(call, SPLITEXT, FALSE, args, rho);
+    return ext(call, EXTOP_SPLITEXT, FALSE, args, rho);
 }
 
 
@@ -657,9 +677,9 @@ SEXP do_splitext do_formals
     do_start_no_op("splitext", 2);
     if (debug) Rprintf("in do_splitext\n\n");
 #ifdef _WIN32
-    return ext(call, SPLITEXT, TRUE, args, rho);
+    return ext(call, EXTOP_SPLITEXT, TRUE, args, rho);
 #else
-    return ext(call, SPLITEXT, FALSE, args, rho);
+    return ext(call, EXTOP_SPLITEXT, FALSE, args, rho);
 #endif
 }
 
@@ -668,7 +688,7 @@ SEXP do_windowsremoveext do_formals
 {
     do_start_no_op("windowsremoveext", 2);
     if (debug) Rprintf("in do_windowsremoveext\n\n");
-    return ext(call, REMOVEEXT, TRUE, args, rho);
+    return ext(call, EXTOP_REMOVEEXT, TRUE, args, rho);
 }
 
 
@@ -676,7 +696,7 @@ SEXP do_unixremoveext do_formals
 {
     do_start_no_op("unixremoveext", 2);
     if (debug) Rprintf("in do_unixremoveext\n\n");
-    return ext(call, REMOVEEXT, FALSE, args, rho);
+    return ext(call, EXTOP_REMOVEEXT, FALSE, args, rho);
 }
 
 
@@ -685,9 +705,9 @@ SEXP do_removeext do_formals
     do_start_no_op("removeext", 2);
     if (debug) Rprintf("in do_removeext\n\n");
 #ifdef _WIN32
-    return ext(call, REMOVEEXT, TRUE, args, rho);
+    return ext(call, EXTOP_REMOVEEXT, TRUE, args, rho);
 #else
-    return ext(call, REMOVEEXT, FALSE, args, rho);
+    return ext(call, EXTOP_REMOVEEXT, FALSE, args, rho);
 #endif
 }
 
@@ -696,7 +716,7 @@ SEXP do_windowsext do_formals
 {
     do_start_no_op("windowsext", 2);
     if (debug) Rprintf("in do_windowsext\n\n");
-    return ext(call, EXT, TRUE, args, rho);
+    return ext(call, EXTOP_EXT, TRUE, args, rho);
 }
 
 
@@ -704,7 +724,7 @@ SEXP do_unixext do_formals
 {
     do_start_no_op("unixext", 2);
     if (debug) Rprintf("in do_unixext\n\n");
-    return ext(call, EXT, FALSE, args, rho);
+    return ext(call, EXTOP_EXT, FALSE, args, rho);
 }
 
 
@@ -713,9 +733,9 @@ SEXP do_ext do_formals
     do_start_no_op("ext", 2);
     if (debug) Rprintf("in do_ext\n\n");
 #ifdef _WIN32
-    return ext(call, EXT, TRUE, args, rho);
+    return ext(call, EXTOP_EXT, TRUE, args, rho);
 #else
-    return ext(call, EXT, FALSE, args, rho);
+    return ext(call, EXTOP_EXT, FALSE, args, rho);
 #endif
 }
 
@@ -724,7 +744,7 @@ SEXP do_windowsextgets do_formals
 {
     do_start_no_op("windowsextgets", 3);
     if (debug) Rprintf("in do_windowsextgets\n\n");
-    return ext(call, EXTGETS, TRUE, args, rho);
+    return ext(call, EXTOP_EXTGETS, TRUE, args, rho);
 }
 
 
@@ -732,7 +752,7 @@ SEXP do_unixextgets do_formals
 {
     do_start_no_op("unixextgets", 3);
     if (debug) Rprintf("in do_unixextgets\n\n");
-    return ext(call, EXTGETS, FALSE, args, rho);
+    return ext(call, EXTOP_EXTGETS, FALSE, args, rho);
 }
 
 
@@ -741,8 +761,8 @@ SEXP do_extgets do_formals
     do_start_no_op("extgets", 3);
     if (debug) Rprintf("in do_extgets\n\n");
 #ifdef _WIN32
-    return ext(call, EXTGETS, TRUE, args, rho);
+    return ext(call, EXTOP_EXTGETS, TRUE, args, rho);
 #else
-    return ext(call, EXTGETS, FALSE, args, rho);
+    return ext(call, EXTOP_EXTGETS, FALSE, args, rho);
 #endif
 }

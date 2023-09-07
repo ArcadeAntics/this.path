@@ -1,5 +1,5 @@
-#ifndef R_THIS_PATH_BACKPORTS_H
-#define R_THIS_PATH_BACKPORTS_H
+#ifndef R_THISPATH_BACKPORTS_H
+#define R_THISPATH_BACKPORTS_H
 
 
 #include <Rinternals.h>       /* need definition of SEXP */
@@ -162,4 +162,4 @@ extern int IS_UTF8(SEXP x);
 #endif
 
 
-#endif /* R_THIS_PATH_BACKPORTS_H */
+#endif /* R_THISPATH_BACKPORTS_H */

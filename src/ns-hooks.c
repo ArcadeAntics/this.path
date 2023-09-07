@@ -30,7 +30,8 @@ SEXP expr_commandArgs                               = NULL,
      expr__sys_path_toplevel                        = NULL,
      expr_getOption_topLevelEnvironment             = NULL,
      expr__toplevel_context_number                  = NULL,
-     expr__isMethodsDispatchOn                      = NULL;
+     expr__isMethodsDispatchOn                      = NULL,
+     expr_UseMethod_lengths                         = NULL;
 
 
 LibExtern Rboolean mbcslocale;
@@ -518,6 +519,12 @@ SEXP do_onLoad do_formals
             EncodeChar(PRINTNAME(_isMethodsDispatchOnSymbol)), "function");
 
 
+#if R_version_less_than(3, 2, 0)
+    expr_UseMethod_lengths = LCONS(UseMethodSymbol, CONS(mkString("lengths"), R_NilValue));
+    R_PreserveObject(expr_UseMethod_lengths);
+#endif
+
+
     return R_NilValue;
 }
 
@@ -559,6 +566,7 @@ SEXP do_onUnload do_formals
     maybe_release(expr_getOption_topLevelEnvironment            );
     maybe_release(expr__toplevel_context_number                 );
     maybe_release(expr__isMethodsDispatchOn                     );
+    maybe_release(expr_UseMethod_lengths                        );
 
 
     {

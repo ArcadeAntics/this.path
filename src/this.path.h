@@ -45,8 +45,8 @@ becomes:
  */
 
 
-#ifndef THIS_PATH_H
-#define THIS_PATH_H
+#ifndef R_THISPATH_THISPATH_H
+#define R_THISPATH_THISPATH_H
 
 
 #include <Rinternals.h>         /* need definition of SEXP */
@@ -64,15 +64,17 @@ extern SEXP do_aquarootscript do_formals;
 
 
 #if R_version_less_than(3, 1, 0)
-extern SEXP do_anyNA          do_formals;
-extern SEXP do_anyNAdataframe do_formals;
-extern SEXP do_anyNAdefault   do_formals;
+extern SEXP do_anyNA               do_formals;
+extern SEXP do_anyNAdataframe      do_formals;
+extern SEXP do_anyNAnumericversion do_formals;
+extern SEXP do_anyNAdefault        do_formals;
 #endif
 
 
 #if R_version_less_than(3, 2, 0)
-extern SEXP do_direxists do_formals;
-extern SEXP do_lengths   do_formals;
+extern SEXP do_direxists             do_formals;
+extern SEXP do_lengths               do_formals;
+extern SEXP do_lengthsdefault        do_formals;
 extern SEXP do_isRegisteredNamespace do_formals;
 #endif
 
@@ -249,4 +251,4 @@ extern SEXP do_setenvpath   do_formals;
 extern SEXP do_setsrcpath   do_formals;
 
 
-#endif  /* #ifndef THIS_PATH_H */
+#endif  /* #ifndef R_THISPATH_THISPATH_H */

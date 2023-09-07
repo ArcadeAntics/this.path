@@ -18,10 +18,13 @@ if (getRversion() < "3.0.0") {
 
 if (getRversion() < "3.1.0") {
     export(anyNA)
+    export(anyNA.data.frame)
+    export(anyNA.numeric_version)
+    export(anyNA.POSIXlt)
     S3method(anyNA, data.frame)
     S3method(anyNA, numeric_version)
     S3method(anyNA, POSIXlt)
-    S3method(anyNA, default)
+    S3method(anyNA, default, .anyNA.default)
 }
 
 
@@ -29,6 +32,7 @@ if (getRversion() < "3.2.0") {
     export(isNamespaceLoaded)
     export(dir.exists)
     export(lengths)
+    S3method(lengths, default, .lengths.default)
     export(file.mtime)
     export(file.info)
 }

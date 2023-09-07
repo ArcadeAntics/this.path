@@ -1,5 +1,5 @@
-#ifndef THISPATHDEFN_H
-#define THISPATHDEFN_H
+#ifndef R_THISPATH_THISPATHDEFN_H
+#define R_THISPATH_THISPATHDEFN_H
 
 
 #include <R.h>
@@ -481,4 +481,4 @@ do {                                                           \
                      (nargs), (name), (expected_nargs)
 
 
-#endif /* #ifndef THISPATHDEFN_H */
+#endif /* #ifndef R_THISPATH_THISPATHDEFN_H */

@@ -37,7 +37,7 @@ extern0 SEXP0
     _C_setprseen2Symbol                    INI_as(install(".C_setprseen2")),
 #endif
 #if R_version_less_than(3, 1, 0)
-    anyNA_dispatchSymbol                   INI_as(install("anyNA_dispatch")),
+    _anyNA_dispatchSymbol                  INI_as(install(".anyNA.dispatch")),
 #endif
 #if R_version_less_than(3, 2, 0)
     R_dot_packageName                      INI_as(install(".packageName")),
@@ -47,6 +47,7 @@ extern0 SEXP0
     all_namesSymbol                        INI_as(install("all.names")),
     lsSymbol                               INI_as(install("ls")),
     topenvSymbol                           INI_as(install("topenv")),
+    UseMethodSymbol                        INI_as(install("UseMethod")),
 #endif
 #if R_version_less_than(3, 4, 0)
     R_AsCharacterSymbol                    INI_as(install("as.character")),

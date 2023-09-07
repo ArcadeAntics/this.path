@@ -507,23 +507,23 @@ SEXP do_wrapsource do_formals
 }
 
 
-#define SETSYSPATH_OP   0
-#define UNSETSYSPATH_OP 1
-#define SETENVPATH_OP   2
-#define SETSRCPATH_OP   3
+typedef enum { SETPATHOP_SETSYSPATH   = 0,
+               SETPATHOP_UNSETSYSPATH    ,
+               SETPATHOP_SETENVPATH      ,
+               SETPATHOP_SETSRCPATH      } SETPATHOP;
 
 
-SEXP setpath(SEXP args, int op, SEXP rho)
+SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
 {
     int nprotect = 0;
 
 
     const char *name;
     switch (op) {
-    case SETSYSPATH_OP:   name = "'set.sys.path()'";   break;
-    case UNSETSYSPATH_OP: name = "'unset.sys.path()'"; break;
-    case SETENVPATH_OP:   name = "'set.env.path()'";   break;
-    case SETSRCPATH_OP:   name = "'set.src.path()'";   break;
+    case SETPATHOP_SETSYSPATH:   name = "'set.sys.path()'";   break;
+    case SETPATHOP_UNSETSYSPATH: name = "'unset.sys.path()'"; break;
+    case SETPATHOP_SETENVPATH:   name = "'set.env.path()'";   break;
+    case SETPATHOP_SETSRCPATH:   name = "'set.src.path()'";   break;
     default:
         error(_("invalid '%s' value"), "op");
         return R_NilValue;
@@ -651,12 +651,12 @@ SEXP setpath(SEXP args, int op, SEXP rho)
         }
         SEXP returnthis = R_NilValue;
         switch (op) {
-        case UNSETSYSPATH_OP:
+        case SETPATHOP_UNSETSYSPATH:
         {
             R_removeVarFromFrame(documentcontextSymbol, frame);
             break;
         }
-        case SETENVPATH_OP:
+        case SETPATHOP_SETENVPATH:
         {
             SEXP envir = CAR(args); args = CDR(args);
             returnthis = envir;
@@ -673,7 +673,7 @@ SEXP setpath(SEXP args, int op, SEXP rho)
             else setAttrib(env, documentcontextSymbol, documentcontext);
             break;
         }
-        case SETSRCPATH_OP:
+        case SETPATHOP_SETSRCPATH:
         {
             SEXP x = CAR(args); args = CDR(args);
             returnthis = x;
@@ -871,26 +871,26 @@ SEXP setpath(SEXP args, int op, SEXP rho)
 SEXP do_setsyspath do_formals
 {
     do_start_no_call_op("setsyspath", 21);
-    return setpath(args, SETSYSPATH_OP, rho);
+    return setpath(SETPATHOP_SETSYSPATH, args, rho);
 }
 
 
 SEXP do_unsetsyspath do_formals
 {
     do_start_no_call_op("unsetsyspath", 0);
-    return setpath(args, UNSETSYSPATH_OP, rho);
+    return setpath(SETPATHOP_UNSETSYSPATH, args, rho);
 }
 
 
 SEXP do_setenvpath do_formals
 {
     do_start_no_call_op("setenvpath", 2);
-    return setpath(args, SETENVPATH_OP, rho);
+    return setpath(SETPATHOP_SETENVPATH, args, rho);
 }
 
 
 SEXP do_setsrcpath do_formals
 {
     do_start_no_call_op("setsrcpath", 1);
-    return setpath(args, SETSRCPATH_OP, rho);
+    return setpath(SETPATHOP_SETSRCPATH, args, rho);
 }

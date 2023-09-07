@@ -1,4 +1,4 @@
-site.file <- function ()
+.site.file <- function ()
 {
     p <- Sys.getenv("R_PROFILE", NA_character_)
     if (!is.na(p)) {
@@ -14,7 +14,7 @@ site.file <- function ()
 }
 
 
-init.file <- function ()
+.init.file <- function ()
 {
     p <- Sys.getenv("R_PROFILE_USER", NA_character_)
     if (!is.na(p)) {

@@ -205,6 +205,44 @@ SEXP do_basename2 do_formals
  */
 
 
+int IntegerFromLogical(int x)
+{
+    return (x == NA_LOGICAL) ? NA_INTEGER : x;
+}
+
+
+int IntegerFromReal(double x)
+{
+    if (ISNAN(x))
+        return NA_INTEGER;
+    else if (x >= INT_MAX)
+        return INT_MAX;
+    else if (x <= INT_MIN) {
+        warning(_("NAs introduced by coercion to integer range"));
+        return NA_INTEGER;
+    }
+    else return (int) x;
+}
+
+
+int IntegerFromComplex(Rcomplex x)
+{
+    if (ISNAN(x.r) || ISNAN(x.i))
+        return NA_INTEGER;
+    else if (x.r >= INT_MAX)
+        return INT_MAX;
+    else if (x.r <= INT_MIN) {
+        warning(_("NAs introduced by coercion to integer range"));
+        return NA_INTEGER;
+    }
+    else {
+        if (x.i != 0)
+            warning(_("imaginary parts discarded in coercion"));
+        return (int) x.r;
+    }
+}
+
+
 static R_INLINE
 SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 {
@@ -224,7 +262,31 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         path = CAR(args);
         if (TYPEOF(path) != STRSXP)
             error(_("a character vector argument expected"));
-        times = asInteger(CADR(args));
+        // times = asInteger(CADR(args));
+        /* more complex version of 'asInteger()' which will coerce all reals
+         * larger than INT_MAX to INT_MAX */
+        {
+            SEXP tmp = CADR(args);
+            if (isVectorAtomic(tmp) && XLENGTH(tmp) >= 1) {
+                switch (TYPEOF(tmp)) {
+                case LGLSXP:
+                    times = IntegerFromLogical(LOGICAL(tmp)[0]);
+                    break;
+                case INTSXP:
+                    times = INTEGER(tmp)[0];
+                    break;
+                case REALSXP:
+                    times = IntegerFromReal(REAL(tmp)[0]);
+                    break;
+                case CPLXSXP:
+                    times = IntegerFromComplex(COMPLEX(tmp)[0]);
+                    break;
+                default:
+                    times = IntegerFromReal(asReal(tmp));
+                }
+            }
+            else times = IntegerFromReal(asReal(tmp));
+        }
         if (times == NA_INTEGER || times < 0)
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");
         break;

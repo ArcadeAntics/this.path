@@ -20,11 +20,10 @@ SEXP do_lastcondition do_formals
 }
 
 
-#define tryCatch2_OP 0
-#define tryCatch3_OP 1
+typedef enum {TRYCATCHOP_2, TRYCATCHOP_3} TRYCATCHOP;
 
 
-SEXP tryCatch (int op, SEXP rho)
+SEXP tryCatch(TRYCATCHOP op, SEXP rho)
 {
     int nprotect = 0;
 
@@ -60,7 +59,7 @@ SEXP tryCatch (int op, SEXP rho)
 
     if (dots_length) {
         switch (op) {
-        case tryCatch2_OP:
+        case TRYCATCHOP_2:
         {
             SEXP fun = allocSExp(CLOSXP), formals;
             MARK_NOT_MUTABLE_defineVar(funSymbol, fun, rho);
@@ -83,7 +82,7 @@ SEXP tryCatch (int op, SEXP rho)
             }
             break;
         }
-        case tryCatch3_OP:
+        case TRYCATCHOP_3:
         {
             SEXP fun0 = allocSExp(CLOSXP), formals, body, assign_last_condition;
             MARK_NOT_MUTABLE(fun0);
@@ -179,12 +178,12 @@ SEXP tryCatch (int op, SEXP rho)
 SEXP do_tryCatch2 do_formals
 {
     do_start_no_call_op("tryCatch2", 0);
-    return tryCatch(tryCatch2_OP, rho);
+    return tryCatch(TRYCATCHOP_2, rho);
 }
 
 
 SEXP do_tryCatch3 do_formals
 {
     do_start_no_call_op("tryCatch3", 0);
-    return tryCatch(tryCatch3_OP, rho);
+    return tryCatch(TRYCATCHOP_3, rho);
 }

@@ -747,6 +747,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         if (identical(function, source)) {
+#define source_char "call to function source"
             if (local)
                 error("%s cannot be called within %s()",
                       name, EncodeChar(PRINTNAME(sourceSymbol)));
@@ -797,7 +798,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#define source_char "call to function source"
                     /* source                 */ mkChar(source_char)
                 );
             }
@@ -901,6 +901,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (identical(function, sys_source)) {
+#undef source_char
+#define source_char "call to function sys.source"
             if (local)
                 error("%s cannot be called within %s()",
                       name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
@@ -984,8 +986,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "call to function sys.source"
                     /* source                 */ mkChar(source_char)
                 );
                 if (srcfile) {
@@ -998,6 +998,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (has_tools_rstudio && identical(function, debugSource)) {
+#undef source_char
+#define source_char "call to function debugSource in RStudio"
             if (local)
                 error("%s cannot be called within %s() in RStudio",
                       name, EncodeChar(PRINTNAME(debugSourceSymbol)));
@@ -1051,8 +1053,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "call to function debugSource in RStudio"
                     /* source                 */ mkChar(source_char)
                 );
             }
@@ -1061,6 +1061,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (testthat_loaded && identical(function, source_file)) {
+#undef source_char
+#define source_char "call to function source_file from package testthat"
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
@@ -1143,8 +1145,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ ignore_all,
                     /* ignore_url             */ ignore_all,
                     /* ignore_file_uri        */ ignore_all,
-#undef source_char
-#define source_char "call to function source_file from package testthat"
                     /* source                 */ mkChar(source_char)
                 );
                 if (srcfile) {
@@ -1168,6 +1168,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (knitr_loaded && identical(function, knit)) {
+#undef source_char
+#define source_char "call to function knit from package knitr"
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
@@ -1221,8 +1223,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "call to function knit from package knitr"
                     /* source                 */ mkChar(source_char)
                 );
             }
@@ -1247,6 +1247,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (box_loaded && identical(function, load_from_source)) {
+#undef source_char
+#define source_char "call to function load_from_source from package box"
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
@@ -1327,8 +1329,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "call to function load_from_source from package box"
                     /* source                 */ mkChar(source_char)
                 );
                 UNPROTECT(1);  /* ofile */
@@ -1345,6 +1345,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (compiler_loaded && identical(function, loadcmp)) {
+#undef source_char
+#define source_char "call to function loadcmp from package compiler"
             /* much the same as sys.source() */
             if (local)
                 error("%s cannot be called within %s() from package %s",
@@ -1399,8 +1401,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "call to function loadcmp from package compiler"
                     /* source                 */ mkChar(source_char)
                 );
             }
@@ -1695,9 +1695,11 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     }
     else if ((documentcontext = getAttrib(env, documentcontextSymbol)) != R_NilValue)
     {
+#undef source_char
+#define source_char "path of top level environment"
         if (TYPEOF(documentcontext) != ENVSXP)
             error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
-        returnfile("path of top level environment");
+        returnfile(source_char);
     }
     else if (isString(path = getAttrib(env, pathSymbol)) && XLENGTH(path) > 0)
     {
@@ -1744,9 +1746,7 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                 /* ignore_stdin           */ FALSE,
                 /* ignore_url             */ FALSE,
                 /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "path of top level environment"
-                    /* source                 */ mkChar(source_char)
+                /* source                 */ mkChar(source_char)
             );
             UNPROTECT(1);
             returnfile(source_char);
@@ -2036,6 +2036,8 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                          (_is_srcfilecopy))
 
 
+#undef source_char
+#define source_char "path of srcfile"
     if (srcfile) {
         documentcontext = findVarInFrame(srcfile, documentcontextSymbol);
         if (documentcontext != R_UnboundValue) {
@@ -2086,8 +2088,6 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                     /* ignore_stdin           */ FALSE,
                     /* ignore_url             */ FALSE,
                     /* ignore_file_uri        */ FALSE,
-#undef source_char
-#define source_char "path of srcfile"
                     /* source                 */ mkChar(source_char)
                 );
             }

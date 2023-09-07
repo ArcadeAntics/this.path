@@ -16,15 +16,17 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
 #if R_version_less_than(3, 1, 0)
-    {"anyNA"         , (DL_FUNC) &do_anyNA         , -1},
-    {"anyNAdataframe", (DL_FUNC) &do_anyNAdataframe, -1},
-    {"anyNAdefault"  , (DL_FUNC) &do_anyNAdefault  , -1},
+    {"anyNA"              , (DL_FUNC) &do_anyNA              , 2},
+    {"anyNAdataframe"     , (DL_FUNC) &do_anyNAdataframe     , 2},
+    {"anyNAnumericversion", (DL_FUNC) &do_anyNAnumericversion, 1},
+    {"anyNAdefault"       , (DL_FUNC) &do_anyNAdefault       , 2},
 #endif
 
 
 #if R_version_less_than(3, 2, 0)
     {"direxists"            , (DL_FUNC) &do_direxists            , 1},
     {"lengths"              , (DL_FUNC) &do_lengths              , 2},
+    {"lengthsdefault"       , (DL_FUNC) &do_lengthsdefault       , 2},
     {"isRegisteredNamespace", (DL_FUNC) &do_isRegisteredNamespace, 1},
 #endif
 
@@ -205,7 +207,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
 };
 
 
-void attribute_visible R_init_this_path(DllInfo *dll)
+attribute_visible
+void R_init_this_path(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, NULL, NULL, externalRoutines);
     R_useDynamicSymbols(dll, FALSE);

@@ -1,5 +1,5 @@
-#ifndef R_THIS_PATH_PROMISES
-#define R_THIS_PATH_PROMISES
+#ifndef R_THISPATH_PROMISES_H
+#define R_THISPATH_PROMISES_H
 
 
 #include <Rinternals.h>  /* need definition of SEXP */

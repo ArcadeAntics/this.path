@@ -141,15 +141,23 @@ if (getRversion() < "3.0.0") {
     ## backports.R  ----
 
 
+    fix.External2.fun(.setprseen2)
+
+    fix.External2.fun(anyNA)
+    fix.External2.fun(anyNA.data.frame)
+    fix.External2.fun(anyNA.numeric_version)
+    fix.External2.fun(.anyNA.default)
+
+    fix.External2.fun(isNamespaceLoaded)
+    fix.External2.fun(dir.exists)
+    fix.External2.fun(lengths)
+    fix.External2.fun(.lengths.default)
+
     fix.External2.fun(strrep)
     fix.External2.fun(startsWith)
     fix.External2.fun(endsWith)
-    fix.External2.fun(dir.exists)
-    fix.External2.fun(lengths)
-    fix.External2.fun(anyNA)
-    fix.External2.fun(anyNA.data.frame)
-    fix.External2.fun(anyNA.default)
-    fix.External2.fun(.setprseen2)
+
+    fix.External2.fun(...length)
 
 
     ## basename2.R  ----
@@ -344,14 +352,6 @@ if (getRversion() < "3.0.0") {
 
 
     ## utils.R      ----
-
-
-    if (getRversion() < "3.5.0") {
-        fix.External2.fun(...length)
-    }
-    if (getRversion() < "3.2.0") {
-        fix.External2.fun(isNamespaceLoaded)
-    }
 
 
     fix.External2.fun(.istrue)
