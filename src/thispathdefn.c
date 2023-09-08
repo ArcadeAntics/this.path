@@ -66,9 +66,9 @@ SEXP getInList(SEXP sym, SEXP list, int C_NULL_ok)
             return VECTOR_ELT(list, i);
         }
     }
-    UNPROTECT(1);
     if (!C_NULL_ok)
-        error("element '%s' not found", what);
+        error("element '%s' not found", EncodeChar(PRINTNAME(sym)));
+    UNPROTECT(1);
     return NULL;
 }
 
