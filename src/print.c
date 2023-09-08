@@ -103,7 +103,7 @@ void my_PrintValueRec(SEXP s, SEXP env)
     defineVar(xSymbol, R_NilValue, mask);
 
 
-    UNPROTECT(2);
+    UNPROTECT(nprotect);
 }
 
 

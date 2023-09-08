@@ -127,7 +127,7 @@ extern void stop(SEXP cond);
 
 
 extern SEXP DocumentContext(void);
-extern SEXP ofile_is_NULL(SEXP documentcontext);
+extern int ofile_is_NULL(SEXP documentcontext);
 
 
 extern void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory);

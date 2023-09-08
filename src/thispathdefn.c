@@ -366,14 +366,9 @@ SEXP DocumentContext(void)
 }
 
 
-SEXP ofile_is_NULL(SEXP documentcontext)
+int ofile_is_NULL(SEXP documentcontext)
 {
-    if (documentcontext != NULL &&
-        documentcontext != R_UnboundValue &&
-        TYPEOF(documentcontext) == ENVSXP &&
-        findVarInFrame(documentcontext, ofileSymbol) == R_NilValue)
-        return documentcontext;
-    return NULL;
+    return findVarInFrame(documentcontext, ofileSymbol) == R_NilValue;
 }
 
 

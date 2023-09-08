@@ -34,7 +34,7 @@ local({
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = TRUE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
@@ -187,7 +187,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)\\.lengths\\.dispatch", x, value = TRUE)
+    x <- grep("(?i)ofile_is_NULL", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
