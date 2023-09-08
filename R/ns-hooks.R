@@ -38,6 +38,35 @@ l10n_info()[[3L]]
 .External2(.C_R_MB_CUR_MAX)
 
 
+## function to be run from '.onLoad'
+.fix.plumber.parseUTF8 <- function (pkgname, pkgpath)
+{
+    ## the arguments are unused, they only exist to match the arguments
+    ## provided to a user hook (see loadNamespace, specifically runUserHook)
+    nsname <- "plumber"
+    if (is.null(ns <- .getNamespace(nsname))) {
+        setHook(packageEvent(nsname), .fix.plumber.parseUTF8, "prepend")
+    } else {
+        sym <- "parseUTF8"
+        fun <- ns[[sym]]
+        if (typeof(fun) == "closure" && 6L <= length(body(fun))) {
+            old.expr <- quote(exprs <- try(parse(file, keep.source = TRUE, srcfile = src, encoding = enc)))
+            new.expr <- quote(exprs <- try(parse(file, keep.source = FALSE, srcfile = src, encoding = enc)))
+            if (identical(body(fun)[[6L]], old.expr)) {
+                body(fun)[[6L]] <- new.expr
+                if (bindingIsLocked(sym, ns)) {
+                    (unlockBinding)(sym, ns)
+                    assign(sym, fun, envir = ns, inherits = FALSE)
+                    lockBinding(sym, ns)
+                }
+                else assign(sym, fun, envir = ns, inherits = FALSE)
+            }
+        }
+    }
+    invisible()
+}
+
+
 .onLoad <- function (libname, pkgname)
 .External2(.C_onLoad, libname, pkgname)
 

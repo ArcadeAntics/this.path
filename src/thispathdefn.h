@@ -171,6 +171,33 @@ extern int is_url(const char *url);
 extern int is_file_uri(const char *url);
 
 
+/* doesn't work in general, for example sys.function() duplicates its return value */
+// #define identical(x, y) ((x) == (y))
+
+
+/* this is the default implementation of identical() */
+/* num.eq = TRUE                 num_as_bits = FALSE      0
+   single.NA = TRUE              NA_as_bits = FALSE       0
+   attrib.as.set = TRUE          attr_by_order = FALSE    0
+   ignore.bytecode = TRUE        use_bytecode = FALSE     0
+   ignore.environment = FALSE    use_cloenv = TRUE        16
+   ignore.srcref = TRUE          use_srcref = FALSE       0
+   extptr.as.ref = FALSE         extptr_as_ref = FALSE    0
+ */
+// #define identical(x, y) R_compute_identical((x), (y), 16)
+
+
+/* num.eq = FALSE                num_as_bits = TRUE       1
+   single.NA = FALSE             NA_as_bits = TRUE        2
+   attrib.as.set = FALSE         attr_by_order = TRUE     4
+   ignore.bytecode = FALSE       use_bytecode = TRUE      8
+   ignore.environment = FALSE    use_cloenv = TRUE        16
+   ignore.srcref = FALSE         use_srcref = TRUE        32
+   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
+ */
+#define identical(x, y) R_compute_identical((x), (y), 127)
+
+
 #if defined(R_CONNECTIONS_VERSION_1)
 typedef struct gzconn {
     Rconnection con;
@@ -446,33 +473,6 @@ do {                                                           \
     UNPROTECT(nprotect);                                       \
     set_R_Visible(TRUE);                                       \
 } while (0)
-
-
-/* doesn't work in general, for example sys.function() duplicates its return value */
-// #define identical(x, y) ((x) == (y))
-
-
-/* this is the default implementation of identical() */
-/* num.eq = TRUE                 num_as_bits = FALSE      0
-   single.NA = TRUE              NA_as_bits = FALSE       0
-   attrib.as.set = TRUE          attr_by_order = FALSE    0
-   ignore.bytecode = TRUE        use_bytecode = FALSE     0
-   ignore.environment = FALSE    use_cloenv = TRUE        16
-   ignore.srcref = TRUE          use_srcref = FALSE       0
-   extptr.as.ref = FALSE         extptr_as_ref = FALSE    0
- */
-// #define identical(x, y) R_compute_identical((x), (y), 16)
-
-
-/* num.eq = FALSE                num_as_bits = TRUE       1
-   single.NA = FALSE             NA_as_bits = TRUE        2
-   attrib.as.set = FALSE         attr_by_order = TRUE     4
-   ignore.bytecode = FALSE       use_bytecode = TRUE      8
-   ignore.environment = FALSE    use_cloenv = TRUE        16
-   ignore.srcref = FALSE         use_srcref = TRUE        32
-   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
- */
-#define identical(x, y) R_compute_identical((x), (y), 127)
 
 
 #define wrong_nargs_to_External(nargs, name, expected_nargs)   \

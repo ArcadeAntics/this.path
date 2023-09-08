@@ -297,6 +297,22 @@ wrapper <- function(path, ...) {
     box:::load_and_register(spec, info, caller)
     invisible()
 }}}
+
+    \item{\plumberplumbnolink}{\preformatted{wrapper <- function(file = NULL, dir = ".") {
+    ofile <- file
+    if (is.null(file)) {
+        file <- list.files(dir, "(?i)^entrypoint\\\\.r$", full.names = TRUE)
+        if (!length(file))
+            file <- list.files(dir, "(?i)^plumber\\\\.r$", full.names = TRUE)
+        if (length(file))
+            set.sys.path(file[1], path.only = TRUE)
+    }
+    else {
+        file <- this.path::path.join(dir, file)
+        set.sys.path(file, path.only = TRUE)
+    }
+    plumber::plumb(ofile, dir)
+}}}
   }
 }
 \examples{
@@ -330,7 +346,7 @@ sourcelike <- function (file, envir = parent.frame())
     }
     srcfile <- srcfilecopy(filename, lines, timestamp, isFile)
     set.src.path(srcfile)
-    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = FALSE)
     invisible(source.exprs(exprs, evaluated = TRUE, envir = envir))
 }
 
@@ -349,7 +365,7 @@ sourcelike2 <- function (pathname, envir = globalenv())
     envir <- as.environment(envir)
     lines <- readLines(pathname, warn = FALSE)
     srcfile <- srcfilecopy(pathname, lines, isFile = TRUE)
-    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = FALSE)
     invisible(source.exprs(exprs, evaluated = TRUE, envir = envir))
 }
 
@@ -428,7 +444,7 @@ sourcelike5 <- function (file)
     oopt <- options(topLevelEnvironment = envir)
     on.exit(options(oopt))
     set.env.path(envir)
-    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = FALSE)
     source.exprs(exprs, evaluated = TRUE, envir = envir)
     envir
 }
@@ -453,7 +469,7 @@ sourcelike6 <- function (file)
     oopt <- options(topLevelEnvironment = envir)
     on.exit(options(oopt))
     set.env.path(envir)
-    exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
+    exprs <- parse(text = lines, srcfile = srcfile, keep.source = FALSE)
     source.exprs(exprs, evaluated = TRUE, envir = envir)
     envir
 }

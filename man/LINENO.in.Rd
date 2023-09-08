@@ -85,8 +85,8 @@ if (TRUE) {
   For \compilerloadcmplink, the \code{srcref} is never stored for the compiled
   code, there is nothing that can be done.
 
-  For \boxuselink, the \code{srcref} is always stored, so you do not need to do
-  anything special before calling.
+  For \boxuselink and \plumberplumblink, the \code{srcref} is always stored, so
+  you do not need to do anything special before calling.
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")

@@ -70,21 +70,25 @@ extern0 SEXP0
     stopSymbol                             INI_as(install("stop")),
     delayedAssignSymbol                    INI_as(install("delayedAssign")),
     _normalizeURL_1Symbol                  INI_as(install(".normalizeURL.1")),
+
     sourceSymbol                           INI_as(install("source")),
     sys_sourceSymbol                       INI_as(install("sys.source")),
+
     _gui_rstudioSymbol                     INI_as(install(".gui.rstudio")),
     _tools_rstudioSymbol                   INI_as(install(".tools:rstudio")),
     _rs_api_getActiveDocumentContextSymbol INI_as(install(".rs.api.getActiveDocumentContext")),
     _rs_api_getSourceEditorContextSymbol   INI_as(install(".rs.api.getSourceEditorContext")),
     debugSourceSymbol                      INI_as(install("debugSource")),
     _debugSourceSymbol                     INI_as(install(".debugSource")),
+
     testthatSymbol                         INI_as(install("testthat")),
     source_fileSymbol                      INI_as(install("source_file")),
-    // _testthat_uses_brioSymbol              INI_as(install(".testthat.uses.brio")),
-    // _knitr_output_dirSymbol                INI_as(install(".knitr.output.dir")),
+
     knitrSymbol                            INI_as(install("knitr")),
     knitSymbol                             INI_as(install("knit")),
+
     wrap_sourceSymbol                      INI_as(install("wrap.source")),
+
     boxSymbol                              INI_as(install("box")),
     load_from_sourceSymbol                 INI_as(install("load_from_source")),
     exprsSymbol                            INI_as(install("exprs")),
@@ -92,8 +96,17 @@ extern0 SEXP0
     infoSymbol                             INI_as(install("info")),
     source_pathSymbol                      INI_as(install("source_path")),
     info_source_pathSymbol                 INI_as(install("info$source_path")),
+
     compilerSymbol                         INI_as(install("compiler")),
     loadcmpSymbol                          INI_as(install("loadcmp")),
+
+    plumberSymbol                          INI_as(install("plumber")),
+    sourceUTF8Symbol                       INI_as(install("sourceUTF8")),
+    PlumberSymbol                          INI_as(install("Plumber")),
+    public_methodsSymbol                   INI_as(install("public_methods")),
+    privateSymbol                          INI_as(install("private")),
+    parsedSymbol                           INI_as(install("parsed")),
+
     methodsSymbol                          INI_as(install("methods")),
     showSymbol                             INI_as(install("show")),
     sys_callSymbol                         INI_as(install("sys.call")),
@@ -106,6 +119,7 @@ extern0 SEXP0
     owdSymbol                              INI_as(install("owd")),
     old_dirSymbol                          INI_as(install("old_dir")),
     wdSymbol                               INI_as(install("wd")),
+    old_wdSymbol                           INI_as(install("old_wd")),
     fileSymbol                             INI_as(install("file")),
     filenameSymbol                         INI_as(install("filename")),
     fileNameSymbol                         INI_as(install("fileName")),

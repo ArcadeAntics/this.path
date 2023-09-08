@@ -3,6 +3,9 @@
 \section{CHANGES IN VERSION devel}{
   \subsection{NEW FEATURES}{
     \itemize{
+      \item{\code{this.path()} is now compatible with function
+        \code{plumber::plumb()}.}
+
       \item{Added \code{tryCatch3()} which accepts condition expressions
         instead of condition handlers. Added active binding
         \codeorsQuote{last.condition} which will be the last thrown-and-caught

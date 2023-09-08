@@ -525,6 +525,21 @@ SEXP do_onLoad do_formals
 #endif
 
 
+    {
+        SEXP sym = install(".fix.plumber.parseUTF8");
+        SEXP tmp = getFromMyNS(sym);
+        PROTECT(tmp);
+        if (TYPEOF(tmp) != CLOSXP)
+            error(_("object '%s' of mode '%s' was not found"),
+                EncodeChar(PRINTNAME(sym)), "function");
+        UNPROTECT(1);
+        SEXP expr = LCONS(sym, R_NilValue);
+        PROTECT(expr);
+        eval(expr, mynamespace);
+        UNPROTECT(1);
+    }
+
+
     return R_NilValue;
 }
 

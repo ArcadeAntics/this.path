@@ -554,6 +554,12 @@ SEXP do_syspathrgui do_formals
 }
 
 
+SEXP srcfile_or_NULL(SEXP srcfile)
+{
+    return (srcfile != R_UnboundValue && TYPEOF(srcfile) == ENVSXP) ? srcfile : NULL;
+}
+
+
 SEXP _syspath(Rboolean verbose         , Rboolean original        ,
               Rboolean for_msg         , Rboolean contents        ,
               Rboolean local           , Rboolean *gave_contents  ,
@@ -671,7 +677,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
     }
 
 
-    SEXP srcfile, exprs, mod_ns, errcnd, ofile, file, lines;
+    SEXP srcfile, errcnd, ofile, file, lines;
 
 
     int nprotect = 0;
@@ -687,8 +693,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
     SEXP ns;
-    Rboolean testthat_loaded, knitr_loaded, compiler_loaded, box_loaded      ;
-    SEXP     source_file    , knit        , loadcmp        , load_from_source;
+    Rboolean testthat_loaded, knitr_loaded, compiler_loaded, box_loaded      , plumber_loaded                               ;
+    SEXP     source_file    , knit        , loadcmp        , load_from_source, sourceUTF8, Plumber_public_methods_initialize;
 
 
     ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
@@ -709,6 +715,30 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
     ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
     compiler_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
     loadcmp = (compiler_loaded ? getInFrame(loadcmpSymbol, ns, FALSE) : R_UnboundValue);
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, plumberSymbol);
+    plumber_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    sourceUTF8 = (plumber_loaded ? getInFrame(sourceUTF8Symbol, ns, FALSE) : R_UnboundValue);
+    Plumber_public_methods_initialize = R_UnboundValue;
+    if (plumber_loaded) {
+        SEXP tmp = getInFrame(PlumberSymbol, ns, FALSE);
+        if (TYPEOF(tmp) == ENVSXP) {
+            tmp = getInFrame(public_methodsSymbol, tmp, FALSE);
+            if (TYPEOF(tmp) == VECSXP) {
+                SEXP names = PROTECT(getAttrib(tmp, R_NamesSymbol));
+                for (R_xlen_t i = 0, n = xlength(names); i < n; i++) {
+                    if (streql("initialize", CHAR(STRING_ELT(names, i)))) {
+                        tmp = VECTOR_ELT(tmp, i);
+                        if (TYPEOF(tmp) == CLOSXP)
+                            Plumber_public_methods_initialize = tmp;
+                        break;
+                    }
+                }
+                UNPROTECT(1);
+            }
+        }
+    }
 
 
     SEXP which = allocVector(INTSXP, 1);
@@ -907,8 +937,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 error("%s cannot be called within %s()",
                       name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
-            srcfile = findVarInFrame(frame, srcfileSymbol);
-            if (srcfile == R_UnboundValue || TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
+            srcfile = srcfile_or_NULL(findVarInFrame(frame, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
                 if (TYPEOF(documentcontext) != ENVSXP)
                     error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
@@ -1067,8 +1096,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
-            srcfile = findVarInFrame(frame, srcfileSymbol);
-            if (srcfile == R_UnboundValue || TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
+            srcfile = srcfile_or_NULL(findVarInFrame(frame, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
                 if (TYPEOF(documentcontext) != ENVSXP)
                     error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
@@ -1231,6 +1259,8 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
         else if (identical(function, wrap_source)) {
+#undef source_char
+#define source_char "call to function wrap.source from package this.path"
             if (local)
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
@@ -1242,7 +1272,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
             SEXP n = findVarInFrame(documentcontext, nSymbol);
             if (TYPEOF(n) != INTSXP || LENGTH(n) != 1)
                 error(_("invalid '%s' value"), EncodeChar(PRINTNAME(nSymbol)));
-            returnfile(n, "call to function wrap.source from package this.path");
+            returnfile(n, source_char);
         }
 
 
@@ -1253,14 +1283,11 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 error("%s cannot be called within %s() from package %s",
                       name, EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
-            exprs = findVarInFrame(frame, exprsSymbol);
             srcfile = NULL;
-            if (exprs == R_UnboundValue || TYPEOF(exprs) != EXPRSXP) exprs = NULL;
-            if (exprs) {
-                srcfile = getAttrib(exprs, srcfileSymbol);
-                if (srcfile == R_NilValue || TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
-            }
-            mod_ns = getInFrame(mod_nsSymbol, frame, TRUE);
+            SEXP exprs = findVarInFrame(frame, exprsSymbol);
+            if (exprs != R_UnboundValue && TYPEOF(exprs) == EXPRSXP)
+                srcfile = srcfile_or_NULL(getAttrib(exprs, srcfileSymbol));
+            SEXP mod_ns = getInFrame(mod_nsSymbol, frame, TRUE);
             if (mod_ns == R_UnboundValue || TYPEOF(mod_ns) != ENVSXP) mod_ns = NULL;
             if (documentcontext != R_UnboundValue) {
                 if (TYPEOF(documentcontext) != ENVSXP)
@@ -1303,7 +1330,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* frame                  */ frame,
                     /* as_binding             */ TRUE,
                     /* check_not_directory    */ FALSE,
-                    /* forcepromise           */ TRUE,
+                    /* forcepromise           */ FALSE,
                     /* assign_returnvalue     */ FALSE,
                     /* maybe_chdir            */ TRUE,
                     /* getowd                 */ wd,
@@ -1403,6 +1430,169 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_file_uri        */ FALSE,
                     /* source                 */ mkChar(source_char)
                 );
+            }
+            returnfile(which, source_char);
+        }
+
+
+        else if (plumber_loaded && identical(function, sourceUTF8)) {
+#undef source_char
+#define source_char "call to function sourceUTF8 from package plumber"
+            if (local)
+                error("%s cannot be called within %s() from package %s",
+                      name, EncodeChar(PRINTNAME(sourceUTF8Symbol)), EncodeChar(PRINTNAME(plumberSymbol)));
+            documentcontext = findVarInFrame(frame, documentcontextSymbol);
+            srcfile = NULL;
+            SEXP exprs = findVarInFrame(frame, exprsSymbol);
+            if (exprs != R_UnboundValue && TYPEOF(exprs) == EXPRSXP)
+                srcfile = srcfile_or_NULL(getAttrib(exprs, srcfileSymbol));
+            if (documentcontext != R_UnboundValue) {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                if (srcfile && findVarInFrame(srcfile, documentcontextSymbol) == R_UnboundValue) {
+                    INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    R_LockBinding(documentcontextSymbol, srcfile);
+                }
+            }
+            else if (srcfile && (documentcontext = findVarInFrame(srcfile, documentcontextSymbol)) != R_UnboundValue) {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
+                R_LockBinding(documentcontextSymbol, frame);
+            }
+            else {
+                SEXP ofile = findVarInFrame(frame, fileSymbol);
+                if (TYPEOF(ofile) == PROMSXP) {
+                    /* if ofile is a promise already under evaluation */
+                    if (PRSEEN(ofile) == 1) continue;
+                    if (PRVALUE(ofile) == R_UnboundValue)
+                        ofile = eval(ofile, R_EmptyEnv);
+                    else
+                        ofile = PRVALUE(ofile);
+                }
+                SEXP wd = srcfile ? findVarInFrame(srcfile, wdSymbol) : R_UnboundValue;
+                checkfile(
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ fileSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* as_binding             */ TRUE,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ wd,
+                    /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE,
+                    /* source                 */ mkChar(source_char)
+                );
+                if (srcfile) {
+                    INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    R_LockBinding(documentcontextSymbol, srcfile);
+                }
+            }
+            returnfile(which, source_char);
+        }
+
+
+/* num.eq = FALSE                num_as_bits = TRUE       1
+   single.NA = FALSE             NA_as_bits = TRUE        2
+   attrib.as.set = FALSE         attr_by_order = TRUE     4
+   ignore.bytecode = TRUE        use_bytecode = FALSE     0
+   ignore.environment = TRUE     use_cloenv = FALSE       0
+   ignore.srcref = FALSE         use_srcref = TRUE        32
+   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
+ */
+        else if (plumber_loaded && R_compute_identical(function, Plumber_public_methods_initialize, 103)) {
+#undef source_char
+#define source_char "call to function Plumber$public_methods$initialize from package plumber"
+            if (local)
+                error("%s cannot be called within %s()",
+                      name, "Plumber$public_methods$initialize");
+            documentcontext = findVarInFrame(frame, documentcontextSymbol);
+            SEXP private_env = findVarInFrame(CLOENV(function), privateSymbol);
+            if (TYPEOF(private_env) != ENVSXP) continue;
+            SEXP parsed = findVarInFrame(private_env, parsedSymbol);
+            if (TYPEOF(parsed) != EXPRSXP) continue;
+            srcfile = srcfile_or_NULL(getAttrib(parsed, srcfileSymbol));
+            if (documentcontext != R_UnboundValue) {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                if (srcfile && findVarInFrame(srcfile, documentcontextSymbol) == R_UnboundValue) {
+                    INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    R_LockBinding(documentcontextSymbol, srcfile);
+                }
+            }
+            else if (srcfile && (documentcontext = findVarInFrame(srcfile, documentcontextSymbol)) != R_UnboundValue) {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
+                R_LockBinding(documentcontextSymbol, frame);
+            }
+            else {
+                ofile = findVarInFrame(private_env, filenameSymbol);
+                if (ofile == R_UnboundValue)
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
+                SEXP wd = findVarInFrame(frame, old_wdSymbol);
+                checkfile(
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ filenameSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* as_binding             */ TRUE,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ wd,
+                    /* hasowd                 */ ((owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE,
+                    /* source                 */ mkChar(source_char)
+                );
+                if (srcfile) {
+                    INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    R_LockBinding(documentcontextSymbol, srcfile);
+                }
             }
             returnfile(which, source_char);
         }
@@ -1720,7 +1910,7 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                 /* frame                  */ env,
                 /* as_binding             */ FALSE,
                 /* check_not_directory    */ TRUE,
-                /* forcepromise           */ TRUE,
+                /* forcepromise           */ FALSE,
                 /* assign_returnvalue     */ FALSE,
                 /* maybe_chdir            */ FALSE,
                 /* getowd                 */ NULL,
