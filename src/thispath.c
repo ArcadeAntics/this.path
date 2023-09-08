@@ -726,16 +726,9 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
         if (TYPEOF(tmp) == ENVSXP) {
             tmp = getInFrame(public_methodsSymbol, tmp, FALSE);
             if (TYPEOF(tmp) == VECSXP) {
-                SEXP names = PROTECT(getAttrib(tmp, R_NamesSymbol));
-                for (R_xlen_t i = 0, n = xlength(names); i < n; i++) {
-                    if (streql("initialize", CHAR(STRING_ELT(names, i)))) {
-                        tmp = VECTOR_ELT(tmp, i);
-                        if (TYPEOF(tmp) == CLOSXP)
-                            Plumber_public_methods_initialize = tmp;
-                        break;
-                    }
-                }
-                UNPROTECT(1);
+                tmp = getInList(initializeSymbol, tmp, TRUE);
+                if (tmp && TYPEOF(tmp) == CLOSXP)
+                    Plumber_public_methods_initialize = tmp;
             }
         }
     }
@@ -1515,15 +1508,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
         }
 
 
-/* num.eq = FALSE                num_as_bits = TRUE       1
-   single.NA = FALSE             NA_as_bits = TRUE        2
-   attrib.as.set = FALSE         attr_by_order = TRUE     4
-   ignore.bytecode = TRUE        use_bytecode = FALSE     0
-   ignore.environment = TRUE     use_cloenv = FALSE       0
-   ignore.srcref = FALSE         use_srcref = TRUE        32
-   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
- */
-        else if (plumber_loaded && R_compute_identical(function, Plumber_public_methods_initialize, 103)) {
+        else if (plumber_loaded && identical_ignore_bytecode_ignore_environment(function, Plumber_public_methods_initialize)) {
 #undef source_char
 #define source_char "call to function Plumber$public_methods$initialize from package plumber"
             if (local)

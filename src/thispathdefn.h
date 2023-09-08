@@ -80,6 +80,7 @@ extern const char *EncodeChar(SEXP);
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 #define getFromBase(sym) (getInFrame((sym), R_BaseEnv, FALSE))
 #define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))
+extern SEXP getInList(SEXP sym, SEXP list, int C_NULL_ok);
 
 
 void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
@@ -175,16 +176,24 @@ extern int is_file_uri(const char *url);
 // #define identical(x, y) ((x) == (y))
 
 
-/* this is the default implementation of identical() */
 /* num.eq = TRUE                 num_as_bits = FALSE      0
    single.NA = TRUE              NA_as_bits = FALSE       0
    attrib.as.set = TRUE          attr_by_order = FALSE    0
    ignore.bytecode = TRUE        use_bytecode = FALSE     0
    ignore.environment = FALSE    use_cloenv = TRUE        16
    ignore.srcref = TRUE          use_srcref = FALSE       0
-   extptr.as.ref = FALSE         extptr_as_ref = FALSE    0
- */
-// #define identical(x, y) R_compute_identical((x), (y), 16)
+   extptr.as.ref = FALSE         extptr_as_ref = FALSE    0   */
+#define identical_default(x, y) ( R_compute_identical((x), (y), 16) )
+
+
+/* num.eq = FALSE                num_as_bits = TRUE       1
+   single.NA = FALSE             NA_as_bits = TRUE        2
+   attrib.as.set = FALSE         attr_by_order = TRUE     4
+   ignore.bytecode = TRUE        use_bytecode = FALSE     0
+   ignore.environment = TRUE     use_cloenv = FALSE       0
+   ignore.srcref = FALSE         use_srcref = TRUE        32
+   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64  */
+#define identical_ignore_bytecode_ignore_environment(x, y) ( R_compute_identical((x), (y), 103) )
 
 
 /* num.eq = FALSE                num_as_bits = TRUE       1
@@ -193,9 +202,8 @@ extern int is_file_uri(const char *url);
    ignore.bytecode = FALSE       use_bytecode = TRUE      8
    ignore.environment = FALSE    use_cloenv = TRUE        16
    ignore.srcref = FALSE         use_srcref = TRUE        32
-   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64
- */
-#define identical(x, y) R_compute_identical((x), (y), 127)
+   extptr.as.ref = TRUE          extptr_as_ref = TRUE     64  */
+#define identical(x, y) ( R_compute_identical((x), (y), 127) )
 
 
 #if defined(R_CONNECTIONS_VERSION_1)

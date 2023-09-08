@@ -594,6 +594,15 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
     }
 
 
+    ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
+    if (ns == R_UnboundValue ? FALSE : TRUE) {
+        if (identical(function, getInFrame(loadcmpSymbol, ns, FALSE))) {
+            error("%s cannot be called within %s() from package %s",
+                  name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+        }
+    }
+
+
     ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
     if (ns == R_UnboundValue ? FALSE : TRUE) {
         if (identical(function, getInFrame(load_from_sourceSymbol, ns, FALSE))) {
@@ -603,11 +612,21 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
     }
 
 
-    ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
+    ns = findVarInFrame(R_NamespaceRegistry, plumberSymbol);
     if (ns == R_UnboundValue ? FALSE : TRUE) {
-        if (identical(function, getInFrame(loadcmpSymbol, ns, FALSE))) {
+        if (identical(function, getInFrame(sourceUTF8Symbol, ns, FALSE))) {
             error("%s cannot be called within %s() from package %s",
-                  name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+                  name, EncodeChar(PRINTNAME(sourceUTF8Symbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+        }
+        SEXP tmp = getInFrame(PlumberSymbol, ns, FALSE);
+        if (TYPEOF(tmp) == ENVSXP) {
+            tmp = getInFrame(public_methodsSymbol, tmp, FALSE);
+            if (TYPEOF(tmp) == VECSXP) {
+                tmp = getInList(initializeSymbol, tmp, TRUE);
+                if (tmp && TYPEOF(tmp) == CLOSXP && identical_ignore_bytecode_ignore_environment(function, tmp))
+                    error("%s cannot be called within %s() from package %s",
+                          name, "Plumber$public_methods$initialize", EncodeChar(PRINTNAME(plumberSymbol)));
+            }
         }
     }
 

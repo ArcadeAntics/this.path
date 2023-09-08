@@ -56,6 +56,23 @@ SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 }
 
 
+SEXP getInList(SEXP sym, SEXP list, int C_NULL_ok)
+{
+    const char *what = translateChar(PRINTNAME(sym));
+    SEXP names = PROTECT(getAttrib(list, R_NamesSymbol));
+    for (R_xlen_t i = 0, n = xlength(names); i < n; i++) {
+        if (!strcmp(translateChar(STRING_ELT(names, i)), what)) {
+            UNPROTECT(1);
+            return VECTOR_ELT(list, i);
+        }
+    }
+    UNPROTECT(1);
+    if (!C_NULL_ok)
+        error("element '%s' not found", what);
+    return NULL;
+}
+
+
 void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho)
 {
     INCREMENT_NAMED(value);

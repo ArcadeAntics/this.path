@@ -526,14 +526,17 @@ SEXP do_onLoad do_formals
 
 
     {
-        SEXP sym = install(".fix.plumber.parseUTF8");
-        SEXP tmp = getFromMyNS(sym);
-        PROTECT(tmp);
-        if (TYPEOF(tmp) != CLOSXP)
-            error(_("object '%s' of mode '%s' was not found"),
-                EncodeChar(PRINTNAME(sym)), "function");
-        UNPROTECT(1);
-        SEXP expr = LCONS(sym, R_NilValue);
+        /* if {plumber} is loaded, call '.fix.plumber.parseUTF8' */
+        if (findVarInFrame(R_NamespaceRegistry, plumberSymbol) != R_UnboundValue) {
+            SEXP expr = LCONS(install(".fix.plumber.parseUTF8"), R_NilValue);
+            PROTECT(expr);
+            eval(expr, mynamespace);
+            UNPROTECT(1);
+        }
+
+
+        /* in case {plumber} is unloaded then reloaded, set as a hook */
+        SEXP expr = LCONS(install(".maybe.setHook.packageEvent.plumber.fix.plumber.parseUTF8"), R_NilValue);
         PROTECT(expr);
         eval(expr, mynamespace);
         UNPROTECT(1);

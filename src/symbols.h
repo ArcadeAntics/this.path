@@ -104,6 +104,7 @@ extern0 SEXP0
     sourceUTF8Symbol                       INI_as(install("sourceUTF8")),
     PlumberSymbol                          INI_as(install("Plumber")),
     public_methodsSymbol                   INI_as(install("public_methods")),
+    initializeSymbol                       INI_as(install("initialize")),
     privateSymbol                          INI_as(install("private")),
     parsedSymbol                           INI_as(install("parsed")),
 
