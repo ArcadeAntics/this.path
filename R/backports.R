@@ -18,15 +18,16 @@ parse <- evalq(envir = .BaseNamespaceEnv,
 function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),
     srcfile = NULL, encoding = "unknown")
 {
-    if (!missing(keep.source)) {
-        opt.keep.source <- getOption("keep.source")
-        if (isTRUE(keep.source) != isTRUE(opt.keep.source)) {
-            on.exit(options(keep.source = opt.keep.source))
-            options(keep.source = keep.source)
+    if (missing(srcfile)) {
+        if (!missing(keep.source)) {
+            opt.keep.source <- getOption("keep.source")
+            if (isTRUE(keep.source) != isTRUE(opt.keep.source)) {
+                on.exit(options(keep.source = opt.keep.source))
+                options(keep.source = keep.source)
+            }
         }
-    }
-    if (missing(srcfile))
         parse(file = file, n = n, text = text, prompt = prompt, srcfile = , encoding = encoding)
+    }
     else parse(file = file, n = n, text = text, prompt = prompt, srcfile = srcfile, encoding = encoding)
 }
 )
@@ -145,15 +146,22 @@ if (getRversion() < "3.4.0") {
 
 
 .withAutoprint <- function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
-    echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20,
-        getOption("width")), deparseCtrl = c("keepInteger", "showAttributes",
-        "keepNA"), spaced = FALSE, ...)
+    echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20, getOption("width")),
+    deparseCtrl = c("keepInteger", "showAttributes", "keepNA"),
+    spaced = FALSE, skip.echo = 0, ...)
 {
     if (!evaluated) {
         exprs <- substitute(exprs)
         if (is.call(exprs)) {
-            if (exprs[[1]] == quote(`{`))
-                exprs <- as.list(exprs[-1])
+            if (exprs[[1]] == quote(`{`)) {
+                exprs <- as.list(exprs)[-1]
+                if (missing(skip.echo) &&
+                    length(exprs) &&
+                    is.list(srcrefs <- attr(exprs, "srcref")))
+                {
+                    skip.echo <- srcrefs[[1L]][7L] - 1L
+                }
+            }
         }
     }
     if (!is.expression(exprs))
@@ -161,14 +169,39 @@ if (getRversion() < "3.4.0") {
     conn <- textConnection(.code2character(exprs, width.cutoff = width.cutoff, deparseCtrl = deparseCtrl))
     on.exit(close(conn))
     source(file = conn, local = local, print.eval = print., echo = echo,
-        max.deparse.length = max.deparse.length, ...)
+        max.deparse.length = max.deparse.length, skip.echo = skip.echo, ...)
 }
 
 
 } else {
 
 
-.withAutoprint <- withAutoprint
+.withAutoprint <- evalq(envir = .BaseNamespaceEnv,
+function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
+    echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20, getOption("width")),
+    deparseCtrl = c("keepInteger", "showAttributes", "keepNA"),
+    skip.echo = 0, ...)
+{
+    if (!evaluated) {
+        exprs <- substitute(exprs)
+        if (is.call(exprs)) {
+            if (exprs[[1]] == quote(`{`)) {
+                exprs <- as.list(exprs)[-1]
+                if (missing(skip.echo) &&
+                    length(exprs) &&
+                    is.list(srcrefs <- attr(exprs, "srcref")))
+                {
+                    skip.echo <- srcrefs[[1L]][7L] - 1L
+                }
+            }
+        }
+    }
+    source(exprs = exprs, local = local, print.eval = print.,
+        echo = echo, max.deparse.length = max.deparse.length,
+        width.cutoff = width.cutoff, deparseCtrl = deparseCtrl,
+        skip.echo = skip.echo, ...)
+}
+)
 
 
 }

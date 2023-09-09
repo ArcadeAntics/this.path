@@ -15,11 +15,14 @@ wrap.source <- function (expr, path.only = FALSE, character.only = path.only,
     ignore.stdin, ignore.url, ignore.file.uri)
 
 
-set.sys.path <- wrap.source
-names(formals(set.sys.path))[1L] <- "file"
-formals(set.sys.path) <- c(formals(set.sys.path), alist(Function = NULL, ofile = ))
-body(set.sys.path)[2L] <- alist(.C_setsyspath)
-body(set.sys.path) <- as.call(c(as.list(body(set.sys.path)), alist(Function)))
+set.sys.path <- local({
+    tmp <- wrap.source
+    names(formals(tmp))[1L] <- "file"
+    formals(tmp) <- c(formals(tmp), alist(Function = NULL, ofile = ))
+    body(tmp)[2L] <- alist(.C_setsyspath)
+    body(tmp) <- as.call(c(as.list(body(tmp)), alist(Function)))
+    tmp
+})
 
 
 unset.sys.path <- function ()

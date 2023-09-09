@@ -662,12 +662,12 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
 
     if (op) {
         documentcontext = findVarInFrame(frame, documentcontextSymbol);
-        if (documentcontext == R_UnboundValue ||
-            TYPEOF(documentcontext) != ENVSXP ||
-            !existsInFrame(documentcontext, setsyspathwashereSymbol))
-        {
+        if (documentcontext == R_UnboundValue)
             error("%s cannot be called before set.sys.path()", name);
-        }
+        if (TYPEOF(documentcontext) != ENVSXP)
+            error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+        if (!existsInFrame(documentcontext, setsyspathwashereSymbol))
+            error("%s cannot be called before set.sys.path()", name);
         SEXP returnthis = R_NilValue;
         switch (op) {
         case SETPATHOP_UNSETSYSPATH:
@@ -740,7 +740,21 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
         set_n(parent, documentcontext);
         set_R_Visible(TRUE);
         UNPROTECT(nprotect);
-        return R_MissingArg;
+        // return R_MissingArg;
+        /* this is better because it preserves the original value */
+        SEXP value = findVarInFrame(rho, fileSymbol);
+        if (value == R_UnboundValue)
+            error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
+        if (value == R_MissingArg)
+            return R_MissingArg;
+        if (TYPEOF(value) != PROMSXP)
+            error("invalid '%s' value, expected R_MissingArg or a promise", EncodeChar(PRINTNAME(fileSymbol)));
+        if (TYPEOF(PREXPR(value)) != SYMSXP)
+            error("invalid '%s' value, expected a symbol", EncodeChar(PRINTNAME(fileSymbol)));
+        value = findVarInFrame(PRENV(value), PREXPR(value));
+        if (value == R_UnboundValue)
+            error(_("object '%s' not found"), EncodeChar(PRINTNAME(PREXPR(value))));
+        return value;
     }
 
 
@@ -832,6 +846,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
     }
     if (source && TYPEOF(source) == CHARSXP);
     else error("internal error; invalid '%s' value", "source");
+
 
     ofile = getInFrame(fileSymbol, rho, FALSE);
     PROTECT(ofile); nprotect++;

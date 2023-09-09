@@ -543,6 +543,7 @@ if (getRversion() < "3.2.0") {
     formals(.write.code)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
 
 
+    rm(tmp)
 }
 
 

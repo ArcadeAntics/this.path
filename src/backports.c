@@ -778,6 +778,7 @@ Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
 {
     SEXP expr;
     PROTECT_INDEX indx;
+    /* exists(symbol, envir = rho, inherits = FALSE) */
     PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
     SET_TAG(expr, inheritsSymbol);
     REPROTECT(expr = CONS(rho, expr), indx);

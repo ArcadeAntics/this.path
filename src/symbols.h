@@ -72,6 +72,7 @@ extern0 SEXP0
     _normalizeURL_1Symbol                  INI_as(install(".normalizeURL.1")),
 
     sourceSymbol                           INI_as(install("source")),
+    NeSymbol                               INI_as(install("Ne")),
     sys_sourceSymbol                       INI_as(install("sys.source")),
 
     _gui_rstudioSymbol                     INI_as(install(".gui.rstudio")),

@@ -775,9 +775,42 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 error("%s cannot be called within %s()",
                       name, EncodeChar(PRINTNAME(sourceSymbol)));
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
+            srcfile = NULL;
+            if (R_existsVarInFrame(frame, NeSymbol)) {
+                SEXP exprs = getInFrame(exprsSymbol, frame, TRUE);
+                if (exprs != R_UnboundValue && TYPEOF(exprs) == EXPRSXP)
+                    srcfile = srcfile_or_NULL(getAttrib(exprs, srcfileSymbol));
+            }
             if (documentcontext != R_UnboundValue) {
                 if (TYPEOF(documentcontext) != ENVSXP)
                     error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                if (srcfile) {
+                    SEXP tmp = findVarInFrame(srcfile, documentcontextSymbol);
+                    if (tmp == R_UnboundValue) {
+                        INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                        R_LockBinding(documentcontextSymbol, srcfile);
+                    }
+                    else if (documentcontext == tmp);
+                    else if (TYPEOF(tmp) != ENVSXP) {
+                        error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                    }
+                    else if (ofile_is_NULL(tmp)) {
+                        if (R_BindingIsLocked(documentcontextSymbol, srcfile)) {
+                            R_unLockBinding(documentcontextSymbol, srcfile);
+                            INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                            R_LockBinding(documentcontextSymbol, srcfile);
+                        }
+                        else INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    }
+                }
+            }
+            else if (srcfile && (documentcontext = findVarInFrame(srcfile, documentcontextSymbol)) != R_UnboundValue &&
+                     (TYPEOF(documentcontext) != ENVSXP || !ofile_is_NULL(documentcontext)))
+            {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
+                R_LockBinding(documentcontextSymbol, frame);
             }
             else {
                 ofile = findVarInFrame(frame, ofileSymbol);
@@ -823,6 +856,21 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     /* ignore_file_uri        */ FALSE,
                     /* source                 */ mkChar(source_char)
                 );
+                if (srcfile) {
+                    SEXP tmp = findVarInFrame(srcfile, documentcontextSymbol);
+                    if (tmp == R_UnboundValue) {
+                        INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                        R_LockBinding(documentcontextSymbol, srcfile);
+                    }
+                    else {
+                        if (R_BindingIsLocked(documentcontextSymbol, srcfile)) {
+                            R_unLockBinding(documentcontextSymbol, srcfile);
+                            INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                            R_LockBinding(documentcontextSymbol, srcfile);
+                        }
+                        else INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    }
+                }
             }
 
 

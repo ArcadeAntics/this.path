@@ -187,7 +187,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)ofile_is_NULL", x, value = TRUE)
+    x <- grep("(?i)(?<!de)parse\\(", x, value = TRUE, perl = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

@@ -230,13 +230,12 @@ this.path:::.write.code({
     this.path:::.withAutoprint({
         cat(sQuote(this.path::sys.path(verbose = TRUE, default = {
             stop("since the executing script's path will be found,\\n",
-                " argument 'default' will not be evaluated, so this\\n",
-                " error will not be thrown! you can use this to\\n",
-                " your advantage in a similar manner, doing\\n",
-                " arbitrary things only if the executing script\\n",
+                " 'default' will not be evaluated, so this error\\n",
+                " will not be thrown! use this to your advantage to\\n",
+                " do arbitrary things only if the executing script\\n",
                 " does not exist")
         })), "\\n\\n")
-    }, spaced = TRUE, verbose = FALSE, width.cutoff = 58L,
+    }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L,
        prompt = Sys.getenv("R_PROMPT"), continue = Sys.getenv("R_CONTINUE"))
 }, FILE1.R)
 
@@ -270,7 +269,7 @@ if (requireNamespace("knitr")) {
     writeLines(c(
         "```{r}",
         ## same expression as above
-        deparse(parse(FILE1.R)[[c(1L, 2L, 2L)]], width.cutoff = 55L),
+        deparse(parse(FILE1.R)[[c(1L, 2L, 2L)]]),
         "```"
     ), FILE2.Rmd)
 

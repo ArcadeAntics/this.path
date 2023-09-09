@@ -210,16 +210,10 @@ LINE <- eval(call("function", NULL, bquote({
         }
         exprs <- if (!from_file) {
             if (length(lines) && is.character(lines))
-                # .Internal(parse(stdin(), n = -1, lines, "?",
-                #   srcfile, encoding))
-                parse(file = stdin(), n = -1, text = lines,
-                    srcfile = srcfile, encoding = encoding)
+                parse(file = stdin(), n = -1, text = lines, keep.source = FALSE, srcfile = srcfile, encoding = encoding)
             else expression()
         }
-        # else .Internal(parse(file, n = -1, NULL, "?", srcfile,
-        #     encoding))
-        else parse(file = file, n = -1, srcfile = srcfile,
-            encoding = encoding)
+        else parse(file = file, n = -1, keep.source = FALSE, srcfile = srcfile, encoding = encoding)
         on.exit()
         if (from_file)
             close(file)
@@ -448,7 +442,7 @@ source.exprs <- function (exprs, evaluated = FALSE, envir = parent.frame(), echo
     on.exit()
     close(file)
     srcfile <- srcfilecopy(filename, lines, file.mtime(filename)[1], isFile = TRUE)
-    exprs <- parse(n = -1, text = lines, srcfile = srcfile)
+    exprs <- parse(n = -1, text = lines, keep.source = FALSE, srcfile = srcfile)
     Ne <- length(exprs)
     if (echo)
         trySrcLines <- function(from, to) {

@@ -74,7 +74,7 @@ rm(envir)
 
 ## thispath.R  ----
 envir <- environment(.shFILE)
-tmp(grep("^\\.this\\.path::", names(envir), value = TRUE), envir = envir)
+tmp("ofile", "file", envir = envir)
 rm(envir)
 
 
