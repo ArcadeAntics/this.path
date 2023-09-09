@@ -207,7 +207,7 @@ local({
     }
 
 
-    ## 'box::use' cannot handle file URIs nor connections
+    ## 'plumber::plumb' cannot handle file URIs nor connections
     if (requireNamespace("plumber", quietly = TRUE)) {
         setwd(base.path.dir)
         fun(plumber::plumb(.(base.path.R)))
