@@ -109,6 +109,9 @@ extern0 SEXP0
     privateSymbol                          INI_as(install("private")),
     parsedSymbol                           INI_as(install("parsed")),
 
+    shinySymbol                            INI_as(install("shiny")),
+    srcSymbol                              INI_as(install("src")),
+
     methodsSymbol                          INI_as(install("methods")),
     showSymbol                             INI_as(install("show")),
     sys_callSymbol                         INI_as(install("sys.call")),

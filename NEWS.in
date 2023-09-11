@@ -4,6 +4,8 @@ CHANGES IN this.path devel:
 
   NEW FEATURES:
 
+    * this.path() is now compatible with function shiny::runApp().
+
     * this.path() is now compatible with function plumber::plumb().
 
     * Added tryCatch3() which accepts condition expressions instead of

@@ -6,48 +6,57 @@ local({
     } else on.exit(setwd(owd), add = TRUE)
 
 
-    fun <- function(expr, envir = parent.frame()) {
-        if (!is.environment(envir))
-            stop("not an environment", domain = "R")
-        expr <- call("bquote", substitute(expr), as.symbol("envir"))
-        expr <- eval(expr)
-        # dep <- deparse1(expr, "\n", 60L)
-        ## replace with this for R < 4.0.0:
-        dep <- paste(deparse(expr, 60L), collapse = "\n")
-        dep <- gsub("\n", "\n+ ", dep, fixed = TRUE, useBytes = TRUE)
-        dep <- paste0("> ", dep)
-        cat("\n\n\n\n\n\n\n\n\n\n", dep, "\n", sep = "")
-        eval(expr, parent.frame())
-    }
-
-
     ## test for 3 specific cases of sourcing
     ## * sourcing a file by specifying its basename
     ## * sourcing a file by specifying its absolute path
-    ## * sourcing a file by specifying one of its relative paths that is not its basename
-    base.path.R  <- "test.R"
-    full.path.R  <- this.path::sys.here(base.path.R)
-    short.path.R <- file.path(basename(dirname(full.path.R)), base.path.R)
-
-
-    on.exit(unlink(full.path.R), add = TRUE)
+    ## * sourcing a file by specifying one of its relative paths
+    abs.path.R <- tempfile("test", fileext = ".R")
+    on.exit(unlink(abs.path.R), add = TRUE)
     this.path:::.write.code({
         cat("\n> getwd()\n")
         print(getwd())
         cat("\n> sys.path(verbose = TRUE)\n")
         print(this.path::sys.path(verbose = TRUE))
-    }, file = full.path.R)
+    }, file = abs.path.R)
+    abs.path.R <- normalizePath(abs.path.R, "/", TRUE)
+    abs.path.dir <- normalizePath(R.home(), "/", TRUE)
+    basename.R <- this.path::basename2(abs.path.R)
+    basename.dir <- this.path::dirname2(abs.path.R)
+
+
+    make.rel.path.and.dir <- function(file) {
+        x <- this.path::path.split.1(file)
+        n <- length(x)
+        if (n < 3L) {
+            c(this.path::dirname2(file), this.path::basename2(file))
+        } else {
+            i <- n < seq_len(n) + max(2L, n%/%2L)
+            c(this.path::path.unsplit(x[!i]), this.path::path.unsplit(x[i]))
+        }
+    }
+    tmp <- make.rel.path.and.dir(abs.path.R)
+    rel.path.dir <- tmp[[1L]]
+    rel.path.R <- tmp[[2L]]
+    rm(tmp)
+
+
+    replace.backslash <- if (.Platform$OS.type == "windows") {
+        function(x) chartr("\\", "/", x)
+    } else {
+        function(x) x
+    }
 
 
     ## for 'source' and 'debugSource' specifically,
-    ## try sourcing with a file URI
+    ## try sourcing a file URI
     as.file.uri <- function(path) {
         if (!length(path))
             return(character())
         if (!is.character(path))
             path <- as.character(path)
         if (.Platform$OS.type == "windows") {
-            path <- chartr("\\", "/", path)
+            ## on Windows we have file:///C:/path/to/file or similar
+            path <- replace.backslash(path)
             three.slash <- grepl("^.:", path, useBytes = TRUE)
             if (all(three.slash))
                 paste0("file:///", path)
@@ -61,169 +70,217 @@ local({
         }
         else paste0("file://", path)
     }
-    base.path.R.uri  <- as.file.uri(base.path.R )
-    full.path.R.uri  <- as.file.uri(full.path.R )
-    short.path.R.uri <- as.file.uri(short.path.R)
+    basename.R.uri <- as.file.uri(basename.R)
+    rel.path.R.uri <- as.file.uri(rel.path.R)
+    abs.path.R.uri <- as.file.uri(abs.path.R)
 
 
-    ## the directories that lead to the 3 paths from above
-    base.path.dir  <- dirname(full.path.R)
-    short.path.dir <- dirname(base.path.dir)
-    full.path.dir  <- if (getRversion() >= "3.5.0") tempdir(check = TRUE) else tempdir()
+    fun <- function(expr, envir = parent.frame(),
+        bquote.envir = envir, eval.envir = envir)
+    {
+        if (!is.environment(envir))
+            stop("not an environment", domain = "R")
+        expr <- call("bquote", substitute(expr), as.symbol("bquote.envir"))
+        expr <- eval(expr)
+        dep <- deparse(expr)
+        cat("\n\n\n\n\n\n\n\n\n\n")
+        cat("\n> getwd()\n")
+        print(getwd())
+        cat("\n> ")
+        cat(dep, sep = "\n+ ")
+        eval(expr, eval.envir)
+    }
 
 
     ## try using source in all possible manners
-    setwd(base.path.dir)
-    fun(source(.(base.path.R)                          , local = TRUE, chdir = FALSE))               ## from a  basename                          without changing directory
-    fun(source(.(base.path.R)                          , local = TRUE, chdir = TRUE ))               ## from a  basename                          with    changing directory (shouldn't do anything)
-    fun(source(.(base.path.R.uri)                      , local = TRUE))                              ## from a  basename file URI
-    fun(source(print(conn <- file(.(base.path.R)))     , local = TRUE))               ; close(conn)  ## from a  basename connection
-    fun(source(print(conn <- file(.(base.path.R.uri))) , local = TRUE))               ; close(conn)  ## from a  basename file URI connection
-    setwd(short.path.dir)
-    fun(source(.(short.path.R)                         , local = TRUE, chdir = FALSE))               ## from a  relative path                     without changing directory
-    fun(source(.(short.path.R)                         , local = TRUE, chdir = TRUE ))               ## from a  relative path                     with    changing directory
-    fun(source(.(short.path.R.uri)                     , local = TRUE))                              ## from a  relative path file URI
-    fun(source(print(conn <- file(.(short.path.R)))    , local = TRUE))               ; close(conn)  ## from a  relative path connection
-    fun(source(print(conn <- file(.(short.path.R.uri))), local = TRUE))               ; close(conn)  ## from a  relative path file URI connection
-    setwd(full.path.dir)
-    fun(source(.(full.path.R)                          , local = TRUE, chdir = FALSE))               ## from an absolute path                     without changing directory
-    fun(source(.(full.path.R)                          , local = TRUE, chdir = TRUE ))               ## from an absolute path                     with    changing directory
-    fun(source(.(full.path.R.uri)                      , local = TRUE))                              ## from a  absolute path file URI
-    fun(source(print(conn <- file(.(full.path.R)))     , local = TRUE))               ; close(conn)  ## from an absolute path connection
-    fun(source(print(conn <- file(.(full.path.R.uri))) , local = TRUE))               ; close(conn)  ## from a  absolute path file URI connection
+    setwd(basename.dir)
+    fun(source(.(basename.R)                         , local = TRUE, chdir = FALSE))               ## from a  basename                          without changing directory
+    fun(source(.(basename.R)                         , local = TRUE, chdir = TRUE ))               ## from a  basename                          with    changing directory (shouldn't do anything)
+    fun(source(.(basename.R.uri)                     , local = TRUE))                              ## from a  basename file URI
+    fun(source(print(conn <- file(.(basename.R)))    , local = TRUE))               ; close(conn)  ## from a  basename connection
+    setwd(rel.path.dir)
+    fun(source(.(rel.path.R)                         , local = TRUE, chdir = FALSE))               ## from a  relative path                     without changing directory
+    fun(source(.(rel.path.R)                         , local = TRUE, chdir = TRUE ))               ## from a  relative path                     with    changing directory
+    fun(source(.(rel.path.R.uri)                     , local = TRUE))                              ## from a  relative path file URI
+    fun(source(print(conn <- file(.(rel.path.R)))    , local = TRUE))               ; close(conn)  ## from a  relative path connection
+    setwd(abs.path.dir)
+    fun(source(.(abs.path.R)                         , local = TRUE, chdir = FALSE))               ## from an absolute path                     without changing directory
+    fun(source(.(abs.path.R)                         , local = TRUE, chdir = TRUE ))               ## from an absolute path                     with    changing directory
+    fun(source(.(abs.path.R.uri)                     , local = TRUE))                              ## from a  absolute path file URI
+    fun(source(print(conn <- file(.(abs.path.R)))    , local = TRUE))               ; close(conn)  ## from an absolute path connection
 
 
     ## 'sys.source' cannot handle file URIs nor connections
-    setwd(base.path.dir)
-    fun(sys.source(.(base.path.R) , envir = environment(), chdir = FALSE))
-    fun(sys.source(.(base.path.R) , envir = environment(), chdir = TRUE ))
-    setwd(short.path.dir)
-    fun(sys.source(.(short.path.R), envir = environment(), chdir = FALSE))
-    fun(sys.source(.(short.path.R), envir = environment(), chdir = TRUE ))
-    setwd(full.path.dir)
-    fun(sys.source(.(full.path.R) , envir = environment(), chdir = FALSE))
-    fun(sys.source(.(full.path.R) , envir = environment(), chdir = TRUE ))
+    setwd(basename.dir)
+    fun(sys.source(.(basename.R), envir = environment(), chdir = FALSE))
+    fun(sys.source(.(basename.R), envir = environment(), chdir = TRUE ))
+    setwd(rel.path.dir)
+    fun(sys.source(.(rel.path.R), envir = environment(), chdir = FALSE))
+    fun(sys.source(.(rel.path.R), envir = environment(), chdir = TRUE ))
+    setwd(abs.path.dir)
+    fun(sys.source(.(abs.path.R), envir = environment(), chdir = FALSE))
+    fun(sys.source(.(abs.path.R), envir = environment(), chdir = TRUE ))
 
 
     ## 'debugSource' cannot handle connections
     if (.Platform$GUI == "RStudio") {
         debugSource <- get("debugSource", "tools:rstudio", inherits = FALSE)
-        setwd(base.path.dir)
-        fun(debugSource(.(base.path.R)     ))
-        fun(debugSource(.(base.path.R.uri) ))
-        setwd(short.path.dir)
-        fun(debugSource(.(short.path.R)    ))
-        fun(debugSource(.(short.path.R.uri)))
-        setwd(full.path.dir)
-        fun(debugSource(.(full.path.R)     ))
-        fun(debugSource(.(full.path.R.uri) ))
+        setwd(basename.dir)
+        fun(debugSource(.(basename.R)    ))
+        fun(debugSource(.(basename.R.uri)))
+        setwd(rel.path.dir)
+        fun(debugSource(.(rel.path.R)    ))
+        fun(debugSource(.(rel.path.R.uri)))
+        setwd(abs.path.dir)
+        fun(debugSource(.(abs.path.R)    ))
+        fun(debugSource(.(abs.path.R.uri)))
     }
 
 
     ## 'testthat::source_file' cannot handle file URIs nor connections
     if (requireNamespace("testthat", quietly = TRUE)) {
-        setwd(base.path.dir)
-        fun(testthat::source_file(.(base.path.R) , env = environment(), chdir = FALSE, wrap = FALSE))
-        fun(testthat::source_file(.(base.path.R) , env = environment(), chdir = FALSE, wrap = TRUE ))
-        fun(testthat::source_file(.(base.path.R) , env = environment(), chdir = TRUE , wrap = FALSE))
-        fun(testthat::source_file(.(base.path.R) , env = environment(), chdir = TRUE , wrap = TRUE ))
-        setwd(short.path.dir)
-        fun(testthat::source_file(.(short.path.R), env = environment(), chdir = FALSE, wrap = FALSE))
-        fun(testthat::source_file(.(short.path.R), env = environment(), chdir = FALSE, wrap = TRUE ))
-        fun(testthat::source_file(.(short.path.R), env = environment(), chdir = TRUE , wrap = FALSE))
-        fun(testthat::source_file(.(short.path.R), env = environment(), chdir = TRUE , wrap = TRUE ))
-        setwd(full.path.dir)
-        fun(testthat::source_file(.(full.path.R) , env = environment(), chdir = FALSE, wrap = FALSE))
-        fun(testthat::source_file(.(full.path.R) , env = environment(), chdir = FALSE, wrap = TRUE ))
-        fun(testthat::source_file(.(full.path.R) , env = environment(), chdir = TRUE , wrap = FALSE))
-        fun(testthat::source_file(.(full.path.R) , env = environment(), chdir = TRUE , wrap = TRUE ))
+        setwd(basename.dir)
+        fun(testthat::source_file(.(basename.R), env = environment(), chdir = FALSE, wrap = FALSE))
+        fun(testthat::source_file(.(basename.R), env = environment(), chdir = FALSE, wrap = TRUE ))
+        fun(testthat::source_file(.(basename.R), env = environment(), chdir = TRUE , wrap = FALSE))
+        fun(testthat::source_file(.(basename.R), env = environment(), chdir = TRUE , wrap = TRUE ))
+        setwd(rel.path.dir)
+        fun(testthat::source_file(.(rel.path.R), env = environment(), chdir = FALSE, wrap = FALSE))
+        fun(testthat::source_file(.(rel.path.R), env = environment(), chdir = FALSE, wrap = TRUE ))
+        fun(testthat::source_file(.(rel.path.R), env = environment(), chdir = TRUE , wrap = FALSE))
+        fun(testthat::source_file(.(rel.path.R), env = environment(), chdir = TRUE , wrap = TRUE ))
+        setwd(abs.path.dir)
+        fun(testthat::source_file(.(abs.path.R), env = environment(), chdir = FALSE, wrap = FALSE))
+        fun(testthat::source_file(.(abs.path.R), env = environment(), chdir = FALSE, wrap = TRUE ))
+        fun(testthat::source_file(.(abs.path.R), env = environment(), chdir = TRUE , wrap = FALSE))
+        fun(testthat::source_file(.(abs.path.R), env = environment(), chdir = TRUE , wrap = TRUE ))
     }
 
 
     ## 'knitr::knit' cannot handle file URIs
     if (requireNamespace("knitr", quietly = TRUE)) {
-        base.path.Rmd  <- "test.Rmd"
-        full.path.Rmd  <- this.path::sys.here(base.path.Rmd)
-        short.path.Rmd <- file.path(basename(dirname(full.path.Rmd)), base.path.Rmd)
+        basename.Rmd <- basename.R; this.path::ext(basename.Rmd) <- ".Rmd"
+        rel.path.Rmd <- rel.path.R; this.path::ext(rel.path.Rmd) <- ".Rmd"
+        abs.path.Rmd <- abs.path.R; this.path::ext(abs.path.Rmd) <- ".Rmd"
 
 
-        on.exit(unlink(full.path.Rmd), add = TRUE)
+        on.exit(unlink(abs.path.Rmd), add = TRUE)
         writeLines(c(
             "```{r}",
-            readLines(full.path.R)[c(2L, 4L)],
+            readLines(abs.path.R)[c(2L, 4L)],
             "```"
-        ), full.path.Rmd)
+        ), abs.path.Rmd)
 
 
-        base.path.Rmd.uri  <- as.file.uri(base.path.Rmd )
-        full.path.Rmd.uri  <- as.file.uri(full.path.Rmd )
-        short.path.Rmd.uri <- as.file.uri(short.path.Rmd)
-
-
-        setwd(base.path.dir)
-        fun(knitr::knit(.(base.path.Rmd)                         , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(base.path.Rmd)))    , output = stdout(), quiet = TRUE)) ; close(conn)
-        fun(knitr::knit(print(conn <- file(.(base.path.Rmd.uri))), output = stdout(), quiet = TRUE)) ; close(conn)
-        setwd(short.path.dir)
-        fun(knitr::knit(.(short.path.Rmd)                         , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(short.path.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
-        fun(knitr::knit(print(conn <- file(.(short.path.Rmd.uri))), output = stdout(), quiet = TRUE)); close(conn)
-        setwd(full.path.dir)
-        fun(knitr::knit(.(full.path.Rmd)                          , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(full.path.Rmd)))     , output = stdout(), quiet = TRUE)); close(conn)
-        fun(knitr::knit(print(conn <- file(.(full.path.Rmd.uri))) , output = stdout(), quiet = TRUE)); close(conn)
+        setwd(basename.dir)
+        fun(knitr::knit(.(basename.Rmd)                         , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(basename.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
+        setwd(rel.path.dir)
+        fun(knitr::knit(.(rel.path.Rmd)                         , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(rel.path.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
+        setwd(abs.path.dir)
+        fun(knitr::knit(.(abs.path.Rmd)                         , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(abs.path.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
     }
 
 
     ## 'compiler::loadcmp' cannot handle file URIs nor connections
     if (requireNamespace("compiler", quietly = TRUE)) {
-        base.path.Rc  <- "test.Rc"
-        full.path.Rc  <- this.path::sys.here(base.path.Rc)
-        short.path.Rc <- file.path(basename(dirname(full.path.Rc)), base.path.Rc)
+        basename.Rc <- basename.R; this.path::ext(basename.Rc) <- ".Rc"
+        rel.path.Rc <- rel.path.R; this.path::ext(rel.path.Rc) <- ".Rc"
+        abs.path.Rc <- abs.path.R; this.path::ext(abs.path.Rc) <- ".Rc"
 
 
-        on.exit(unlink(full.path.Rc), add = TRUE)
-        compiler::cmpfile(full.path.R, full.path.Rc)
+        on.exit(unlink(abs.path.Rc), add = TRUE)
+        compiler::cmpfile(abs.path.R, abs.path.Rc)
 
 
-        setwd(base.path.dir)
-        fun(compiler::loadcmp(.(base.path.Rc) , envir = environment(), chdir = FALSE))
-        fun(compiler::loadcmp(.(base.path.Rc) , envir = environment(), chdir = TRUE ))
-        setwd(short.path.dir)
-        fun(compiler::loadcmp(.(short.path.Rc), envir = environment(), chdir = FALSE))
-        fun(compiler::loadcmp(.(short.path.Rc), envir = environment(), chdir = TRUE ))
-        setwd(full.path.dir)
-        fun(compiler::loadcmp(.(full.path.Rc) , envir = environment(), chdir = FALSE))
-        fun(compiler::loadcmp(.(full.path.Rc) , envir = environment(), chdir = TRUE ))
+        setwd(basename.dir)
+        fun(compiler::loadcmp(.(basename.Rc), envir = environment(), chdir = FALSE))
+        fun(compiler::loadcmp(.(basename.Rc), envir = environment(), chdir = TRUE ))
+        setwd(rel.path.dir)
+        fun(compiler::loadcmp(.(rel.path.Rc), envir = environment(), chdir = FALSE))
+        fun(compiler::loadcmp(.(rel.path.Rc), envir = environment(), chdir = TRUE ))
+        setwd(abs.path.dir)
+        fun(compiler::loadcmp(.(abs.path.Rc), envir = environment(), chdir = FALSE))
+        fun(compiler::loadcmp(.(abs.path.Rc), envir = environment(), chdir = TRUE ))
     }
 
 
     ## 'box::use' cannot handle file URIs nor connections nor absolute paths
     if (requireNamespace("box", quietly = TRUE)) {
-        setwd(base.path.dir); box::set_script_path(base.path.R)
-        fun(box::use(module = ./.(as.symbol(sub("\\.R$", "", base.path.R))))); box::unload(module)
-        setwd(short.path.dir); box::set_script_path(base.path.dir)
-        fun(box::use(module = ./.(as.symbol(dirname(short.path.R)))/.(as.symbol(sub("\\.R$", "", basename(short.path.R)))))); box::unload(module)
+        setwd(basename.dir); box::set_script_path(this.path::path.join(basename.dir, "."))
+        fun(box::use(module = ./.(as.symbol(sub("\\.R$", "", basename.R))))); box::unload(module)
+        if (!this.path:::.is.abs.path(rel.path.R)) {
+            tmp.fun <- function(x) {
+                n <- length(x)
+                if (n > 1L)
+                    call("/", tmp.fun(x[-n]), as.symbol(x[[n]]))
+                else as.symbol(x[[1L]])
+            }
+            tmp <- tmp.fun(c(".", this.path::path.split.1(sub("\\.R$", "", rel.path.R))))
+            setwd(rel.path.dir); box::set_script_path(this.path::path.join(rel.path.dir, "."))
+            fun(box::use(module = .(tmp))); box::unload(module)
+            rm(tmp, tmp.fun)
+        }
+    }
+
+
+    ## 'shiny::runApp'
+    if (requireNamespace("shiny", quietly = TRUE)) {
+        shinytmp <- tempfile("shinytmp", tmpdir = basename.dir)
+        shinytmp <- replace.backslash(shinytmp)
+        on.exit(unlink(shinytmp, recursive = TRUE, force = TRUE), add = TRUE)
+        dir.create(shinytmp)
+        writeLines(c(
+            readLines(abs.path.R),
+            "stop(structure(list(message = \"\", call = NULL), class = c(\"thispath.tests.R.catch.this.error\", \"error\", \"condition\")))"
+        ), this.path::path.join(shinytmp, "app.R"))
+        abs.path.app.R <- normalizePath(shinytmp, "/", TRUE)
+        abs.path.app.dir <- abs.path.dir
+        basename.app.R <- "."
+        basename.app.dir <- abs.path.app.R
+        tmp <- make.rel.path.and.dir(abs.path.app.R)
+        rel.path.app.dir <- tmp[[1L]]
+        rel.path.app.R <- tmp[[2L]]
+        rm(tmp)
+        setwd(basename.app.dir)
+        this.path::tryCatch3({
+            fun(shiny::runApp(.(basename.app.R)))
+        }, thispath.tests.R.catch.this.error = )
+        setwd(rel.path.app.dir)
+        this.path::tryCatch3({
+            fun(shiny::runApp(.(rel.path.app.R)))
+        }, thispath.tests.R.catch.this.error = )
+        setwd(abs.path.app.dir)
+        this.path::tryCatch3({
+            fun(shiny::runApp(.(abs.path.app.R)))
+        }, thispath.tests.R.catch.this.error = )
     }
 
 
     ## 'plumber::plumb' cannot handle file URIs nor connections
     if (requireNamespace("plumber", quietly = TRUE)) {
-        setwd(base.path.dir)
-        fun(plumber::plumb(.(base.path.R)))
-        setwd(short.path.dir)
-        fun(plumber::plumb(.(short.path.R)))
-        setwd(full.path.dir)
-        fun(plumber::plumb(.(full.path.R)))
+        setwd(basename.dir)
+        fun(plumber::plumb(.(basename.R)))
+        setwd(rel.path.dir)
+        fun(plumber::plumb(.(rel.path.R)))
+        setwd(abs.path.dir)
+        fun(plumber::plumb(.(abs.path.R)))
 
 
-        entrypoint.R <- file.path(full.path.dir, "entrypoint.R")
+        entrypoint.R <- this.path::path.join(basename.dir, "entrypoint.R")
         on.exit(unlink(entrypoint.R), add = TRUE)
         writeLines(c(
-            readLines(full.path.R),
+            readLines(abs.path.R),
             "plumber::Plumber$new()"
         ), entrypoint.R)
-        fun(plumber::plumb(dir = full.path.dir))
+        setwd(basename.dir)
+        fun(plumber::plumb())
+        setwd(rel.path.dir)
+        fun(plumber::plumb(dir = .(dirname(rel.path.R))))
+        setwd(abs.path.dir)
+        fun(plumber::plumb(dir = .(dirname(abs.path.R))))
     }
 
 

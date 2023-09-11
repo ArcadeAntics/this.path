@@ -693,33 +693,38 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
     SEXP ns;
-    Rboolean testthat_loaded, knitr_loaded, compiler_loaded, box_loaded      , plumber_loaded                               ;
-    SEXP     source_file    , knit        , loadcmp        , load_from_source, sourceUTF8, Plumber_public_methods_initialize;
+    Rboolean testthat_loaded, knitr_loaded, compiler_loaded, box_loaded      , shiny_loaded    , plumber_loaded                                       ;
+    SEXP     source_file    , knit        , loadcmp        , load_from_source, shiny_sourceUTF8, plumber_sourceUTF8, Plumber_public_methods_initialize;
 
 
     ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
-    testthat_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    testthat_loaded = (ns != R_UnboundValue);
     source_file = (testthat_loaded ? getInFrame(source_fileSymbol, ns, FALSE) : R_UnboundValue);
 
 
     ns = findVarInFrame(R_NamespaceRegistry, knitrSymbol);
-    knitr_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    knitr_loaded = (ns != R_UnboundValue);
     knit = (knitr_loaded ? getInFrame(knitSymbol, ns, FALSE) : R_UnboundValue);
 
 
     ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
-    box_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    box_loaded = (ns != R_UnboundValue);
     load_from_source = (box_loaded ? getInFrame(load_from_sourceSymbol, ns, FALSE) : R_UnboundValue);
 
 
     ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
-    compiler_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
+    compiler_loaded = (ns != R_UnboundValue);
     loadcmp = (compiler_loaded ? getInFrame(loadcmpSymbol, ns, FALSE) : R_UnboundValue);
 
 
+    ns = findVarInFrame(R_NamespaceRegistry, shinySymbol);
+    shiny_loaded = (ns != R_UnboundValue);
+    shiny_sourceUTF8 = (shiny_loaded ? getInFrame(sourceUTF8Symbol, ns, FALSE) : R_UnboundValue);
+
+
     ns = findVarInFrame(R_NamespaceRegistry, plumberSymbol);
-    plumber_loaded = (ns == R_UnboundValue ? FALSE : TRUE);
-    sourceUTF8 = (plumber_loaded ? getInFrame(sourceUTF8Symbol, ns, FALSE) : R_UnboundValue);
+    plumber_loaded = (ns != R_UnboundValue);
+    plumber_sourceUTF8 = (plumber_loaded ? getInFrame(sourceUTF8Symbol, ns, FALSE) : R_UnboundValue);
     Plumber_public_methods_initialize = R_UnboundValue;
     if (plumber_loaded) {
         SEXP tmp = getInFrame(PlumberSymbol, ns, FALSE);
@@ -1480,7 +1485,75 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
         }
 
 
-        else if (plumber_loaded && identical(function, sourceUTF8)) {
+        else if (shiny_loaded && identical(function, shiny_sourceUTF8)) {
+#undef source_char
+#define source_char "call to function sourceUTF8 from package shiny"
+            if (local)
+                error("%s cannot be called within %s() from package %s",
+                      name, EncodeChar(PRINTNAME(sourceUTF8Symbol)), EncodeChar(PRINTNAME(shinySymbol)));
+            documentcontext = findVarInFrame(frame, documentcontextSymbol);
+            srcfile = srcfile_or_NULL(findVarInFrame(frame, srcSymbol));
+            if (!srcfile) continue;
+            if (documentcontext != R_UnboundValue) {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                if (findVarInFrame(srcfile, documentcontextSymbol) == R_UnboundValue) {
+                    INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                    R_LockBinding(documentcontextSymbol, srcfile);
+                }
+            }
+            else if ((documentcontext = findVarInFrame(srcfile, documentcontextSymbol)) != R_UnboundValue) {
+                if (TYPEOF(documentcontext) != ENVSXP)
+                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
+                R_LockBinding(documentcontextSymbol, frame);
+            }
+            else {
+                SEXP ofile = findVarInFrame(srcfile, filenameSymbol);
+                SEXP wd = findVarInFrame(srcfile, wdSymbol);
+                checkfile(
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ fileSymbol,
+                    /* ofile                  */ ofile,
+                    /* frame                  */ frame,
+                    /* as_binding             */ TRUE,
+                    /* check_not_directory    */ FALSE,
+                    /* forcepromise           */ FALSE,
+                    /* assign_returnvalue     */ FALSE,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ wd,
+                    /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
+                    /* ofilearg               */ NULL,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* allow_unz              */ FALSE,
+                    /* allow_pipe             */ FALSE,
+                    /* allow_terminal         */ FALSE,
+                    /* allow_textConnection   */ FALSE,
+                    /* allow_rawConnection    */ FALSE,
+                    /* allow_sockconn         */ FALSE,
+                    /* allow_servsockconn     */ FALSE,
+                    /* allow_customConnection */ FALSE,
+                    /* ignore_blank_string    */ FALSE,
+                    /* ignore_clipboard       */ FALSE,
+                    /* ignore_stdin           */ FALSE,
+                    /* ignore_url             */ FALSE,
+                    /* ignore_file_uri        */ FALSE,
+                    /* source                 */ mkChar(source_char)
+                );
+                INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
+                R_LockBinding(documentcontextSymbol, srcfile);
+            }
+            returnfile(which, source_char);
+        }
+
+
+        else if (plumber_loaded && identical(function, plumber_sourceUTF8)) {
 #undef source_char
 #define source_char "call to function sourceUTF8 from package plumber"
             if (local)

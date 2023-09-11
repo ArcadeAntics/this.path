@@ -4,6 +4,9 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with function
+        \code{shiny::runApp()}.}
+
+      \item{\code{this.path()} is now compatible with function
         \code{plumber::plumb()}.}
 
       \item{Added \code{tryCatch3()} which accepts condition expressions

@@ -535,7 +535,7 @@ SEXP do_onLoad do_formals
         }
 
 
-        /* in case {plumber} is unloaded then reloaded, set as a hook */
+        /* for when {plumber} is loaded (or possibly unloaded then reloaded), set as a hook */
         SEXP expr = LCONS(install(".maybe.setHook.packageEvent.plumber.fix.plumber.parseUTF8"), R_NilValue);
         PROTECT(expr);
         eval(expr, mynamespace);

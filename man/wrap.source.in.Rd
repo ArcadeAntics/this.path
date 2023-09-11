@@ -252,7 +252,7 @@ unset.sys.path()
 
     \item{\knitrknitnolink}{\preformatted{wrapper <- function(input, ...) {
     ## this works for the most part, but will not work in child mode
-    input <- set.sys.path(input)
+    input <- set.sys.path(input, allow.file.uri = FALSE)
     knitr::knit(input = input, ...)
 }}}
 
@@ -261,58 +261,9 @@ unset.sys.path()
     compiler::loadcmp(file = file, ...)
 }}}
 
-    \item{\boxusenolink}{\preformatted{## 'box' is structured to be an incredible pain in the ass,
-## so this solution is not exactly ideal, but it works so whatever
-wrapper <- function(path, ...) {
-    p <- this.path::path.split.1(path.expand(path))
-    n <- length(p)
-    prefix <- if (n < 2L)
-        "."
-    else p[-n]
-    name <- p[[n]]
-    if (dir.exists(path)) {
-        paths <- this.path::path.join(path, paste0("__init__",
-            c(".r", ".R")))
-        paths <- paths[file.exists(paths)]
-        if (!length(paths))
-            stop(sprintf(
-                "no file \\"__init__.r\\" or \\"__init__.R\\" found in \%s",
-                encodeString(path, quote = "\\"")))
-        path <- paths[[1L]]
-    }
-    else {
-        x <- this.path::splitext(name)
-        if (x[[2L]] \%in\% c(".r", ".R"))
-            name <- x[[1L]]
-    }
-    spec <- list(name = name, prefix = prefix, attach = NULL,
-        alias = name, explicit = FALSE)
-    class(spec) <- c("box$mod_spec", "box$spec")
-    path <- set.sys.path(path, path.only = TRUE)
-    info <- list(name = name, source_path =
-        if (.Platform$OS.type == "windows")
-        chartr("/", "\\\\", path) else path)
-    class(info) <- c("box$mod_info", "box$info")
-    caller <- parent.frame()
-    box:::load_and_register(spec, info, caller)
-    invisible()
-}}}
-
-    \item{\plumberplumbnolink}{\preformatted{wrapper <- function(file = NULL, dir = ".") {
-    ofile <- file
-    if (is.null(file)) {
-        file <- list.files(dir, "(?i)^entrypoint\\\\.r$", full.names = TRUE)
-        if (!length(file))
-            file <- list.files(dir, "(?i)^plumber\\\\.r$", full.names = TRUE)
-        if (length(file))
-            set.sys.path(file[1], path.only = TRUE)
-    }
-    else {
-        file <- this.path::path.join(dir, file)
-        set.sys.path(file, path.only = TRUE)
-    }
-    plumber::plumb(ofile, dir)
-}}}
+    \boxusenolink, \shinyrunAppnolink, and \plumberplumbnolink do not have any
+    simple implementations using \code{set.sys.path()} since the sourcing
+    functions are the internal objects of these namespaces.
   }
 }
 \examples{

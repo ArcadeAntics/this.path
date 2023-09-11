@@ -71,9 +71,9 @@ The only equivalent to `this.path()` (that I have seen) is
 
 1.  `this.path()` works with `sys.source()`, `debugSource()` in
     'RStudio', `testthat::source_file()`, `knitr::knit()`, 
-    `compiler::loadcmp()`, `box::use()`, and `plumber::plumb()`. It
-    also works in interactive mode inside 'Rgui', 'RStudio', 'VSCode',
-    and 'Jupyter'.
+    `compiler::loadcmp()`, `box::use()`, `shiny::runApp()`, and
+    `plumber::plumb()`. It also works in interactive mode inside
+    'Rgui', 'RStudio', 'VSCode', and 'Jupyter'.
 
 2.  Related to `source()`, `this.path()`:
 

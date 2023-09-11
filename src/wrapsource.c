@@ -571,7 +571,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
 
 
     ns = findVarInFrame(R_NamespaceRegistry, testthatSymbol);
-    if (ns == R_UnboundValue ? FALSE : TRUE) {
+    if (ns != R_UnboundValue) {
         if (identical(function, getInFrame(source_fileSymbol, ns, FALSE))) {
             error("%s cannot be called within %s() from package %s",
                   name, EncodeChar(PRINTNAME(source_fileSymbol)), EncodeChar(PRINTNAME(testthatSymbol)));
@@ -580,7 +580,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
 
 
     ns = findVarInFrame(R_NamespaceRegistry, knitrSymbol);
-    if (ns == R_UnboundValue ? FALSE : TRUE) {
+    if (ns != R_UnboundValue) {
         if (identical(function, getInFrame(knitSymbol, ns, FALSE))) {
             error("%s cannot be called within %s() from package %s",
                   name, EncodeChar(PRINTNAME(knitSymbol)), EncodeChar(PRINTNAME(knitrSymbol)));
@@ -595,7 +595,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
 
 
     ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
-    if (ns == R_UnboundValue ? FALSE : TRUE) {
+    if (ns != R_UnboundValue) {
         if (identical(function, getInFrame(loadcmpSymbol, ns, FALSE))) {
             error("%s cannot be called within %s() from package %s",
                   name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
@@ -604,7 +604,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
 
 
     ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
-    if (ns == R_UnboundValue ? FALSE : TRUE) {
+    if (ns != R_UnboundValue) {
         if (identical(function, getInFrame(load_from_sourceSymbol, ns, FALSE))) {
             error("%s cannot be called within %s() from package %s",
                   name, EncodeChar(PRINTNAME(load_from_sourceSymbol)), EncodeChar(PRINTNAME(boxSymbol)));
@@ -612,11 +612,20 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
     }
 
 
-    ns = findVarInFrame(R_NamespaceRegistry, plumberSymbol);
-    if (ns == R_UnboundValue ? FALSE : TRUE) {
+    ns = findVarInFrame(R_NamespaceRegistry, shinySymbol);
+    if (ns != R_UnboundValue) {
         if (identical(function, getInFrame(sourceUTF8Symbol, ns, FALSE))) {
             error("%s cannot be called within %s() from package %s",
-                  name, EncodeChar(PRINTNAME(sourceUTF8Symbol)), EncodeChar(PRINTNAME(compilerSymbol)));
+                  name, EncodeChar(PRINTNAME(sourceUTF8Symbol)), EncodeChar(PRINTNAME(shinySymbol)));
+        }
+    }
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, plumberSymbol);
+    if (ns != R_UnboundValue) {
+        if (identical(function, getInFrame(sourceUTF8Symbol, ns, FALSE))) {
+            error("%s cannot be called within %s() from package %s",
+                  name, EncodeChar(PRINTNAME(sourceUTF8Symbol)), EncodeChar(PRINTNAME(plumberSymbol)));
         }
         SEXP tmp = getInFrame(PlumberSymbol, ns, FALSE);
         if (TYPEOF(tmp) == ENVSXP) {
