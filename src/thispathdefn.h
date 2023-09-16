@@ -267,11 +267,10 @@ do {                                                           \
         if (file == NA_STRING)                                 \
             errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
         if (ofilearg != NULL) {                                \
-            if (IS_SCALAR(ofilearg, STRSXP)) {                 \
-                if (STRING_ELT(ofilearg, 0) == NA_STRING)      \
-                    errorcall(call, "invalid '%s', must not be NA", "ofile");\
-            }                                                  \
-            else errorcall(call, "'%s' must be a character string", "ofile");\
+            if (!IS_SCALAR(ofilearg, STRSXP))                  \
+                errorcall(call, "'%s' must be a character string", "ofile");\
+            if (STRING_ELT(ofilearg, 0) == NA_STRING)          \
+                errorcall(call, "invalid '%s', must not be NA", "ofile");\
         }                                                      \
         const char *url;                                       \
         if (conv2utf8) {                                       \

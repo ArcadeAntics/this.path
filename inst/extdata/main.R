@@ -81,7 +81,7 @@ if (sys.nframe() != 0L) {
 
 
         testing <- FALSE
-        testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
+        # testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
 
 
         ## there was a time when I was doing something more along the lines:
@@ -113,9 +113,8 @@ if (sys.nframe() != 0L) {
         path <- c(file.path(R.home("bin"), exe), path)
 
 
-        # args <- "--version"
+        # args <- c("--version")
         # args <- c("--default-packages=NULL", "--vanilla", "-e", "utils::capture.output")
-        # args <- c("--default-packages=NULL", "--vanilla", "-e", "writeLines(as.character(identical(if (l10n_info()$`UTF-8`) 1 else if (l10n_info()$`Latin-1`) 2 else 3, switch(utils::localeToCharset()[1L], `UTF-8` = 1, `ISO8859-1` = 2, 3))))")
         # args <- paste(shQuote(args), collapse = " ")
         # command <- paste(shQuote(path), args)
         # names(command) <- path
@@ -263,7 +262,7 @@ if (sys.nframe() != 0L) {
 
             n <- 0L
             for (language in rownames(.languages)) {
-                args <- c(rgui, options, print(.languageEnvvars(language, ucrt)))
+                args <- c(rgui, options, .languageEnvvars(language, ucrt))
                 command <- paste(shQuote(args), collapse = " ")
                 ans <- system(command)
                 if (ans) {

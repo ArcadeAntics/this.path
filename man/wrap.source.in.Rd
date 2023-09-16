@@ -8,7 +8,7 @@
 \description{
   \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.
 
-  \code{wrap.source()} and \code{set.sys.path()} can be used to implement
+  \code{set.sys.path()} and \code{wrap.source()} can be used to implement
   \code{sys.path()} for any other \sourcenolink-like functions.
 
   \code{set.env.path()} and \code{set.src.path()} can be used along side

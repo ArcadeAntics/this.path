@@ -73,8 +73,8 @@ sys.dir(verbose = getOption("verbose"), local = FALSE,
   found, the file argument is returned from the function's evaluation
   environment. If you have your own \sourcenolink-like function that you would
   like to be recognized by \code{sys.path()}, please contact the package
-  maintainer so that it can be implemented or use \code{\link{wrap.source}()} /
-  / \code{\link{set.sys.path}()}.
+  maintainer so that it can be implemented or use \code{\link{set.sys.path}()}
+  / / \code{\link{wrap.source}()}.
 
   If no source call is found up the calling stack, then an attempt is made to
   figure out how \R is running.
@@ -222,7 +222,7 @@ Error in .sys.path.toplevel(FALSE, TRUE) :
 \seealso{
   \code{\link{shFILE}()}
 
-  \code{\link{wrap.source}()}, \code{\link{set.sys.path}()}
+  \code{\link{set.sys.path}()}, \code{\link{wrap.source}()}
 }
 \examples{
 FILE1.R <- tempfile(fileext = ".R")

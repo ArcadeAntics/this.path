@@ -366,18 +366,18 @@ SEXP DocumentContext(void)
 }
 
 
-#define _assign(file, documentcontext)                         \
-    INCREMENT_NAMED_defineVar(ofileSymbol, (file), (documentcontext));\
-    SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
-    defineVar(fileSymbol, e, (documentcontext))
-
-
 /* instead of doing:
  * document.context$ofile <- NULL
  * to declare that a document context does not refer to a file, now we do:
  * document.context <- emptyenv()
  * this is much easier to test for and to read and to debug
  */
+
+
+#define _assign(file, documentcontext)                         \
+    INCREMENT_NAMED_defineVar(ofileSymbol, (file), (documentcontext));\
+    SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
+    defineVar(fileSymbol, e, (documentcontext))
 
 
 void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory)

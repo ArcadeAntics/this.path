@@ -1171,7 +1171,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
         else if (compiler_loaded && identical(function, loadcmp)) {
 #undef source_char
-#define source_char "call to function 'loadcmp' from package 'compiler'"
+#define source_char "call to function loadcmp from package compiler"
             /* much the same as sys.source() */
             if (local)
                 error("%s cannot be called within %s() from package %s",
