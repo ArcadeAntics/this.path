@@ -3,6 +3,14 @@
 \section{CHANGES IN VERSION devel}{
   \subsection{NEW FEATURES}{
     \itemize{
+      \item{\code{this.path()} is now compatible with package
+        \CRANpkg{targets}.}
+    }
+  }
+}
+\section{CHANGES IN VERSION 2.1.0 (2023-09-12)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
       \item{\code{this.path()} is now compatible with function
         \code{shiny::runApp()}.}
 

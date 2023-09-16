@@ -112,6 +112,15 @@ extern0 SEXP0
     shinySymbol                            INI_as(install("shiny")),
     srcSymbol                              INI_as(install("src")),
 
+    targetsSymbol                          INI_as(install("targets")),
+    tar_callr_inner_trySymbol              INI_as(install("tar_callr_inner_try")),
+    tar_load_globalsSymbol                 INI_as(install("tar_load_globals")),
+    tar_sourceSymbol                       INI_as(install("tar_source")),
+    tar_workspaceSymbol                    INI_as(install("tar_workspace")),
+    scriptSymbol                           INI_as(install("script")),
+    non_r_scriptsSymbol                    INI_as(install("non_r_scripts")),
+    oldSymbol                              INI_as(install("old")),
+
     methodsSymbol                          INI_as(install("methods")),
     showSymbol                             INI_as(install("show")),
     sys_callSymbol                         INI_as(install("sys.call")),

@@ -30,8 +30,8 @@ withArgs(...)
 
     for \code{withArgs()}, the first argument should be an (unevaluated) call
     to \sourcescompatiblewithwithArgslistlinks, or a \sourcenolink-like
-    function containing \code{\link{wrap.source}()} / /
-    \code{\link{set.sys.path}()}.}
+    function containing \code{\link{set.sys.path}()} / /
+    \code{\link{wrap.source}()}.}
 }
 \details{
   \code{fileArgs()} will return the arguments associated with the executing

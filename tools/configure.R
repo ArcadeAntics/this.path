@@ -114,7 +114,7 @@ main <- function ()
 
 
     replace.devel.with.current.version(
-        "./NEWS.in",
+        "./NEWS.in.in",
         sprintf("CHANGES IN %s devel:", desc["Package"]),
         sprintf("CHANGES IN %s %s (%s):", desc["Package"], desc["Version"], desc["Date"])
     )
@@ -128,6 +128,25 @@ main <- function ()
         "# Defunct in devel",
         sprintf("# Defunct in %s", desc["Version"])
     )
+
+
+    dedent.NEWS.subsections <- function(file.in, file = remove.in(file.in)) {
+        if (file.exists(file.in)) {
+            if (devel) {
+                if (!file.rename(file.in, file))
+                    stop(sprintf("unable to rename file '%s' to '%s'", file.in, file))
+            } else {
+                x <- readLines2(file.in)
+                x <- sub("^  (?! )", "", x, perl = TRUE)
+                writeLines2(x, file)
+                if (!file.remove(file.in))
+                    stop(sprintf("unable to remove file '%s'", file.in))
+            }
+        }
+    }
+
+
+    dedent.NEWS.subsections("./NEWS.in")
 
 
     if (!building) {

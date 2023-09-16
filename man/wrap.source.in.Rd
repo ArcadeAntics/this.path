@@ -240,6 +240,17 @@ unset.sys.path()
     debugSource(fileName = fileName, ...)
 }}}
 
+    \item{\compilerloadcmpnolink}{\preformatted{wrapper <- function(file, ...) {
+    file <- set.sys.path(file, path.only = TRUE)
+    compiler::loadcmp(file = file, ...)
+}}}
+
+    \item{\knitrknitnolink}{\preformatted{wrapper <- function(input, ...) {
+    ## this works for the most part, but will not work in child mode
+    input <- set.sys.path(input, allow.file.uri = FALSE)
+    knitr::knit(input = input, ...)
+}}}
+
     \item{\testthatsourcefilenolink}{\preformatted{wrapper <- function(path, ...) {
     ## before testthat_3.1.2, source_file() used readLines() to read
     ## the input lines. changed in 3.1.2, source_file() uses
@@ -250,20 +261,9 @@ unset.sys.path()
     testthat::source_file(path = path, ...)
 }}}
 
-    \item{\knitrknitnolink}{\preformatted{wrapper <- function(input, ...) {
-    ## this works for the most part, but will not work in child mode
-    input <- set.sys.path(input, allow.file.uri = FALSE)
-    knitr::knit(input = input, ...)
-}}}
-
-    \item{\compilerloadcmpnolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- set.sys.path(file, path.only = TRUE)
-    compiler::loadcmp(file = file, ...)
-}}}
-
-    \boxusenolink, \shinyrunAppnolink, and \plumberplumbnolink do not have any
-    simple implementations using \code{set.sys.path()} since the sourcing
-    functions are the internal objects of these namespaces.
+    \boxusenolink, \plumberplumbnolink, \shinyrunAppnolink, and \targetsnolink
+    do not have any simple implementations using \code{set.sys.path()} since
+    the sourcing functions are the internal objects of these namespaces.
   }
 }
 \examples{

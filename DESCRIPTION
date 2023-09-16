@@ -1,20 +1,20 @@
 Package: this.path
-Version: 2.0.0.16
-Date: 2023-09-12
+Version: 2.1.0.1
+Date: 2023-09-16
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
 Description: Determine the path of the executing script. Compatible
         with a few popular GUIs: 'Rgui', 'RStudio', 'VSCode',
         'Jupyter', and 'Rscript' (shell). Compatible with several
         functions and packages: 'source()', 'sys.source()',
-        'debugSource()' in 'RStudio', 'testthat::source_file()',
-        'knitr::knit()', 'compiler::loadcmp()', 'box::use()',
-        'shiny::runApp()', and 'plumber::plumb()'.
+        'debugSource()' in 'RStudio', 'compiler::loadcmp()',
+        'box::use()', 'knitr::knit()', 'plumber::plumb()',
+        'shiny::runApp()', {targets}, and 'testthat::source_file()'.
 Author: Iris Simmons
 Maintainer: Iris Simmons <ikwsimmo@gmail.com>
 Suggests: utils, microbenchmark
 Enhances: compiler, box, IRkernel, jsonlite, knitr, plumber, rprojroot,
-        rstudioapi, shiny, testthat
+        rstudioapi, shiny, targets, testthat
 URL: https://github.com/ArcadeAntics/this.path
 BugReports: https://github.com/ArcadeAntics/this.path/issues
 ByteCompile: TRUE

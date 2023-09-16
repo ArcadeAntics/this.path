@@ -156,7 +156,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         SEXP do_else = findVarInFrame(rho, do_elseSymbol);
         if (do_else == R_UnboundValue)
             error(_("object '%s' not found"), EncodeChar(PRINTNAME(do_elseSymbol)));
-        if (TYPEOF(do_else) != LGLSXP || LENGTH(do_else) != 1)
+        if (!IS_SCALAR(do_else, LGLSXP))
             error(_("invalid '%s' value"), EncodeChar(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:

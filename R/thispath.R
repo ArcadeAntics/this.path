@@ -82,13 +82,21 @@ readLines2 <- function (path, default = character(0))
         file(path, "rb", encoding = "")
     }, error = function(e) NULL)
     if (is.null(conn))
+        ## we do not throw a warning here because one should
+        ## have already been thrown, something like:
+        ##
+        ## Warning message:
+        ## In file(path, "rb", encoding = "") :
+        ## cannot open file '%s': No such file or directory
         return(default)
     on.exit(close(conn))
-    txt <- readLines(conn)
-    encoding <- txt[c(FALSE, TRUE)]
-    txt      <- txt[c(TRUE, FALSE)]
-    Encoding(txt) <- encoding
-    txt
+    x <- readLines(conn)
+    if (!length(x) || length(x) %% 2L)
+        stop(sprintf("invalid '%s' contents", path))
+    encoding <- x[c(FALSE, TRUE)]
+    x        <- x[c(TRUE, FALSE)]
+    Encoding(x) <- encoding
+    x
 }
 
 

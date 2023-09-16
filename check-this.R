@@ -1,42 +1,89 @@
 local({
-    submit2CRAN <- TRUE
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
-    if (submit2CRAN) {
-        info.dcf <- this.path::here("tools", "info.dcf")
-        info <- read.dcf(info.dcf)
-        if (nrow(info) != 1L)
-            stop("contains a blank line", call. = FALSE)
-        info <- info[1L, ]
-
-
-        ## re-read the file, providing 'keep.white' this time
-        info <- read.dcf(info.dcf, keep.white = names(info))
-        if (nrow(info) != 1L)
-            stop("contains a blank line", call. = FALSE)
-        info <- info[1L, ]
-
-
-        info[["devel"]] <- "FALSE"
-        FILE.dcf <- tempfile(fileext = ".dcf")
-        if (!file.copy(info.dcf, FILE.dcf, overwrite = TRUE, copy.date = TRUE))
-            stop(sprintf("unable to copy file '%s' to '%s'", info.dcf, FILE.dcf))
-        on.exit({
-            if (!file.copy(FILE.dcf, info.dcf, overwrite = TRUE, copy.date = TRUE))
-                stop(sprintf("unable to copy file '%s' to '%s'", FILE.dcf, info.dcf))
-        }, add = TRUE, after = FALSE)
-        write.dcf(t(info), info.dcf, useBytes = !l10n_info()[["UTF-8"]],
-            keep.white = names(info))
-    }
     essentials:::.update.DESCRIPTION.Date()
     essentials:::check.this(  ## this.path
         special = TRUE,
 
-        # INSTALL = FALSE, # html = TRUE, latex = TRUE,
+        # INSTALL = TRUE, # html = TRUE, latex = TRUE,
 
         check = FALSE, as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
+    )
+})
+
+
+local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
+    upcoming.CRAN.version <- "2.1.1"
+    if (!file.exists(this.path::here("tools", "maintainers-copy")))
+        stop("unable to 'check.this()', not the maintainer's copy")
+
+
+
+
+
+    DESCRIPTION.dcf <- this.path::here("DESCRIPTION")
+    DESCRIPTION <- read.dcf(DESCRIPTION.dcf)
+    if (nrow(DESCRIPTION) != 1L)
+        stop("contains a blank line", call. = FALSE)
+    DESCRIPTION <- DESCRIPTION[1L, ]
+
+
+    ## re-read the file, providing 'keep.white' this time
+    DESCRIPTION <- read.dcf(DESCRIPTION.dcf, keep.white = names(DESCRIPTION))
+    if (nrow(DESCRIPTION) != 1L)
+        stop("contains a blank line", call. = FALSE)
+    DESCRIPTION <- DESCRIPTION[1L, ]
+
+
+    DESCRIPTION[["Version"]] <- upcoming.CRAN.version
+    temp.DESCRIPTION.dcf <- tempfile(fileext = ".dcf")
+    if (!file.copy(DESCRIPTION.dcf, temp.DESCRIPTION.dcf, overwrite = TRUE, copy.date = TRUE))
+        stop(sprintf("unable to copy file '%s' to '%s'", DESCRIPTION.dcf, temp.DESCRIPTION.dcf))
+    on.exit({
+        if (!file.copy(temp.DESCRIPTION.dcf, DESCRIPTION.dcf, overwrite = TRUE, copy.date = TRUE))
+            stop(sprintf("unable to copy file '%s' to '%s'", temp.DESCRIPTION.dcf, DESCRIPTION.dcf))
+    }, add = TRUE, after = FALSE)
+    write.dcf(t(DESCRIPTION), DESCRIPTION.dcf, useBytes = !l10n_info()[["UTF-8"]],
+        keep.white = names(DESCRIPTION))
+
+
+
+
+
+    info.dcf <- this.path::here("tools", "info.dcf")
+    info <- read.dcf(info.dcf)
+    if (nrow(info) != 1L)
+        stop("contains a blank line", call. = FALSE)
+    info <- info[1L, ]
+
+
+    ## re-read the file, providing 'keep.white' this time
+    info <- read.dcf(info.dcf, keep.white = names(info))
+    if (nrow(info) != 1L)
+        stop("contains a blank line", call. = FALSE)
+    info <- info[1L, ]
+
+
+    info[["devel"]] <- "FALSE"
+    temp.info.dcf <- tempfile(fileext = ".dcf")
+    if (!file.copy(info.dcf, temp.info.dcf, overwrite = TRUE, copy.date = TRUE))
+        stop(sprintf("unable to copy file '%s' to '%s'", info.dcf, temp.info.dcf))
+    on.exit({
+        if (!file.copy(temp.info.dcf, info.dcf, overwrite = TRUE, copy.date = TRUE))
+            stop(sprintf("unable to copy file '%s' to '%s'", temp.info.dcf, info.dcf))
+    }, add = TRUE, after = FALSE)
+    write.dcf(t(info), info.dcf, useBytes = !l10n_info()[["UTF-8"]],
+        keep.white = names(info))
+
+
+
+
+
+    essentials:::.update.DESCRIPTION.Date()
+    essentials:::check.this(  ## this.path
+        INSTALL = FALSE, check = FALSE, chdir = TRUE
     )
 })
 

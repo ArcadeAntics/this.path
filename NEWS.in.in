@@ -4,6 +4,12 @@ CHANGES IN this.path devel:
 
   NEW FEATURES:
 
+    * this.path() is now compatible with package {targets}.
+
+CHANGES IN this.path 2.1.0 (2023-09-12):
+
+  NEW FEATURES:
+
     * this.path() is now compatible with function shiny::runApp().
 
     * this.path() is now compatible with function plumber::plumb().

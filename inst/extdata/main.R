@@ -1,29 +1,30 @@
 .languages <- matrix(dimnames = list(NULL, c(
-    "LANGUAGE", "Format: (* Custom Locale)"    , "locale"                      )), data = c(
-    "da"      , "Danish (Denmark)"             , "Danish_Denmark"              ,
-    "de"      , "German (Germany)"             , "German_Germany"              ,
-    "en"      , "English (World)"              , "English_World"               ,
-    "en@quot" , "English (World)"              , "English_World"               ,
-    "en_GB"   , "English (United Kingdom)"     , "English_United Kingdom"      ,
-    "es"      , "Spanish (Spain)"              , "Spanish_Spain"               ,
-    "fa"      , "Persian (Iran)"               , "Persian_Iran"                ,
-    "fr"      , "French (France)"              , "French_France"               ,
-    "it"      , "Italian (Italy)"              , "Italian_Italy"               ,
-    "ja"      , "Japanese (Japan)"             , "Japanese_Japan"              ,
-    "ko"      , "Korean (Korea)"               , "Korean_Korea"                ,
-    "lt"      , "Lithuanian (Lithuania)"       , "Lithuanian_Lithuania"        ,
-    "Meta"    , ""                             , ""                            ,
-    "nn"      , "Norwegian Nynorsk (Norway)"   , "Norwegian-Nynorsk_Norway"    ,
-    "pl"      , "Polish (Poland)"              , "Polish_Poland"               ,
-    "pt_BR"   , "Portuguese (Brazil)"          , "Portuguese_Brazil"           ,
-    "ru"      , "Russian (Russia)"             , "Russian_Russia"              ,
-    "tr"      , "Turkish (Turkey)"             , "Turkish_Turkey"              ,
-    "zh_CN"   , "Chinese (Simplified, China)"  , "Chinese (Simplified)_China"  ,
-    "zh_TW"   , "Chinese (Traditional, Taiwan)", "Chinese (Traditional)_Taiwan"
-), ncol = 3L, byrow = TRUE)
+    "LANGUAGE", "codepage", "Format: (* Custom Locale)"    , "locale"                      )), data = c(
+    "da"      , "865"     , "Danish (Denmark)"             , "Danish_Denmark"              ,
+    "de"      , "1252"    , "German (Germany)"             , "German_Germany"              ,
+    "en"      , "1252"    , "English (World)"              , "English_World"               ,
+    "en@quot" , "1252"    , "English (World)"              , "English_World"               ,
+    "en_GB"   , "1252"    , "English (United Kingdom)"     , "English_United Kingdom"      ,
+    "es"      , "1252"    , "Spanish (Spain)"              , "Spanish_Spain"               ,
+    "fa"      , "1256"    , "Persian (Iran)"               , "Persian_Iran"                ,
+    "fr"      , "1252"    , "French (France)"              , "French_France"               ,
+    "it"      , "1252"    , "Italian (Italy)"              , "Italian_Italy"               ,
+    "ja"      , "932"     , "Japanese (Japan)"             , "Japanese_Japan"              ,
+    "ko"      , "949"     , "Korean (Korea)"               , "Korean_Korea"                ,
+    "lt"      , "1257"    , "Lithuanian (Lithuania)"       , "Lithuanian_Lithuania"        ,
+    "Meta"    , ""        , ""                             , ""                            ,
+    "nn"      , "865"     , "Norwegian Nynorsk (Norway)"   , "Norwegian-Nynorsk_Norway"    ,
+    "pl"      , "1250"    , "Polish (Poland)"              , "Polish_Poland"               ,
+    "pt_BR"   , "860"     , "Portuguese (Brazil)"          , "Portuguese_Brazil"           ,
+    "ru"      , "1251"    , "Russian (Russia)"             , "Russian_Russia"              ,
+    "tr"      , "1254"    , "Turkish (Turkey)"             , "Turkish_Turkey"              ,
+    "zh_CN"   , "936"     , "Chinese (Simplified, China)"  , "Chinese (Simplified)_China"  ,
+    "zh_TW"   , "950"     , "Chinese (Traditional, Taiwan)", "Chinese (Traditional)_Taiwan"
+), ncol = 4L, byrow = TRUE)
 rownames(.languages) <- .languages[, "LANGUAGE"]
 
 
+.codepages <- .languages[, "codepage"]
 .locales <- .languages[, "locale"]
 
 
@@ -40,7 +41,7 @@ rownames(.languages) <- .languages[, "LANGUAGE"]
         paste0(
             c("LANGUAGE=", "LC_ALL="),
             c(LANGUAGE, .locales[[LANGUAGE]]),
-            if (utf8 && nzchar(.locales[[LANGUAGE]])) c("", ".utf8")
+            if (nzchar(.locales[[LANGUAGE]])) c("", if (utf8) ".utf8" else paste0(".", .codepages[[LANGUAGE]]))
         )
     } else {
         if (!nzchar(LANGUAGE))
@@ -80,7 +81,7 @@ if (sys.nframe() != 0L) {
 
 
         testing <- FALSE
-        # testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
+        testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
 
 
         ## there was a time when I was doing something more along the lines:
@@ -112,8 +113,9 @@ if (sys.nframe() != 0L) {
         path <- c(file.path(R.home("bin"), exe), path)
 
 
-        # args <- c("--version")
+        # args <- "--version"
         # args <- c("--default-packages=NULL", "--vanilla", "-e", "utils::capture.output")
+        # args <- c("--default-packages=NULL", "--vanilla", "-e", "writeLines(as.character(identical(if (l10n_info()$`UTF-8`) 1 else if (l10n_info()$`Latin-1`) 2 else 3, switch(utils::localeToCharset()[1L], `UTF-8` = 1, `ISO8859-1` = 2, 3))))")
         # args <- paste(shQuote(args), collapse = " ")
         # command <- paste(shQuote(path), args)
         # names(command) <- path
@@ -210,18 +212,24 @@ if (sys.nframe() != 0L) {
                         utils::file.edit(tmpR)
                         text <- names(utils::getWindowsHandles())[[1L]]
                         if (Encoding(text) == "unknown") {
-                            loc <- utils::localeToCharset()[1L]
-                            Encoding(text) <- switch(loc, `UTF-8` = "UTF-8",
-                                `ISO8859-1` = "latin1", "unknown")
+                            loc <- l10n_info()
+                            Encoding(text) <- if (loc$`UTF-8`)
+                                "UTF-8"
+                            else if (loc$`Latin-1`)
+                                "latin1"
+                            else "unknown"
                         }
                         writeLines(text, conn, useBytes = TRUE)
                         writeLines(Encoding(text), conn, useBytes = TRUE)
                         utils::file.edit("")
                         text <- names(utils::getWindowsHandles())[[1L]]
                         if (Encoding(text) == "unknown") {
-                            loc <- utils::localeToCharset()[1L]
-                            Encoding(text) <- switch(loc, `UTF-8` = "UTF-8",
-                                `ISO8859-1` = "latin1", "unknown")
+                            loc <- l10n_info()
+                            Encoding(text) <- if (loc$`UTF-8`)
+                                "UTF-8"
+                            else if (loc$`Latin-1`)
+                                "latin1"
+                            else "unknown"
                         }
                         writeLines(text, conn, useBytes = TRUE)
                         writeLines(Encoding(text), conn, useBytes = TRUE)
@@ -255,7 +263,7 @@ if (sys.nframe() != 0L) {
 
             n <- 0L
             for (language in rownames(.languages)) {
-                args <- c(rgui, options, .languageEnvvars(language, ucrt))
+                args <- c(rgui, options, print(.languageEnvvars(language, ucrt)))
                 command <- paste(shQuote(args), collapse = " ")
                 ans <- system(command)
                 if (ans) {
@@ -277,27 +285,20 @@ if (sys.nframe() != 0L) {
             }
 
 
-            readLines2 <- function(path) {
+            readLines2 <- function(path, divisor = 2L) {
                 conn <- file(path, "rb", encoding = "")
                 on.exit(close(conn))
-                txt <- readLines(conn)
-                if (length(txt) < 4L)
-                    stop("invalid 'txt'; should never happen, please report!")
-                encoding <- txt[c(FALSE, TRUE)]
-                txt      <- txt[c(TRUE, FALSE)]
-                Encoding(txt) <- encoding
-                txt
+                x <- readLines(conn)
+                if (!length(x) || length(x) %% divisor)
+                    stop("invalid 'x'; should never happen, please report!")
+                encoding <- x[c(FALSE, TRUE)]
+                x        <- x[c(TRUE, FALSE)]
+                Encoding(x) <- encoding
+                x
             }
 
 
-            txt <- local({
-                txt <- readLines2(tmptxt)
-                unknown <- Encoding(txt) == "unknown"
-                if (any(unknown)) {
-                    Encoding(txt)[unknown] <- if (ucrt) "UTF-8" else "latin1"
-                }
-                txt
-            })
+            txt <- readLines2(tmptxt, divisor = 4L)
 
 
             r.editor <- txt[c(TRUE, FALSE)]
@@ -371,7 +372,7 @@ if (sys.nframe() != 0L) {
                     {
                         stop("invalid \" - R Editor\" string: ", str, domain = NA)
                     }
-                    value <- rawToChar(bytes[-seq_len(length(prefix) - 3L)])
+                    value <- rawToChar(bytes[seq_along(bytes) > length(prefix)])
                     Encoding(value) <- Encoding(str)
                     value
                 }, FUN.VALUE = "", USE.NAMES = FALSE)

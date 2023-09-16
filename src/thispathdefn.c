@@ -366,16 +366,18 @@ SEXP DocumentContext(void)
 }
 
 
-int ofile_is_NULL(SEXP documentcontext)
-{
-    return findVarInFrame(documentcontext, ofileSymbol) == R_NilValue;
-}
-
-
 #define _assign(file, documentcontext)                         \
     INCREMENT_NAMED_defineVar(ofileSymbol, (file), (documentcontext));\
     SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
     defineVar(fileSymbol, e, (documentcontext))
+
+
+/* instead of doing:
+ * document.context$ofile <- NULL
+ * to declare that a document context does not refer to a file, now we do:
+ * document.context <- emptyenv()
+ * this is much easier to test for and to read and to debug
+ */
 
 
 void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory)
@@ -383,14 +385,6 @@ void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_director
     _assign(file, documentcontext);
     SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
                         CONS(file, R_NilValue)));
-}
-
-
-void assign_null(SEXP documentcontext)
-{
-    /* make and force the promise */
-    _assign(R_NilValue, documentcontext);
-    eval(e, R_EmptyEnv);
 }
 
 

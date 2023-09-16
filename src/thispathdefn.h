@@ -127,11 +127,9 @@ extern void stop(SEXP cond);
 
 
 extern SEXP DocumentContext(void);
-extern int ofile_is_NULL(SEXP documentcontext);
 
 
 extern void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory);
-extern void assign_null(SEXP documentcontext);
 extern void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext);
 extern void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, Rboolean check_not_directory);
 extern void assign_file_uri2(SEXP description, SEXP documentcontext, Rboolean check_not_directory);
@@ -221,13 +219,13 @@ typedef struct gzconn {
                 if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\
             }                                                  \
             SEXP description = mkCharCE(Rcon->description, (Rcon->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE);\
-            PROTECT(description); nprotect++;                  \
+            PROTECT(description); nprotect_local_to_checkfile++;\
             const char *klass = Rcon->class
 #define Rcon_or_summary Rcon
 #else
 #define get_description_and_class                              \
             SEXP summary = summaryconnection(ofile);           \
-            PROTECT(summary); nprotect++;                      \
+            PROTECT(summary); nprotect_local_to_checkfile++;   \
             SEXP description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
             const char *klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
             if (streql(klass, "gzcon")) error("'this.path' not implemented for a gzcon()")
@@ -236,8 +234,18 @@ typedef struct gzconn {
 
 
 /* it is undesirable to have this as a #define but we also cannot
-   evaluate all the arguments. used in _syspath(), _envpath(), _srcpath(),
-   do_wrapsource(), and setpath()
+   evaluate all the arguments. used in:
+
+   thispath.c
+
+     * _syspath()
+     * _envpath()
+     * _srcpath()
+
+   wrapsource.c
+
+     * do_wrapsource()
+     * setpath()
  */
 #define checkfile(call, sym, ofile, frame, as_binding,         \
     check_not_directory, forcepromise, assign_returnvalue,     \
@@ -250,8 +258,8 @@ typedef struct gzconn {
     ignore_blank_string, ignore_clipboard, ignore_stdin,       \
     ignore_url, ignore_file_uri, source)                       \
 do {                                                           \
-    int nprotect = 0;                                          \
-    PROTECT(documentcontext = DocumentContext()); nprotect++;  \
+    int nprotect_local_to_checkfile = 0;                       \
+    PROTECT(documentcontext = DocumentContext()); nprotect_local_to_checkfile++;\
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (LENGTH(ofile) != 1)                                \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
@@ -259,15 +267,11 @@ do {                                                           \
         if (file == NA_STRING)                                 \
             errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
         if (ofilearg != NULL) {                                \
-            if (TYPEOF(ofilearg) == STRSXP) {                  \
-                if (LENGTH(ofilearg) != 1)                     \
-                    errorcall(call, "'%s' must be a character string", "ofile");\
+            if (IS_SCALAR(ofilearg, STRSXP)) {                 \
                 if (STRING_ELT(ofilearg, 0) == NA_STRING)      \
                     errorcall(call, "invalid '%s', must not be NA", "ofile");\
             }                                                  \
-            else {                                             \
-                errorcall(call, "'%s' must be a character string", "ofile");\
-            }                                                  \
+            else errorcall(call, "'%s' must be a character string", "ofile");\
         }                                                      \
         const char *url;                                       \
         if (conv2utf8) {                                       \
@@ -276,33 +280,36 @@ do {                                                           \
             else {                                             \
                 url = translateCharUTF8(file);                 \
                 file = mkCharCE(url, CE_UTF8);                 \
-                PROTECT(file); nprotect++;                     \
+                PROTECT(file); nprotect_local_to_checkfile++;  \
             }                                                  \
         }                                                      \
         else url = CHAR(file);                                 \
         if (!ignore_blank_string && !(LENGTH(file) > 0)) {     \
             if (allow_blank_string) {                          \
-                assign_null(documentcontext);                  \
-                if (assign_returnvalue)                        \
-                    returnvalue = PROTECT(ofile);              \
+                documentcontext = R_EmptyEnv;                  \
+                if (assign_returnvalue) {                      \
+                    returnvalue = PROTECT(ofile); nprotect++;  \
+                }                                              \
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(sym)));\
         }                                                      \
         else if (!ignore_clipboard && is_clipboard(url)) {     \
             if (allow_clipboard) {                             \
-                assign_null(documentcontext);                  \
-                if (assign_returnvalue)                        \
-                    returnvalue = PROTECT(ofile);              \
+                documentcontext = R_EmptyEnv;                  \
+                if (assign_returnvalue) {                      \
+                    returnvalue = PROTECT(ofile); nprotect++;  \
+                }                                              \
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', %s", EncodeChar(PRINTNAME(sym)), must_not_be_clipboard_message);\
         }                                                      \
         else if (!ignore_stdin && streql(url, "stdin")) {      \
             if (allow_stdin) {                                 \
-                assign_null(documentcontext);                  \
-                if (assign_returnvalue)                        \
-                    returnvalue = PROTECT(ofile);              \
+                documentcontext = R_EmptyEnv;                  \
+                if (assign_returnvalue) {                      \
+                    returnvalue = PROTECT(ofile); nprotect++;  \
+                }                                              \
             }                                                  \
             else                                               \
                 errorcall(call, "invalid '%s', must not be \"stdin\"", EncodeChar(PRINTNAME(sym)));\
@@ -310,8 +317,9 @@ do {                                                           \
         else if (!ignore_url && is_url(url)) {                 \
             if (allow_url) {                                   \
                 assign_url(ofile, file, documentcontext);      \
-                if (assign_returnvalue)                        \
-                    returnvalue = PROTECT(ofile);              \
+                if (assign_returnvalue) {                      \
+                    returnvalue = PROTECT(ofile); nprotect++;  \
+                }                                              \
                 if (ofilearg != NULL)                          \
                     overwrite_ofile(ofilearg, documentcontext);\
             }                                                  \
@@ -322,7 +330,7 @@ do {                                                           \
             if (allow_file_uri) {                              \
                 assign_file_uri(ofile, file, documentcontext, check_not_directory);\
                 if (assign_returnvalue) {                      \
-                    returnvalue = PROTECT(shallow_duplicate(ofile));\
+                    returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                     SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
                 }                                              \
                 else if (forcepromise)                         \
@@ -343,7 +351,7 @@ do {                                                           \
             }                                                  \
             else assign_default(ofile, documentcontext, check_not_directory);\
             if (assign_returnvalue) {                          \
-                returnvalue = PROTECT(shallow_duplicate(ofile));\
+                returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                 SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
             }                                                  \
             else if (forcepromise)                             \
@@ -410,43 +418,43 @@ do {                                                           \
             }                                                  \
             else if (is_clipboard(klass)) {                    \
                 if (allow_clipboard)                           \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a clipboard connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "pipe")) {                  \
                 if (allow_pipe)                                \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a pipe connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "terminal")) {              \
                 if (allow_terminal)                            \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a terminal connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "textConnection")) {        \
                 if (allow_textConnection)                      \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a textConnection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "rawConnection")) {         \
                 if (allow_rawConnection)                       \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a rawConnection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "sockconn")) {              \
                 if (allow_sockconn)                            \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a sockconn", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "servsockconn")) {          \
                 if (allow_servsockconn)                        \
-                    assign_null(documentcontext);              \
+                    documentcontext = R_EmptyEnv;              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a servsockconn", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
@@ -469,16 +477,20 @@ do {                                                           \
                         EncodeChar(PRINTNAME(sym)), EncodeChar(mkChar(klass)));\
             }                                                  \
         }                                                      \
-        if (assign_returnvalue) returnvalue = PROTECT(ofile);  \
+        if (assign_returnvalue) {                              \
+            returnvalue = PROTECT(ofile); nprotect++;          \
+        }                                                      \
     }                                                          \
-    INCREMENT_NAMED_defineVar(sourceSymbol, (source), documentcontext);\
+    if (documentcontext != R_EmptyEnv) {                       \
+        INCREMENT_NAMED_defineVar(sourceSymbol, (source), documentcontext);\
+    }                                                          \
     if (as_binding) {                                          \
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);\
         R_LockBinding(documentcontextSymbol, frame);           \
     } else {                                                   \
         setAttrib(frame, documentcontextSymbol, documentcontext);\
     }                                                          \
-    UNPROTECT(nprotect);                                       \
+    UNPROTECT(nprotect_local_to_checkfile);                    \
     set_R_Visible(TRUE);                                       \
 } while (0)
 
@@ -489,4 +501,4 @@ do {                                                           \
                      (nargs), (name), (expected_nargs)
 
 
-#endif /* #ifndef R_THISPATH_THISPATHDEFN_H */
+#endif /* R_THISPATH_THISPATHDEFN_H */

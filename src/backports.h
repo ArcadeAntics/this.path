@@ -155,11 +155,4 @@ extern int IS_UTF8(SEXP x);
 #endif
 
 
-#if R_version_less_than(4, 2, 0)
-#define existsInFrame(rho, symbol) (findVarInFrame((rho), (symbol)) != R_UnboundValue)
-#else
-#define existsInFrame(rho, symbol) R_existsVarInFrame((rho), (symbol))
-#endif
-
-
 #endif /* R_THISPATH_BACKPORTS_H */

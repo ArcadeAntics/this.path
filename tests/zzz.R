@@ -1,3 +1,6 @@
+print(loadedNamespaces())
+
+
 this.path:::.HAVE_AQUA
 this.path:::.PATH_MAX
 this.path:::.NAMEDMAX

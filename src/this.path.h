@@ -251,4 +251,4 @@ extern SEXP do_setenvpath   do_formals;
 extern SEXP do_setsrcpath   do_formals;
 
 
-#endif  /* #ifndef R_THISPATH_THISPATH_H */
+#endif  /* R_THISPATH_THISPATH_H */

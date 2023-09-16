@@ -3,7 +3,18 @@
 #include "this.path.h"         /* need declarations of C functions */
 
 
+#include <R.h>
+SEXP do_testing do_formals
+{
+    do_start("testing", 1);
+    return ScalarLogical(IS_SCALAR(CAR(args), STRSXP));
+}
+
+
 static const R_ExternalMethodDef externalRoutines[] = {
+
+
+    {"testing", (DL_FUNC) &do_testing, 1},
 
 
     /* aquarootscript.c */
