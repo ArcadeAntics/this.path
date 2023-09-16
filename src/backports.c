@@ -105,6 +105,12 @@ SEXP shallow_duplicate(SEXP s)
 }
 
 
+int IS_SCALAR(SEXP x, int type)
+{
+    return TYPEOF(x) == type && xlength(x) == 1;
+}
+
+
 Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho);
 
 

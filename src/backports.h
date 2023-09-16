@@ -127,6 +127,7 @@ LibExtern SEXP R_LogicalNAValue;
 #if R_version_less_than(3, 1, 0)
 extern SEXP lazy_duplicate(SEXP s);
 extern SEXP shallow_duplicate(SEXP s);
+extern int IS_SCALAR(SEXP x, int type);
 #endif
 
 
