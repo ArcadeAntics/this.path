@@ -54,12 +54,15 @@
   New additions to \pkg{this.path} include:
 
   \itemize{
+    \item{\code{\link{with_site.file}()} and \code{\link{with_init.file}()}
+      allow \code{this.path()} and related to be used in the site-wide startup
+      profile file or a user profile.}
+
     \item{\code{\link{LINENO}()} returns the line number of the executing
       expression.}
 
-    \item{\code{\link{set.sys.path}()} and \code{\link{wrap.source}()}
-      implement \code{\link{this.path}()} for any \sourcelink-like
-      functions outside of \sourcesandlistlinks.}
+    \item{\code{\link{set.sys.path}()} implements \code{\link{this.path}()} for
+      any \sourcelink-like functions outside of \sourcesandlistlinks.}
 
     \item{\code{\link{shFILE}()} looks through the command line arguments,
       extracting \option{FILE} from either of the following: \option{-f}

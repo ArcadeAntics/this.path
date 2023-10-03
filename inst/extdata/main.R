@@ -28,7 +28,7 @@ rownames(.languages) <- .languages[, "LANGUAGE"]
 .locales <- .languages[, "locale"]
 
 
-.languageEnvvars <- function (LANGUAGE = Sys.getenv("LANGUAGE"), utf8 = identical(R.version[["crt"]], "ucrt"))
+.language.envvars <- function (LANGUAGE = Sys.getenv("LANGUAGE"), utf8 = identical(R.version[["crt"]], "ucrt"))
 {
     if (!is.character(LANGUAGE) || length(LANGUAGE) != 1L)
         stop(gettextf("'%s' must be a character string", "LANGUAGE", domain = "R"), domain = NA)
@@ -88,7 +88,7 @@ if (sys.nframe() != 0L) {
         ##
         ## ```
         ## for (language in rownames(.languages)) {
-        ##     Sys.putenv(.languageEnvvars(language))
+        ##     Sys.putenv(.language.envvars(language))
         ##     gettext("Untitled", domain = "RGui")
         ##     gettext("R Editor", domain = "RGui")
         ## }
@@ -262,7 +262,7 @@ if (sys.nframe() != 0L) {
 
             n <- 0L
             for (language in rownames(.languages)) {
-                args <- c(rgui, options, .languageEnvvars(language, ucrt))
+                args <- c(rgui, options, .language.envvars(language, ucrt))
                 command <- paste(shQuote(args), collapse = " ")
                 ans <- system(command)
                 if (ans) {

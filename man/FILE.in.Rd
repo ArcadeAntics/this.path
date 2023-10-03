@@ -1,7 +1,7 @@
 \name{FILE}
 \alias{FILE}
 \alias{LINE}
-\title{Active Bindings in Package \pkg{this.path}}
+\title{Active Bindings in Package 'this.path'}
 \description{
   These variables are active bindings, meaning they call functions when their
   values are requested.

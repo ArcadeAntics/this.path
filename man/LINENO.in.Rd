@@ -11,18 +11,14 @@
 sys.LINENO()
 env.LINENO(n = 0, envir = parent.frame(n + 1),
            matchThisEnv = getOption("topLevelEnvironment"))
-src.LINENO(n = 0, srcfile = sys.call(if (n) sys.parent(n) else 0))
+src.LINENO(n = 0, srcfile = if (n) sys.parent(n) else 0)
 
 LINENO(n = 0, envir = parent.frame(n + 1),
        matchThisEnv = getOption("topLevelEnvironment"),
-       srcfile = sys.call(if (n) sys.parent(n) else 0))
+       srcfile = if (n) sys.parent(n) else 0)
 }
 \arguments{
-  \item{n}{See \code{?\link{this.path}()}.}
-
-  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
-
-  \item{srcfile}{See \code{?\link{src.path}()}.}
+  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
   \code{sys.LINENO()} returns the line number of the most recent expression
@@ -45,26 +41,6 @@ LINENO(n = 0, envir = parent.frame(n + 1),
 \note{
   \code{LINENO()} only works if the expressions have a
   \codelink2{base:srcfile}{srcref} and a \codelink2{base}{srcfile}.
-
-  As mentioned in section \strong{Note} of \code{?\link{this.path}}, source
-  references are stored only for top-level expressions (including directly
-  inside braces). For example: \preformatted{
-#line 1
-if (TRUE)
-    message(sprintf("LINENO() will be 1: \%d",
-                    LINENO()))
-
-#line 1
-if (TRUE) {
-    message(sprintf("LINENO() will be 2 because of the brace on line 1: \%d",
-                    LINENO()))
-}
-
-#line 1
-if (TRUE) {
-    message(sprintf("LINENO() will be 3 because of the braces on line 3: \%d",
-                    { LINENO() }))
-}}
 
   Scripts run with \Rscriptlink do not store their \code{srcref}, even when
   \codelink3{base:options}{getOption}{("keep.source")} is \code{TRUE}.

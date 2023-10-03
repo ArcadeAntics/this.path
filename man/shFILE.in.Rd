@@ -1,12 +1,17 @@
 \name{shFILE}
+\alias{site.file}
+\alias{init.file}
 \alias{shFILE}
-\title{Get \option{FILE} Provided to \R by a Shell}
+\title{Get 'FILE' Provided to R by a Shell}
 \description{
   Look through the command line arguments, extracting \option{FILE} from either
   of the following: \option{-f} \option{FILE} or \option{--file=FILE}
 }
 \usage{
 shFILE(original = FALSE, for.msg = FALSE, default, else.)
+
+site.file(original = FALSE, for.msg = FALSE, default, else.)
+init.file(original = FALSE, for.msg = FALSE, default, else.)
 }
 \arguments{
   \item{original}{\code{TRUE}, \code{FALSE}, or \code{NA}; should the original

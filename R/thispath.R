@@ -533,8 +533,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         tryCatch3({
             context <- rstudioapi::getSourceEditorContext()
         }, error = {
-            # stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding\n  the following to your site-wide startup profile file or your user\n  profile (see ?Startup):\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  run the following code to do so:\n\n```R\ncat(\"\\n\\noptions(vsc.rstudioapi = TRUE)\\n\", file = \"~/.Rprofile\", append = TRUE)\n```\n\n  then restart the R session and try again", sys.call()))
-            stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding:\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  to your site-wide startup profile file or your user profile (see ?Startup),\n  then restart the R session and try again", sys.call()))
+            # stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding\n  the following to the site-wide startup profile file or your user\n  profile (see ?Startup):\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  run the following code to do so:\n\n```R\ncat(\"\\n\\noptions(vsc.rstudioapi = TRUE)\\n\", file = \"~/.Rprofile\", append = TRUE)\n```\n\n  then restart the R session and try again", sys.call()))
+            stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding:\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  to the site-wide startup profile file or your user profile (see ?Startup),\n  then restart the R session and try again", sys.call()))
         })
 
 
@@ -709,6 +709,15 @@ normalizePath(path, winslash, mustWork)
 }
 
 
+.normalizeFixDirectory <- function (path, winslash = "/", mustWork = TRUE)
+{
+    x <- normalizePath(path, winslash, mustWork)
+    if (.istrue(.isdir(x)))
+        path.join(x, ".")
+    else x
+}
+
+
 .normalizeAgainst <- function (wd, path)
 {
     owd <- getwd()
@@ -778,11 +787,11 @@ env.dir <- function (verbose = getOption("verbose"), n = 0L, envir = parent.fram
 
 
 src.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
-    contents = FALSE, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L), default, else.)
+    contents = FALSE, n = 0L, srcfile = if (n) sys.parent(n) else 0L, default, else.)
 .External2(.C_srcpath, verbose, original, for.msg, contents, srcfile)
 
 
-src.dir <- function (verbose = getOption("verbose"), n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L),
+src.dir <- function (verbose = getOption("verbose"), n = 0L, srcfile = if (n) sys.parent(n) else 0L,
     default, else.)
 {
     value <- .External2(.C_srcpath, verbose, srcfile)
@@ -792,13 +801,13 @@ src.dir <- function (verbose = getOption("verbose"), n = 0L, srcfile = sys.call(
 
 this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
     contents = FALSE, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
-    matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call(if (n) sys.parent(n) else 0L),
+    matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L,
     default, else.)
 .External2(.C_thispath, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
 
 
 this.dir <- function (verbose = getOption("verbose"), local = FALSE, n = 0L, envir = parent.frame(n + 1L),
-    matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call(if (n) sys.parent(n) else 0L),
+    matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L,
     default, else.)
 {
     value <- .External2(.C_thispath, verbose, local, envir, matchThisEnv, srcfile)
@@ -853,6 +862,13 @@ src.dir   <- tmpfun(src.dir  )
 this.path <- tmpfun(this.path)
 this.dir  <- tmpfun(this.dir )
 rm(tmpfun, tmp)
+
+
+GetSrcref <- function (n = 0L)
+{
+    n <- .External2(.C_asIntegerGE0, n)
+    .External2(.C_GetSrcref, sys.parent(n + 1L))
+}
 
 
 
@@ -915,7 +931,7 @@ env.here <- function (..., .. = 0L, n = 0L, envir = parent.frame(n + 1L),
 }
 
 
-src.here <- function (..., .. = 0L, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
+src.here <- function (..., .. = 0L, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_srcpath, srcfile)
@@ -926,7 +942,7 @@ src.here <- function (..., .. = 0L, n = 0L, srcfile = sys.call(if (n) sys.parent
 
 here <- function (..., .. = 0L, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call(if (n) sys.parent(n) else 0L))
+    srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
@@ -992,7 +1008,7 @@ try.env.path <- function (contents = FALSE, n = 0L, envir = parent.frame(n + 1L)
 }
 
 
-try.src.path <- function (contents = FALSE, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
+try.src.path <- function (contents = FALSE, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     contents
@@ -1011,7 +1027,7 @@ try.src.path <- function (contents = FALSE, n = 0L, srcfile = sys.call(if (n) sy
 
 try.this.path <- function (contents = FALSE, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call(if (n) sys.parent(n) else 0L))
+    srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     contents

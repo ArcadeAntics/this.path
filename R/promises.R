@@ -222,7 +222,7 @@ delayedAssign(".os.windows", .Platform$OS.type == "windows")
 ## we need to determine the type of GUI in use. unfortunately, .Platform$GUI is
 ## not good enough. for example, 'VSCode' and 'Jupyter' do not set
 ## .Platform$GUI, and 'RStudio' does not set .Platform$GUI until after the
-## site-wide startup profile file, the user profile, and the function .First()
+## site-wide startup profile file, a user profile, and the function .First()
 ## have been run (see ?Startup).
 ##
 ## as such, I've made my own ways of determining the type of GUI in use
@@ -299,7 +299,7 @@ delayedAssign(".gui.tk"  , .os.unix    && .Platform$GUI == "Tk"   && !.gui.rstud
 .rs.api.getActiveDocumentContext <- function (...)
 {
     if (.gui.rstudio)
-        stop("RStudio has not finished loading")
+        stop(.thisPathNotExistsError("RStudio has not finished loading"))
     else stop("RStudio is not running")
 }
 .rs.api.getSourceEditorContext <- .rs.api.getActiveDocumentContext

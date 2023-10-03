@@ -2,7 +2,7 @@
 \alias{check.path}
 \alias{check.dir}
 \alias{check.proj}
-\title{Check \code{\link{this.path}()} is Functioning Correctly}
+\title{Check 'this.path()' is Functioning Correctly}
 \description{
   Add \code{check.path("path/to/file")} to the start of your script to
   initialize \code{\link{this.path}()} and check that it is returning the

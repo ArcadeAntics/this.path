@@ -153,8 +153,10 @@ static const R_ExternalMethodDef externalRoutines[] = {
     /* shfile.c */
 
 
-    {"shFILE", (DL_FUNC) &do_shFILE, 2},
-    {"shINFO", (DL_FUNC) &do_shINFO, 0},
+    {"sitefile", (DL_FUNC) &do_sitefile, 2},
+    {"initfile", (DL_FUNC) &do_initfile, 2},
+    {"shFILE"  , (DL_FUNC) &do_shFILE  , 2},
+    {"shINFO"  , (DL_FUNC) &do_shINFO  , 0},
 
 
     /* thispath.c */
@@ -175,6 +177,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"syspath"          , (DL_FUNC) &do_syspath          , -1},
     {"getframenumber"   , (DL_FUNC) &do_getframenumber   ,  0},
     {"envpath"          , (DL_FUNC) &do_envpath          , -1},
+    {"GetSrcref"        , (DL_FUNC) &do_GetSrcref        ,  1},
     {"srcpath"          , (DL_FUNC) &do_srcpath          , -1},
     {"srclineno"        , (DL_FUNC) &do_srclineno        , -1},
     {"thispath"         , (DL_FUNC) &do_thispath         , -1},
@@ -182,6 +185,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"isfalse"          , (DL_FUNC) &do_isfalse          ,  1},
     {"asInteger"        , (DL_FUNC) &do_asInteger        ,  1},
     {"asIntegerGE0"     , (DL_FUNC) &do_asIntegerGE0     ,  1},
+
+
+    /* thispathdefn.c */
+
+
+    {"getdyn", (DL_FUNC) &do_getdyn, 3},
 
 
     /* trycatch.c */

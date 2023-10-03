@@ -4,6 +4,9 @@
 \alias{set.env.path}
 \alias{set.src.path}
 \alias{unset.sys.path}
+\alias{with_sys.path}
+\alias{with_site.file}
+\alias{with_init.file}
 \title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
   \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.
@@ -13,12 +16,23 @@
 
   \code{set.env.path()} and \code{set.src.path()} can be used along side
   \code{set.sys.path()} to implement \code{\link{env.path}()} and
-  \code{\link{src.path}()}, though \code{set.env.path()} only makes sense if
+  \code{\link{src.path}()}. Note that \code{set.env.path()} only makes sense if
   the code is being modularized, see examples.
 
   \code{unset.sys.path()} will undo a call to \code{set.sys.path()}. You will
   need to use this if you wish to call \code{set.sys.path()} multiple times
   within a function.
+
+  \code{with_sys.path()} is a convenient way to evaluate code within the
+  context of a file. Whereas \code{set.sys.path()} can only be used within a
+  function, \code{with_sys.path()} can only be used outside a function.
+  \code{with_site.file()} and \code{with_init.file()} provide two common use
+  cases of \code{with_sys.path()}; within the site-wide startup profile file or
+  a user profile. You could combine these with \code{\link{withAutoprint}()} to
+  auto-print expressions as if in a toplevel context, for example:
+  \preformatted{this.path::with_init.file(withAutoprint({
+    this.path::this.path()
+}, echo = FALSE))}
 
   See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
@@ -81,9 +95,18 @@ set.env.path(envir, matchThisEnv = getOption("topLevelEnvironment"))
 set.src.path(srcfile)
 
 unset.sys.path()
+
+with_sys.path(file, expr, ...)
+with_site.file(expr, n = 0)
+with_init.file(expr, n = 0)
 }
 \arguments{
-  \item{expr}{an (unevaluated) call to a \sourcenolink-like function.}
+  \item{expr}{for \code{wrap.source()}, an (unevaluated) call to a
+    \sourcenolink-like function.
+
+    for \code{with_sys.path()}, \code{with_site.file()}, and
+    \code{with_init.file()}, an expression to evaluate within the context of a
+    file.}
 
   \item{file}{a
     \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
@@ -144,6 +167,10 @@ unset.sys.path()
     environment in which to assign an associated path.}
 
   \item{srcfile}{source file in which to assign a pathname.}
+
+  \item{\dots}{further arguments passed to \code{set.sys.path()}.}
+
+  \item{n}{see \code{?\link{this.path}()}.}
 }
 \details{
   \code{set.sys.path()} should be added to the body of your \sourcenolink-like

@@ -89,7 +89,8 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
 
 
 local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
-    file.create(FILE <- "./tools/for-r-mac-builder")
+    FILE <- "./tools/for-r-mac-builder"
+            if (!file.create(FILE)) stop(sprintf("unable to create file '%s'", FILE))
     on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
     essentials:::check.this(
         INSTALL = FALSE,
@@ -112,7 +113,7 @@ local({
         lines <- readLines(file, warn = FALSE)
         srcfile <- srcfilecopy(file, lines, file.mtime(local.file),
             isFile = !is.na(local.file))
-        exprs <- parse(text = lines, srcfile = srcfile, keep.source = TRUE)
+        exprs <- parse(text = lines, srcfile = srcfile)
         for (i in seq_along(exprs)) eval(exprs[i], envir)
         invisible()
     }
@@ -234,7 +235,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)(?<!de)parse\\(", x, value = TRUE, perl = TRUE)
+    x <- grep("site-wide|user[ \t\n]+profile", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
@@ -274,6 +275,7 @@ withwd <- function (...)
 {
     if (nargs() != 2L)
         stop(gettextf("%d arguments passed to %s which requires %s", nargs(), "withwd", "2"))
+    ..1  ## force the promise
     owd <- getwd()
     if (is.null(owd))
         stop("cannot 'chdir' as current directory is unknown", domain = "R")
@@ -329,18 +331,6 @@ withsink <- function (...)
     rm(call, call2)
     ...elt(nargs())
 }
-
-
-local({
-    withunlink(SINKFILE <- tempfile(fileext = ".txt"), force = FALSE, expand = TRUE, {
-        withclose(SINKCONN <- file(SINKFILE, "w"), {
-            withsink(type = "output", SINKCONN, {
-                cat("5 + 6\n")
-            })
-        })
-        readLines(SINKFILE)
-    })
-})
 
 
 local({
@@ -408,37 +398,24 @@ local({
                     this.path:::.write.code(file = FILE, {
                         # withAutoprint must be the first function called
                         withAutoprint({
-                            .this.path <- this.path:::.this.path
-                            print(n <- .this.path(get.frame.number = TRUE))
-                            if (is.na(n))
-                                stop("invalid traceback")
-                            if (!(identical(sys.function(n), source                 ) ||
-                                  identical(sys.function(n), sys.source             ) ||
-                                  identical(sys.function(n), this.path:::debugSource) ||
-                                  identical(sys.function(n), testthat::source_file  ) ||
-                                  identical(sys.function(n), knitr::knit            ) ||
-                                  identical(sys.function(n), this.path::wrap.source ) ||
-                                  identical(sys.function(n), box:::load_from_source ) ||
-                                  identical(sys.function(n), compiler::loadcmp      )))
-                            {
-                                n <- n + 1L
-                            }
-
-                            bindings <- grep("^\\.this\\.path::", print(sort(names(frame <- sys.frame(n)))), value = TRUE)
-                            stopifnot(vapply(bindings, bindingIsLocked, frame, FUN.VALUE = NA))
+                            n <- .External2(this.path:::.C_getframenumber)
+                            if (is.na(n)) stop("invalid traceback")
+                            stopifnot(bindingIsLocked(
+                                sym <- ".this.path::document.context",
+                                frame <- sys.frame(n)
+                            ))
                             getwd()
-                            try(this.path:::.PRINFO(".this.path::file", frame, inherits = FALSE))
+                            frame[[sym]]
                             ## don't use as.list yet, will force the promises
-                            .this.path(for.msg = TRUE)
-                            .this.path(original = TRUE, for.msg = TRUE)
-                            try(writeLines(sQuote(.this.path(verbose = TRUE))))
-                            .this.path(for.msg = TRUE)
-                            .this.path(original = TRUE, for.msg = TRUE)
-                            try(Encoding(.this.path(original = TRUE)))
-                            try(Encoding(.this.path(original = FALSE)))
-                            try(this.path:::.PRINFO(".this.path::file", frame, inherits = FALSE))
-                            sapply(bindings, get, envir = frame, inherits = FALSE, simplify = FALSE)
-                            try(this.path::this.path())
+                            this.path::sys.path(for.msg = TRUE)
+                            this.path::sys.path(original = TRUE, for.msg = TRUE)
+                            try(writeLines(sQuote(this.path::sys.path(verbose = TRUE))))
+                            this.path::sys.path(for.msg = TRUE)
+                            this.path::sys.path(original = TRUE, for.msg = TRUE)
+                            try(Encoding(this.path::sys.path(original = TRUE)))
+                            try(Encoding(this.path::sys.path(original = FALSE)))
+                            frame[[sym]]
+                            try(this.path::sys.path())
                         }, spaced = TRUE)
                     })
 
@@ -483,7 +460,7 @@ local({
                         fun(sys.source(.(file), envir = new.env(), chdir = TRUE))
 
 
-                        if (is.function(debugSource)) {
+                        if (.Platform$GUI == "RStudio") {
                             withunlink(FILE2 <- tempfile("fil\u{00E9}", fileext = ".R"), force = TRUE, expand = FALSE, {
                                 file.copy(FILE, FILE2, copy.date = TRUE)
                                 file2 <- this.path::rel2here(FILE2)
@@ -513,7 +490,7 @@ local({
                                 if (.Platform$OS.type == "windows")
                                     file3 <- chartr("/", "\\", file3)
                                 fun(knitr::knit(.(file3), FILE4, quiet = TRUE))
-                                this.path:::cat.file(FILE4, number = TRUE, squeeze.blank = TRUE, show.tabs = TRUE)
+                                this.path:::.cat.file(FILE4, number = TRUE, squeeze.blank = TRUE, show.tabs = TRUE)
 
 
                                 withwd(this.path::dirname2(FILE3), {
@@ -524,13 +501,13 @@ local({
                                 withclose(conn <- unz(ZIPFILE, basename(FILE3)), {
                                     fun(try(knitr::knit(print(conn), FILE4, quiet = TRUE)))
                                 })
-                                this.path:::cat.file(FILE4, number = TRUE, squeeze.blank = TRUE, show.tabs = TRUE)
+                                this.path:::.cat.file(FILE4, number = TRUE, squeeze.blank = TRUE, show.tabs = TRUE)
 
 
                                 withclose(conn4 <- gzcon(file(file3, "rb", encoding = "")), {
                                     fun(knitr::knit(print(conn4), FILE4, quiet = TRUE))
                                 })
-                                this.path:::cat.file(FILE4, number = TRUE, squeeze.blank = TRUE, show.tabs = TRUE)
+                                this.path:::.cat.file(FILE4, number = TRUE, squeeze.blank = TRUE, show.tabs = TRUE)
                             })
                         })
 
@@ -583,7 +560,7 @@ local({
 
 
                         sourcelike2 <- function(file, envir = parent.frame()) {
-                            this.path::inside.source(file)
+                            this.path::set.sys.path(file, Function = c("sourcelike2", "environment", format(environment(sys.function()))))
                             exprs <- parse(n = -1, file = file, srcfile = NULL, keep.source = FALSE)
                             for (i in seq_along(exprs)) eval(exprs[i], envir)
                         }

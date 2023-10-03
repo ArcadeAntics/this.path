@@ -1,4 +1,4 @@
-.file.URI.path <- function (path)
+.file.uri.path <- function (path)
 {
     ## remove the leading "file://" from a file URL
     ##
@@ -14,22 +14,19 @@
 }
 
 
-.file.URI.path.1 <- function (path)
+.file.uri.path.1 <- function (path)
 {
-    ## do .file.URI.path but a little bit faster when path is length 1
+    ## do .file.uri.path but a little bit faster when path is length 1
     if (.os.windows && grepl("^file:///.:", path, useBytes = TRUE))
         substr(path, 9L, 1000000L)
     else substr(path, 8L, 1000000L)
 }
 
 
-# extra.whitespace.pattern <- "^[\n\r]+|[\t\n\r ]+$"
-
-
-.normalizeURL <- function (path)
+.normalizeurl <- function (path)
 {
     # x <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
-    # print(c(x, this.path:::.normalizeURL(x)))
+    # print(c(x, this.path:::.normalizeurl(x)))
     # source(x)
 
 
@@ -46,7 +43,7 @@
 }
 
 
-.normalizeURL.1 <- function (path)
+.normalizeurl.1 <- function (path)
 {
     # path <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
 
@@ -60,27 +57,45 @@
 }
 
 
-.normalizePath.and.URL <- function (path, ...)
+## turn a path, whether that be a basename, relative path, or absolute path,
+## into an absolute path against the working directory
+##
+## does path expansion
+.abspath <- function (path)
 {
-    ## a version of normalizePath that will also normalize URLs
-    if (any(i <- grepl("^file://", path)))
-        path[i] <- .file.URI.path(path[i])
-    if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
-        path[i] <- .normalizeURL(path[i])
-        path[!i] <- .normalizeAbsPath(path = path[!i], ...)
-        path
-    }
-    else .normalizeAbsPath(path = path, ...)
+    wd <- getwd()
+    if (is.null(wd))
+        path.expand(path)
+    else path.join(wd, path.expand(path))
 }
 
 
-.normalizePath.and.URL.1 <- function (path, ...)
+## make a path absolute, then normalize it
+.normalizeabspath <- function (path, ...)
+normalizePath(path = if (.os.windows) path else .abspath(path), ...)
+
+
+.normalizeabspath.and.url <- function (path, ...)
+{
+    ## a version of normalizePath that will also normalize URLs
+    if (any(i <- grepl("^file://", path)))
+        path[i] <- .file.uri.path(path[i])
+    if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
+        path[i] <- .normalizeurl(path[i])
+        path[!i] <- .normalizeabspath(path = path[!i], ...)
+        path
+    }
+    else .normalizeabspath(path = path, ...)
+}
+
+
+.normalizeabspath.and.url.1 <- function (path, ...)
 {
     if (grepl("^file://", path))
-        .normalizeAbsPath(path = .file.URI.path.1(path), ...)
+        .normalizeabspath(path = .file.uri.path.1(path), ...)
     else if (grepl("^(ftp|ftps|http|https)://", path))
-        .normalizeURL.1(path)
-    else .normalizeAbsPath(path = path, ...)
+        .normalizeurl.1(path)
+    else .normalizeabspath(path = path, ...)
 }
 
 
@@ -97,19 +112,19 @@ stop(.defunctError("rel2here", .(.pkgname), old = "as.rel.path"))
 
 
 
-.tolower.ASCII <- function (x)
+.tolower.ascii <- function (x)
 chartr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", x)
 
 
-.toupper.ASCII <- function (x)
+.toupper.ascii <- function (x)
 chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
 
 
-.casefold.ASCII <- function (x, upper = FALSE)
-if (upper) .toupper.ASCII(x) else .tolower.ASCII(x)
+.casefold.ascii <- function (x, upper = FALSE)
+if (upper) .toupper.ascii(x) else .tolower.ascii(x)
 
 
-delayedAssign(".NET.USE.command", {
+delayedAssign(".net.use.command", {
     if (.os.windows)
         paste(shQuote(paste0(Sys.getenv("windir"), "\\System32\\net.exe")), "USE")
 })
@@ -128,14 +143,14 @@ delayedAssign(".NET.USE.command", {
     } else {
         value <- character(n)
         value[] <- path
-        if (any(i <- !(is.na(value) | value == ""))) {
+        if (any(i <- !is.na(value) & nzchar(value))) {
             path <- value[i]
             if (normalize.path)
-                path <- .normalizePath.and.URL(path, "/", FALSE)
+                path <- .normalizeabspath.and.url(path, "/", FALSE)
             if (!is.character(relative.to) || length(relative.to) != 1L)
                 stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
             if (normalize)
-                relative.to <- .normalizePath.and.URL.1(relative.to, "/", TRUE)
+                relative.to <- .normalizeabspath.and.url.1(relative.to, "/", TRUE)
             path <- c(relative.to, path)
             value[i] <- if (.os.windows) {
                 ## replace //LOCALHOST/C$/
@@ -154,21 +169,21 @@ delayedAssign(".NET.USE.command", {
                 } else if (!any(j <- u %in% .all.drives)) {
                     TRUE
                 } else if (all(j)) {
-                    length(unique(.toupper.ASCII(u))) == 1L
+                    length(unique(.toupper.ascii(u))) == 1L
                 } else {
-                    1L == length(u <- unique(.toupper.ASCII(u[j]))) &&
-                        u == .toupper.ASCII(paste0(Sys.getenv("SystemDrive"), "/"))
+                    1L == length(u <- unique(.toupper.ascii(u[j]))) &&
+                        u == .toupper.ascii(paste0(Sys.getenv("SystemDrive"), "/"))
                 }
                 if (no.convert.local) {
                     fix.local <- identity
                 } else {
-                    x <- system(.NET.USE.command, intern = TRUE)
+                    x <- system(.net.use.command, intern = TRUE)
                     m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Web Client Network|Microsoft Windows Network)?$", x)
                     ## one for the whole match, another two for the parenthesized sub-expressions
                     if (any(keep <- lengths(m) == 3L)) {
                         x <- regmatches(x[keep], m[keep])
                         local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
-                        local <- .tolower.ASCII(local)
+                        local <- .tolower.ascii(local)
                         local <- paste0(local, "/")
                         remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
                         if (any(j <- grepl("^[/\\\\]{2}", remote)))
@@ -177,7 +192,7 @@ delayedAssign(".NET.USE.command", {
                         remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
                             "\\1:/", remote)
                         fix.local <- function(p) {
-                            if (indx <- match(.tolower.ASCII(p[[1L]]), local, 0L)) {
+                            if (indx <- match(.tolower.ascii(p[[1L]]), local, 0L)) {
                                 c(remote[[indx]], p[-1L])
                             } else p
                         }
@@ -189,7 +204,7 @@ delayedAssign(".NET.USE.command", {
                 p <- p[-1L]
                 r <- fix.local(r)
                 ignore.case <- !grepl("^(http|https)://", r[[1L]])
-                fix.case <- if (ignore.case) .tolower.ASCII else identity
+                fix.case <- if (ignore.case) .tolower.ascii else identity
                 r <- fix.case(r)
                 len <- length(r)
                 path.unsplit(lapply(p, function(p) {
@@ -278,7 +293,7 @@ rel2env.proj <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisE
 }
 
 
-rel2src.dir <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
+rel2src.dir <- function (path, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_srcpath, srcfile)
@@ -287,7 +302,7 @@ rel2src.dir <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) e
 }
 
 
-rel2src.proj <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
+rel2src.proj <- function (path, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_srcpath, srcfile)
@@ -299,7 +314,7 @@ rel2src.proj <- function (path, n = 0L, srcfile = sys.call(if (n) sys.parent(n) 
 
 rel2here <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call(if (n) sys.parent(n) else 0L))
+    srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
@@ -310,7 +325,7 @@ rel2here <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
 
 rel2proj <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call(if (n) sys.parent(n) else 0L))
+    srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)

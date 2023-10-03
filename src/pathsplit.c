@@ -192,7 +192,7 @@ SEXP pathsplit(int windows, int length1, SEXP args)
                     *(buf++) = '/';
                     p = str + 2;
                     const char *slash = strchr(p, '/');
-                    if (slash) {}
+                    if (slash);
                     else error("something went wrong");
                     int nchar = slash - p;
                     strncpy(buf, p, nchar);
@@ -218,7 +218,7 @@ SEXP pathsplit(int windows, int length1, SEXP args)
                     while (*p == '/') p++;
                     if (p >= end) break;
                     const char *slash = strchr(p, '/');
-                    if (slash) {}
+                    if (slash);
                     else {
                         SET_STRING_ELT(value0, j, mkCharCE(p, enc));
                         break;

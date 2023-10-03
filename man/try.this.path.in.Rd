@@ -21,23 +21,19 @@ try.env.path(contents = FALSE, n = 0,
              envir = parent.frame(n + 1),
              matchThisEnv = getOption("topLevelEnvironment"))
 try.src.path(contents = FALSE, n = 0,
-             srcfile = sys.call(if (n) sys.parent(n) else 0))
+             srcfile = if (n) sys.parent(n) else 0)
 
 try.this.path(contents = FALSE, local = FALSE, n = 0,
               envir = parent.frame(n + 1),
               matchThisEnv = getOption("topLevelEnvironment"),
-              srcfile = sys.call(if (n) sys.parent(n) else 0))
+              srcfile = if (n) sys.parent(n) else 0)
 
 try.shFILE()
 }
 \arguments{
   \item{contents, local}{See \code{?\link{sys.path}()}.}
 
-  \item{n}{See \code{?\link{this.path}()}.}
-
-  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
-
-  \item{srcfile}{See \code{?\link{src.path}()}.}
+  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
   This should \strong{NOT} be used to construct file paths against the script's

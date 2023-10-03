@@ -65,11 +65,12 @@ extern0 SEXP0
     nSymbol                                INI_as(install("n")),
     _normalizePathSymbol                   INI_as(install(".normalizePath")),
     _normalizeNotDirectorySymbol           INI_as(install(".normalizeNotDirectory")),
+    _normalizeFixDirectorySymbol           INI_as(install(".normalizeFixDirectory")),
     _normalizeAgainstSymbol                INI_as(install(".normalizeAgainst")),
     _isMethodsDispatchOnSymbol             INI_as(install(".isMethodsDispatchOn")),
     stopSymbol                             INI_as(install("stop")),
     delayedAssignSymbol                    INI_as(install("delayedAssign")),
-    _normalizeURL_1Symbol                  INI_as(install(".normalizeURL.1")),
+    _normalizeurl_1Symbol                  INI_as(install(".normalizeurl.1")),
 
     sourceSymbol                           INI_as(install("source")),
     NeSymbol                               INI_as(install("Ne")),
@@ -143,6 +144,8 @@ extern0 SEXP0
     missingSymbol                          INI_as(install("missing")),
     _sys_path_toplevelSymbol               INI_as(install(".sys.path.toplevel")),
     _sys_path_jupyterSymbol                INI_as(install(".sys.path.jupyter")),
+    _site_fileSymbol                       INI_as(install(".site.file")),
+    _init_fileSymbol                       INI_as(install(".init.file")),
     _shFILESymbol                          INI_as(install(".shFILE")),
     encodeStringSymbol                     INI_as(install("encodeString")),
     na_encodeSymbol                        INI_as(install("na.encode")),
@@ -196,7 +199,8 @@ extern0 SEXP0
     funsSymbol                             INI_as(install("funs")),
     tryCatchSymbol                         INI_as(install("tryCatch")),
     do_elseSymbol                          INI_as(install("do_else")),
-    AssignSymbol                           INI_as(install("<-"));
+    AssignSymbol                           INI_as(install("<-")),
+    ifnotfoundSymbol                       INI_as(install("ifnotfound"));
 
 
 #undef extern0

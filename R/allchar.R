@@ -54,7 +54,8 @@ tmp <- evalq(envir = new.env(), {
     .os.windows <- quote(.os.windows)
     `identical(R.version[["crt"]], "ucrt")` <- quote(identical(R.version[["crt"]], "ucrt"))
     .ucrt <- quote(.ucrt)
-function(expr) {
+function (expr)
+{
     if (typeof(expr) == "closure") {
         formals(expr) <- tmp(formals(expr))
         body(expr) <- tmp(body(expr))
@@ -75,7 +76,7 @@ function(expr) {
 })
 
 
-.languageEnvvars <- tmp(.languageEnvvars)
+.language.envvars <- tmp(.language.envvars)
 Sys.putenv <- tmp(Sys.putenv)
 
 

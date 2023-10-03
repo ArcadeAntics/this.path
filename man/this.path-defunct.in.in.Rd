@@ -14,7 +14,7 @@
 \alias{inside.source}
 \alias{set.this.path}
 \alias{unset.this.path}
-\title{Defunct Functions in Package \pkg{this.path}}
+\title{Defunct Functions in Package 'this.path'}
 \description{The functions or variables listed here are no longer part of
   \pkg{this.path} as they are no longer needed.}
 \usage{

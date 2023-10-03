@@ -15,18 +15,18 @@ sys.here(..., .. = 0, local = FALSE)
 env.here(..., .. = 0, n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"))
 src.here(..., .. = 0, n = 0,
-         srcfile = sys.call(if (n) sys.parent(n) else 0))
+         srcfile = if (n) sys.parent(n) else 0)
 
 here(..., .. = 0, local = FALSE, n = 0,
      envir = parent.frame(n + 1),
      matchThisEnv = getOption("topLevelEnvironment"),
-     srcfile = sys.call(if (n) sys.parent(n) else 0))
+     srcfile = if (n) sys.parent(n) else 0)
 
 ## alias for 'here'
 ici(..., .. = 0, local = FALSE, n = 0,
     envir = parent.frame(n + 1),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call(if (n) sys.parent(n) else 0))
+    srcfile = if (n) sys.parent(n) else 0)
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
@@ -35,11 +35,7 @@ ici(..., .. = 0, local = FALSE, n = 0,
 
   \item{local}{See \code{?\link{sys.path}()}.}
 
-  \item{n}{See \code{?\link{this.path}()}.}
-
-  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
-
-  \item{srcfile}{See \code{?\link{src.path}()}.}
+  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
   The path to a file starts with a base. The base is \code{..} number of

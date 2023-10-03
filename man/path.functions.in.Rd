@@ -9,18 +9,14 @@
 path.functions(file, local = FALSE, n = 0,
                envir = parent.frame(n + 1),
                matchThisEnv = getOption("topLevelEnvironment"),
-               srcfile = sys.call(if (n) sys.parent(n) else 0))
+               srcfile = if (n) sys.parent(n) else 0)
 }
 \arguments{
   \item{file}{a character string giving the pathname of the file or URL.}
 
   \item{local}{See \code{?\link{sys.path}()}.}
 
-  \item{n}{See \code{?\link{this.path}()}.}
-
-  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
-
-  \item{srcfile}{See \code{?\link{src.path}()}.}
+  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \value{
   An environment with at least the following bindings:

@@ -19,6 +19,9 @@ SEXP expr_commandArgs                               = NULL,
      expr_invisible                                 = NULL,
      expr_parent_frame                              = NULL,
      expr_sys_call                                  = NULL,
+     expr_sys_call_which                            = NULL,
+     expr_sys_function_which                        = NULL,
+     eval_op                                        = NULL,
      expr_sys_nframe                                = NULL,
      expr_sys_parents                               = NULL,
      expr_missing_file                              = NULL,
@@ -386,6 +389,27 @@ SEXP do_onLoad do_formals
               EncodeChar(PRINTNAME(sys_callSymbol)), "function");
 
 
+    expr_sys_call_which = LCONS(CAR(expr_sys_call), CONS(ScalarInteger(0), R_NilValue));
+    R_PreserveObject(expr_sys_call_which);
+
+
+    {
+        expr_sys_function_which = LCONS(getFromBase(sys_functionSymbol), CDR(expr_sys_call_which));
+        R_PreserveObject(expr_sys_function_which);
+    }
+
+
+    {
+        SEXP tmp; PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(tmp = R_NilValue, &indx);
+        REPROTECT(tmp = CONS(expr_sys_function_which, tmp), indx);
+        REPROTECT(tmp = LCONS(getFromBase(install("evalq")), tmp), indx);
+        eval_op = eval(tmp, R_EmptyEnv);
+        R_PreserveObject(eval_op);
+        UNPROTECT(1);
+    }
+
+
     expr_sys_nframe = LCONS(getFromBase(sys_nframeSymbol), R_NilValue);
     R_PreserveObject(expr_sys_nframe);
     if (!isFunction(CAR(expr_sys_nframe)))
@@ -572,6 +596,9 @@ SEXP do_onUnload do_formals
     maybe_release(expr_invisible                                );
     maybe_release(expr_parent_frame                             );
     maybe_release(expr_sys_call                                 );
+    maybe_release(expr_sys_call_which                           );
+    maybe_release(expr_sys_function_which                       );
+    maybe_release(eval_op                                       );
     maybe_release(expr_sys_nframe                               );
     maybe_release(expr_sys_parents                              );
     maybe_release(expr_missing_file                             );

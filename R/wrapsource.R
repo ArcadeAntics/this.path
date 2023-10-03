@@ -37,6 +37,38 @@ set.src.path <- function (srcfile)
 .External2(.C_setsrcpath, srcfile)
 
 
+with_sys.path <- eval(call("function", as.pairlist(alist(file = , expr = , ... = )), bquote(
+{
+    if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
+        stop("'with_sys.path' cannot be used within a function, use 'set.sys.path' instead")
+    set.sys.path(file = file, ..., Function = c("with_sys.path", .(.pkgname)))
+    expr
+}
+)))
+
+
+with_site.file <- eval(call("function", as.pairlist(alist(expr = , n = 0L)), bquote(
+{
+    if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
+        stop("'with_site.file' cannot be used within a function, use 'set.sys.path' instead")
+    set.sys.path(this.path(verbose = FALSE, n = n + 1L, default = site.file()),
+        Function = c("with_site.file", .(.pkgname)))
+    expr
+}
+)))
+
+
+with_init.file <- eval(call("function", as.pairlist(alist(expr = , n = 0L)), bquote(
+{
+    if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
+        stop("'with_init.file' cannot be used within a function, use 'set.sys.path' instead")
+    set.sys.path(this.path(verbose = FALSE, n = n + 1L, default = init.file()),
+        Function = c("with_init.file", .(.pkgname)))
+    expr
+}
+)))
+
+
 inside.source <- eval(call("function", as.pairlist(alist(file = , path.only = FALSE, character.only = path.only,
     file.only = path.only, conv2utf8 = FALSE, allow.blank.string = FALSE,
     allow.clipboard = !file.only, allow.stdin = !file.only, allow.url = !file.only,

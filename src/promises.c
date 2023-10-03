@@ -23,7 +23,7 @@ SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 
 #define _get_sym(elsecode)                                     \
     sym = CAR(args);                                           \
-    if (TYPEOF(sym) == SYMSXP) {}                              \
+    if (TYPEOF(sym) == SYMSXP);                                \
     else if (isValidStringF(sym)) {                            \
         if (XLENGTH(sym) > 1)                                  \
             errorcall(call, _("first argument has length > 1"));\
@@ -150,7 +150,7 @@ SEXP do_getpromisewithoutwarning do_formals
 
     if (PRVALUE(value) == R_UnboundValue) {
         if (PRSEEN(value)) {
-            if (PRSEEN(value) == 1) {}
+            if (PRSEEN(value) == 1);
             else SET_PRSEEN(value, 0);
         }
         eval(value, env);

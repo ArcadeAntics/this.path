@@ -64,7 +64,7 @@ env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = get
 }
 
 
-src.LINENO <- function (n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
+src.LINENO <- function (n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     srcfile
@@ -74,7 +74,7 @@ src.LINENO <- function (n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L)
 }
 
 
-LINENO <- eval(call("function", as.pairlist(alist(n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"), srcfile = sys.call(if (n) sys.parent(n) else 0L))), bquote({
+LINENO <- eval(call("function", as.pairlist(alist(n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L)), bquote({
     value <- .(body(src.LINENO))
     if (is.na(value)) {
         value <- .(body(env.LINENO)[-2L])

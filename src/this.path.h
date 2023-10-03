@@ -201,8 +201,10 @@ extern SEXP do_resetproj do_formals;
 /* shfile.c */
 
 
-extern SEXP do_shFILE do_formals;
-extern SEXP do_shINFO do_formals;
+extern SEXP do_initfile do_formals;
+extern SEXP do_sitefile do_formals;
+extern SEXP do_shFILE   do_formals;
+extern SEXP do_shINFO   do_formals;
 
 
 /* thispath.c */
@@ -223,6 +225,7 @@ extern SEXP do_syspathrgui       do_formals;
 extern SEXP do_syspath           do_formals;
 extern SEXP do_getframenumber    do_formals;
 extern SEXP do_envpath           do_formals;
+extern SEXP do_GetSrcref         do_formals;
 extern SEXP do_srcpath           do_formals;
 extern SEXP do_srclineno         do_formals;
 extern SEXP do_thispath          do_formals;
@@ -230,6 +233,12 @@ extern SEXP do_istrue            do_formals;
 extern SEXP do_isfalse           do_formals;
 extern SEXP do_asInteger         do_formals;
 extern SEXP do_asIntegerGE0      do_formals;
+
+
+/* thispathdefn.c */
+
+
+extern SEXP do_getdyn do_formals;
 
 
 /* trycatch.c */

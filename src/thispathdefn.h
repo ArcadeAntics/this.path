@@ -129,10 +129,13 @@ extern void stop(SEXP cond);
 extern SEXP DocumentContext(void);
 
 
-extern void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory);
+typedef enum {NA_DEFAULT, NA_NOT_DIR, NA_FIX_DIR} NA_TYPE;
+
+
+extern void assign_default(SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
 extern void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext);
-extern void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, Rboolean check_not_directory);
-extern void assign_file_uri2(SEXP description, SEXP documentcontext, Rboolean check_not_directory);
+extern void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
+extern void assign_file_uri2(SEXP description, SEXP documentcontext, NA_TYPE normalize_action);
 extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
 extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
 
@@ -248,7 +251,7 @@ typedef struct gzconn {
      * setpath()
  */
 #define checkfile(call, sym, ofile, frame, as_binding,         \
-    check_not_directory, forcepromise, assign_returnvalue,     \
+    normalize_action, forcepromise, assign_returnvalue,        \
     maybe_chdir, getowd, hasowd, ofilearg,                     \
     character_only, conv2utf8, allow_blank_string,             \
     allow_clipboard, allow_stdin, allow_url, allow_file_uri,   \
@@ -261,7 +264,7 @@ do {                                                           \
     int nprotect_local_to_checkfile = 0;                       \
     PROTECT(documentcontext = DocumentContext()); nprotect_local_to_checkfile++;\
     if (TYPEOF(ofile) == STRSXP) {                             \
-        if (LENGTH(ofile) != 1)                                \
+        if (XLENGTH(ofile) != 1)                               \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
         SEXP file = STRING_ELT(ofile, 0);                      \
         if (file == NA_STRING)                                 \
@@ -327,7 +330,7 @@ do {                                                           \
         }                                                      \
         else if (!ignore_file_uri && is_file_uri(url)) {       \
             if (allow_file_uri) {                              \
-                assign_file_uri(ofile, file, documentcontext, check_not_directory);\
+                assign_file_uri(ofile, file, documentcontext, normalize_action);\
                 if (assign_returnvalue) {                      \
                     returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                     SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
@@ -343,12 +346,14 @@ do {                                                           \
         else {                                                 \
             if (maybe_chdir) {                                 \
                 SEXP owd = getowd;                             \
-                if (hasowd)                                    \
+                if (hasowd) {                                  \
+                    PROTECT(owd);                              \
                     assign_chdir(ofile, owd, documentcontext); \
-                else                                           \
-                    assign_default(ofile, documentcontext, check_not_directory);\
+                    UNPROTECT(1);                              \
+                }                                              \
+                else assign_default(ofile, documentcontext, normalize_action);\
             }                                                  \
-            else assign_default(ofile, documentcontext, check_not_directory);\
+            else assign_default(ofile, documentcontext, normalize_action);\
             if (assign_returnvalue) {                          \
                 returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                 SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
@@ -362,8 +367,8 @@ do {                                                           \
     else {                                                     \
         if (character_only)                                    \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
-        else if (!inherits(ofile, "connection"))               \
-            errorcall(call, "invalid '%s', must be a string or connection", EncodeChar(PRINTNAME(sym)));\
+        else if (!(IS_SCALAR(ofile, INTSXP) && inherits(ofile, "connection")))\
+            errorcall(call, "invalid '%s', must be a character string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \
             if (ofilearg != NULL) {                            \
                 if (!identical(ofile, ofilearg)) {             \
@@ -378,11 +383,11 @@ do {                                                           \
                 streql(klass, "xzfile") ||                     \
                 streql(klass, "fifo"  ))                       \
             {                                                  \
-                assign_file_uri2(description, documentcontext, check_not_directory);\
+                assign_file_uri2(description, documentcontext, normalize_action);\
                 if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
-                streql(klass, "url-wininet"))                  \
+                     streql(klass, "url-wininet"))             \
             {                                                  \
                 if (allow_url) {                               \
                     assign_url(ScalarString(description), description, documentcontext);\
@@ -413,7 +418,7 @@ do {                                                           \
                                     defineVar(associated_with_fileSymbol, R_TrueValue                                    , documentcontext);\
                 }                                              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a unz connection", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (is_clipboard(klass)) {                    \
                 if (allow_clipboard)                           \
@@ -425,37 +430,37 @@ do {                                                           \
                 if (allow_pipe)                                \
                     documentcontext = R_EmptyEnv;              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a pipe connection", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "terminal")) {              \
                 if (allow_terminal)                            \
                     documentcontext = R_EmptyEnv;              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a terminal connection", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "textConnection")) {        \
                 if (allow_textConnection)                      \
                     documentcontext = R_EmptyEnv;              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a textConnection", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "rawConnection")) {         \
                 if (allow_rawConnection)                       \
                     documentcontext = R_EmptyEnv;              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a rawConnection", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "sockconn")) {              \
                 if (allow_sockconn)                            \
                     documentcontext = R_EmptyEnv;              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a sockconn", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "servsockconn")) {          \
                 if (allow_servsockconn)                        \
                     documentcontext = R_EmptyEnv;              \
                 else                                           \
-                    errorcall(call, "invalid '%s', cannot be a servsockconn", EncodeChar(PRINTNAME(sym)));\
+                    errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else {                                             \
                 if (allow_customConnection) {                  \

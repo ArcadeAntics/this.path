@@ -73,7 +73,7 @@ env.proj <- function (..., n = 0L, envir = parent.frame(n + 1L),
 }
 
 
-src.proj <- function (..., n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 0L))
+src.proj <- function (..., n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_srcpath, srcfile)
@@ -85,7 +85,7 @@ src.proj <- function (..., n = 0L, srcfile = sys.call(if (n) sys.parent(n) else 
 
 this.proj <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = sys.call(if (n) sys.parent(n) else 0L))
+    srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)

@@ -393,7 +393,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
                only if there is a non-slash before those trailing slashes */
             if (windows) {
                 for (; last_char >= pathspec; last_char--) {
-                    if (*last_char == '/' || *last_char == '\\') {}
+                    if (*last_char == '/' || *last_char == '\\');
                     else {
                         *(last_char + 1) = '\0';
                         break;
@@ -402,7 +402,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
             }
             else {
                 for (; last_char >= pathspec; last_char--) {
-                    if (*last_char == '/') {}
+                    if (*last_char == '/');
                     else {
                         *(last_char + 1) = '\0';
                         break;
@@ -503,7 +503,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         /* remove the trailing path separators */
         if (windows) {
             for (; last_char >= pathspec; last_char--) {
-               if (*last_char == '/' || *last_char == '\\') {}
+                if (*last_char == '/' || *last_char == '\\');
                 else {
                     *(last_char + 1) = '\0';
                     break;
@@ -512,7 +512,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         }
         else {
             for (; last_char >= pathspec; last_char--) {
-                if (*last_char == '/') {}
+                if (*last_char == '/');
                 else {
                     *(last_char + 1) = '\0';
                     break;

@@ -37,22 +37,22 @@ env.dir(verbose = getOption("verbose"), n = 0,
 
 src.path(verbose = getOption("verbose"), original = FALSE,
          for.msg = FALSE, contents = FALSE, n = 0,
-         srcfile = sys.call(if (n) sys.parent(n) else 0),
+         srcfile = if (n) sys.parent(n) else 0,
          default, else.)
 src.dir(verbose = getOption("verbose"), n = 0,
-        srcfile = sys.call(if (n) sys.parent(n) else 0),
+        srcfile = if (n) sys.parent(n) else 0,
         default, else.)
 
 this.path(verbose = getOption("verbose"), original = FALSE,
           for.msg = FALSE, contents = FALSE, local = FALSE,
           n = 0, envir = parent.frame(n + 1),
           matchThisEnv = getOption("topLevelEnvironment"),
-          srcfile = sys.call(if (n) sys.parent(n) else 0),
+          srcfile = if (n) sys.parent(n) else 0,
           default, else.)
 this.dir(verbose = getOption("verbose"), local = FALSE,
          n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
-         srcfile = sys.call(if (n) sys.parent(n) else 0),
+         srcfile = if (n) sys.parent(n) else 0,
          default, else.)
 }
 \arguments{
@@ -60,10 +60,12 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
     \code{?\link{sys.path}()}.}
 
   \item{n}{the number of additional generations to go back. By default,
-    \code{this.path()} will look for a path based on the call to
-    \code{this.path()} and the environment in which \code{this.path()} was
-    called. This can be changed to be based on the call \code{n} generations up
-    the call stack. See section \strong{Argument 'n'} for more details.}
+    \code{this.path()} will look for a path based on the
+    \code{\link[base:srcfile]{srcref}} of the call to \code{this.path()} and
+    the environment in which \code{this.path()} was called. This can be changed
+    to be based on the \code{srcref} of the call and the calling environment
+    \code{n} generations up the stack. See section \strong{Argument 'n'} for
+    more details.}
 
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level
@@ -122,9 +124,9 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   character string.
 }
 \section{Argument 'n'}{
-  By default, \code{this.path()} will look for a path based on the call to
-  \code{this.path()} and the environment in which \code{this.path()} was
-  called. For example: \preformatted{{
+  By default, \code{this.path()} will look for a path based on the
+  \code{srcref} of the call to \code{this.path()} and the environment in which
+  \code{this.path()} was called. For example: \preformatted{{
 #line 1 "file1.R"
 fun <- function() this.path::this.path(original = TRUE)
 fun()
@@ -139,10 +141,10 @@ fun()
   Both of these will return \string{file1.R} because that is where the call to
   \code{this.path()} is written.
 
-  Consider another scenario in which you do not care where \code{this.path()}
-  is called, but instead want to know where \code{fun()} is called. Pass
-  argument \code{n = 1} to do so; \code{this.path()} will inspect the call and
-  the calling environment one generation up the stack: \preformatted{{
+  But suppose we do not care where \code{this.path()} is called, but instead
+  want to know where \code{fun()} is called. Pass argument \code{n = 1} to do
+  so; \code{this.path()} will inspect the call and the calling environment one
+  generation up the stack: \preformatted{{
 #line 1 "file1.R"
 fun <- function() this.path::this.path(original = TRUE, n = 1)
 fun()
@@ -157,10 +159,10 @@ fun()
   These will return \string{file1.R} and \string{file2.R}, respectively,
   because those are where the calls to \code{fun()} are written.
 
-  Consider another scenario in which someone wishes to make a second function
-  that uses \code{fun()}. They do not care where \code{fun()}, but instead want
-  to know where \code{fun2()} is called. Add a formal argument \code{n = 0} to
-  each function and pass \code{n = n + 1} to each sub-function: \preformatted{{
+  But now suppose we wish to make a second function that uses \code{fun()}. We
+  do not care where \code{fun()} is called, but instead want to know where
+  \code{fun2()} is called. Add a formal argument \code{n = 0} to each function
+  and pass \code{n = n + 1} to each sub-function: \preformatted{{
 #line 1 "file1.R"
 fun <- function(n = 0) {
     this.path::this.path(original = TRUE, n = n + 1)
@@ -186,38 +188,14 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
   called, regardless of how deep \code{this.path()} is called.
 }
 \note{
-  If you are using \code{this.path()} without modularizing your code, i.e.
-  relying on source references, you should be aware of how \R stores source
-  references. Only top level expressions will be given a source reference which
-  includes expressions directly inside braces; sub-expressions will not receive
-  a source reference. For example: \preformatted{fun <- function ()
-{
-    ## this one will have a source reference
-    ## because it is a top level expression
-    x <- this.path::this.path(verbose = TRUE)
-    print(x)
-    ## this one will not have a source reference
-    ## because it is just a sub-expression
-    ## `print()` is the top level expression
-    print(this.path::this.path(verbose = TRUE))
-    ## this one will have a source reference
-    ## note the surrounding braces
-    print({ this.path::this.path(verbose = TRUE) })
-    ## this one will have a source reference because `return()`
-    ## and `list()` are not "closure" type functions, they are
-    ## "special" and "builtin" type functions
-    return(list(this.path::this.path(verbose = TRUE)))
-}}
-
-  One (somewhat extreme) attitude of defensive programming is to always wrap
-  braces around your calls to \code{this.path()} as well as all related
-  functions: \code{this.dir()}, \code{\link{here}()}, \code{\link{ici}()},
-  \code{\link{this.proj}()}, \code{\link{rel2here}()},
-  \code{\link{rel2proj}()}, \code{\link{LINENO}()},
-  \code{\link{try.this.path}()}, \code{\link{path.functions}()} (if \code{file}
-  is missing), \code{\link{check.path}()}, \code{\link{check.dir}()}, and
-  \code{\link{check.proj}()}, as well as the active bindings \code{\link{FILE}}
-  and \code{\link{LINE}}.
+  If you need to use \code{this.path()} inside the site-wide startup profile
+  file or a user profile, please use \code{\link{with_site.file}()} or
+  \code{\link{with_init.file}()}, something along the lines of:
+  \preformatted{this.path::with_init.file({
+    <expr 1>
+    <expr 2>
+    <...>
+})}
 }
 \seealso{
   \code{\link{shFILE}()}
@@ -230,11 +208,9 @@ FILE1.R <- tempfile("FILE1-", fileext = ".R")
 this.path:::.write.code({
     fun <- function() {
         cat("\\n> this.path()\\n")
-        ## note the braces around 'this.path()'
-        ## to ensure it is a top level expression
-        print({ this.path::this.path(verbose = TRUE) })
+        print(this.path::this.path(verbose = TRUE))
         cat("\\n> sys.path()\\n")
-        print({ this.path::sys.path(verbose = TRUE) })
+        print(this.path::sys.path(verbose = TRUE))
     }
     ## 'this.path()' and 'sys.path()' should be identical because the
     ## executing script is the same as the script of the source file

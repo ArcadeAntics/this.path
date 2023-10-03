@@ -31,17 +31,17 @@ rel2env.proj(path, n = 0, envir = parent.frame(n + 1),
              matchThisEnv = getOption("topLevelEnvironment"))
 
 rel2src.dir(path, n = 0,
-            srcfile = sys.call(if (n) sys.parent(n) else 0))
+            srcfile = if (n) sys.parent(n) else 0)
 rel2src.proj(path, n = 0,
-             srcfile = sys.call(if (n) sys.parent(n) else 0))
+             srcfile = if (n) sys.parent(n) else 0)
 
 rel2here(path, local = FALSE, n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
-         srcfile = sys.call(if (n) sys.parent(n) else 0))
+         srcfile = if (n) sys.parent(n) else 0)
 rel2proj(path, local = FALSE, n = 0,
          envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
-         srcfile = sys.call(if (n) sys.parent(n) else 0))
+         srcfile = if (n) sys.parent(n) else 0)
 }
 \arguments{
   \item{path}{character vector of file / / URL pathnames.}
@@ -51,11 +51,7 @@ rel2proj(path, local = FALSE, n = 0,
 
   \item{local}{See \code{?\link{sys.path}()}.}
 
-  \item{n}{See \code{?\link{this.path}()}.}
-
-  \item{envir, matchThisEnv}{See \code{?\link{env.path}()}.}
-
-  \item{srcfile}{See \code{?\link{src.path}()}.}
+  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
   Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) is first done on

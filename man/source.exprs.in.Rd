@@ -2,7 +2,7 @@
 \alias{source.exprs}
 \title{Evaluate and Print Expressions}
 \description{
-  \code{source.exprs()} evaluates and auto-prints expression as if in a
+  \code{source.exprs()} evaluates and auto-prints expressions as if in a
   toplevel context.
 }
 \usage{

@@ -47,12 +47,14 @@ SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
     if (!unbound_ok && value == R_UnboundValue)
         error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(value) == PROMSXP) {
-        if (PRVALUE(value) == R_UnboundValue)
-            return eval(value, R_EmptyEnv);
-        else
-            return PRVALUE(value);
+        if (PRVALUE(value) == R_UnboundValue) {
+            PROTECT(value);
+            value = eval(value, R_EmptyEnv);
+            UNPROTECT(1);
+        }
+        else value = PRVALUE(value);
     }
-    else return value;
+    return value;
 }
 
 
@@ -380,11 +382,24 @@ SEXP DocumentContext(void)
     defineVar(fileSymbol, e, (documentcontext))
 
 
-void assign_default(SEXP file, SEXP documentcontext, Rboolean check_not_directory)
+static R_INLINE
+SEXP NA_TYPE2sym(NA_TYPE normalize_action)
+{
+    switch (normalize_action) {
+    case NA_DEFAULT: return _normalizePathSymbol        ;
+    case NA_NOT_DIR: return _normalizeNotDirectorySymbol;
+    case NA_FIX_DIR: return _normalizeFixDirectorySymbol;
+    default:
+        errorcall(R_NilValue, _("invalid '%s' value"), "normalize_action");
+        return R_NilValue;
+    }
+}
+
+
+void assign_default(SEXP file, SEXP documentcontext, NA_TYPE normalize_action)
 {
     _assign(file, documentcontext);
-    SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
-                        CONS(file, R_NilValue)));
+    SET_PRCODE(e, LCONS(NA_TYPE2sym(normalize_action), CONS(file, R_NilValue)));
 }
 
 
@@ -399,7 +414,7 @@ void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext)
 }
 
 
-void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, Rboolean check_not_directory)
+void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action)
 {
     _assign(ofile, documentcontext);
 
@@ -431,12 +446,12 @@ void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, Rboolean check
 #endif
 
 
-    SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
+    SET_PRCODE(e, LCONS(NA_TYPE2sym(normalize_action),
                         CONS(ScalarString(mkCharCE(url, ienc)), R_NilValue)));
 }
 
 
-void assign_file_uri2(SEXP description, SEXP documentcontext, Rboolean check_not_directory)
+void assign_file_uri2(SEXP description, SEXP documentcontext, NA_TYPE normalize_action)
 {
     const char *url = CHAR(description);
     char _buf[8 + strlen(url) + 1];
@@ -458,7 +473,7 @@ void assign_file_uri2(SEXP description, SEXP documentcontext, Rboolean check_not
 
     SEXP ofile = ScalarString(mkCharCE(buf, getCharCE(description)));
     _assign(ofile, documentcontext);
-    SET_PRCODE(e, LCONS(check_not_directory ? _normalizeNotDirectorySymbol : _normalizePathSymbol,
+    SET_PRCODE(e, LCONS(NA_TYPE2sym(normalize_action),
                         CONS(ScalarString(description), R_NilValue)));
 }
 
@@ -474,7 +489,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 #endif
 
 
-    SET_PRCODE(e, LCONS(_normalizeURL_1Symbol, CONS(ofile, R_NilValue)));
+    SET_PRCODE(e, LCONS(_normalizeurl_1Symbol, CONS(ofile, R_NilValue)));
     eval(e, R_EmptyEnv);  /* force the promise */
 }
 
@@ -629,4 +644,70 @@ int is_url(const char *url)
 int is_file_uri(const char *url)
 {
     return strncmp(url, "file://", 7) == 0;
+}
+
+
+SEXP do_getdyn do_formals
+{
+    do_start("getdyn", 3);
+
+
+    int nprotect = 0;
+
+
+    SEXP sym = CAR(args); args = CDR(args);
+    if (TYPEOF(sym) == SYMSXP);
+    else if (isValidStringF(sym)) {
+        if (XLENGTH(sym) > 1)
+            errorcall(call, _("first argument has length > 1"));
+        sym = installTrChar(STRING_ELT(sym, 0));
+    }
+    else errorcall(call, _("invalid first argument"));
+
+
+    int minframe = asInteger(CAR(args)); args = CDR(args);
+    if (minframe == NA_INTEGER || minframe < 0)
+        errorcall(call, _("invalid '%s' argument"), "minframe");
+
+
+    Rboolean inherits = asLogical(CAR(args)); args = CDR(args);
+    if (inherits == NA_LOGICAL)
+        errorcall(call, _("invalid '%s' argument"), "inherits");
+
+
+    int N = asInteger(eval(expr_sys_nframe, rho));
+    SEXP which = allocVector(INTSXP, 1);
+    PROTECT(which); nprotect++;
+    int *iwhich = INTEGER(which);
+    SEXP getframe;
+    {
+        PROTECT_INDEX indx;
+        PROTECT_WITH_INDEX(getframe = CONS(which, R_NilValue), &indx); nprotect++;
+        REPROTECT(getframe = LCONS(getFromBase(sys_frameSymbol), getframe), indx);
+    }
+
+
+    SEXP frame, value;
+
+
+    for (iwhich[0] = N - 1; iwhich[0] >= minframe; iwhich[0]--) {
+        frame = eval(getframe, rho);
+        value = (inherits ? findVar(sym, frame) : findVarInFrame(frame, sym));
+        if (value != R_UnboundValue) {
+            if (TYPEOF(value) == PROMSXP) {
+                if (PRVALUE(value) == R_UnboundValue) {
+                    PROTECT(value);
+                    value = eval(value, R_EmptyEnv);
+                    UNPROTECT(1);
+                }
+                else value = PRVALUE(value);
+            }
+            UNPROTECT(nprotect);
+            return value;
+        }
+    }
+
+
+    UNPROTECT(nprotect);
+    return getInFrame(ifnotfoundSymbol, rho, FALSE);
 }

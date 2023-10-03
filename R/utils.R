@@ -577,3 +577,8 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 
 .isfalse <- function (x)
 .External2(.C_isfalse, x)
+
+
+get.dyn <- function (x, ifnotfound = stop(gettextf("object '%s' not found", as.character(x), domain = "R"), domain = NA),
+    minframe = 1L, inherits = FALSE)
+.External2(.C_getdyn, x, minframe, inherits)

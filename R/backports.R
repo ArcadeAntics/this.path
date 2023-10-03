@@ -153,8 +153,8 @@ if (getRversion() < "3.4.0") {
     if (!evaluated) {
         exprs <- substitute(exprs)
         if (is.call(exprs)) {
-            if (exprs[[1]] == quote(`{`)) {
-                exprs <- as.list(exprs)[-1]
+            if (typeof(exprs[[1L]]) == "symbol" && exprs[[1L]] == "{") {
+                exprs <- as.list(exprs)[-1L]
                 if (missing(skip.echo) &&
                     length(exprs) &&
                     is.list(srcrefs <- attr(exprs, "srcref")))
@@ -185,8 +185,8 @@ function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
     if (!evaluated) {
         exprs <- substitute(exprs)
         if (is.call(exprs)) {
-            if (exprs[[1]] == quote(`{`)) {
-                exprs <- as.list(exprs)[-1]
+            if (typeof(exprs[[1L]]) == "symbol" && exprs[[1L]] == "{") {
+                exprs <- as.list(exprs)[-1L]
                 if (missing(skip.echo) &&
                     length(exprs) &&
                     is.list(srcrefs <- attr(exprs, "srcref")))
