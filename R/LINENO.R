@@ -91,7 +91,7 @@ LINE <- eval(call("function", NULL, bquote({
         local({
            tmp <- src.LINENO
            as.call(c(as.list(quote({
-               srcfile <- sys.call()
+               srcfile <- 0L
            })), as.list(body(tmp)[-seq_len(length(formals(tmp)) + 1L)])))
         })
     )

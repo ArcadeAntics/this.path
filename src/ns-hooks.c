@@ -197,15 +197,11 @@ SEXP do_onLoad do_formals
     } while (0)
 
 
-    /* ./R/lineno.R */
-    convertclosure2activebinding(install("LINE"));
     /* ./R/ns-hooks.R */
     convertclosure2activebinding(install(".mbcslocale"));
     convertclosure2activebinding(install(".utf8locale"));
     convertclosure2activebinding(install(".latin1locale"));
     convertclosure2activebinding(install(".R_MB_CUR_MAX"));
-    /* ./R/thispath.R */
-    convertclosure2activebinding(install("FILE"));
     /* ./R/trycatch.R */
     convertclosure2activebinding(install("last.condition"));
 

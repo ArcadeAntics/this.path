@@ -58,8 +58,10 @@ y <- local({
         owd <- getwd()
         on.exit(setwd(owd))
         setwd(this.path::dirname2(FILE.R))
-        if (!utils::zip(FILE.zip, this.path::basename2(FILE.R))) {
-            setwd(owd)
+        status <- utils::zip(FILE.zip, this.path::basename2(FILE.R))
+        on.exit()
+        setwd(owd)
+        if (status == 0L) {
             local({
                 conn <- unz(this.path::relpath(FILE.zip), this.path::basename2(FILE.R))
                 on.exit(close(conn))

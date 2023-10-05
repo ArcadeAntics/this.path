@@ -67,17 +67,16 @@ LINENO(n = 0, envir = parent.frame(n + 1),
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-writeLines(c(
-    "LINENO()",
-    "LINENO()",
-    "## LINENO() respects #line directives",
-    "#line 15",
-    "LINENO()",
-    "#line 1218",
-    "cat(sprintf(\\"invalid value \%d at \%s, line \%d\\n\\",",
-    "",
-    "            -5, { try.this.path() }, { LINENO() }))"
-), FILE.R)
+writeLines(c("
+LINENO()
+LINENO()
+## LINENO() respects #line directives
+#line 15
+LINENO()
+#line 1218
+cat(sprintf('invalid value \%d at \%s, line \%d\\\\n',
+            -5, try.this.path(), LINENO()))
+"), FILE.R)
 
 
 # ## previously used:

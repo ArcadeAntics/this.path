@@ -2,7 +2,16 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * Active bindings 'FILE' and 'LINE' have been converted to regular
+      bindings 'FILE()' and 'LINE()' after the unfortunate realization
+      that active binding functions are always evaluated in the global
+      environment.
+
   NEW FEATURES:
+
+    * this.path() works significantly better with source references.
 
     * this.path() is now compatible with package {targets}.
 

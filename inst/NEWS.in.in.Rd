@@ -1,8 +1,19 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \section{CHANGES IN VERSION devel}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item{Active bindings \codeorsQuote{FILE} and \codeorsQuote{LINE} have
+        been converted to regular bindings \code{FILE()} and \code{LINE()}
+        after the unfortunate realization that active binding functions are
+        always evaluated in the global environment.}
+    }
+  }
   \subsection{NEW FEATURES}{
     \itemize{
+      \item{\code{this.path()} works significantly better with source
+        references.}
+
       \item{\code{this.path()} is now compatible with package
         \CRANpkg{targets}.}
 

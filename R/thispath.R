@@ -1058,7 +1058,7 @@ FILE <- local({
         local <- FALSE
         envir <- parent.frame()
         matchThisEnv <- getOption("topLevelEnvironment")
-        srcfile <- sys.call()
+        srcfile <- 0L
     })), as.list(body(tmp)[-seq_len(length(f) + 1L)])))
     tmp
 })
