@@ -634,6 +634,12 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
             if (srcfile) {
                 if (R_existsVarInFrame(srcfile, documentcontextSymbol))
                     error("cannot overwrite existing binding '%s'", EncodeChar(PRINTNAME(documentcontextSymbol)));
+
+
+extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
+
+
+                document_context_assign_lines(documentcontext, srcfile);
                 INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile);
                 R_LockBinding(documentcontextSymbol, srcfile);
             }

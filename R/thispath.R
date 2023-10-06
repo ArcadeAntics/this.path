@@ -304,8 +304,9 @@ delayedAssign(".untitled", {
 {
     lines <- srcfile$lines
     if (any(grepl("\n", lines, fixed = TRUE, useBytes = TRUE)))
-        srcfile$lines <- unlist(strsplit(sub("$", "\n", as.character(lines)), "\n"))
+        srcfile$lines <- lines <- as.character(unlist(strsplit(sub("$", "\n", lines), "\n")))
     srcfile$fixedNewlines <- TRUE
+    lines
 }
 
 
@@ -864,10 +865,10 @@ this.dir  <- tmpfun(this.dir )
 rm(tmpfun, tmp)
 
 
-GetSrcref <- function (n = 0L)
+GetSrcref <- function (n = 1L, which = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    .External2(.C_GetSrcref, sys.parent(n + 1L))
+    .External2(.C_GetSrcref, which)
 }
 
 

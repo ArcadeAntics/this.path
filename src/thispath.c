@@ -478,7 +478,7 @@ SEXP do_syspathrgui do_formals
                     if (contents)
                         return ScalarString(NA_STRING);
                     else
-                        return mkString(_RGui("Untitled"));
+                        return mkString(dgettext_RGui("Untitled"));
                 }
                 error(active ? "active document in Rgui does not exist" :
                                "source document in Rgui does not exist");
@@ -557,6 +557,39 @@ SEXP do_syspathrgui do_formals
 SEXP env_or_NULL(SEXP x)
 {
     return (x != R_UnboundValue && TYPEOF(x) == ENVSXP) ? x : NULL;
+}
+
+
+void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
+{
+    if (documentcontext != R_EmptyEnv) {
+        if (inherits(srcfile, "srcfilecopy") ||
+            (
+                inherits(srcfile, "srcfilealias") &&
+                (srcfile = env_or_NULL(findVarInFrame(srcfile, originalSymbol))) &&
+                inherits(srcfile, "srcfilecopy")
+            )
+           )
+        {
+            SEXP tmp = findVarInFrame(srcfile, fixedNewlinesSymbol);
+            if (tmp == R_UnboundValue || tmp == R_NilValue) {
+                INCREMENT_NAMED_defineVar(srcfileSymbol, srcfile, documentcontext);
+                SEXP expr = LCONS(_fixNewlinesSymbol, CONS(srcfileSymbol, R_NilValue));
+                PROTECT(expr);
+                defineVar(linesSymbol, makePROMISE(expr, documentcontext), documentcontext);
+                UNPROTECT(1);
+            }
+            else {
+                SEXP lines = findVarInFrame(srcfile, linesSymbol);
+                if (lines == R_UnboundValue)
+                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));
+                if (TYPEOF(lines) != STRSXP)
+                    error(_("object '%s' of mode '%s' was not found"),
+                        EncodeChar(PRINTNAME(linesSymbol)), "character");
+                INCREMENT_NAMED_defineVar(linesSymbol, lines, documentcontext);
+            }
+        }
+    }
 }
 
 
@@ -826,7 +859,9 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
 
 #define define_no_lock_srcfile_documentcontext                 \
+                document_context_assign_lines(documentcontext, srcfile);\
                 INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, srcfile)
+
 
 
 #define define_srcfile_documentcontext                         \
@@ -851,7 +886,9 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                     R_unLockBinding(documentcontextSymbol, srcfile);\
                     define_srcfile_documentcontext;            \
                 }                                              \
-                else define_no_lock_srcfile_documentcontext    \
+                else {                                         \
+                    define_no_lock_srcfile_documentcontext;    \
+                }
 
 
 #define maybe_overwrite_srcfile_documentcontext                \
@@ -995,33 +1032,6 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
                 }                                              \
                 if (TYPEOF(lines) != STRSXP)                   \
                     error(_("invalid '%s' value"), EncodeChar(PRINTNAME(linesSymbol)));\
-                returnthis = lines;                            \
-                *gave_contents = TRUE;                         \
-            }                                                  \
-            else if (contents && srcfile && (                  \
-                         inherits(srcfile, "srcfilecopy") ||   \
-                         (                                     \
-                             inherits(srcfile, "srcfilealias") &&\
-                             (srcfile = env_or_NULL(findVarInFrame(srcfile, originalSymbol))) &&\
-                             inherits(srcfile, "srcfilecopy")  \
-                         )                                     \
-                ))                                             \
-            {                                                  \
-                SEXP tmp = findVarInFrame(srcfile, fixedNewlinesSymbol);\
-                if (tmp == R_UnboundValue || tmp == R_NilValue) {\
-                    SEXP expr = LCONS(_fixNewlinesSymbol, CONS(srcfile, R_NilValue));\
-                    PROTECT(expr);                             \
-                    eval(expr, mynamespace);                   \
-                    set_R_Visible(TRUE);                       \
-                    UNPROTECT(1);                              \
-                }                                              \
-                lines = findVarInFrame(srcfile, linesSymbol);  \
-                if (lines == R_UnboundValue)                   \
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));\
-                if (TYPEOF(lines) != STRSXP)                   \
-                    error(_("object '%s' of mode '%s' was not found"),\
-                        EncodeChar(PRINTNAME(linesSymbol)), "character");\
-                INCREMENT_NAMED_defineVar(linesSymbol, lines, documentcontext);\
                 returnthis = lines;                            \
                 *gave_contents = TRUE;                         \
             }                                                  \
@@ -2015,6 +2025,13 @@ SEXP do_getframenumber do_formals
 }
 
 
+SEXP invalid_get_frame_number_value(void)
+{
+    error(_("invalid '%s' value"), "get_frame_number");
+    return R_NilValue;
+}
+
+
 SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
               Rboolean contents, SEXP target, SEXP envir,
               Rboolean *gave_contents, Rboolean unbound_ok, SEXP rho)
@@ -2052,7 +2069,6 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     }
 
 
-    SEXP srcfile = NULL;
     SEXP returnvalue;
     SEXP documentcontext;
 
@@ -2103,7 +2119,7 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
             if (documentcontext == R_NilValue)
                 error("invalid {box} namespace without an associated path");
         }
-#define returnfile _returnfile((R_UnboundValue), (source_char), (nprotect))
+#define returnfile _returnfile((invalid_get_frame_number_value()), (source_char), (nprotect))
 
 
         returnfile;
@@ -2297,7 +2313,8 @@ SEXP GetSrcref(int k, SEXP rho)
     while (--indx >= sysparent) {
         iwhich[0]--;
         previous_equal = current_equal;
-        if ((current_equal = (isysparents[indx] == sysparent))) {
+        current_equal = (isysparents[indx] == sysparent);
+        if (current_equal) {
             PROTECT(expr = eval(expr_sys_call_which, rho));
             srcref = getAttrib(expr, srcrefSymbol);
             if (srcref != R_NilValue) {
@@ -2472,7 +2489,8 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
             check_documentcontext_env;
         }
         else {
-            if (inherits(srcfile, "srcfilecopy") &&
+            int is_srcfilecopy = inherits(srcfile, "srcfilecopy");
+            if (is_srcfilecopy &&
                 asLogical(findVarInFrame(srcfile, isFileSymbol)) != TRUE)
             {
                 documentcontext = R_EmptyEnv;
@@ -2500,6 +2518,7 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                     /* allow_file_uri         */ TRUE,
                     /* ignore_all             */ FALSE
                 );
+                document_context_assign_lines(documentcontext, srcfile);
             }
         }
         returnfile;

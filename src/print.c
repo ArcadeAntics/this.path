@@ -145,6 +145,11 @@ SEXP do_printThisPathDocumentContext do_formals
     do_start_no_call_op("printThisPathDocumentContext", 2);
 
 
+    /* printThisPathDocumentContext (for the most part) does not throw errors
+     * for an invalid object. it will report that something is invalid in the
+     * printed message, but will still make a sensible message regardless */
+
+
     SEXP x = CAR(args); args = CDR(args);
     if (TYPEOF(x) != ENVSXP)
         error(_("invalid '%s' value"), "x");
@@ -291,6 +296,20 @@ SEXP do_printThisPathDocumentContext do_formals
         if (lines == R_UnboundValue);
         else if (lines == R_NilValue)
             print_invalid_null;
+        else if (TYPEOF(lines) == PROMSXP) {
+            SEXP val = PRVALUE(lines);
+            if (val == R_UnboundValue) {
+                Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+                my_PrintValueEnv(PREXPR(lines), rho);
+            }
+            else if (val == R_NilValue) {
+                print_invalid_null;
+            }
+            else if (TYPEOF(val) == STRSXP) {
+                print_type(val);
+            }
+            else print_invalid_type(val);
+        }
         else if (TYPEOF(lines) == STRSXP)
             print_type(lines);
         else print_invalid_type(lines);

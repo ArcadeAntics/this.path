@@ -236,7 +236,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("get\\.dyn", x, value = TRUE)
+    x <- grep("_RGui", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 
