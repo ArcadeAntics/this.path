@@ -194,7 +194,7 @@ function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
                     length(exprs) &&
                     typeof(srcref <- attr(exprs, "srcref", exact = TRUE)) == "list")
                 {
-                    skip.echo <- srcrefs[[1L]][7L] - 1L
+                    skip.echo <- srcref[[1L]][7L] - 1L
                 }
             }
         }
