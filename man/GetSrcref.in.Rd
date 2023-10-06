@@ -21,14 +21,14 @@ fun <- function(n = 0) {
     list(
         `GetSrcref(n)` = this.path::GetSrcref(n),
         ## while this might seem like a simpler alternative,
-        ## you'll see it does not work in a couple cases below
+        ## you will see it does not work in a couple cases below
         `attr(sys.call(sys.parent(n)), "srcref")` =
             attr(sys.call(sys.parent(n)), "srcref")
     )
 }
 
 
-{ fun() }
-{ print(fun()) }
-{ try(print(fun())) }
+fun()
+print(fun())
+try(print(fun()))
 }

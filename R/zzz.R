@@ -304,6 +304,13 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(reset.proj)
 
 
+    ## startup.R    ----
+
+
+    fix.External2.fun(.site.file)
+    fix.External2.fun(.init.file)
+
+
     ## thispath.R   ----
 
 
@@ -330,6 +337,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(src.dir)
     fix.External2.fun(this.path)
     fix.External2.fun(this.dir)
+    fix.External2.fun(GetSrcref)
     fix.External2.fun(.here)
     fix.External2.fun(sys.here)
     fix.External2.fun(env.here)
@@ -356,6 +364,7 @@ if (getRversion() < "3.0.0") {
 
     fix.External2.fun(.istrue)
     fix.External2.fun(.isfalse)
+    fix.External2.fun(get.dyn)
 
 
     ## wrapsource.R ----

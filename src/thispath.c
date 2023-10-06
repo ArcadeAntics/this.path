@@ -2276,11 +2276,9 @@ SEXP GetSrcref(int k, SEXP rho)
     SEXP expr = eval(expr_sys_call_which, rho);
     PROTECT(expr);
     SEXP srcref = getAttrib(expr, srcrefSymbol);
-    if (srcref != R_NilValue) {
-        UNPROTECT(1);
+    UNPROTECT(1);
+    if (srcref != R_NilValue)
         return srcref;
-    }
-    else UNPROTECT(1);
 
 
     SEXP sysparents = eval(expr_sys_parents, rho);

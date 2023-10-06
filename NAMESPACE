@@ -45,6 +45,11 @@ if (getRversion() < "3.3.0") {
 }
 
 
+if (getRversion() < "3.4.0") {
+    export(withAutoprint)
+}
+
+
 if (getRversion() < "3.5.0") {
     export(...length)
     export(isTRUE)

@@ -322,7 +322,7 @@ SEXP do_shINFO do_formals
      */
 
 
-    do_start_no_op_rho("shINFO", 0);
+    do_start_no_call_op_rho("shINFO", 0);
 
 
     if (!is_maybe_unembedded_shell) {

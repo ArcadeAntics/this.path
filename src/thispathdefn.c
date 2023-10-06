@@ -649,7 +649,7 @@ int is_file_uri(const char *url)
 
 SEXP do_getdyn do_formals
 {
-    do_start("getdyn", 3);
+    do_start_no_op("getdyn", 3);
 
 
     int nprotect = 0;

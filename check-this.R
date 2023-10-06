@@ -7,10 +7,8 @@ local({
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE,
-        no.stop.on.test.error = TRUE,
-        as.cran = TRUE,
-        `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = FALSE, no.stop.on.test.error = TRUE,
+        as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
@@ -18,7 +16,7 @@ local({
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming.CRAN.version <- "2.1.1"
+    upcoming.CRAN.version <- "2.2.0"
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
 
@@ -238,7 +236,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("site-wide|user[ \t\n]+profile", x, value = TRUE)
+    x <- grep("get\\.dyn", x, value = TRUE)
     x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
 
 

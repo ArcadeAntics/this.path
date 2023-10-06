@@ -148,7 +148,7 @@ if (getRversion() < "3.4.0") {
 .withAutoprint <- function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
     echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20, getOption("width")),
     deparseCtrl = c("keepInteger", "showAttributes", "keepNA"),
-    spaced = FALSE, skip.echo = 0, ...)
+    skip.echo = 0, spaced = FALSE, ...)
 {
     if (!evaluated) {
         exprs <- substitute(exprs)
@@ -157,9 +157,9 @@ if (getRversion() < "3.4.0") {
                 exprs <- as.list(exprs)[-1L]
                 if (missing(skip.echo) &&
                     length(exprs) &&
-                    is.list(srcrefs <- attr(exprs, "srcref")))
+                    typeof(srcref <- attr(exprs, "srcref", exact = TRUE)) == "list")
                 {
-                    skip.echo <- srcrefs[[1L]][7L] - 1L
+                    skip.echo <- srcref[[1L]][7L] - 1L
                 }
             }
         }
@@ -171,6 +171,9 @@ if (getRversion() < "3.4.0") {
     source(file = conn, local = local, print.eval = print., echo = echo,
         max.deparse.length = max.deparse.length, skip.echo = skip.echo, ...)
 }
+
+
+withAutoprint <- .withAutoprint
 
 
 } else {
@@ -189,7 +192,7 @@ function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
                 exprs <- as.list(exprs)[-1L]
                 if (missing(skip.echo) &&
                     length(exprs) &&
-                    is.list(srcrefs <- attr(exprs, "srcref")))
+                    typeof(srcref <- attr(exprs, "srcref", exact = TRUE)) == "list")
                 {
                     skip.echo <- srcrefs[[1L]][7L] - 1L
                 }

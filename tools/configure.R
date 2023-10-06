@@ -197,6 +197,15 @@ main <- function ()
                         "startsWith(x, prefix)",
                         "endsWith(x, suffix)"
                     ),
+                    "3.4.0",
+                    "withAutoprint",
+                    c(
+                        "withAutoprint(exprs, evaluated = FALSE, local = parent.frame(),",
+                        "              print. = TRUE, echo = TRUE, max.deparse.length = Inf,",
+                        "              width.cutoff = max(20, getOption(\"width\")),",
+                        "              deparseCtrl = c(\"keepInteger\", \"showAttributes\", \"keepNA\"),",
+                        "              skip.echo = 0, spaced = FALSE, ...)"
+                    ),
                     "3.5.0",
                     c("...length", "isTRUE", "isFALSE"),
                     c(

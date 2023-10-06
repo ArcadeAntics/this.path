@@ -52,6 +52,9 @@ extern0 SEXP0
 #if R_version_less_than(3, 4, 0)
     R_AsCharacterSymbol                    INI_as(install("as.character")),
 #endif
+#if R_version_less_than(4, 0, 0)
+    R_EvalSymbol                           INI_as(install("eval")),
+#endif
 #if R_version_less_than(4, 1, 0)
     new_envSymbol                          INI_as(install("new.env")),
 #endif

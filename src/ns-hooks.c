@@ -395,15 +395,10 @@ SEXP do_onLoad do_formals
     }
 
 
-    {
-        SEXP tmp; PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(tmp = R_NilValue, &indx);
-        REPROTECT(tmp = CONS(expr_sys_function_which, tmp), indx);
-        REPROTECT(tmp = LCONS(getFromBase(install("evalq")), tmp), indx);
-        eval_op = eval(tmp, R_EmptyEnv);
-        R_PreserveObject(eval_op);
-        UNPROTECT(1);
-    }
+    eval_op = INTERNAL(R_EvalSymbol);
+    if (TYPEOF(eval_op) != BUILTINSXP)
+        error(_("object '%s' of mode '%s' was not found"),
+              EncodeChar(PRINTNAME(R_EvalSymbol)), "builtin");
 
 
     expr_sys_nframe = LCONS(getFromBase(sys_nframeSymbol), R_NilValue);
@@ -594,7 +589,6 @@ SEXP do_onUnload do_formals
     maybe_release(expr_sys_call                                 );
     maybe_release(expr_sys_call_which                           );
     maybe_release(expr_sys_function_which                       );
-    maybe_release(eval_op                                       );
     maybe_release(expr_sys_nframe                               );
     maybe_release(expr_sys_parents                              );
     maybe_release(expr_missing_file                             );

@@ -70,9 +70,9 @@ The only equivalent to `this.path()` (that I have seen) is
 **this.path** resolves:
 
 1.  `this.path()` works with `sys.source()`, `debugSource()` in
-    'RStudio', `testthat::source_file()`, `knitr::knit()`, 
-    `compiler::loadcmp()`, `box::use()`, `shiny::runApp()`, and
-    `plumber::plumb()`. It also works in interactive mode inside
+    'RStudio', `compiler::loadcmp()`, `box::use()`, `knitr::knit()`,
+    `plumber::plumb()`, `shiny::runApp()`, `{targets}`, and
+    `testthat::source_file()`. It also works in interactive mode inside
     'Rgui', 'RStudio', 'VSCode', and 'Jupyter'.
 
 2.  Related to `source()`, `this.path()`:
@@ -133,7 +133,7 @@ The only equivalent to `this.path()` (that I have seen) is
 Code aside, **whereami** suggests that an R script needing to know its
 own path should only be done if absolutely necessary, and that it
 should be set outside the context of the R script if possible. I find
-this vague and unconvincing. Other scripting languages have methods of 
+this vague and unconvincing. Other scripting languages have methods of
 requesting a script's path without issue, so R should too. We should
 not be scaring programmers into thinking that this is rule-breaking or
 bad practice.
@@ -164,7 +164,7 @@ just no longer fits my use-cases.
     **here** not being able to find the project's directory and
     incorrectly returning the initial working directory.
 
-3.  **here** does not work for projects containing sub-projects. In my 
+3.  **here** does not work for projects containing sub-projects. In my
     scenario, I had a project "A", and later I had a project "B" of
     which "A" is a sub-project. I would run a script in "B" which runs
     another script in "A", but the project root is already set to the
