@@ -259,7 +259,7 @@ if (.Platform$OS.type == "windows") {
 
 rel2sys.dir <- function (path, local = FALSE)
 {
-    relative.to <- .External2(.C_syspath, local)
+    relative.to <- .External2(.C_sys.path, local)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
@@ -267,7 +267,7 @@ rel2sys.dir <- function (path, local = FALSE)
 
 rel2sys.proj <- function (path, local = FALSE)
 {
-    relative.to <- .External2(.C_syspath, local)
+    relative.to <- .External2(.C_sys.path, local)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -277,7 +277,7 @@ rel2sys.proj <- function (path, local = FALSE)
 rel2env.dir <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
     n <- .External2(.C_asIntegerGE0, n)
-    relative.to <- .External2(.C_envpath, envir, matchThisEnv)
+    relative.to <- .External2(.C_env.path, envir, matchThisEnv)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
@@ -286,7 +286,7 @@ rel2env.dir <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEn
 rel2env.proj <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"))
 {
     n <- .External2(.C_asIntegerGE0, n)
-    relative.to <- .External2(.C_envpath, envir, matchThisEnv)
+    relative.to <- .External2(.C_env.path, envir, matchThisEnv)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -296,7 +296,7 @@ rel2env.proj <- function (path, n = 0L, envir = parent.frame(n + 1L), matchThisE
 rel2src.dir <- function (path, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    relative.to <- .External2(.C_srcpath, srcfile)
+    relative.to <- .External2(.C_src.path, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
@@ -305,7 +305,7 @@ rel2src.dir <- function (path, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 rel2src.proj <- function (path, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    relative.to <- .External2(.C_srcpath, srcfile)
+    relative.to <- .External2(.C_src.path, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
@@ -317,7 +317,7 @@ rel2here <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
+    relative.to <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     .relpath(path, relative.to, normalize = FALSE)
 }
@@ -328,7 +328,7 @@ rel2proj <- function (path, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    relative.to <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
+    relative.to <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
     relative.to <- .dir(relative.to)
     relative.to <- .proj(relative.to)
     .relpath(path, relative.to, normalize = FALSE)

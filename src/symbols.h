@@ -31,10 +31,10 @@
 
 extern0 SEXP0
 #if R_version_less_than(3, 0, 0)
-    _setprseen2Symbol                      INI_as(install(".setprseen2")),
+    _SET_PRSEEN_2Symbol                    INI_as(install(".SET_PRSEEN_2")),
 #else
     _External2Symbol                       INI_as(install(".External2")),
-    _C_setprseen2Symbol                    INI_as(install(".C_setprseen2")),
+    _C_SET_PRSEEN_2Symbol                  INI_as(install(".C_SET_PRSEEN_2")),
 #endif
 #if R_version_less_than(3, 1, 0)
     _anyNA_dispatchSymbol                  INI_as(install(".anyNA.dispatch")),

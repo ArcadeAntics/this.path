@@ -11,9 +11,9 @@ Rboolean asFlag(SEXP x, const char *name)
 }
 
 
-SEXP do_setprseen2 do_formals
+SEXP do_SET_PRSEEN_2 do_formals
 {
-    do_start_no_op_rho("setprseen2", 1);
+    do_start_no_op_rho("SET_PRSEEN_2", 1);
 
 
     SEXP ptr = CAR(args);
@@ -42,9 +42,9 @@ SEXP do_setprseen2 do_formals
 }
 
 
-SEXP do_wrapsource do_formals
+SEXP do_wrap_source do_formals
 {
-    do_start_no_op("wrapsource", 20);
+    do_start_no_op("wrap.source", 20);
 
 
     int nprotect = 0;
@@ -162,12 +162,12 @@ SEXP do_wrapsource do_formals
         PROTECT_INDEX indx;
         PROTECT_WITH_INDEX(expr = CONS(ptr = R_MakeExternalPtr(NULL, R_NilValue, promises), R_NilValue), &indx);
 #if R_version_at_least(3, 0, 0)
-        /* .External2(.C_setprseen2, ptr) */
-        REPROTECT(expr = CONS(getFromMyNS(_C_setprseen2Symbol), expr), indx);
+        /* .External2(.C_SET_PRSEEN_2, ptr) */
+        REPROTECT(expr = CONS(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
         REPROTECT(expr = LCONS(getFromBase(_External2Symbol), expr), indx);
 #else
-        /* .setprseen2(ptr) */
-        REPROTECT(expr = LCONS(getFromMyNS(_setprseen2Symbol), expr), indx);
+        /* .SET_PRSEEN_2(ptr) */
+        REPROTECT(expr = LCONS(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
 #endif
         REPROTECT(expr = CONS(expr, R_NilValue), indx);
         REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
@@ -491,13 +491,14 @@ SEXP do_wrapsource do_formals
 }
 
 
-typedef enum { SETPATHOP_SETSYSPATH   = 0,
-               SETPATHOP_UNSETSYSPATH    ,
-               SETPATHOP_SETENVPATH      ,
-               SETPATHOP_SETSRCPATH      } SETPATHOP;
+typedef enum { SETPATHOP_SETSYSPATH         = 0 ,
+               SETPATHOP_UNSETSYSPATH           ,
+               SETPATHOP_SETENVPATH             ,
+               SETPATHOP_SETSRCPATH             ,
+               SETPATHOP_SETSYSPATHFUNCTION     } SETPATHOP;
 
 
-SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
+SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
 {
     int nprotect = 0;
 
@@ -508,6 +509,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
     case SETPATHOP_UNSETSYSPATH: name = "'unset.sys.path()'"; break;
     case SETPATHOP_SETENVPATH:   name = "'set.env.path()'";   break;
     case SETPATHOP_SETSRCPATH:   name = "'set.src.path()'";   break;
+    case SETPATHOP_SETSYSPATHFUNCTION: name = "'set.sys.path.function()'"; break;
     default:
         error(_("invalid '%s' value"), "op");
         return R_NilValue;
@@ -585,7 +587,29 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
         error("%s cannot be used within a locked environment", name);
 
 
-    if (op) {
+    if (op == SETPATHOP_SETSYSPATHFUNCTION) {
+
+
+        if (R_existsVarInFrame(frame, documentcontextSymbol))
+            error("%s cannot be called more than once within an environment", name);
+
+
+        extern SEXP src_context(SEXP srcfile, SEXP rho);
+
+
+        SEXP fun = CAR(args);
+        if (TYPEOF(fun) != CLOSXP)
+            error(_("invalid '%s' value"), "fun");
+        SEXP documentcontext = src_context(fun, rho);
+        INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
+        R_LockBinding(documentcontextSymbol, frame);
+        defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
+        define_n(parent, documentcontext);
+        set_R_Visible(FALSE);
+        UNPROTECT(nprotect);
+        return R_NilValue;
+    }
+    else if (op) {
         documentcontext = findVarInFrame(frame, documentcontextSymbol);
         if (documentcontext == R_UnboundValue)
             error("%s cannot be called before set.sys.path()", name);
@@ -636,7 +660,7 @@ SEXP setpath(SETPATHOP op, SEXP args, SEXP rho)
                     error("cannot overwrite existing binding '%s'", EncodeChar(PRINTNAME(documentcontextSymbol)));
 
 
-extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
+                extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
 
 
                 document_context_assign_lines(documentcontext, srcfile);
@@ -846,6 +870,7 @@ extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
         ignore_stdin, ignore_url, ignore_file_uri,
         /* source                 */ source
     );
+    PROTECT(returnvalue); nprotect++;
 
 
     if (documentcontext != R_EmptyEnv) {
@@ -862,29 +887,36 @@ extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
 #undef define_n
 
 
-SEXP do_setsyspath do_formals
+SEXP do_set_sys_path do_formals
 {
-    do_start_no_call_op("setsyspath", 21);
-    return setpath(SETPATHOP_SETSYSPATH, args, rho);
+    do_start_no_op("set.sys.path", 21);
+    return set_path(SETPATHOP_SETSYSPATH, args, rho);
 }
 
 
-SEXP do_unsetsyspath do_formals
+SEXP do_unset_sys_path do_formals
 {
-    do_start_no_call_op("unsetsyspath", 0);
-    return setpath(SETPATHOP_UNSETSYSPATH, args, rho);
+    do_start_no_call_op("unset.sys.path", 0);
+    return set_path(SETPATHOP_UNSETSYSPATH, args, rho);
 }
 
 
-SEXP do_setenvpath do_formals
+SEXP do_set_env_path do_formals
 {
-    do_start_no_call_op("setenvpath", 2);
-    return setpath(SETPATHOP_SETENVPATH, args, rho);
+    do_start_no_call_op("set.env.path", 2);
+    return set_path(SETPATHOP_SETENVPATH, args, rho);
 }
 
 
-SEXP do_setsrcpath do_formals
+SEXP do_set_src_path do_formals
 {
-    do_start_no_call_op("setsrcpath", 1);
-    return setpath(SETPATHOP_SETSRCPATH, args, rho);
+    do_start_no_call_op("set.src.path", 1);
+    return set_path(SETPATHOP_SETSRCPATH, args, rho);
+}
+
+
+SEXP do_set_src_path_function do_formals
+{
+    do_start_no_call_op("set.src.path.function", 1);
+    return set_path(SETPATHOP_SETSYSPATHFUNCTION, args, rho);
 }

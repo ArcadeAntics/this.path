@@ -75,12 +75,12 @@ tmp <- function (x, varname, name)
 
 
 check.path <- eval(call("function", as.pairlist(alist(... = )),
-tmp(expression(varname <- .External2(.C_thispath)), "thispath", "this.path()")
+tmp(expression(varname <- .External2(.C_this.path)), "thispath", "this.path()")
 ))
 
 
 check.dir <- eval(call("function", as.pairlist(alist(... = )),
-tmp(expression(varname <- .External2(.C_thispath), varname <- .dir(varname)), "thisdir", "this.dir()")
+tmp(expression(varname <- .External2(.C_this.path), varname <- .dir(varname)), "thisdir", "this.dir()")
 ))
 
 
@@ -97,7 +97,7 @@ check.proj <- function (...)
     expected <- path.split.1(expected)
     if (check.wd <- expected[[1L]] == ".")
         expected <- expected[-1L]
-    thispath <- .External2(.C_thispath)
+    thispath <- .External2(.C_this.path)
     thisproj <- .proj(.dir(thispath))
     thispath <- path.split.1(thispath)
     thisproj <- path.split.1(thisproj)

@@ -78,16 +78,16 @@ SEXP get_file_from_closure(SEXP args, SEXP symbol)
 }
 
 
-SEXP do_sitefile do_formals
+SEXP do_site_file do_formals
 {
-    do_start_no_call_op_rho("sitefile", 2);
+    do_start_no_call_op_rho("site.file", 2);
     return get_file_from_closure(args, _site_fileSymbol);
 }
 
 
-SEXP do_initfile do_formals
+SEXP do_init_file do_formals
 {
-    do_start_no_call_op_rho("initfile", 2);
+    do_start_no_call_op_rho("init.file", 2);
     return get_file_from_closure(args, _init_fileSymbol);
 }
 

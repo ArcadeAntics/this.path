@@ -229,7 +229,7 @@ delayedAssign(".os.windows", .Platform$OS.type == "windows")
 delayedAssign(".gui.rstudio",
     commandArgs()[[1L]] == "RStudio" &&
     isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")) &&
-    if (.Platform$GUI == "RStudio") { .External2(.C_inittoolsrstudio, skipCheck = TRUE); TRUE }
+    if (.Platform$GUI == "RStudio") { .External2(.C_init.tools.rstudio, skipCheck = TRUE); TRUE }
     else (
         (.os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none")) ||
         (.os.windows && .Platform$GUI == "Rgui")
@@ -307,7 +307,7 @@ delayedAssign(".gui.tk"  , .os.unix    && .Platform$GUI == "Tk"   && !.gui.rstud
 
 
 `.init.tools:rstudio` <- function ()
-.External2(.C_inittoolsrstudio)
+.External2(.C_init.tools.rstudio)
 
 
 delayedAssign(".os.unix.in.shell"   , .os.unix.maybe.unembedded.shell    && !.gui.vscode && !.gui.jupyter)

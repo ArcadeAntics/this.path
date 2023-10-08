@@ -10,8 +10,8 @@ delayedAssign(".C_mapply", getNativeSymbolInfo("do_mapply", PACKAGE = "base"))
 .Call(.C_mapply, match.fun(FUN), dots, MoreArgs, environment())
 
 
-.setprseen2 <- function (ptr)
-.External2(.C_setprseen2, ptr)
+.SET_PRSEEN_2 <- function (ptr)
+.External2(.C_SET_PRSEEN_2, ptr)
 
 
 parse <- evalq(envir = .BaseNamespaceEnv,
@@ -48,11 +48,11 @@ UseMethod("anyNA")
 
 
 anyNA.data.frame <- function (x, recursive = FALSE)
-.External2(.C_anyNAdataframe, x, recursive)
+.External2(.C_anyNA.data.frame, x, recursive)
 
 
 anyNA.numeric_version <- function (x, recursive = FALSE)
-.External2(.C_anyNAnumericversion, x)
+.External2(.C_anyNA.numeric_version, x)
 
 
 anyNA.POSIXlt <- function (x, recursive = FALSE)
@@ -60,7 +60,7 @@ anyNA(as.POSIXct.POSIXlt(x))
 
 
 .anyNA.default <- function (x, recursive = FALSE)
-.External2(.C_anyNAdefault, x, recursive)
+.External2(.C_anyNA.default, x, recursive)
 
 
 }
@@ -74,7 +74,7 @@ isNamespaceLoaded <- function (name)
 
 
 dir.exists <- function (paths)
-.External2(.C_direxists, paths)
+.External2(.C_dir.exists, paths)
 
 
 lengths <- function (x, use.names = TRUE)
@@ -82,7 +82,7 @@ lengths <- function (x, use.names = TRUE)
 
 
 .lengths.default <- function (x, use.names = TRUE)
-.External2(.C_lengthsdefault, x, use.names)
+.External2(.C_lengths.default, x, use.names)
 
 
 ## file.info() did not have argument 'extra_cols' at this time
@@ -214,7 +214,7 @@ if (getRversion() < "3.5.0") {
 
 
 ...length <- function ()
-.External2(.C_dotslength)
+.External2(.C_...length)
 
 
 isTRUE <- evalq(envir = .BaseNamespaceEnv,

@@ -55,7 +55,7 @@ function (path, verbose = FALSE)
 
 sys.proj <- function (..., local = FALSE)
 {
-    base <- .External2(.C_syspath, local)
+    base <- .External2(.C_sys.path, local)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -66,7 +66,7 @@ env.proj <- function (..., n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"))
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_envpath, envir, matchThisEnv)
+    base <- .External2(.C_env.path, envir, matchThisEnv)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -76,7 +76,7 @@ env.proj <- function (..., n = 0L, envir = parent.frame(n + 1L),
 src.proj <- function (..., n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_srcpath, srcfile)
+    base <- .External2(.C_src.path, srcfile)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -88,7 +88,7 @@ this.proj <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
+    base <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -99,7 +99,7 @@ reset.proj <- function ()
 {
     if (sys.nframe() != .toplevel.context.number() + 1L)
         stop(gettextf("'%s' can only be called from a top level context", "reset.proj"))
-    .External2(.C_resetproj)
+    .External2(.C_reset.proj)
 }
 
 

@@ -80,7 +80,7 @@ extern const char *EncodeChar(SEXP);
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 #define getFromBase(sym) (getInFrame((sym), R_BaseEnv, FALSE))
 #define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))
-extern SEXP getInList(SEXP sym, SEXP list, int C_NULL_ok);
+extern SEXP getInList(SEXP sym, SEXP list, int NULL_ok);
 
 
 void INCREMENT_NAMED_defineVar(SEXP symbol, SEXP value, SEXP rho);
@@ -222,13 +222,13 @@ typedef struct gzconn {
                 if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\
             }                                                  \
             SEXP description = mkCharCE(Rcon->description, (Rcon->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE);\
-            PROTECT(description); nprotect_local_to_checkfile++;\
+            PROTECT(description); nprotect++;                  \
             const char *klass = Rcon->class
 #define Rcon_or_summary Rcon
 #else
 #define get_description_and_class                              \
             SEXP summary = summaryconnection(ofile);           \
-            PROTECT(summary); nprotect_local_to_checkfile++;   \
+            PROTECT(summary); nprotect++;                      \
             SEXP description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
             const char *klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
             if (streql(klass, "gzcon")) error("'this.path' not implemented for a gzcon()")
@@ -241,14 +241,14 @@ typedef struct gzconn {
 
    thispath.c
 
-     * _syspath()
-     * _envpath()
-     * _srcpath()
+     * _sys_path()
+     * _env_path()
+     * _src_path()
 
    wrapsource.c
 
-     * do_wrapsource()
-     * setpath()
+     * do_wrap_source()
+     * set_path()
  */
 #define checkfile(call, sym, ofile, frame, as_binding,         \
     normalize_action, forcepromise, assign_returnvalue,        \
@@ -261,8 +261,8 @@ typedef struct gzconn {
     ignore_blank_string, ignore_clipboard, ignore_stdin,       \
     ignore_url, ignore_file_uri, source)                       \
 do {                                                           \
-    int nprotect_local_to_checkfile = 0;                       \
-    PROTECT(documentcontext = DocumentContext()); nprotect_local_to_checkfile++;\
+    int nprotect = 0;                                          \
+    PROTECT(documentcontext = DocumentContext()); nprotect++;  \
     if (TYPEOF(ofile) == STRSXP) {                             \
         if (XLENGTH(ofile) != 1)                               \
             errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
@@ -282,7 +282,7 @@ do {                                                           \
             else {                                             \
                 url = translateCharUTF8(file);                 \
                 file = mkCharCE(url, CE_UTF8);                 \
-                PROTECT(file); nprotect_local_to_checkfile++;  \
+                PROTECT(file); nprotect++;                     \
             }                                                  \
         }                                                      \
         else url = CHAR(file);                                 \
@@ -494,8 +494,8 @@ do {                                                           \
     } else {                                                   \
         setAttrib(frame, documentcontextSymbol, documentcontext);\
     }                                                          \
-    UNPROTECT(nprotect_local_to_checkfile);                    \
     set_R_Visible(TRUE);                                       \
+    UNPROTECT(nprotect);                                       \
 } while (0)
 
 

@@ -141,7 +141,7 @@ if (getRversion() < "3.0.0") {
     ## backports.R  ----
 
 
-    fix.External2.fun(.setprseen2)
+    fix.External2.fun(.SET_PRSEEN_2)
 
     fix.External2.fun(anyNA)
     fix.External2.fun(anyNA.data.frame)
@@ -322,8 +322,6 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(.thisPathNotExistsError)
     fix.External2.fun(.thisPathInZipFileError)
     fix.External2.fun(.thisPathInAQUAError)
-    fix.External2.fun(.is.unevaluated.promise)
-    fix.External2.fun(.promise.is.unevaluated)
     fix.External2.fun(.is.clipboard)
     fix.External2.fun(.sys.path.jupyter)
     fix.External2.fun(.sys.path.toplevel)
@@ -337,7 +335,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(src.dir)
     fix.External2.fun(this.path)
     fix.External2.fun(this.dir)
-    fix.External2.fun(GetSrcref)
+    fix.External2.fun(sys.srcref)
     fix.External2.fun(.here)
     fix.External2.fun(sys.here)
     fix.External2.fun(env.here)

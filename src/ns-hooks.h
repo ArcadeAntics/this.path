@@ -5,9 +5,9 @@
 #include <Rinternals.h>       /* need definition of SEXP */
 
 
-extern SEXP mynamespace       ,
-            DocumentContextCls,
-            last_condition    ;
+extern SEXP mynamespace         ,
+            DocumentContextClass,
+            last_condition      ;
 
 
 extern SEXP expr_commandArgs                              ,

@@ -33,12 +33,12 @@ the first element of 'args' is '.NAME', as usual. The next 3 elements must be
 the 'call', 'op', and 'rho' that would have been provided if .External2() was
 available. for example:
 
- .External2(.C_syspath, verbose)
+ .External2(.C_sys.path, verbose)
 
 becomes:
 
- .External(.C_syspath,
-     quote(.External(.C_syspath, verbose)),
+ .External(.C_sys.path,
+     quote(.External(.C_sys.path, verbose)),
      .External,
      environment(),
      verbose)
@@ -64,17 +64,17 @@ extern SEXP do_aquarootscript do_formals;
 
 
 #if R_version_less_than(3, 1, 0)
-extern SEXP do_anyNA               do_formals;
-extern SEXP do_anyNAdataframe      do_formals;
-extern SEXP do_anyNAnumericversion do_formals;
-extern SEXP do_anyNAdefault        do_formals;
+extern SEXP do_anyNA                 do_formals;
+extern SEXP do_anyNA_data_frame      do_formals;
+extern SEXP do_anyNA_numeric_version do_formals;
+extern SEXP do_anyNA_default         do_formals;
 #endif
 
 
 #if R_version_less_than(3, 2, 0)
-extern SEXP do_direxists             do_formals;
+extern SEXP do_dir_exists            do_formals;
 extern SEXP do_lengths               do_formals;
-extern SEXP do_lengthsdefault        do_formals;
+extern SEXP do_lengths_default       do_formals;
 extern SEXP do_isRegisteredNamespace do_formals;
 #endif
 
@@ -94,41 +94,41 @@ extern SEXP do_dotslength do_formals;
 /* basename2.c */
 
 
-extern SEXP do_windowsbasename2 do_formals;
-extern SEXP do_unixbasename2    do_formals;
-extern SEXP do_basename2        do_formals;
+extern SEXP do_windows_basename2 do_formals;
+extern SEXP do_unix_basename2    do_formals;
+extern SEXP do_basename2         do_formals;
 
-extern SEXP do_windowsdirname2 do_formals;
-extern SEXP do_unixdirname2    do_formals;
-extern SEXP do_dirname2        do_formals;
+extern SEXP do_windows_dirname2 do_formals;
+extern SEXP do_unix_dirname2    do_formals;
+extern SEXP do_dirname2         do_formals;
 
 
 /* ext.c */
 
 
-extern SEXP do_windowssplitext do_formals;
-extern SEXP do_unixsplitext    do_formals;
-extern SEXP do_splitext        do_formals;
+extern SEXP do_windows_splitext do_formals;
+extern SEXP do_unix_splitext    do_formals;
+extern SEXP do_splitext         do_formals;
 
-extern SEXP do_windowsremoveext do_formals;
-extern SEXP do_unixremoveext    do_formals;
-extern SEXP do_removeext        do_formals;
+extern SEXP do_windows_removeext do_formals;
+extern SEXP do_unix_removeext    do_formals;
+extern SEXP do_removeext         do_formals;
 
-extern SEXP do_windowsext do_formals;
-extern SEXP do_unixext    do_formals;
-extern SEXP do_ext        do_formals;
+extern SEXP do_windows_ext do_formals;
+extern SEXP do_unix_ext    do_formals;
+extern SEXP do_ext         do_formals;
 
-extern SEXP do_windowsextgets do_formals;
-extern SEXP do_unixextgets    do_formals;
-extern SEXP do_extgets        do_formals;
+extern SEXP do_windows_extgets do_formals;
+extern SEXP do_unix_extgets    do_formals;
+extern SEXP do_extgets         do_formals;
 
 
 /* isabspath.c */
 
 
-extern SEXP do_windowsisabspath do_formals;
-extern SEXP do_unixisabspath    do_formals;
-extern SEXP do_isabspath        do_formals;
+extern SEXP do_windows_is_abs_path do_formals;
+extern SEXP do_unix_is_abs_path    do_formals;
+extern SEXP do_is_abs_path         do_formals;
 
 
 /* ns-hooks.c */
@@ -146,32 +146,32 @@ extern SEXP do_onUnload       do_formals;
 /* pathjoin.c */
 
 
-extern SEXP do_windowspathjoin do_formals;
-extern SEXP do_unixpathjoin    do_formals;
-extern SEXP do_pathjoin        do_formals;
+extern SEXP do_windows_path_join do_formals;
+extern SEXP do_unix_path_join    do_formals;
+extern SEXP do_path_join        do_formals;
 
 
 /* pathsplit.c */
 
 
-extern SEXP do_windowspathsplit do_formals;
-extern SEXP do_unixpathsplit    do_formals;
-extern SEXP do_pathsplit        do_formals;
+extern SEXP do_windows_path_split do_formals;
+extern SEXP do_unix_path_split    do_formals;
+extern SEXP do_path_split         do_formals;
 
-extern SEXP do_windowspathsplit1 do_formals;
-extern SEXP do_unixpathsplit1    do_formals;
-extern SEXP do_pathsplit1        do_formals;
+extern SEXP do_windows_path_split_1 do_formals;
+extern SEXP do_unix_path_split_1    do_formals;
+extern SEXP do_path_split_1         do_formals;
 
-extern SEXP do_windowspathunsplit do_formals;
-extern SEXP do_unixpathunsplit    do_formals;
-extern SEXP do_pathunsplit        do_formals;
+extern SEXP do_windows_path_unsplit do_formals;
+extern SEXP do_unix_path_unsplit    do_formals;
+extern SEXP do_path_unsplit         do_formals;
 
 
 /* print.c */
 
 
-extern SEXP do_PrintValueEnv                do_formals;
-extern SEXP do_printThisPathDocumentContext do_formals;
+extern SEXP do_PrintValueEnv                 do_formals;
+extern SEXP do_print_ThisPathDocumentContext do_formals;
 
 
 /* progargs.c */
@@ -183,28 +183,28 @@ extern SEXP do_asArgs do_formals;
 /* promises.c */
 
 
-extern SEXP do_isunevaluatedpromise     do_formals;
-extern SEXP do_promiseisunevaluated     do_formals;
-extern SEXP do_getpromisewithoutwarning do_formals;
-extern SEXP do_PRINFO                   do_formals;
-extern SEXP do_mkPROMISE                do_formals;
-extern SEXP do_mkEVPROMISE              do_formals;
-extern SEXP do_unlockEnvironment        do_formals;
+extern SEXP do_is_unevaluated_promise do_formals;
+extern SEXP do_promise_is_unevaluated do_formals;
+extern SEXP do_PRVALUE_no_warn        do_formals;
+extern SEXP do_PRINFO                 do_formals;
+extern SEXP do_mkPROMISE              do_formals;
+extern SEXP do_mkEVPROMISE            do_formals;
+extern SEXP do_unlockEnvironment      do_formals;
 
 
 /* rprojroot.c */
 
 
-extern SEXP do_resetproj do_formals;
+extern SEXP do_reset_proj do_formals;
 
 
 /* shfile.c */
 
 
-extern SEXP do_initfile do_formals;
-extern SEXP do_sitefile do_formals;
-extern SEXP do_shFILE   do_formals;
-extern SEXP do_shINFO   do_formals;
+extern SEXP do_init_file do_formals;
+extern SEXP do_site_file do_formals;
+extern SEXP do_shFILE    do_formals;
+extern SEXP do_shINFO    do_formals;
 
 
 /* thispath.c */
@@ -217,47 +217,48 @@ extern SEXP do_thisPathNotExistsError                   do_formals;
 extern SEXP do_thisPathInZipFileError                   do_formals;
 extern SEXP do_thisPathInAQUAError                      do_formals;
 
-extern SEXP do_isclipboard       do_formals;
-extern SEXP do_inittoolsrstudio  do_formals;
-extern SEXP do_syspathjupyter    do_formals;
-extern SEXP do_setsyspathjupyter do_formals;
-extern SEXP do_syspathrgui       do_formals;
-extern SEXP do_syspath           do_formals;
-extern SEXP do_getframenumber    do_formals;
-extern SEXP do_envpath           do_formals;
-extern SEXP do_GetSrcref         do_formals;
-extern SEXP do_srcpath           do_formals;
-extern SEXP do_srclineno         do_formals;
-extern SEXP do_thispath          do_formals;
-extern SEXP do_istrue            do_formals;
-extern SEXP do_isfalse           do_formals;
-extern SEXP do_asInteger         do_formals;
-extern SEXP do_asIntegerGE0      do_formals;
+extern SEXP do_is_clipboard         do_formals;
+extern SEXP do_init_tools_rstudio   do_formals;
+extern SEXP do_sys_path_jupyter     do_formals;
+extern SEXP do_set_sys_path_jupyter do_formals;
+extern SEXP do_sys_path_rgui        do_formals;
+extern SEXP do_sys_path             do_formals;
+extern SEXP do_getframenumber       do_formals;
+extern SEXP do_env_path             do_formals;
+extern SEXP do_sys_srcref           do_formals;
+extern SEXP do_src_path             do_formals;
+extern SEXP do_src_LINENO           do_formals;
+extern SEXP do_this_path            do_formals;
+extern SEXP do_istrue               do_formals;
+extern SEXP do_isfalse              do_formals;
+extern SEXP do_asInteger            do_formals;
+extern SEXP do_asIntegerGE0         do_formals;
 
 
 /* thispathdefn.c */
 
 
-extern SEXP do_getdyn do_formals;
+extern SEXP do_get_dyn do_formals;
 
 
 /* trycatch.c */
 
 
-extern SEXP do_lastcondition do_formals;
-extern SEXP do_tryCatch2     do_formals;
-extern SEXP do_tryCatch3     do_formals;
+extern SEXP do_last_condition do_formals;
+extern SEXP do_tryCatch2      do_formals;
+extern SEXP do_tryCatch3      do_formals;
 
 
 /* wrapsource.c */
 
 
-extern SEXP do_setprseen2   do_formals;
-extern SEXP do_wrapsource   do_formals;
-extern SEXP do_setsyspath   do_formals;
-extern SEXP do_unsetsyspath do_formals;
-extern SEXP do_setenvpath   do_formals;
-extern SEXP do_setsrcpath   do_formals;
+extern SEXP do_SET_PRSEEN_2          do_formals;
+extern SEXP do_wrap_source           do_formals;
+extern SEXP do_set_sys_path          do_formals;
+extern SEXP do_unset_sys_path        do_formals;
+extern SEXP do_set_env_path          do_formals;
+extern SEXP do_set_src_path          do_formals;
+extern SEXP do_set_src_path_function do_formals;
 
 
 #endif  /* R_THISPATH_THISPATH_H */

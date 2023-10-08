@@ -7,7 +7,7 @@ wrap.source <- function (expr, path.only = FALSE, character.only = path.only,
     allow.servsockconn = !file.only, allow.customConnection = !file.only,
     ignore.all = FALSE, ignore.blank.string = ignore.all, ignore.clipboard = ignore.all,
     ignore.stdin = ignore.all, ignore.url = ignore.all, ignore.file.uri = ignore.all)
-.External2(.C_wrapsource, character.only, conv2utf8, allow.blank.string,
+.External2(.C_wrap.source, character.only, conv2utf8, allow.blank.string,
     allow.clipboard, allow.stdin, allow.url, allow.file.uri,
     allow.unz, allow.pipe, allow.terminal, allow.textConnection,
     allow.rawConnection, allow.sockconn, allow.servsockconn,
@@ -19,22 +19,22 @@ set.sys.path <- local({
     tmp <- wrap.source
     names(formals(tmp))[1L] <- "file"
     formals(tmp) <- c(formals(tmp), alist(Function = NULL, ofile = ))
-    body(tmp)[2L] <- alist(.C_setsyspath)
+    body(tmp)[2L] <- alist(.C_set.sys.path)
     body(tmp) <- as.call(c(as.list(body(tmp)), alist(Function)))
     tmp
 })
 
 
 unset.sys.path <- function ()
-.External2(.C_unsetsyspath)
+.External2(.C_unset.sys.path)
 
 
 set.env.path <- function (envir, matchThisEnv = getOption("topLevelEnvironment"))
-.External2(.C_setenvpath, envir, matchThisEnv)
+.External2(.C_set.env.path, envir, matchThisEnv)
 
 
 set.src.path <- function (srcfile)
-.External2(.C_setsrcpath, srcfile)
+.External2(.C_set.src.path, srcfile)
 
 
 with_sys.path <- eval(call("function", as.pairlist(alist(file = , expr = , ... = )), bquote(

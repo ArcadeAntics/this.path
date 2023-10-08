@@ -140,12 +140,12 @@ SEXP do_PrintValueEnv do_formals
 }
 
 
-SEXP do_printThisPathDocumentContext do_formals
+SEXP do_print_ThisPathDocumentContext do_formals
 {
-    do_start_no_call_op("printThisPathDocumentContext", 2);
+    do_start_no_call_op("print.ThisPathDocumentContext", 2);
 
 
-    /* printThisPathDocumentContext (for the most part) does not throw errors
+    /* print_ThisPathDocumentContext (for the most part) does not throw errors
      * for an invalid object. it will report that something is invalid in the
      * printed message, but will still make a sensible message regardless */
 

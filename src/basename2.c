@@ -2,9 +2,6 @@
 #include "thispathdefn.h"
 
 
-#define debug 0
-
-
 
 
 
@@ -27,66 +24,37 @@ SEXP basename2(int windows, SEXP args)
     SEXP value = allocVector(STRSXP, n = LENGTH(path));
     PROTECT(value); nprotect++;
     for (i = 0; i < n; i++) {
-        if (debug) {
-            Rprintf("string %d: ", i + 1);
-        }
         if (STRING_ELT(path, i) == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
-            if (debug) {
-                Rprintf("NA\n");
-                Rprintf("assigning: NA\n\n");
-            }
             continue;
         }
         ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
         nchar = strlen(ptr);
-        if (debug) {
-            Rprintf("\"%s\"\n", ptr);
-            Rprintf("%d bytes long\n", nchar);
-        }
         if (nchar == 0) {
-            /* don't bother assigning an empty string, should already be empty */
-            /* SET_STRING_ELT(value, i, mkChar("")); */
-            if (debug) {
-                Rprintf("assigning: \"\"\n\n");
-            }
+            /* don't bother assigning an empty string, should already be empty
+            SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
         drivewidth = get_drive_width(windows, ptr, nchar);
-        if (debug) {
-            Rprintf("drivespec is %d bytes long\n", drivewidth);
-        }
-        nchar -= drivewidth;  /* number of characters EXCLUDING the drive */
+        nchar -= drivewidth;  /* number of characters in the pathspec */
         if (nchar == 0) {
-            /* don't bother assigning an empty string, should already be empty */
-            /* SET_STRING_ELT(value, i, mkChar("")); */
-            if (debug) {
-                Rprintf("pathspec is 0 bytes long\n");
-                Rprintf("assigning: \"\"\n\n");
-            }
+            /* don't bother assigning an empty string, should already be empty
+            SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
         ptr += drivewidth;
 
 
-        /* allocate a buffer to hold the basename */
-        /* I made this mistake before, don't forget to add 1 for the trailing '\0' */
+        /* allocate a buffer to hold the basename
+         * add 1 for the trailing '\0'
+         */
         char _buf[nchar + 1];
         buf = _buf;
         strcpy(buf, ptr);
-        if (debug) {
-            Rprintf("made a buffer %d bytes long\n", nchar);
-            Rprintf("copied to buffer: \"%s\"\n", ptr);
-            if (nchar != strlen(ptr)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr));
-        }
 
 
         /* point to the last character of 'buf' */
         last_char = buf + (nchar - 1);
-        if (debug) {
-            Rprintf("made variable last_char pointing to last byte\n");
-            Rprintf("last_char = \"%s\"\n", last_char);
-        }
 
 
         /* remove trailing path separators */
@@ -99,20 +67,14 @@ SEXP basename2(int windows, SEXP args)
                 *(last_char--) = '\0';
             }
         }
-        if (debug) {
-            Rprintf("after removing trailing slashes: \"%s\"\n", buf);
-        }
 
 
-        /* if the pathspec was comprised solely of path separators */
-        /* then the basename is non-existent, return empty string */
+        /* if the pathspec was comprised solely of path separators
+         * then the basename is non-existent, return empty string
+         */
         if (last_char < buf) {
-            /* don't bother assigning an empty string, should already be empty */
-            /* SET_STRING_ELT(value, i, mkChar("")); */
-            if (debug) {
-                Rprintf("pathspec is /\n");
-                Rprintf("assigning: \"\"\n\n");
-            }
+            /* don't bother assigning an empty string, should already be empty
+            SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
 
@@ -144,14 +106,6 @@ SEXP basename2(int windows, SEXP args)
 
 
         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-        if (debug) {
-            Rprintf("assigning: \"%s\"\n\n", buf);
-        }
-    }
-
-
-    if (debug) {
-        Rprintf("\n");
     }
 
 
@@ -160,18 +114,16 @@ SEXP basename2(int windows, SEXP args)
 }
 
 
-SEXP do_windowsbasename2 do_formals
+SEXP do_windows_basename2 do_formals
 {
-    do_start_no_call_op_rho("windowsbasename2", 1);
-    if (debug) Rprintf("in do_windowsbasename2\n\n");
+    do_start_no_call_op_rho("windows.basename2", 1);
     return basename2(TRUE, args);
 }
 
 
-SEXP do_unixbasename2 do_formals
+SEXP do_unix_basename2 do_formals
 {
-    do_start_no_call_op_rho("unixbasename2", 1);
-    if (debug) Rprintf("in do_unixbasename2\n\n");
+    do_start_no_call_op_rho("unix.basename2", 1);
     return basename2(FALSE, args);
 }
 
@@ -179,7 +131,6 @@ SEXP do_unixbasename2 do_formals
 SEXP do_basename2 do_formals
 {
     do_start_no_call_op_rho("basename2", 1);
-    if (debug) Rprintf("in do_basename2\n\n");
 #ifdef _WIN32
     return basename2(TRUE, args);
 #else
@@ -205,44 +156,6 @@ SEXP do_basename2 do_formals
  */
 
 
-int IntegerFromLogical(int x)
-{
-    return (x == NA_LOGICAL) ? NA_INTEGER : x;
-}
-
-
-int IntegerFromReal(double x)
-{
-    if (ISNAN(x))
-        return NA_INTEGER;
-    else if (x >= INT_MAX)
-        return INT_MAX;
-    else if (x <= INT_MIN) {
-        warning(_("NAs introduced by coercion to integer range"));
-        return NA_INTEGER;
-    }
-    else return (int) x;
-}
-
-
-int IntegerFromComplex(Rcomplex x)
-{
-    if (ISNAN(x.r) || ISNAN(x.i))
-        return NA_INTEGER;
-    else if (x.r >= INT_MAX)
-        return INT_MAX;
-    else if (x.r <= INT_MIN) {
-        warning(_("NAs introduced by coercion to integer range"));
-        return NA_INTEGER;
-    }
-    else {
-        if (x.i != 0)
-            warning(_("imaginary parts discarded in coercion"));
-        return (int) x.r;
-    }
-}
-
-
 static R_INLINE
 SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 {
@@ -262,31 +175,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         path = CAR(args);
         if (TYPEOF(path) != STRSXP)
             error(_("a character vector argument expected"));
-        // times = asInteger(CADR(args));
-        /* more complex version of 'asInteger()' which will coerce all reals
-         * larger than INT_MAX to INT_MAX */
-        {
-            SEXP tmp = CADR(args);
-            if (isVectorAtomic(tmp) && XLENGTH(tmp) >= 1) {
-                switch (TYPEOF(tmp)) {
-                case LGLSXP:
-                    times = IntegerFromLogical(LOGICAL(tmp)[0]);
-                    break;
-                case INTSXP:
-                    times = INTEGER(tmp)[0];
-                    break;
-                case REALSXP:
-                    times = IntegerFromReal(REAL(tmp)[0]);
-                    break;
-                case CPLXSXP:
-                    times = IntegerFromComplex(COMPLEX(tmp)[0]);
-                    break;
-                default:
-                    times = IntegerFromReal(asReal(tmp));
-                }
-            }
-            else times = IntegerFromReal(asReal(tmp));
-        }
+        times = asInteger(CADR(args));
         if (times == NA_INTEGER || times < 0)
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");
         break;
@@ -304,38 +193,21 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
     SEXP value = allocVector(STRSXP, n = LENGTH(path));
     PROTECT(value); nprotect++;
     for (i = 0; i < n; i++) {
-        if (debug) {
-            Rprintf("string %d: ", i + 1);
-        }
         if (STRING_ELT(path, i) == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
-            if (debug) {
-                Rprintf("NA\n");
-                Rprintf("assigning: NA\n\n");
-            }
             continue;
         }
 
 
         ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
         nchar = strlen(ptr);
-        if (debug) {
-            Rprintf("\"%s\"\n", ptr);
-            Rprintf("%d bytes long\n", nchar);
-        }
         if (nchar == 0) {
-            if (debug) {
-                Rprintf("assigning: \"\"\n\n");
-            }
             continue;
         }
 
 
         drivewidth = get_drive_width(windows, ptr, nchar);
-        if (debug) {
-            Rprintf("drivespec is %d bytes long\n", drivewidth);
-        }
-        if (drivewidth == nchar) {
+        if (drivewidth == nchar) {  /* pathspec is 0 bytes long */
             if ((windows) && drivewidth == 2) {
                 char _buf[4];
                 _buf[0] = ptr[0];
@@ -343,17 +215,9 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
                 _buf[2] = '.';
                 _buf[3] = '\0';
                 SET_STRING_ELT(value, i, mkCharCE(_buf, CE_UTF8));
-                if (debug) {
-                    Rprintf("pathspec is 0 bytes long\n");
-                    Rprintf("assigning: \"%s\"\n\n", _buf);
-                }
             }
             else {
                 SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
-                if (debug) {
-                    Rprintf("pathspec is 0 bytes long\n");
-                    Rprintf("assigning: \"%s\"\n\n", ptr);
-                }
             }
             continue;
         }
@@ -362,11 +226,6 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         char _buf[nchar + 1];  /* allocate a buffer to hold the dirname */
         buf = _buf;
         strcpy(buf, ptr);
-        if (debug) {
-            Rprintf("made a buffer %d bytes long\n", nchar);
-            Rprintf("copied to buffer: \"%s\"\n", ptr);
-            if (nchar != strlen(ptr)) error("allocated a buffer %d bytes long, but copied %d bytes instead", nchar, strlen(ptr));
-        }
 
 
         pathspec = buf + drivewidth;  /* point to the start of the pathspec */
@@ -374,12 +233,6 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
         /* point to the last character of buf */
         last_char = buf + (nchar - 1);
-        if (debug) {
-            Rprintf("made variable last_char pointing to last byte\n");
-            Rprintf("last_char = \"%s\"\n", last_char);
-            Rprintf("made variable pathspec pointing to start of pathspec\n");
-            Rprintf("pathspec                       : \"%s\"\n", pathspec);
-        }
 
 
         skip = 0;
@@ -415,15 +268,8 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
             /* then the dirname is just the whole path                 */
             if (last_char < pathspec) {
                 SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-                if (debug) {
-                    Rprintf("pathspec is /\n");
-                    Rprintf("assigning: \"%s\"\n\n", buf);
-                }
                 skip = 1;
                 break;
-            }
-            if (debug) {
-                Rprintf("after removing trailing slashes: \"%s\"\n", pathspec);
             }
 
 
@@ -447,23 +293,16 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
                     else {
 
 
-                        /* for a drive with a pathspec without a path separator */
-                        /* e.g. d:test                                          */
+                        /* for a drive with a pathspec without a path separator
+                         * e.g. d:file
+                         */
                         if (drivewidth) {
                             *pathspec = '.';
                             *(pathspec + 1) = '\0';
                             SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-                            if (debug) {
-                                Rprintf("path is of the form d:file\n");
-                                Rprintf("assigning: \"%s\"\n\n", buf);
-                            }
                         }
                         else {
                             SET_STRING_ELT(value, i, mkChar("."));
-                            if (debug) {
-                                Rprintf("pathspec has no path separators\n");
-                                Rprintf("assigning: \".\"\n\n");
-                            }
                         }
                         skip = 1;
                         break;
@@ -476,12 +315,8 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
                 if (slash)  /* slash was found */
                     last_char = slash;
-                else {
+                else {  /* pathspec has no path separators */
                     SET_STRING_ELT(value, i, mkChar("."));
-                    if (debug) {
-                        Rprintf("pathspec has no path separators\n");
-                        Rprintf("assigning: \".\"\n\n");
-                    }
                     skip = 1;
                     break;
                 }
@@ -490,9 +325,6 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
             /* remove the basename */
             *(last_char + 1) = '\0';
-            if (debug) {
-                Rprintf("after removing basename        : \"%s\"\n", pathspec);
-            }
 
 
             /* last_char should already point to the last character of buf */
@@ -519,22 +351,9 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
                 }
             }
         }
-        if (debug) {
-            if (last_char >= pathspec) {
-                Rprintf("after removing trailing slashes: \"%s\"\n", pathspec);
-            }
-        }
 
 
         SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
-        if (debug) {
-            Rprintf("assigning: \"%s\"\n\n", buf);
-        }
-    }
-
-
-    if (debug) {
-        Rprintf("\n");
     }
 
 
@@ -543,26 +362,23 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 }
 
 
-SEXP do_windowsdirname2 do_formals
+SEXP do_windows_dirname2 do_formals
 {
-    do_start_no_op_rho("windowsdirname2", -1);
-    if (debug) Rprintf("in do_windowsdirname2\n\n");
-    return dirname2(call, TRUE, ".C_windowsdirname2", args);
+    do_start_no_op_rho("windows.dirname2", -1);
+    return dirname2(call, TRUE, ".C_windows.dirname2", args);
 }
 
 
-SEXP do_unixdirname2 do_formals
+SEXP do_unix_dirname2 do_formals
 {
-    do_start_no_op_rho("unixdirname2", -1);
-    if (debug) Rprintf("in do_unixdirname2\n\n");
-    return dirname2(call, FALSE, ".C_unixdirname2", args);
+    do_start_no_op_rho("unix.dirname2", -1);
+    return dirname2(call, FALSE, ".C_unix.dirname2", args);
 }
 
 
 SEXP do_dirname2 do_formals
 {
     do_start_no_op_rho("dirname2", -1);
-    if (debug) Rprintf("in do_dirname2\n\n");
 #ifdef _WIN32
     return dirname2(call, TRUE, ".C_dirname2", args);
 #else

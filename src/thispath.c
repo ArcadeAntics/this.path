@@ -70,9 +70,9 @@ SEXP do_thisPathInAQUAError do_formals
 }
 
 
-SEXP do_isclipboard do_formals
+SEXP do_is_clipboard do_formals
 {
-    do_start_no_call_op_rho("isclipboard", 1);
+    do_start_no_call_op_rho("is.clipboard", 1);
 
 
     SEXP file = CAR(args);
@@ -89,9 +89,9 @@ SEXP do_isclipboard do_formals
 }
 
 
-SEXP do_inittoolsrstudio do_formals
+SEXP do_init_tools_rstudio do_formals
 {
-    do_start_no_op_rho("inittoolsrstudio", -1);
+    do_start_no_op_rho("init.tools.rstudio", -1);
 
 
     Rboolean skipCheck = FALSE;
@@ -104,7 +104,7 @@ SEXP do_inittoolsrstudio do_formals
             errorcall(call, _("invalid '%s' argument"), "skipCheck");
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_inittoolsrstudio", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_init.tools.rstudio", "0 or 1"));
     }
     return ScalarLogical(init_tools_rstudio(skipCheck));
 }
@@ -237,9 +237,9 @@ void check_arguments1(Rboolean verbose)
 }
 
 
-SEXP do_syspathjupyter do_formals
+SEXP do_sys_path_jupyter do_formals
 {
-    do_start_no_op_rho("syspathjupyter", -1);
+    do_start_no_op_rho("sys.path.jupyter", -1);
 
 
     Rboolean verbose  = FALSE,
@@ -258,7 +258,7 @@ SEXP do_syspathjupyter do_formals
         contents = asLogical(CAR(args)); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_syspathjupyter", "0 or 4"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_sys.path.jupyter", "0 or 4"));
         return R_NilValue;
     }
 
@@ -348,9 +348,9 @@ Rboolean validJupyterRNotebook(SEXP path)
 }
 
 
-SEXP do_setsyspathjupyter do_formals
+SEXP do_set_sys_path_jupyter do_formals
 {
-    do_start_no_op_rho("setsyspathjupyter", -1);
+    do_start_no_op_rho("set.sys.path.jupyter", -1);
 
 
     SEXP path;
@@ -366,7 +366,7 @@ SEXP do_setsyspathjupyter do_formals
             errorcall(call, _("invalid '%s' argument"), "skipCheck");
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_setsyspathjupyter", "1 or 2"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_set.sys.path.jupyter", "1 or 2"));
         return R_NilValue;
     }
 
@@ -421,9 +421,9 @@ SEXP do_setsyspathjupyter do_formals
 }
 
 
-SEXP do_syspathrgui do_formals
+SEXP do_sys_path_rgui do_formals
 {
-    do_start_no_op("syspathrgui", 7);
+    do_start_no_op("sys.path.rgui", 7);
 
 
     Rboolean verbose, original, for_msg, contents;
@@ -563,6 +563,8 @@ SEXP env_or_NULL(SEXP x)
 void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
 {
     if (documentcontext != R_EmptyEnv) {
+        if (R_existsVarInFrame(documentcontext, linesSymbol))
+            R_removeVarFromFrame(linesSymbol, documentcontext);
         if (inherits(srcfile, "srcfilecopy") ||
             (
                 inherits(srcfile, "srcfilealias") &&
@@ -573,8 +575,7 @@ void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
         {
             SEXP tmp = findVarInFrame(srcfile, fixedNewlinesSymbol);
             if (tmp == R_UnboundValue || tmp == R_NilValue) {
-                INCREMENT_NAMED_defineVar(srcfileSymbol, srcfile, documentcontext);
-                SEXP expr = LCONS(_fixNewlinesSymbol, CONS(srcfileSymbol, R_NilValue));
+                SEXP expr = LCONS(_fixNewlinesSymbol, CONS(srcfile, R_NilValue));
                 PROTECT(expr);
                 defineVar(linesSymbol, makePROMISE(expr, documentcontext), documentcontext);
                 UNPROTECT(1);
@@ -593,11 +594,25 @@ void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
 }
 
 
-SEXP _syspath(Rboolean verbose         , Rboolean original        ,
-              Rboolean for_msg         , Rboolean contents        ,
-              Rboolean local           , Rboolean *gave_contents  ,
-              int N                    , Rboolean get_frame_number,
-              SEXP rho                 )
+static R_INLINE
+SEXP error_no_associated_path(SEXP rho)
+{
+    const char *msg = "no associated path";
+    SEXP call = getCurrentCall(rho);
+    PROTECT(call);
+    SEXP cond = thisPathNotExistsError(msg, call);
+    PROTECT(cond);
+    stop(cond);
+    UNPROTECT(2);
+    return R_NilValue;
+}
+
+
+SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
+               Rboolean for_msg         , Rboolean contents        ,
+               Rboolean local           , Rboolean *gave_contents  ,
+               int N                    , Rboolean get_frame_number,
+               SEXP rho                 )
 {
     *gave_contents = FALSE;
 
@@ -1867,14 +1882,7 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 
     if (local) {
         if (for_msg) return ScalarString(NA_STRING);
-        const char *msg = "no associated path";
-        SEXP call = getCurrentCall(rho);
-        PROTECT(call);
-        SEXP cond = thisPathNotExistsError(msg, call);
-        PROTECT(cond);
-        stop(cond);
-        UNPROTECT(2);
-        return R_NilValue;
+        return error_no_associated_path(rho);
     }
 
 
@@ -1885,15 +1893,15 @@ SEXP _syspath(Rboolean verbose         , Rboolean original        ,
 }
 
 
-SEXP syspath8(Rboolean verbose         , Rboolean original        ,
-              Rboolean for_msg         , Rboolean contents        ,
-              Rboolean local           , int N                    ,
-              Rboolean get_frame_number, SEXP rho                 )
+SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
+               Rboolean for_msg         , Rboolean contents        ,
+               Rboolean local           , int N                    ,
+               Rboolean get_frame_number, SEXP rho                 )
 {
     Rboolean gave_contents;
-    SEXP value = _syspath(verbose         , original        , for_msg         ,
-                          contents        , local           , &gave_contents  ,
-                          N               , get_frame_number, rho             );
+    SEXP value = _sys_path(verbose         , original        , for_msg         ,
+                           contents        , local           , &gave_contents  ,
+                           N               , get_frame_number, rho             );
     if (!contents)
         return value;
     if (gave_contents)
@@ -1908,7 +1916,7 @@ SEXP syspath8(Rboolean verbose         , Rboolean original        ,
                 /* do not need to protect */
                 value = VECTOR_ELT(value, 0);
                 if (TYPEOF(value) != STRSXP)
-                    error("internal error; invalid '%s' value", "_syspath()");
+                    error("internal error; invalid '%s' value", "_sys_path()");
                 R_xlen_t n = XLENGTH(value) - 1;
                 if (n) {
                     /* if the last line is a blank string, remove it */
@@ -1931,7 +1939,7 @@ SEXP syspath8(Rboolean verbose         , Rboolean original        ,
         return value;
     }
     if (!IS_SCALAR(value, STRSXP))
-        error("internal error; invalid '%s' value", "_syspath()");
+        error("internal error; invalid '%s' value", "_sys_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
     SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
@@ -1942,45 +1950,36 @@ SEXP syspath8(Rboolean verbose         , Rboolean original        ,
 }
 
 
-SEXP syspath6(Rboolean verbose , Rboolean original, Rboolean for_msg ,
-              Rboolean contents, Rboolean local   , SEXP rho         )
+SEXP sys_path6(Rboolean verbose , Rboolean original, Rboolean for_msg ,
+               Rboolean contents, Rboolean local   , SEXP rho         )
 {
-    return syspath8(verbose, original, for_msg, contents, local,
-                    /* N */ NA_INTEGER, /* get_frame_number */ FALSE,  rho);
+    return sys_path8(verbose, original, for_msg, contents, local,
+                     /* N */ NA_INTEGER, /* get_frame_number */ FALSE,  rho);
 }
 
 
-SEXP syspath3(Rboolean verbose, Rboolean local, SEXP rho)
+SEXP sys_path3(Rboolean verbose, Rboolean local, SEXP rho)
 {
-    return syspath6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
-                    /* contents */ FALSE, local, rho);
+    return sys_path6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                     /* contents */ FALSE, local, rho);
 }
 
 
-SEXP syspath2(Rboolean local, SEXP rho)
+SEXP sys_path2(Rboolean local, SEXP rho)
 {
-    return syspath3(/* verbose */ FALSE, local, rho);
+    return sys_path3(/* verbose */ FALSE, local, rho);
 }
 
 
-SEXP syspath1(SEXP rho)
+SEXP sys_path1(SEXP rho)
 {
-    return syspath2(/* local */ FALSE, rho);
+    return sys_path2(/* local */ FALSE, rho);
 }
 
 
-SEXP getframenumber(SEXP rho)
+SEXP do_sys_path do_formals
 {
-    return syspath8(/* verbose */ FALSE, /* original */ FALSE,
-                    /* for_msg */ FALSE, /* contents */ FALSE,
-                    /* local */ FALSE, /* N */ NA_INTEGER,
-                    /* get_frame_number */ TRUE, rho);
-}
-
-
-SEXP do_syspath do_formals
-{
-    do_start_no_op("syspath", -1);
+    do_start_no_op("sys.path", -1);
 
 
     Rboolean verbose  = FALSE,
@@ -2008,20 +2007,23 @@ SEXP do_syspath do_formals
         local    = asLogical(CAR(args)); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_syspath", "0, 1, 2, or 5"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_sys.path", "0, 1, 2, or 5"));
         return R_NilValue;
     }
 
 
     check_arguments5(verbose, original, for_msg, contents, local);
-    return syspath6(verbose, original, for_msg, contents, local, rho);
+    return sys_path6(verbose, original, for_msg, contents, local, rho);
 }
 
 
 SEXP do_getframenumber do_formals
 {
     do_start_no_call_op("getframenumber", 0);
-    return getframenumber(rho);
+    return sys_path8(/* verbose */ FALSE, /* original */ FALSE,
+                     /* for_msg */ FALSE, /* contents */ FALSE,
+                     /* local */ FALSE, /* N */ NA_INTEGER,
+                     /* get_frame_number */ TRUE, rho);
 }
 
 
@@ -2032,9 +2034,9 @@ SEXP invalid_get_frame_number_value(void)
 }
 
 
-SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              Rboolean contents, SEXP target, SEXP envir,
-              Rboolean *gave_contents, Rboolean unbound_ok, SEXP rho)
+SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
+               Rboolean contents, SEXP target, SEXP envir,
+               Rboolean *gave_contents, Rboolean unbound_ok, SEXP rho)
 {
     *gave_contents = FALSE;
     Rboolean get_frame_number = FALSE;
@@ -2174,27 +2176,18 @@ SEXP _envpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         return R_UnboundValue;
     else if (for_msg)
         return ScalarString(NA_STRING);
-    else {
-        const char *msg = "no associated path";
-        SEXP call = getCurrentCall(rho);
-        PROTECT(call);
-        SEXP cond = thisPathNotExistsError(msg, call);
-        PROTECT(cond);
-        stop(cond);
-        UNPROTECT(2);
-        return R_NilValue;
-    }
+    else return error_no_associated_path(rho);
 }
 
 
-SEXP envpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
-              SEXP rho)
+SEXP env_path8(Rboolean verbose, Rboolean original, Rboolean for_msg,
+               Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
+               SEXP rho)
 {
     Rboolean gave_contents;
-    SEXP value = _envpath(verbose       , original      , for_msg       ,
-                          contents      , target        , envir         ,
-                          &gave_contents, unbound_ok    , rho           );
+    SEXP value = _env_path(verbose       , original      , for_msg       ,
+                           contents      , target        , envir         ,
+                           &gave_contents, unbound_ok    , rho           );
     if (unbound_ok && value == R_UnboundValue)
         return value;
     if (!contents)
@@ -2202,7 +2195,7 @@ SEXP envpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
     if (gave_contents)
         return value;
     if (!IS_SCALAR(value, STRSXP))
-        error("internal error; invalid '%s' value", "_envpath()");
+        error("internal error; invalid '%s' value", "_env_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
     SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
@@ -2213,36 +2206,36 @@ SEXP envpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
-SEXP envpath7(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              Rboolean contents, SEXP target, SEXP envir, SEXP rho)
+SEXP env_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
+               Rboolean contents, SEXP target, SEXP envir, SEXP rho)
 {
-    return envpath8(verbose, original, for_msg, contents, target, envir,
-                    /* unbound_ok */ FALSE, rho);
+    return env_path8(verbose, original, for_msg, contents, target, envir,
+                     /* unbound_ok */ FALSE, rho);
 }
 
 
-SEXP envpath4(Rboolean verbose, SEXP target, SEXP envir, SEXP rho)
+SEXP env_path4(Rboolean verbose, SEXP target, SEXP envir, SEXP rho)
 {
-    return envpath7(verbose, /* original */ FALSE, /* for_msg */ FALSE,
-                    /* contents */ FALSE, target, envir, rho);
+    return env_path7(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                     /* contents */ FALSE, target, envir, rho);
 }
 
 
-SEXP envpath3(SEXP target, SEXP envir, SEXP rho)
+SEXP env_path3(SEXP target, SEXP envir, SEXP rho)
 {
-    return envpath4(/* verbose */ FALSE, target, envir, rho);
+    return env_path4(/* verbose */ FALSE, target, envir, rho);
 }
 
 
-SEXP envpath1(SEXP rho)
+SEXP env_path1(SEXP rho)
 {
-    return envpath3(/* target */ NULL, /* envir */ NULL, rho);
+    return env_path3(/* target */ NULL, /* envir */ NULL, rho);
 }
 
 
-SEXP do_envpath do_formals
+SEXP do_env_path do_formals
 {
-    do_start_no_op("envpath", -1);
+    do_start_no_op("env.path", -1);
 
 
     Rboolean verbose  = FALSE,
@@ -2274,17 +2267,17 @@ SEXP do_envpath do_formals
         target   = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_envpath", "0, 2, 3, or 6"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_env.path", "0, 2, 3, or 6"));
         return R_NilValue;
     }
 
 
     check_arguments4(verbose, original, for_msg, contents);
-    return envpath7(verbose, original, for_msg, contents, target, envir, rho);
+    return env_path7(verbose, original, for_msg, contents, target, envir, rho);
 }
 
 
-SEXP GetSrcref(int k, SEXP rho)
+SEXP sys_srcref(int k, SEXP rho)
 {
     SEXP which = CADR(expr_sys_call_which);
     int *iwhich = INTEGER(which);
@@ -2331,16 +2324,17 @@ SEXP GetSrcref(int k, SEXP rho)
 }
 
 
-SEXP do_GetSrcref do_formals
+SEXP do_sys_srcref do_formals
 {
-    do_start_no_call_op("GetSrcref", 1);
-    return GetSrcref(asInteger(CAR(args)), rho);
+    do_start_no_call_op("sys.srcref", 1);
+    return sys_srcref(asInteger(CAR(args)), rho);
 }
 
 
-SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              Rboolean contents, SEXP srcfile, Rboolean *gave_contents,
-              Rboolean get_lineno, Rboolean unbound_ok, SEXP rho)
+SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
+               Rboolean contents, SEXP srcfile, Rboolean *gave_contents,
+               Rboolean unbound_ok, Rboolean get_lineno, Rboolean get_context,
+               SEXP rho)
 {
     *gave_contents = FALSE;
     Rboolean get_frame_number = FALSE;
@@ -2356,7 +2350,7 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
     if (get_lineno) {
         if (x == NULL || IS_SCALAR(x, INTSXP)) {
-            PROTECT(srcref = GetSrcref(x ? INTEGER(x)[0] : 0, rho));
+            PROTECT(srcref = sys_srcref(x ? INTEGER(x)[0] : 0, rho));
             SEXP returnthis = ScalarInteger(
                 (srcref != R_NilValue) ? (INTEGER(srcref)[0]) : (NA_INTEGER)
             );
@@ -2429,7 +2423,7 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         } while (0)
 
 
-        PROTECT(srcref = GetSrcref(x ? INTEGER(x)[0] : 0, rho)); nprotect++;
+        PROTECT(srcref = sys_srcref(x ? INTEGER(x)[0] : 0, rho)); nprotect++;
         if (srcref != R_NilValue)
             get_srcfile_from_srcref;
     }
@@ -2478,24 +2472,24 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
     SEXP returnvalue;
 
 
-    SEXP documentcontext, ofile, file, errcnd, lines;
+    SEXP ofile, file, errcnd, lines;
 
 
 #undef source_char
 #define source_char "path of srcfile"
     if (srcfile) {
-        documentcontext = findVarInFrame(srcfile, documentcontextSymbol);
+        SEXP documentcontext = findVarInFrame(srcfile, documentcontextSymbol);
         if (documentcontext != R_UnboundValue) {
             check_documentcontext_env;
         }
         else {
-            int is_srcfilecopy = inherits(srcfile, "srcfilecopy");
-            if (is_srcfilecopy &&
+            if (inherits(srcfile, "srcfilecopy") &&
                 asLogical(findVarInFrame(srcfile, isFileSymbol)) != TRUE)
             {
                 documentcontext = R_EmptyEnv;
                 define_srcfile_documentcontext;
-            } else {
+            }
+            else {
                 ofile = findVarInFrame(srcfile, filenameSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
@@ -2521,6 +2515,12 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
                 document_context_assign_lines(documentcontext, srcfile);
             }
         }
+        if (get_context) {
+            if (documentcontext == R_EmptyEnv)
+                return error_no_associated_path(rho);
+            UNPROTECT(nprotect);
+            return documentcontext;
+        }
         returnfile;
     }
 
@@ -2532,38 +2532,37 @@ SEXP _srcpath(Rboolean verbose, Rboolean original, Rboolean for_msg,
         return R_UnboundValue;
     else if (for_msg)
         return ScalarString(NA_STRING);
-    else {
-        if (for_msg) return ScalarString(NA_STRING);
-        const char *msg = "no associated path";
-        SEXP call = getCurrentCall(rho);
-        PROTECT(call);
-        SEXP cond = thisPathNotExistsError(msg, call);
-        PROTECT(cond);
-        stop(cond);
-        UNPROTECT(2);
-        return R_NilValue;
-    }
+    else return error_no_associated_path(rho);
 }
 
 
-SEXP srcpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              Rboolean contents, SEXP srcfile, Rboolean lineno,
-              Rboolean unbound_ok, SEXP rho)
+SEXP src_context(SEXP srcfile, SEXP rho)
 {
     Rboolean gave_contents;
-    SEXP value = _srcpath(verbose       , original      , for_msg       ,
-                          contents      , srcfile       , &gave_contents,
-                          lineno        , unbound_ok    , rho           );
+    return _src_path(/* verbose */ FALSE, /* original */ FALSE,
+                     /* for_msg */ FALSE, /* contents */ FALSE,
+                     srcfile, &gave_contents,
+                     /* unbound_ok */ FALSE, /* get_lineno */ FALSE,
+                     /* get_context */ TRUE, rho);
+}
+
+
+SEXP src_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
+               Rboolean contents, SEXP srcfile, Rboolean unbound_ok, SEXP rho)
+{
+    Rboolean gave_contents, get_lineno = FALSE, get_context = FALSE;
+    SEXP value = _src_path(verbose       , original      , for_msg       ,
+                           contents      , srcfile       , &gave_contents,
+                           unbound_ok    , get_lineno    , get_context   ,
+                           rho           );
     if (unbound_ok && value == R_UnboundValue)
-        return value;
-    if (lineno)
         return value;
     if (!contents)
         return value;
     if (gave_contents)
         return value;
     if (!IS_SCALAR(value, STRSXP))
-        error("internal error; invalid '%s' value", "_srcpath()");
+        error("internal error; invalid '%s' value", "_src_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
     SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
@@ -2574,36 +2573,36 @@ SEXP srcpath8(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
-SEXP srcpath6(Rboolean verbose, Rboolean original, Rboolean for_msg,
-              Rboolean contents, SEXP srcfile, SEXP rho)
+SEXP src_path6(Rboolean verbose, Rboolean original, Rboolean for_msg,
+               Rboolean contents, SEXP srcfile, SEXP rho)
 {
-    return srcpath8(verbose, original, for_msg, contents, srcfile,
-                    /* lineno */ FALSE, /* unbound_ok */ FALSE, rho);
+    return src_path7(verbose, original, for_msg, contents, srcfile,
+                     /* unbound_ok */ FALSE, rho);
 }
 
 
-SEXP srcpath3(Rboolean verbose, SEXP srcfile, SEXP rho)
+SEXP src_path3(Rboolean verbose, SEXP srcfile, SEXP rho)
 {
-    return srcpath6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
-                    /* contents */ FALSE, srcfile, rho);
+    return src_path6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
+                     /* contents */ FALSE, srcfile, rho);
 }
 
 
-SEXP srcpath2(SEXP srcfile, SEXP rho)
+SEXP src_path2(SEXP srcfile, SEXP rho)
 {
-    return srcpath3(/* verbose */ FALSE, srcfile, rho);
+    return src_path3(/* verbose */ FALSE, srcfile, rho);
 }
 
 
-SEXP srcpath1(SEXP rho)
+SEXP src_path1(SEXP rho)
 {
-    return srcpath2(/* srcfile */ NULL, rho);
+    return src_path2(/* srcfile */ NULL, rho);
 }
 
 
-SEXP do_srcpath do_formals
+SEXP do_src_path do_formals
 {
-    do_start_no_op("srcpath", -1);
+    do_start_no_op("src.path", -1);
 
 
     Rboolean verbose  = FALSE,
@@ -2631,19 +2630,19 @@ SEXP do_srcpath do_formals
         srcfile  = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_srcpath", "0, 1, 2, or 5"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_src.path", "0, 1, 2, or 5"));
         return R_NilValue;
     }
 
 
     check_arguments4(verbose, original, for_msg, contents);
-    return srcpath6(verbose, original, for_msg, contents, srcfile, rho);
+    return src_path6(verbose, original, for_msg, contents, srcfile, rho);
 }
 
 
-SEXP do_srclineno do_formals
+SEXP do_src_LINENO do_formals
 {
-    do_start_no_op("srclineno", -1);
+    do_start_no_op("src.LINENO", -1);
 
 
     SEXP srcfile = NULL;
@@ -2656,20 +2655,23 @@ SEXP do_srclineno do_formals
         srcfile = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_srclineno", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_src.LINENO", "0 or 1"));
         return R_NilValue;
     }
 
 
-    return srcpath8(/* verbose */ FALSE, /* original */ FALSE,
-                    /* for_msg */ FALSE, /* contents */ FALSE, srcfile,
-                    /* lineno */ TRUE, /* unbound_ok */ FALSE, rho);
+    Rboolean gave_contents;
+    return _src_path(/* verbose */ FALSE, /* original */ FALSE,
+                     /* for_msg */ FALSE, /* contents */ FALSE,
+                     srcfile, &gave_contents,
+                     /* unbound_ok */ FALSE, /* get_lineno */ TRUE,
+                     /* get_context */ FALSE, rho);
 }
 
 
-SEXP do_thispath do_formals
+SEXP do_this_path do_formals
 {
-    do_start_no_op("thispath", -1);
+    do_start_no_op("this.path", -1);
 
 
     Rboolean verbose  = FALSE,
@@ -2709,7 +2711,7 @@ SEXP do_thispath do_formals
         srcfile  = CAR(args); args = CDR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_thispath", "0, 4, 5, or 8"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_this.path", "0, 4, 5, or 8"));
         return R_NilValue;
     }
 
@@ -2717,16 +2719,16 @@ SEXP do_thispath do_formals
     check_arguments5(verbose, original, for_msg, contents, local);
 
 
-    if (local) return syspath6(verbose, original, for_msg, contents, local, rho);
+    if (local) return sys_path6(verbose, original, for_msg, contents, local, rho);
 
 
-    SEXP value = srcpath8(verbose, original, for_msg, contents, srcfile,
-                          /* lineno */ FALSE, /* unbound_ok */ TRUE, rho);
+    SEXP value = src_path7(verbose, original, for_msg, contents, srcfile,
+                           /* unbound_ok */ TRUE, rho);
     if (value == R_UnboundValue) {
-        value = envpath8(verbose, original, for_msg, contents, target, envir,
-                         /* unbound_ok */ TRUE, rho);
+        value = env_path8(verbose, original, for_msg, contents, target, envir,
+                          /* unbound_ok */ TRUE, rho);
         if (value == R_UnboundValue) {
-            value = syspath6(verbose, original, for_msg, contents, local, rho);
+            value = sys_path6(verbose, original, for_msg, contents, local, rho);
         }
     }
     return value;

@@ -5,8 +5,8 @@ path.functions <- function (file, local = FALSE, n = 0L, envir = parent.frame(n 
 {
     if (missing(file)) {
         n <- .External2(.C_asIntegerGE0, n)
-        ofile <- .External2(.C_thispath, FALSE, TRUE, FALSE, FALSE, local, envir, matchThisEnv, srcfile)
-        file <- .External2(.C_thispath, local, envir, matchThisEnv, srcfile)
+        ofile <- .External2(.C_this.path, FALSE, TRUE, FALSE, FALSE, local, envir, matchThisEnv, srcfile)
+        file <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
     }
     else {
         ofile <- file

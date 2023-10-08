@@ -11,7 +11,7 @@
 
 
 print.ThisPathDocumentContext <- function (x, ..., quote = TRUE)
-.External2(.C_printThisPathDocumentContext, x, quote)
+.External2(.C_print.ThisPathDocumentContext, x, quote)
 
 
 if (getRversion() >= "3.5.0") {

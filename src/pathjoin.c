@@ -10,7 +10,7 @@
 
 
 static R_INLINE
-void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
+void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 {
     int i, j;
 
@@ -285,7 +285,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
         /* if all the strings were empty, return an empty string */
         if (pwidth <= 0) {
-            // SET_STRING_ELT(value, j, mkChar(""));
+            // SET_STRING_ELT(value, j, R_BlankString);
             continue;
         }
 
@@ -436,7 +436,7 @@ void windowspathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
 
 static R_INLINE
-void unixpathjoin(SEXP x, int x_length, int commonLength, SEXP value)
+void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 {
     int i, j;
 
@@ -507,7 +507,7 @@ void unixpathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
         /* if all the strings were empty, return an empty string */
         if (pwidth <= 0) {
-            // SET_STRING_ELT(value, j, mkChar(""));
+            // SET_STRING_ELT(value, j, R_BlankString);
             continue;
         }
 
@@ -577,7 +577,7 @@ void unixpathjoin(SEXP x, int x_length, int commonLength, SEXP value)
 
 
 static R_INLINE
-SEXP pathjoin(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
+SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 {
     int nprotect = 0;
 
@@ -679,9 +679,9 @@ SEXP pathjoin(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
 
     if (windows) {
-        windowspathjoin(x, x_length, commonLength, value);
+        windows_path_join(x, x_length, commonLength, value);
     } else {
-        unixpathjoin(x, x_length, commonLength, value);
+        unix_path_join(x, x_length, commonLength, value);
     }
 
 
@@ -690,29 +690,26 @@ SEXP pathjoin(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 }
 
 
-SEXP do_windowspathjoin do_formals
+SEXP do_windows_path_join do_formals
 {
-    do_start_no_op("windowspathjoin", 0);
-    if (debug) Rprintf("in do_windowspathjoin\n\n");
-    return pathjoin(call, TRUE, ".windows.path.join", args, rho);
+    do_start_no_op("windows.path.join", 0);
+    return path_join(call, TRUE, ".windows.path.join", args, rho);
 }
 
 
-SEXP do_unixpathjoin do_formals
+SEXP do_unix_path_join do_formals
 {
-    do_start_no_op("unixpathjoin", 0);
-    if (debug) Rprintf("in do_unixpathjoin\n\n");
-    return pathjoin(call, FALSE, ".unix.path.join", args, rho);
+    do_start_no_op("unix.path.join", 0);
+    return path_join(call, FALSE, ".unix.path.join", args, rho);
 }
 
 
-SEXP do_pathjoin do_formals
+SEXP do_path_join do_formals
 {
-    do_start_no_op("pathjoin", 0);
-    if (debug) Rprintf("in do_pathjoin\n\n");
+    do_start_no_op("path.join", 0);
 #ifdef _WIN32
-    return pathjoin(call, TRUE, "path.join", args, rho);
+    return path_join(call, TRUE, "path.join", args, rho);
 #else
-    return pathjoin(call, FALSE, "path.join", args, rho);
+    return path_join(call, FALSE, "path.join", args, rho);
 #endif
 }

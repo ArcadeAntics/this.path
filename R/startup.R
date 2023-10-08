@@ -22,7 +22,7 @@
     )
     delayedAssign("file", .normalizePath(ofile))
 function (original = TRUE, for.msg = FALSE)
-.External2(.C_sitefile, original, for.msg)
+.External2(.C_site.file, original, for.msg)
 })
 
 
@@ -115,7 +115,7 @@ site.file <- function (original = FALSE, for.msg = FALSE, default, else.)
     )
     delayedAssign("file", .normalizePath(ofile))
 function (original = TRUE, for.msg = FALSE)
-.External2(.C_initfile, original, for.msg)
+.External2(.C_init.file, original, for.msg)
 })
 
 

@@ -40,7 +40,7 @@ sys.LINENO <- function ()
         context.number <- .External2(.C_getframenumber)
         if (context.number == 0L)
             return(NA_integer_)
-        path <- .External2(.C_syspath)
+        path <- .External2(.C_sys.path)
         TRUE
     }, error = function(e) FALSE)
     if (success)
@@ -55,7 +55,7 @@ env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = get
     envir
     matchThisEnv
     success <- tryCatch({
-        path <- .External2(.C_envpath, envir, matchThisEnv)
+        path <- .External2(.C_env.path, envir, matchThisEnv)
         TRUE
     }, error = function(e) FALSE)
     if (success)
@@ -69,7 +69,7 @@ src.LINENO <- function (n = 0L, srcfile = if (n) sys.parent(n) else 0L)
     n <- .External2(.C_asIntegerGE0, n)
     srcfile
     tryCatch({
-        .External2(.C_srclineno, srcfile)
+        .External2(.C_src.LINENO, srcfile)
     }, error = function(e) NA_integer_)
 }
 

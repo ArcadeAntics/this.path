@@ -4,9 +4,9 @@
 
 
 
-SEXP do_lastcondition do_formals
+SEXP do_last_condition do_formals
 {
-    do_start_no_op_rho("lastcondition", -1);
+    do_start_no_op_rho("last.condition", -1);
     switch (length(args)) {
     case 0:
         return CAR(last_condition);
@@ -14,7 +14,7 @@ SEXP do_lastcondition do_formals
         set_R_Visible(FALSE);
         return SETCAR(last_condition, CAR(args));
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_lastcondition", "0 or 1"));
+        errorcall(call, wrong_nargs_to_External(length(args), ".C_last.condition", "0 or 1"));
         return R_NilValue;
     }
 }

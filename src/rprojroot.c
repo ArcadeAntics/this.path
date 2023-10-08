@@ -1,9 +1,9 @@
 #include "thispathdefn.h"
 
 
-SEXP do_resetproj do_formals
+SEXP do_reset_proj do_formals
 {
-    do_start_no_call_op_rho("resetproj", 0);
+    do_start_no_call_op_rho("reset.proj", 0);
 
 
     SEXP _proj = getFromMyNS(_projSymbol);

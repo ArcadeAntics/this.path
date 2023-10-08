@@ -1,9 +1,9 @@
 .windows.basename2 <- function (path)
-.External2(.C_windowsbasename2, path)
+.External2(.C_windows.basename2, path)
 
 
 .unix.basename2 <- function (path)
-.External2(.C_unixbasename2, path)
+.External2(.C_unix.basename2, path)
 
 
 basename2 <- function (path)
@@ -11,11 +11,11 @@ basename2 <- function (path)
 
 
 .windows.dirname2 <- function (path)
-.External2(.C_windowsdirname2, path)
+.External2(.C_windows.dirname2, path)
 
 
 .unix.dirname2 <- function (path)
-.External2(.C_unixdirname2, path)
+.External2(.C_unix.dirname2, path)
 
 
 dirname2 <- function (path)

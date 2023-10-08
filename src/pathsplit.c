@@ -6,7 +6,7 @@
 
 
 static R_INLINE
-SEXP pathsplit(int windows, int length1, SEXP args)
+SEXP path_split(int windows, int length1, SEXP args)
 {
     SEXP path = CAR(args);
     if (TYPEOF(path) != STRSXP)
@@ -237,58 +237,58 @@ SEXP pathsplit(int windows, int length1, SEXP args)
 }
 
 
-SEXP do_windowspathsplit do_formals
+SEXP do_windows_path_split do_formals
 {
-    do_start_no_call_op_rho("windowspathsplit", 1);
-    return pathsplit(TRUE, FALSE, args);
+    do_start_no_call_op_rho("windows.path.split", 1);
+    return path_split(TRUE, FALSE, args);
 }
 
 
-SEXP do_unixpathsplit do_formals
+SEXP do_unix_path_split do_formals
 {
-    do_start_no_call_op_rho("unixpathsplit", 1);
-    return pathsplit(FALSE, FALSE, args);
+    do_start_no_call_op_rho("unix.path.split", 1);
+    return path_split(FALSE, FALSE, args);
 }
 
 
-SEXP do_pathsplit do_formals
+SEXP do_path_split do_formals
 {
-    do_start_no_call_op_rho("pathsplit", 1);
+    do_start_no_call_op_rho("path.split", 1);
 #ifdef _WIN32
-    return pathsplit(TRUE, FALSE, args);
+    return path_split(TRUE, FALSE, args);
 #else
-    return pathsplit(FALSE, FALSE, args);
+    return path_split(FALSE, FALSE, args);
 #endif
 }
 
 
-SEXP do_windowspathsplit1 do_formals
+SEXP do_windows_path_split_1 do_formals
 {
-    do_start_no_call_op_rho("windowspathsplit1", 1);
-    return pathsplit(TRUE, TRUE, args);
+    do_start_no_call_op_rho("windows.path.split.1", 1);
+    return path_split(TRUE, TRUE, args);
 }
 
 
-SEXP do_unixpathsplit1 do_formals
+SEXP do_unix_path_split_1 do_formals
 {
-    do_start_no_call_op_rho("unixpathsplit1", 1);
-    return pathsplit(FALSE, TRUE, args);
+    do_start_no_call_op_rho("unix.path.split.1", 1);
+    return path_split(FALSE, TRUE, args);
 }
 
 
-SEXP do_pathsplit1 do_formals
+SEXP do_path_split_1 do_formals
 {
-    do_start_no_call_op_rho("pathsplit1", 1);
+    do_start_no_call_op_rho("path.split.1", 1);
 #ifdef _WIN32
-    return pathsplit(TRUE, TRUE, args);
+    return path_split(TRUE, TRUE, args);
 #else
-    return pathsplit(FALSE, TRUE, args);
+    return path_split(FALSE, TRUE, args);
 #endif
 }
 
 
 static R_INLINE
-SEXP pathunsplit(int windows, SEXP args, SEXP rho)
+SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 {
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
     if (dots == R_UnboundValue)
@@ -457,26 +457,26 @@ SEXP pathunsplit(int windows, SEXP args, SEXP rho)
 }
 
 
-SEXP do_windowspathunsplit do_formals
+SEXP do_windows_path_unsplit do_formals
 {
-    do_start_no_call_op("windowspathunsplit", 0);
-    return pathunsplit(TRUE, args, rho);
+    do_start_no_call_op("windows.path.unsplit", 0);
+    return path_unsplit(TRUE, args, rho);
 }
 
 
-SEXP do_unixpathunsplit do_formals
+SEXP do_unix_path_unsplit do_formals
 {
-    do_start_no_call_op("unixpathunsplit", 0);
-    return pathunsplit(FALSE, args, rho);
+    do_start_no_call_op("unix.path.unsplit", 0);
+    return path_unsplit(FALSE, args, rho);
 }
 
 
-SEXP do_pathunsplit do_formals
+SEXP do_path_unsplit do_formals
 {
-    do_start_no_call_op("pathunsplit", 0);
+    do_start_no_call_op("path.unsplit", 0);
 #ifdef _WIN32
-    return pathunsplit(TRUE, args, rho);
+    return path_unsplit(TRUE, args, rho);
 #else
-    return pathunsplit(FALSE, args, rho);
+    return path_unsplit(FALSE, args, rho);
 #endif
 }

@@ -58,7 +58,7 @@ SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 }
 
 
-SEXP getInList(SEXP sym, SEXP list, int C_NULL_ok)
+SEXP getInList(SEXP sym, SEXP list, int NULL_ok)
 {
     const char *what = translateChar(PRINTNAME(sym));
     SEXP names = PROTECT(getAttrib(list, R_NamesSymbol));
@@ -68,7 +68,7 @@ SEXP getInList(SEXP sym, SEXP list, int C_NULL_ok)
             return VECTOR_ELT(list, i);
         }
     }
-    if (!C_NULL_ok)
+    if (!NULL_ok)
         error("element '%s' not found", EncodeChar(PRINTNAME(sym)));
     UNPROTECT(1);
     return NULL;
@@ -362,7 +362,7 @@ SEXP DocumentContext(void)
 {
     SEXP documentcontext = R_NewEnv(mynamespace, TRUE, 10);
     PROTECT(documentcontext);
-    setAttrib(documentcontext, R_ClassSymbol, DocumentContextCls);
+    setAttrib(documentcontext, R_ClassSymbol, DocumentContextClass);
     UNPROTECT(1);
     return documentcontext;
 }
@@ -647,9 +647,9 @@ int is_file_uri(const char *url)
 }
 
 
-SEXP do_getdyn do_formals
+SEXP do_get_dyn do_formals
 {
-    do_start_no_op("getdyn", 3);
+    do_start_no_op("get.dyn", 3);
 
 
     int nprotect = 0;

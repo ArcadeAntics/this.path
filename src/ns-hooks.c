@@ -5,9 +5,9 @@
 #include "symbols.h"
 
 
-SEXP mynamespace        = NULL,
-     DocumentContextCls = NULL,
-     last_condition     = NULL;
+SEXP mynamespace          = NULL,
+     DocumentContextClass = NULL,
+     last_condition       = NULL;
 
 
 #ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
@@ -114,13 +114,13 @@ SEXP do_onLoad do_formals
     R_PreserveObject(mynamespace);
 
 
-    const char *cls[] = { "ThisPathDocumentContext", "environment", NULL };
-    int numCls = 0;
-    while (cls[numCls]) ++numCls;
-    DocumentContextCls = allocVector(STRSXP, numCls);
-    R_PreserveObject(DocumentContextCls);
-    for (int i = 0; i < numCls; i++)
-        SET_STRING_ELT(DocumentContextCls, i, mkChar(cls[i]));
+    const char *Class[] = { "ThisPathDocumentContext", "environment", NULL };
+    int nClass = 0;
+    while (Class[nClass]) ++nClass;
+    DocumentContextClass = allocVector(STRSXP, nClass);
+    R_PreserveObject(DocumentContextClass);
+    for (int i = 0; i < nClass; i++)
+        SET_STRING_ELT(DocumentContextClass, i, mkChar(Class[i]));
 
 
     /* it might seem more intuitive to say
@@ -574,7 +574,7 @@ SEXP do_onUnload do_formals
 
 
     maybe_release(mynamespace);
-    maybe_release(DocumentContextCls);
+    maybe_release(DocumentContextClass);
     maybe_release(last_condition);
 
 
@@ -583,25 +583,25 @@ SEXP do_onUnload do_formals
 #endif
 
 
-    maybe_release(expr_commandArgs                              );
-    maybe_release(expr_invisible                                );
-    maybe_release(expr_parent_frame                             );
-    maybe_release(expr_sys_call                                 );
-    maybe_release(expr_sys_call_which                           );
-    maybe_release(expr_sys_function_which                       );
-    maybe_release(expr_sys_nframe                               );
-    maybe_release(expr_sys_parents                              );
-    maybe_release(expr_missing_file                             );
-    maybe_release(expr_missing_input                            );
-    maybe_release(expr_missing_input                            );
-    maybe_release(expr_info_dollar_source_path                  );
-    maybe_release(expr_knitr_output_dir                         );
+    maybe_release(expr_commandArgs);
+    maybe_release(expr_invisible);
+    maybe_release(expr_parent_frame);
+    maybe_release(expr_sys_call);
+    maybe_release(expr_sys_call_which);
+    maybe_release(expr_sys_function_which);
+    maybe_release(expr_sys_nframe);
+    maybe_release(expr_sys_parents);
+    maybe_release(expr_missing_file);
+    maybe_release(expr_missing_input);
+    maybe_release(expr_missing_input);
+    maybe_release(expr_info_dollar_source_path);
+    maybe_release(expr_knitr_output_dir);
     maybe_release(expr_testthat_source_file_uses_brio_read_lines);
-    maybe_release(expr__sys_path_toplevel                       );
-    maybe_release(expr_getOption_topLevelEnvironment            );
-    maybe_release(expr__toplevel_context_number                 );
-    maybe_release(expr__isMethodsDispatchOn                     );
-    maybe_release(expr_UseMethod_lengths                        );
+    maybe_release(expr__sys_path_toplevel);
+    maybe_release(expr_getOption_topLevelEnvironment);
+    maybe_release(expr__toplevel_context_number);
+    maybe_release(expr__isMethodsDispatchOn);
+    maybe_release(expr_UseMethod_lengths);
 
 
     {
