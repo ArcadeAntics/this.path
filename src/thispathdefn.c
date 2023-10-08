@@ -1,6 +1,53 @@
 #include "thispathdefn.h"
 
 
+#if R_version_at_least(3, 0, 0)
+R_xlen_t asXLength(SEXP x)
+{
+    const R_xlen_t na = -999;
+
+    if (isVectorAtomic(x) && XLENGTH(x) >= 1) {
+        switch (TYPEOF(x)) {
+        case LGLSXP:
+        case INTSXP:
+        {
+            int x0 = INTEGER(x)[0];
+            if (x0 == NA_INTEGER)
+                return na;
+            else
+                return (R_xlen_t) x0;
+        }
+        case REALSXP:
+        {
+            double x0 = REAL(x)[0];
+            if (!R_FINITE(x0) || x0 > R_XLEN_T_MAX || x0 < 0)
+                return na;
+            else
+                return (R_xlen_t) x0;
+        }
+        case CPLXSXP:
+        case STRSXP:
+            break;
+        default:
+            UNIMPLEMENTED_TYPE("asXLength", x);
+        }
+    } else if (TYPEOF(x) != CHARSXP)
+        return na;
+
+    double d = asReal(x);
+    if (!R_FINITE(d) || d > R_XLEN_T_MAX || d < 0)
+        return na;
+    else
+        return (R_xlen_t) d;
+}
+#else
+R_xlen_t asXLength(SEXP x)
+{
+    return asInteger(x);
+}
+#endif
+
+
 Rboolean needQuote(SEXP x)
 {
     switch (TYPEOF(x)) {

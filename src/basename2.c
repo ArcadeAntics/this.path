@@ -163,7 +163,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
 
     SEXP path;
-    int times;
+    R_xlen_t times;
     switch (length(args)) {
     case 1:
         path = CAR(args);
@@ -175,8 +175,8 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         path = CAR(args);
         if (TYPEOF(path) != STRSXP)
             error(_("a character vector argument expected"));
-        times = asInteger(CADR(args));
-        if (times == NA_INTEGER || times < 0)
+        times = asXLength(CADR(args));
+        if (times < 0)
             errorcall(call, "invalid second argument, must be coercible to non-negative integer");
         break;
     default:
@@ -187,7 +187,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
     const char *ptr;
     char *buf, *last_char, *slash, *pathspec;
-    int n, i, j, nchar, drivewidth, skip;
+    int n, i, nchar, drivewidth, skip;
 
 
     SEXP value = allocVector(STRSXP, n = LENGTH(path));
@@ -236,7 +236,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
 
         skip = 0;
-        for (j = -1; j < times; j++) {
+        for (R_xlen_t j = times; j >= 0; j--) {
 
 
             /* remove the trailing path separators

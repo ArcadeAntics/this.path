@@ -889,7 +889,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
 
 SEXP do_set_sys_path do_formals
 {
-    do_start_no_op("set.sys.path", 21);
+    do_start_no_call_op("set.sys.path", 21);
     return set_path(SETPATHOP_SETSYSPATH, args, rho);
 }
 

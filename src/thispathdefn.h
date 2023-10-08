@@ -70,6 +70,9 @@ extern Rboolean R_Visible;
 extern Rboolean needQuote(SEXP x);
 
 
+extern R_xlen_t asXLength(SEXP x);
+
+
 extern void UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t);
 extern void UNIMPLEMENTED_TYPE(const char *s, SEXP x);
 
