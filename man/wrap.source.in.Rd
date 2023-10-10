@@ -28,8 +28,6 @@
   to be called within \code{callr::r()} on a function with an appropriate
   \code{\link[base:srcfile]{srcref}}.
 
-  on a function with an appropriate \code{srcref}
-
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
   function, \code{with_sys.path()} can only be used outside a function.
