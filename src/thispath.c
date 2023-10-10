@@ -670,15 +670,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         UNPROTECT(1);  /* frame */
 
 
-        SEXP expr;
-        PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(expr = CONS(ScalarInteger(N), R_NilValue), &indx);
-        REPROTECT(expr = LCONS(getFromBase(sys_functionSymbol), expr), indx);
-        SEXP function = eval(expr, rho);
-        if (TYPEOF(function) != CLOSXP)
+        INTEGER(CADR(expr_sys_function_which))[0] = N;
+        SEXP function = eval(expr_sys_function_which, rho);
+        if (function == eval_op)
+            error("%s cannot be used within '%s'",
+                  name, EncodeChar(PRINTNAME(R_EvalSymbol)));
+        else if (TYPEOF(function) != CLOSXP)
             error("%s cannot be used within a '%s', possible errors with eval?",
                   name, type2char(TYPEOF(function)));
-        UNPROTECT(1);
     }
 
 
@@ -846,10 +845,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
         if (identical(function, source)) {
-#define source_char "call to function source"
-            if (local)
-                error("%s cannot be called within %s()",
-                      name, EncodeChar(PRINTNAME(sourceSymbol)));
+#define source_char "call to function 'source'"
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (R_existsVarInFrame(frame, NeSymbol)) {
@@ -1107,10 +1103,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
         else if (identical(function, sys_source)) {
 #undef source_char
-#define source_char "call to function sys.source"
-            if (local)
-                error("%s cannot be called within %s()",
-                      name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
+#define source_char "call to function 'sys.source'"
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
             srcfile = env_or_NULL(findVarInFrame(frame, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
@@ -1252,11 +1245,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
         else if (compiler_loaded && identical(function, loadcmp)) {
 #undef source_char
-#define source_char "call to function loadcmp from package compiler"
+#define source_char "call to function 'loadcmp' from package 'compiler'"
             /* much the same as sys.source() */
-            if (local)
-                error("%s cannot be called within %s() from package %s",
-                      name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {

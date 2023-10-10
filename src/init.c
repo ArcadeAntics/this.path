@@ -210,7 +210,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
     {"unset.sys.path"       , (DL_FUNC) &do_unset_sys_path       ,  0},
     {"set.env.path"         , (DL_FUNC) &do_set_env_path         ,  2},
     {"set.src.path"         , (DL_FUNC) &do_set_src_path         ,  1},
-    {"set.src.path.function", (DL_FUNC) &do_set_src_path_function,  1},
+    {"set.sys.path.function", (DL_FUNC) &do_set_sys_path_function,  1},
 
 
     {NULL, NULL, 0}

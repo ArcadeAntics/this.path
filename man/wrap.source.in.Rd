@@ -1,9 +1,10 @@
 \name{wrap.source}
 \alias{wrap.source}
 \alias{set.sys.path}
+\alias{unset.sys.path}
 \alias{set.env.path}
 \alias{set.src.path}
-\alias{unset.sys.path}
+\alias{set.sys.path.function}
 \alias{with_sys.path}
 \alias{with_site.file}
 \alias{with_init.file}
@@ -22,6 +23,12 @@
   \code{unset.sys.path()} will undo a call to \code{set.sys.path()}. You will
   need to use this if you wish to call \code{set.sys.path()} multiple times
   within a function.
+
+  \code{set.sys.path.function()} is a special variant of \code{set.sys.path()}
+  to be called within \code{callr::r()} on a function with an appropriate
+  \code{\link[base:srcfile]{srcref}}.
+
+  on a function with an appropriate \code{srcref}
 
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
@@ -96,6 +103,8 @@ set.src.path(srcfile)
 
 unset.sys.path()
 
+set.sys.path.function(fun)
+
 with_sys.path(file, expr, ...)
 with_site.file(expr, n = 0)
 with_init.file(expr, n = 0)
@@ -167,6 +176,8 @@ with_init.file(expr, n = 0)
     environment in which to assign an associated path.}
 
   \item{srcfile}{source file in which to assign a pathname.}
+
+  \item{fun}{function with a \code{srcref}.}
 
   \item{\dots}{further arguments passed to \code{set.sys.path()}.}
 

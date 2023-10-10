@@ -207,7 +207,9 @@ export(tryCatch2, tryCatch3, last.condition)
 ## wrapsource.R ----
 
 
-export(wrap.source    , set.sys.path   , unset.sys.path ,
-       set.env.path   , set.src.path   , with_sys.path  ,
-       with_site.file , with_init.file , inside.source  ,
-       set.this.path  , unset.this.path)
+export(wrap.source          , set.sys.path         ,
+       unset.sys.path       , set.env.path         ,
+       set.src.path         , set.sys.path.function,
+       with_sys.path        , with_site.file       ,
+       with_init.file       , inside.source        ,
+       set.this.path        , unset.this.path      )

@@ -37,6 +37,10 @@ set.src.path <- function (srcfile)
 .External2(.C_set.src.path, srcfile)
 
 
+set.sys.path.function <- function (fun)
+.External2(.C_set.sys.path.function, fun)
+
+
 with_sys.path <- eval(call("function", as.pairlist(alist(file = , expr = , ... = )), bquote(
 {
     if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")

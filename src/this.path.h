@@ -258,7 +258,7 @@ extern SEXP do_set_sys_path          do_formals;
 extern SEXP do_unset_sys_path        do_formals;
 extern SEXP do_set_env_path          do_formals;
 extern SEXP do_set_src_path          do_formals;
-extern SEXP do_set_src_path_function do_formals;
+extern SEXP do_set_sys_path_function do_formals;
 
 
 #endif  /* R_THISPATH_THISPATH_H */

@@ -521,44 +521,19 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         error("%s cannot be used within the global environment", name);
 
 
-    SEXP expr;
-    PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(ScalarInteger(parent), R_NilValue), &indx);
-    REPROTECT(expr = LCONS(getFromBase(sys_functionSymbol), expr), indx);
-    SEXP function = eval(expr, rho);
-    UNPROTECT(1);  /* expr */
+    INTEGER(CADR(expr_sys_function_which))[0] = parent;
+    SEXP function = eval(expr_sys_function_which, rho);
     PROTECT(function);
-    if (TYPEOF(function) != CLOSXP)
+    if (function == eval_op)
+        error("%s cannot be used within '%s'",
+              name, EncodeChar(PRINTNAME(R_EvalSymbol)));
+    else if (TYPEOF(function) != CLOSXP)
         error("%s cannot be used within a '%s', possible errors with eval?",
               name, type2char(TYPEOF(function)));
-
-
-    /* ensure 'set.sys.path()' is not called from one of the source-like functions */
-    if (identical(function, getFromBase(sourceSymbol)))
-        error("%s cannot be called within %s()",
-              name, EncodeChar(PRINTNAME(sourceSymbol)));
-
-
-    if (identical(function, getFromBase(sys_sourceSymbol)))
-        error("%s cannot be called within %s()",
-              name, EncodeChar(PRINTNAME(sys_sourceSymbol)));
-
-
-    if (identical(function, getFromMyNS(wrap_sourceSymbol)))
+    else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
         error("%s cannot be called within %s() from package %s",
               name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
-
-
-    SEXP ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
-    if (ns != R_UnboundValue) {
-        if (identical(function, getInFrame(loadcmpSymbol, ns, FALSE))) {
-            error("%s cannot be called within %s() from package %s",
-                  name, EncodeChar(PRINTNAME(loadcmpSymbol)), EncodeChar(PRINTNAME(compilerSymbol)));
-        }
-    }
-
-
-    UNPROTECT(1);  /* function */
+    UNPROTECT(1);
 
 
     SEXP ofile, frame, documentcontext;
@@ -915,8 +890,8 @@ SEXP do_set_src_path do_formals
 }
 
 
-SEXP do_set_src_path_function do_formals
+SEXP do_set_sys_path_function do_formals
 {
-    do_start_no_call_op("set.src.path.function", 1);
+    do_start_no_call_op("set.sys.path.function", 1);
     return set_path(SETPATHOP_SETSYSPATHFUNCTION, args, rho);
 }
