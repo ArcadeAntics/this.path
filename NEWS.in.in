@@ -13,11 +13,18 @@ CHANGES IN this.path devel:
 
     * this.path() works significantly better with source references.
 
-    * this.path() is now compatible with package {targets}.
+    * this.path() is now compatible with 'package:targets'.
 
     * Added with_site.file() and with_init.file() that allow
       this.path() to be used within the site-wide startup profile file
       or a user profile.
+
+    * this.path(contents = TRUE) in 'Rgui' will now return the contents
+      of an unsaved document, or return the unsaved changes of a saved
+      document.
+
+    * Added set.gui.path() for implementing sys.path() for arbitrary
+      GUIs.
 
 CHANGES IN this.path 2.1.0 (2023-09-12):
 

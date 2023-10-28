@@ -228,6 +228,8 @@ local({
     files <- files[!startsWith(files, "./.git/")]
     files <- files[!startsWith(files, "./.Rproj.user/")]
     files <- files[!startsWith(files, "./this.path.Rcheck/")]
+    files <- grep("^\\./this\\.path_([[:digit:]]+[.-]){1,}[[:digit:]]+(\\.tar\\.gz|\\.zip|\\.tgz)",
+        files, value = TRUE, invert = TRUE)
     Rfiles <- files[grepl("(?i)\\.R$", basename(files))]
     Rdfiles <- files[grepl("(?i)\\.Rd$", basename(files))]
     files
@@ -236,21 +238,24 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("GetSrcref", x, value = TRUE)
-    x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
+    x <- grep("\\{(utils|microbenchmark|compiler|box|IRkernel|jsonlite|knitr|plumber|rprojroot|rstudioapi|shiny|targets|testthat)\\}", x, value = TRUE)
+    x <- x |> names() |> print(quote = FALSE, width = 10)
+    x |> file.edit()
 
 
     ## ^.{0,62}\\$|^.{63,65535} +\\$
 
 
     x <- this.path:::.readFiles(Rfiles)
-    x <- grep("as\\.list\\.environment", x, value = TRUE)
-    x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
+    x <- grep("utils::", x, value = TRUE)
+    x <- x |> names() |> print(quote = FALSE, width = 10)
+    x |> file.edit()
 
 
     x <- this.path:::.readFiles(Rdfiles)
     x <- grep("(?i)current", x, value = TRUE)
-    x |> names() |> print(quote = FALSE, width = 10) |> file.edit()
+    x <- x |> names() |> print(quote = FALSE, width = 10)
+    x |> file.edit()
 })
 
 
@@ -268,7 +273,7 @@ local({
     }
     command <- paste(command1, "|", command2)
     writeLines(command)
-    utils::read.csv(pipe(command))
+    utils::read.csv(print(pipe(command)))
 })
 
 

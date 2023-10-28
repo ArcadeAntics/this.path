@@ -80,6 +80,10 @@ extern void UNIMPLEMENTED_TYPE(const char *s, SEXP x);
 extern const char *EncodeChar(SEXP);
 
 
+#define ISNULL(x) ((x) == R_NilValue)
+#define ISUNBOUND(x) ((x) == R_UnboundValue)
+
+
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 #define getFromBase(sym) (getInFrame((sym), R_BaseEnv, FALSE))
 #define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))
@@ -144,22 +148,22 @@ extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
 
 
 extern SEXP sys_call(SEXP which, SEXP rho);
-#define getCurrentCall(rho) eval(expr_sys_call, (rho))
+#define getCurrentCall(rho) ( eval(expr_sys_call, (rho)) )
 extern int sys_parent(int n, SEXP rho);
 
 
-extern int gui_rstudio;
+extern int _gui_rstudio;
 extern Rboolean has_tools_rstudio;
 extern Rboolean init_tools_rstudio(Rboolean skipCheck);
-#define in_rstudio                                             \
-    ((gui_rstudio != -1) ? (gui_rstudio) : (gui_rstudio = asLogical(getFromMyNS(_gui_rstudioSymbol))))
+#define gui_rstudio                                            \
+    ((_gui_rstudio != -1) ? (_gui_rstudio) : (_gui_rstudio = asLogical(getFromMyNS(_gui_rstudioSymbol))))
 #define get_debugSource                                        \
     ((has_tools_rstudio) ? getFromMyNS(_debugSourceSymbol) : R_UnboundValue)
 
 
-extern int maybe_unembedded_shell;
-#define is_maybe_unembedded_shell                              \
-    ((maybe_unembedded_shell != -1) ? (maybe_unembedded_shell) : (maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
+extern int _maybe_unembedded_shell;
+#define maybe_unembedded_shell                                 \
+    ((_maybe_unembedded_shell != -1) ? (_maybe_unembedded_shell) : (_maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
 
 
 #define streql(str1, str2) (strcmp((str1), (str2)) == 0)

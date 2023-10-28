@@ -20,6 +20,13 @@
       \item{Added \code{with_site.file()} and \code{with_init.file()} that
         allow \code{this.path()} to be used within the site-wide startup
         profile file or a user profile.}
+
+      \item{\code{this.path(contents = TRUE)} in \sQuote{Rgui} will now return
+        the contents of an unsaved document, or return the unsaved changes of a
+        saved document.}
+
+      \item{Added \code{set.gui.path()} for implementing \code{sys.path()} for
+        arbitrary GUIs.}
     }
   }
 }

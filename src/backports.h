@@ -49,6 +49,7 @@ extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 #define do_start_no_op_rho(name, numParameters) do_start(name, numParameters)
 #define do_start_no_call_op_rho(name, numParameters) do_start(name, numParameters)
 #else
+#include "translations.h"
 #define do_formals (SEXP args)
 #define _do_start(name, numParameters)                         \
     args = CDR(args);                                          \

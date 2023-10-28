@@ -182,6 +182,9 @@ delayedAssign(".untitled", {
 .External2(.C_thisPathNotExistsError, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
+delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
+
+
 .thisPathInZipFileError <- function (description, call = .getCurrentCall(), call. = TRUE)
 .External2(.C_thisPathInZipFileError, if (call.) call, description)
 
@@ -294,11 +297,9 @@ delayedAssign(".untitled", {
 
 .fixNewlines <- function (srcfile)
 {
-    lines <- srcfile$lines
-    if (any(grepl("\n", lines, fixed = TRUE, useBytes = TRUE)))
-        srcfile$lines <- lines <- as.character(unlist(strsplit(sub("$", "\n", lines), "\n")))
+    srcfile$lines <- .External2(.C_fixNewlines, srcfile$lines)
     srcfile$fixedNewlines <- TRUE
-    lines
+    srcfile$lines
 }
 
 
@@ -317,10 +318,10 @@ delayedAssign(".untitled", {
             name <- .getNamedElement(contents, c("metadata", "language_info", "name"))
             version <- .getNamedElement(contents, c("metadata", "language_info", "version"))
             source <- .getNamedElement(contents, c("cells", "source"))
-            if (is.character(language) && length(language) == 1L && !is.na(language) && language == "R" &&
-                is.character(name)     && length(name)     == 1L && !is.na(name)     && name     == "R" &&
-                is.character(version)  && length(version)  == 1L && !is.na(version)  && version  == as.character(getRversion()) &&
-                is.list(source)        && length(source)         && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
+            if (.IS_SCALAR_STR(language) && !is.na(language) && language == "R" &&
+                .IS_SCALAR_STR(name)     && !is.na(name)     && name     == "R" &&
+                .IS_SCALAR_STR(version)  && !is.na(version)  && version  == as.character(getRversion()) &&
+                is.list(source) && length(source) && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
             {
                 return(TRUE)
             }
@@ -330,13 +331,14 @@ delayedAssign(".untitled", {
 }
 
 
-.sys.path.jupyter <- evalq(envir = new.env(), {
-    ofile <- NA_character_
+.jupyter.path <- evalq(envir = new.env(), {
+    delayedAssign("ofile", NA_character_)
+    ofile
     delayedAssign("file", .normalizePath(ofile))
 eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)), bquote(
 {
     if (!is.na(ofile))
-        return(.External2(.C_sys.path.jupyter, verbose, original, for.msg, contents))
+        return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
 
 
     if (is.null(initwd)) {
@@ -392,10 +394,10 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                 # withAutoprint( { language; name; version; source } , spaced = TRUE, verbose = FALSE, width.cutoff = 60L); cat("\n\n\n\n\n")
 
 
-                if (is.character(language) && length(language) == 1L && !is.na(language) && language == "R" &&
-                    is.character(name)     && length(name)     == 1L && !is.na(name)     && name     == "R" &&
-                    is.character(version)  && length(version)  == 1L && !is.na(version)  && version  == as.character(getRversion()) &&
-                    is.list(source)        && length(source)         && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
+                if (.IS_SCALAR_STR(language) && !is.na(language) && language == "R" &&
+                    .IS_SCALAR_STR(name)     && !is.na(name)     && name     == "R" &&
+                    .IS_SCALAR_STR(version)  && !is.na(version)  && version  == as.character(getRversion()) &&
+                    is.list(source) && length(source) && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
                 {
                     for (source0 in source) {
                         exprs <- tryCatch(parse(text = source0, n = -1, keep.source = FALSE, srcfile = NULL),
@@ -403,8 +405,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                         if (!inherits(exprs, "error")) {
                             for (expr in exprs) {
                                 if (identical(expr, call)) {
-                                    .External2(.C_set.sys.path.jupyter, file, skipCheck = TRUE)
-                                    return(.External2(.C_sys.path.jupyter, verbose, original, for.msg, contents))
+                                    .External2(.C_set.jupyter.path, file, skipCheck = TRUE)
+                                    return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
                                 }
                             }
                         }
@@ -429,11 +431,15 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 })
 
 
-.sys.path.toplevel <- eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)), bquote(
+.rgui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.External2(.C_rgui.path, verbose, original, for.msg, contents, .untitled, .r.editor)
+
+
+.gui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (.in.shell) {
-
-
+        if (contents && .has.shFILE)
+            for.msg <- FALSE
         value <- shFILE(original, for.msg, default = {
             stop(.thisPathNotExistsError(
                 "R is running from a shell and argument 'FILE' is missing",
@@ -488,7 +494,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                     else
                         "Source: source document in RStudio\n"
                 )
-            context["contents"]
+            list(.External2(.C_remove_trailing_blank_string, context[["contents"]]))
         }
         else if (nzchar(path <- context[["path"]])) {
             ## the encoding is not explicitly set (at least on Windows),
@@ -526,8 +532,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         tryCatch3({
             context <- rstudioapi::getSourceEditorContext()
         }, error = {
-            # stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding\n  the following to the site-wide startup profile file or your user\n  profile (see ?Startup):\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  run the following code to do so:\n\n```R\ncat(\"\\n\\noptions(vsc.rstudioapi = TRUE)\\n\", file = \"~/.Rprofile\", append = TRUE)\n```\n\n  then restart the R session and try again", sys.call()))
-            stop(simpleError("package {rstudioapi} is not set up to work with VSCode; try adding:\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  to the site-wide startup profile file or your user profile (see ?Startup),\n  then restart the R session and try again", sys.call()))
+            stop(simpleError("package:rstudioapi is not set up to work with VSCode; try adding:\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  to the site-wide startup profile file or your user profile (see ?Startup),\n  then restart the R session and try again", sys.call()))
         })
 
 
@@ -541,7 +546,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         }
         else if (contents) {
             if (verbose) cat("Source: document in VSCode\n")
-            context["contents"]
+            list(.External2(.C_remove_trailing_blank_string, context[["contents"]]))
         }
         else if (startsWith(context[["id"]], "untitled:")) {
             if (for.msg)
@@ -563,7 +568,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 
     ## running from 'jupyter'
     else if (.gui.jupyter) {
-        .sys.path.jupyter(verbose, original, for.msg, contents)
+        .jupyter.path(verbose, original, for.msg, contents)
     }
 
 
@@ -571,8 +576,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     else if (.gui.rgui) {
 
 
-        .External2(.C_sys.path.rgui, verbose, original, for.msg, contents,
-            names(utils::getWindowsHandles(minimized = TRUE)), .untitled, .r.editor)
+        .External2(.C_rgui.path, verbose, original, for.msg, contents, .untitled, .r.editor)
     }
 
 
@@ -605,33 +609,39 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         else stop(.thisPathUnrecognizedMannerError())
     }
 }
-, splice = TRUE)))
 
 
-set.sys.path.jupyter <- function (...)
+set.jupyter.path <- function (...)
 {
     if (!.gui.jupyter)
         stop(gettextf("'%s' can only be called in Jupyter",
-            "set.sys.path.jupyter"))
+            "set.jupyter.path"))
     if (!.isJupyterLoaded())
         stop(gettextf("'%s' can only be called after Jupyter has finished loading",
-            "set.sys.path.jupyter"))
+            "set.jupyter.path"))
     n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
     if (sys.nframe() != n)
         stop(gettextf("'%s' can only be called from a top-level context",
-            "set.sys.path.jupyter"))
+            "set.jupyter.path"))
     path <- if (missing(...) || ...length() == 1L && (is.null(..1) || is.atomic(..1) && length(..1) == 1L && is.na(..1)))
         NA_character_
     else if (is.null(initwd))
         path.join(...)
     else path.join(initwd, ...)
-    .External2(.C_set.sys.path.jupyter, path)
+    .External2(.C_set.jupyter.path, path)
 }
 
 
+delayedAssign("set.sys.path.jupyter", set.jupyter.path)
+
+
 set.this.path.jupyter <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("set.sys.path.jupyter", .(.pkgname), old = "set.this.path.jupyter"))
+stop(.defunctError("set.jupyter.path", .(.pkgname), old = "set.this.path.jupyter"))
 )))
+
+
+set.gui.path <- function (...)
+.External2(.C_set.gui.path)
 
 
 delayedAssign(".identical", {

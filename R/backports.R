@@ -244,17 +244,19 @@ structure(list(message = as.character(message), call = call, ...),
 
 str2expression <- function (text)
 {
-    if (typeof(text) != "character")
+    if (!is.character(text))
         stop("argument must be character", domain = "R")
     parse(text = text, n = -1, keep.source = FALSE, srcfile = NULL)
 }
 
 
+.IS_SCALAR_STR <- function (x)
+is.character(x) && length(unclass(x)) == 1L
+
+
 str2lang <- function (s)
 {
-    if (typeof(s) != "character")
-        stop("argument must be character", domain = "R")
-    if (length(s) != 1L)
+    if (!.IS_SCALAR_STR(s))
         stop("argument must be a character string", domain = "R")
     ans <- parse(text = s, n = -1, keep.source = FALSE, srcfile = NULL)
     if (length(ans) != 1L)

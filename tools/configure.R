@@ -264,7 +264,7 @@ main <- function ()
         ## we need to add the common macros to the files which do not
         ## have access. for R < 3.2.0, this is ALL of the Rd files.
         ## otherwise, only the news files will need them
-        Rdfiles.in <- list.files("./inst", "^NEWS(\\.[[:digit:]]+)?\\.in\\.Rd$", full.names = TRUE)
+        Rdfiles.in <- list.files("./inst", "^NEWS\\.in\\.Rd$", full.names = TRUE)
         files.in <- list.files("./man", "\\.in\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE)
         if (getRversion() < "3.2.0") {
             Rdfiles.in <- c(Rdfiles.in, files.in)

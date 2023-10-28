@@ -182,7 +182,8 @@ export(site.file, init.file)
 
 
 export(shFILE               , normalized.shFILE    ,
-       set.sys.path.jupyter , set.this.path.jupyter,
+       set.jupyter.path     , set.sys.path.jupyter , set.this.path.jupyter,
+       set.gui.path         , thisPathNotExistsError,
        sys.path             , sys.dir              ,
        env.path             , env.dir              ,
        src.path             , src.dir              ,

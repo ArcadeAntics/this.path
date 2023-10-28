@@ -219,9 +219,9 @@ if (requireNamespace("knitr")) {
 
     # knitr::knit(FILE2.Rmd, output = FILE3.md, quiet = FALSE)
     ## the above does not work when using the 'Run examples' button in
-    ## the HTML documentation. {knitr} cannot knit a document inside
-    ## another document, pretty embarrassing oversight, so we have to
-    ## launch a new R session and knit the document from there
+    ## the HTML documentation. 'package:knitr' cannot knit a document
+    ## inside another document, pretty embarrassing oversight, so we
+    ## have to launch a new R session and knit the document from there
     FILE4.R <- tempfile(fileext = ".R")
     this.path:::.write.code(bquote({
         knitr::knit(.(FILE2.Rmd), output = .(FILE3.md), quiet = TRUE)
@@ -259,7 +259,7 @@ if (requireNamespace("compiler")) {
 if (requireNamespace("box")) {
     FILE2.R <- tempfile(fileext = ".R")
     this.path:::.write.code(bquote({
-        ## we have to use box::set_script_path() because {box}
+        ## we have to use box::set_script_path() because 'package:box'
         ## does not allow us to import a module by its path
         script_path <- box::script_path()
         on.exit(box::set_script_path(script_path))

@@ -7,7 +7,9 @@
 
 extern SEXP mynamespace         ,
             DocumentContextClass,
-            last_condition      ;
+            last_condition      ,
+            _custom_gui_path_character_environment,
+            _custom_gui_path_function_environment ;
 
 
 extern SEXP expr_commandArgs                              ,
@@ -25,7 +27,6 @@ extern SEXP expr_commandArgs                              ,
             expr_info_dollar_source_path                  ,
             expr_knitr_output_dir                         ,
             expr_testthat_source_file_uses_brio_read_lines,
-            expr__sys_path_toplevel                       ,
             expr_getOption_topLevelEnvironment            ,
             expr__toplevel_context_number                 ,
             expr__isMethodsDispatchOn                     ,

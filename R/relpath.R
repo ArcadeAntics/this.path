@@ -147,7 +147,7 @@ delayedAssign(".net.use.command", {
             path <- value[i]
             if (normalize.path)
                 path <- .normalizeabspath.and.url(path, "/", FALSE)
-            if (!is.character(relative.to) || length(relative.to) != 1L)
+            if (!.IS_SCALAR_STR(relative.to))
                 stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
             if (normalize)
                 relative.to <- .normalizeabspath.and.url.1(relative.to, "/", TRUE)

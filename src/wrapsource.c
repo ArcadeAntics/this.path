@@ -36,7 +36,7 @@ SEXP do_SET_PRSEEN_2 do_formals
     }
     /* now that we know the list is safe to modify, change all the PRSEEN
        value to 2, the value used for interrupted promises */
-    for (x = promises ; x != R_NilValue ; x = CDR(x))
+    for (x = promises; x != R_NilValue; x = CDR(x))
         SET_PRSEEN(CAR(x), 2);
     return R_NilValue;
 }
@@ -294,7 +294,7 @@ SEXP do_wrap_source do_formals
                 already_checked_dots = 1;
                 dots = findVar(R_DotsSymbol, env);
                 if (TYPEOF(dots) == DOTSXP) {
-                    for (dot = dots ; dot != R_NilValue ; dot = CDR(dot)) {
+                    for (dot = dots; dot != R_NilValue; dot = CDR(dot)) {
                         if (TAG(dot) != R_NilValue && pmatch(tag, TAG(dot), 1)) {
                             if (s != NULL)
                                 errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
@@ -321,13 +321,13 @@ SEXP do_wrap_source do_formals
         if (s == NULL) {
             /* partial matches */
             already_checked_dots = 0;
-            for (b = funargs, i = 0 ; b != R_NilValue ; b = CDR(b), i++) {
+            for (b = funargs, i = 0; b != R_NilValue; b = CDR(b), i++) {
                 if (CAR(b) == R_DotsSymbol) {
                     if (already_checked_dots)
                         continue;
                     already_checked_dots = 1;
                     if (TYPEOF(dots) == DOTSXP) {
-                        for (dot = dots ; dot != R_NilValue ; dot = CDR(dot)) {
+                        for (dot = dots; dot != R_NilValue; dot = CDR(dot)) {
                             if (TAG(dot) != R_NilValue && pmatch(tag, TAG(dot), 0)) {
                                 if (s != NULL)
                                     errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
@@ -355,13 +355,13 @@ SEXP do_wrap_source do_formals
         if (s == NULL) {
             /* first untagged argument */
             already_checked_dots = 0;
-            for (b = funargs, i = 0 ; b != R_NilValue ; b = CDR(b), i++) {
+            for (b = funargs, i = 0; b != R_NilValue; b = CDR(b), i++) {
                 if (CAR(b) == R_DotsSymbol) {
                     if (already_checked_dots)
                         continue;
                     already_checked_dots = 1;
                     if (TYPEOF(dots) == DOTSXP) {
-                        for (dot = dots ; dot != R_NilValue ; dot = CDR(dot)) {
+                        for (dot = dots; dot != R_NilValue; dot = CDR(dot)) {
                             if (TAG(dot) == R_NilValue) {
                                 s = CAR(dot);
                                 if (TYPEOF(s) != PROMSXP)
@@ -491,11 +491,13 @@ SEXP do_wrap_source do_formals
 }
 
 
-typedef enum { SETPATHOP_SETSYSPATH         = 0 ,
-               SETPATHOP_UNSETSYSPATH           ,
-               SETPATHOP_SETENVPATH             ,
-               SETPATHOP_SETSRCPATH             ,
-               SETPATHOP_SETSYSPATHFUNCTION     } SETPATHOP;
+typedef enum {
+    SETPATHOP_SETSYSPATH         = 0,
+    SETPATHOP_UNSETSYSPATH          ,
+    SETPATHOP_SETENVPATH            ,
+    SETPATHOP_SETSRCPATH            ,
+    SETPATHOP_SETSYSPATHFUNCTION
+} SETPATHOP;
 
 
 SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
@@ -611,7 +613,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
                 env == R_BaseEnv || env == R_BaseNamespace ||
                 R_IsPackageEnv(env) || R_IsNamespaceEnv(env));
             else if (inherits(env, "box$ns"));
-            else if (getAttrib(env, documentcontextSymbol) != R_NilValue)
+            else if (!ISNULL(getAttrib(env, documentcontextSymbol)))
                 error("cannot overwrite existing '%s' attribute", EncodeChar(PRINTNAME(documentcontextSymbol)));
             else setAttrib(env, documentcontextSymbol, documentcontext);
             break;

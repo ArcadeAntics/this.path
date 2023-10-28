@@ -90,7 +90,7 @@ unset.this.path()
   \code{this.path()} was renamed to \code{sys.path()}, so
   \code{set.this.path.jupyter()}, \code{set.this.path()}, and
   \code{unset.this.path()} were accordingly renamed to
-  \code{set.sys.path.jupyter()}, \code{set.sys.path()}, and
+  \code{set.jupyter.path()}, \code{set.sys.path()}, and
   \code{unset.sys.path()}. Since \code{set.this.path()} was already being made
   defunct, \code{inside.source()} was also made defunct.
 }

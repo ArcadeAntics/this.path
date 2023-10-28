@@ -21,8 +21,9 @@ sys.srcref(n = 1, which = if (n) sys.parent(n) else 0)
   A \code{srcref} object or \code{NULL}.
 }
 \examples{
-## this example will not work with 'Run examples' which uses {knitr}
-## since knitted documents do not store source references
+## this example will not work with 'Run examples'
+## which uses 'package:knitr' since knitted
+## documents do not store source references
 fun <- function ()
 {
     list(

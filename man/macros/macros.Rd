@@ -53,7 +53,7 @@
 \newcommand{\sourcesorlistnolinks}{\sourcenolink, \syssourcenolink, \debugSourceinRStudionolink, \compilerloadcmpnolink, \boxusenolink, \knitrknitnolink, \plumberplumbnolink, \shinyrunAppnolink, \targetsnolink, or \testthatsourcefilenolink}
 \newcommand{\sourcesandlistnolinks}{\sourcenolink, \syssourcenolink, \debugSourceinRStudionolink, \compilerloadcmpnolink, \boxusenolink, \knitrknitnolink, \plumberplumbnolink, \shinyrunAppnolink, \targetsnolink, and \testthatsourcefilenolink}
 
-%% excludes box::use, plumber::plumb, shiny::runApp, and {targets}
+%% excludes box::use, plumber::plumb, shiny::runApp, and package:targets
 \newcommand{\sources1stargisfilelistlinks}{\sourcelink, \syssourcelink, \debugSourceinRStudiolink, \compilerloadcmplink, \knitrknitlink, \testthatsourcefilelink}
 \newcommand{\sources1stargisfileorlistlinks}{\sourcelink, \syssourcelink, \debugSourceinRStudiolink, \compilerloadcmplink, \knitrknitlink, or \testthatsourcefilelink}
 \newcommand{\sources1stargisfileandlistlinks}{\sourcelink, \syssourcelink, \debugSourceinRStudiolink, \compilerloadcmplink, \knitrknitlink, and \testthatsourcefilelink}

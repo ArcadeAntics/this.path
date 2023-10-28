@@ -124,7 +124,7 @@ SEXP do_promise_is_unevaluated do_formals
 }
 
 
-SEXP do_PRVALUE_no_warn do_formals
+SEXP do_forcePromise_no_warn do_formals
 {
     /* return the result of getting a promise, silencing a possible warning
      * about "restarting interrupted promise evaluation"
@@ -133,10 +133,10 @@ SEXP do_PRVALUE_no_warn do_formals
      */
 
 
-    do_start_no_op("PRVALUE.no.warn", -1);
+    do_start_no_op("forcePromise.no.warn", -1);
 
 
-    handles_nargs(ENCLOS(rho), ".C_PRVALUE.no.warn");
+    handles_nargs(ENCLOS(rho), ".C_forcePromise.no.warn");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));

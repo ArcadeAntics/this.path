@@ -1,4 +1,13 @@
 #include "thispathdefn.h"
+#include "get_file_from_closure.h"
+
+
+#ifdef _WIN32
+#define Win32 1  /* this will give us access to UImode in R_ext/RStartup.h */
+#include <R_ext/RStartup.h>  /* definition of UImode */
+#undef Win32
+extern UImode CharacterMode;
+#endif
 
 
 // #define debug
@@ -7,95 +16,26 @@
 
 
 
-static R_INLINE
-SEXP get_file_from_closure(SEXP args, SEXP symbol)
-{
-    /*
-    This function chooses whether to return 'ofile' or 'file'. It examines the
-    promises, determining which to return based on whether they're evaluated.
-     */
-
-
-    int original = asLogical(CAR(args)); args = CDR(args);
-    int for_msg  = asLogical(CAR(args)); args = CDR(args);
-    if (for_msg == NA_LOGICAL)
-        error(_("invalid '%s' argument"), "for.msg");
-
-
-    /* if 'for.msg = TRUE', we treat 'original = FALSE' as 'original = NA' */
-    if (for_msg && !original) original = NA_LOGICAL;
-
-
-    SEXP env = getFromMyNS(symbol);
-    if (TYPEOF(env) != CLOSXP)
-        errorcall(R_NilValue, "'%s' is not a closure", EncodeChar(PRINTNAME(symbol)));
-    env = CLOENV(env);
-
-
-    if (original == NA_LOGICAL) {
-
-
-#define get_and_check(var, sym)                                \
-        SEXP var = findVarInFrame(env, (sym));                 \
-        if (var == R_UnboundValue)                             \
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
-        if (TYPEOF(var) != PROMSXP)                            \
-            error("invalid '%s', must be a promise", EncodeChar(PRINTNAME((sym))))
-
-
-        get_and_check(file, fileSymbol);
-        /* if the promise has not already been forced, just get the original */
-        if (PRVALUE(file) == R_UnboundValue)
-            original = TRUE;
-        else
-            return PRVALUE(file);
-    }
-    if (original) {
-#define get_and_return(var, sym)                               \
-        get_and_check(var, sym);                               \
-        if (PRVALUE(var) == R_UnboundValue) {                  \
-            /* unlike a normal promise, we DO NOT want to */   \
-            /* throw a warning if var is re-evaluated     */   \
-            if (PRSEEN(var)) {                                 \
-                if (PRSEEN(var) == 1);                         \
-                else SET_PRSEEN(var, 0);                       \
-            }                                                  \
-            return eval(var, R_EmptyEnv);                      \
-        }                                                      \
-        else                                                   \
-            return PRVALUE(var)
-
-
-        get_and_return(ofile, ofileSymbol);
-    }
-    else {
-        get_and_return(file, fileSymbol);
-    }
-
-
-#undef get_and_return
-#undef get_and_check
-}
-
-
 SEXP do_site_file do_formals
 {
     do_start_no_call_op_rho("site.file", 2);
-    return get_file_from_closure(args, _site_fileSymbol);
+#define get_file_from_closure2(sym)                            \
+    (get_file_from_closure(asLogical(CAR(args)), asLogical(CADR(args)), (sym)))
+    return get_file_from_closure2(_site_fileSymbol);
 }
 
 
 SEXP do_init_file do_formals
 {
     do_start_no_call_op_rho("init.file", 2);
-    return get_file_from_closure(args, _init_fileSymbol);
+    return get_file_from_closure2(_init_fileSymbol);
 }
 
 
 SEXP do_shFILE do_formals
 {
     do_start_no_call_op_rho("shFILE", 2);
-    return get_file_from_closure(args, _shFILESymbol);
+    return get_file_from_closure2(_shFILESymbol);
 }
 
 
@@ -325,7 +265,7 @@ SEXP do_shINFO do_formals
     do_start_no_call_op_rho("shINFO", 0);
 
 
-    if (!is_maybe_unembedded_shell) {
+    if (!maybe_unembedded_shell) {
 
 
 #ifdef debug
@@ -489,7 +429,7 @@ SEXP do_shINFO do_formals
             // else
             if (!strcmp(*av, "--args")) {
                 break;
-            } else if (!strcmp(*av, "-f")) {
+            } else if (CharacterMode == RTerm && !strcmp(*av, "-f")) {
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac) {
@@ -498,14 +438,14 @@ SEXP do_shINFO do_formals
                 if (strcmp(*av, "-")) { /* av != "-" */
                     FILE = *av;
                 }
-            } else if (!strncmp(*av, "--file=", 7)) {
+            } else if (CharacterMode == RTerm && !strncmp(*av, "--file=", 7)) {
                 has_input = TRUE;
                 if (strcmp((*av)+7, "-")) {  /* av != "--file=-" */
                     FILE = (*av)+7;
                 }
             }
             // else if (!strncmp(*av, "--workspace=", 12));
-            else if (!strcmp(*av, "-e")) {
+            else if (CharacterMode == RTerm && !strcmp(*av, "-e")) {
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac || !strlen(*av)) {

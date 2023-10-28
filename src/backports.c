@@ -753,9 +753,9 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
 SEXP R_NewEnv(SEXP enclos, int hash, int size)
 {
     SEXP expr = LCONS(new_envSymbol,
-        CONS(/* hash */ ScalarLogical(hash),
-            CONS(/* parent */ enclos,
-                CONS(/* size */ ScalarInteger(size), R_NilValue))));
+                      CONS(/* hash */ ScalarLogical(hash),
+                           CONS(/* parent */ enclos,
+                                CONS(/* size */ ScalarInteger(size), R_NilValue))));
     PROTECT(expr);
     SEXP value = eval(expr, R_BaseEnv);
     UNPROTECT(1);

@@ -231,14 +231,14 @@ delayedAssign(".gui.rstudio",
     isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")) &&
     if (.Platform$GUI == "RStudio") { .External2(.C_init.tools.rstudio, skipCheck = TRUE); TRUE }
     else (
-        (.os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none")) ||
+        (.os.unix    && .Platform$GUI %in% c("X11", "unknown", "none")) ||
         (.os.windows && .Platform$GUI == "Rgui")
     )
 )
 
 
 delayedAssign(".os.unix.maybe.unembedded.shell"   , .os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") &&                        "R" == basename2(commandArgs()[[1L]]) )
-delayedAssign(".os.windows.maybe.unembedded.shell", .os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])))
+delayedAssign(".os.windows.maybe.unembedded.shell", .os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])) && .External2(.C_CharacterMode) == "RTerm")
 delayedAssign(".maybe.unembedded.shell", .os.unix.maybe.unembedded.shell || .os.windows.maybe.unembedded.shell)
 
 
@@ -291,7 +291,7 @@ delayedAssign(".gui.jupyter",
 
 
 delayedAssign(".gui.aqua", .os.unix    && .Platform$GUI == "AQUA" && !.gui.rstudio && !.gui.vscode && !.gui.jupyter)
-delayedAssign(".gui.rgui", .os.windows && .Platform$GUI == "Rgui" && !.gui.rstudio && !.gui.vscode && !.gui.jupyter)
+delayedAssign(".gui.rgui", .os.windows && .Platform$GUI == "Rgui" && !.gui.rstudio && !.gui.vscode && !.gui.jupyter && .External2(.C_RConsole))
 delayedAssign(".gui.tk"  , .os.unix    && .Platform$GUI == "Tk"   && !.gui.rstudio && !.gui.vscode && !.gui.jupyter)
 
 

@@ -1,4 +1,5 @@
-\name{set.sys.path.jupyter}
+\name{set.jupyter.path}
+\alias{set.jupyter.path}
 \alias{set.sys.path.jupyter}
 \title{Declare Executing 'Jupyter' Notebook's Filename}
 \description{
@@ -8,10 +9,11 @@
   then filtering those with contents matching the top-level expression.
 
   This could possibly select the wrong file if the same top-level expression is
-  found in another file. As such, you can use \code{set.sys.path.jupyter()} to
+  found in another file. As such, you can use \code{set.jupyter.path()} to
   declare the executing \sQuote{Jupyter} notebook's filename.
 }
 \usage{
+set.jupyter.path(...)
 set.sys.path.jupyter(...)
 }
 \arguments{
@@ -33,7 +35,7 @@ set.sys.path.jupyter(...)
 # ## if you opened the file "~/file50b816a24ec1.ipynb", the initial
 # ## working directory should be "~". You can write:
 #
-# set.sys.path.jupyter("file50b816a24ec1.ipynb")
+# set.jupyter.path("file50b816a24ec1.ipynb")
 #
 # ## and then sys.path() will return "~/file50b816a24ec1.ipynb"
 }

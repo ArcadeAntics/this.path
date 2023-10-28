@@ -185,11 +185,18 @@ extern SEXP do_asArgs do_formals;
 
 extern SEXP do_is_unevaluated_promise do_formals;
 extern SEXP do_promise_is_unevaluated do_formals;
-extern SEXP do_PRVALUE_no_warn        do_formals;
+extern SEXP do_forcePromise_no_warn   do_formals;
 extern SEXP do_PRINFO                 do_formals;
 extern SEXP do_mkPROMISE              do_formals;
 extern SEXP do_mkEVPROMISE            do_formals;
 extern SEXP do_unlockEnvironment      do_formals;
+
+
+/* rgui_path.c */
+
+
+extern SEXP do_CharacterMode do_formals;
+extern SEXP do_RConsole      do_formals;
 
 
 /* rprojroot.c */
@@ -217,28 +224,21 @@ extern SEXP do_thisPathNotExistsError                   do_formals;
 extern SEXP do_thisPathInZipFileError                   do_formals;
 extern SEXP do_thisPathInAQUAError                      do_formals;
 
-extern SEXP do_is_clipboard         do_formals;
-extern SEXP do_init_tools_rstudio   do_formals;
-extern SEXP do_sys_path_jupyter     do_formals;
-extern SEXP do_set_sys_path_jupyter do_formals;
-extern SEXP do_sys_path_rgui        do_formals;
-extern SEXP do_sys_path             do_formals;
-extern SEXP do_getframenumber       do_formals;
-extern SEXP do_env_path             do_formals;
-extern SEXP do_sys_srcref           do_formals;
-extern SEXP do_src_path             do_formals;
-extern SEXP do_src_LINENO           do_formals;
-extern SEXP do_this_path            do_formals;
-extern SEXP do_istrue               do_formals;
-extern SEXP do_isfalse              do_formals;
-extern SEXP do_asInteger            do_formals;
-extern SEXP do_asIntegerGE0         do_formals;
-
-
-/* thispathdefn.c */
-
-
-extern SEXP do_get_dyn do_formals;
+extern SEXP do_is_clipboard       do_formals;
+extern SEXP do_init_tools_rstudio do_formals;
+extern SEXP do_jupyter_path       do_formals;
+extern SEXP do_set_jupyter_path   do_formals;
+extern SEXP do_rgui_path          do_formals;
+extern SEXP do_remove_trailing_blank_string do_formals;
+extern SEXP do_fixNewlines        do_formals;
+extern SEXP do_set_gui_path       do_formals;
+extern SEXP do_sys_path           do_formals;
+extern SEXP do_getframenumber     do_formals;
+extern SEXP do_env_path           do_formals;
+extern SEXP do_sys_srcref         do_formals;
+extern SEXP do_src_path           do_formals;
+extern SEXP do_src_LINENO         do_formals;
+extern SEXP do_this_path          do_formals;
 
 
 /* trycatch.c */
@@ -247,6 +247,18 @@ extern SEXP do_get_dyn do_formals;
 extern SEXP do_last_condition do_formals;
 extern SEXP do_tryCatch2      do_formals;
 extern SEXP do_tryCatch3      do_formals;
+
+
+/* utils.c */
+
+
+extern SEXP do_istrue        do_formals;
+extern SEXP do_isfalse       do_formals;
+extern SEXP do_asInteger     do_formals;
+extern SEXP do_asIntegerGE0  do_formals;
+extern SEXP do_IS_SCALAR_STR do_formals;
+extern SEXP do_scalar_streql do_formals;
+extern SEXP do_get_dyn       do_formals;
 
 
 /* wrapsource.c */

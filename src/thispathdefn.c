@@ -609,12 +609,22 @@ static Rboolean _init_tools_rstudio(void)
 
 
 #define assigninmynamespace(sym, val)                          \
-            if (R_BindingIsLocked((sym), mynamespace)) {       \
-                R_unLockBinding((sym), mynamespace);           \
-                INCREMENT_NAMED_defineVar((sym), (val), mynamespace);\
-                R_LockBinding((sym), mynamespace);             \
-            }                                                  \
-            else INCREMENT_NAMED_defineVar((sym), (val), mynamespace)
+            do {                                               \
+                SEXP e = findVarInFrame(mynamespace, (sym));   \
+                if (TYPEOF(e) == PROMSXP) {                    \
+                    SET_PRCODE(e, (val));                      \
+                    SET_PRENV(e, R_NilValue);                  \
+                    SET_PRVALUE(e, (val));                     \
+                    SET_PRSEEN(e, 0);                          \
+                } else {                                       \
+                    if (R_BindingIsLocked((sym), mynamespace)) {\
+                        R_unLockBinding((sym), mynamespace);   \
+                        INCREMENT_NAMED_defineVar((sym), makeEVPROMISE((val), (val)), mynamespace);\
+                        R_LockBinding((sym), mynamespace);     \
+                    }                                          \
+                    else INCREMENT_NAMED_defineVar((sym), makeEVPROMISE((val), (val)), mynamespace);\
+                }                                              \
+            } while (0)
 
 
             assigninmynamespace(_rs_api_getActiveDocumentContextSymbol, _rs_api_getActiveDocumentContext);
@@ -636,13 +646,13 @@ static Rboolean _init_tools_rstudio(void)
 }
 
 
-int gui_rstudio = -1;
+int _gui_rstudio = -1;
 Rboolean has_tools_rstudio = FALSE;
 
 
 Rboolean init_tools_rstudio(Rboolean skipCheck)
 {
-    if (skipCheck || in_rstudio) {
+    if (skipCheck || gui_rstudio) {
         if (!has_tools_rstudio) {
             has_tools_rstudio = _init_tools_rstudio();
         }
@@ -651,7 +661,7 @@ Rboolean init_tools_rstudio(Rboolean skipCheck)
 }
 
 
-int maybe_unembedded_shell = -1;
+int _maybe_unembedded_shell = -1;
 
 
 #ifdef _WIN32
@@ -691,70 +701,4 @@ int is_url(const char *url)
 int is_file_uri(const char *url)
 {
     return strncmp(url, "file://", 7) == 0;
-}
-
-
-SEXP do_get_dyn do_formals
-{
-    do_start_no_op("get.dyn", 3);
-
-
-    int nprotect = 0;
-
-
-    SEXP sym = CAR(args); args = CDR(args);
-    if (TYPEOF(sym) == SYMSXP);
-    else if (isValidStringF(sym)) {
-        if (XLENGTH(sym) > 1)
-            errorcall(call, _("first argument has length > 1"));
-        sym = installTrChar(STRING_ELT(sym, 0));
-    }
-    else errorcall(call, _("invalid first argument"));
-
-
-    int minframe = asInteger(CAR(args)); args = CDR(args);
-    if (minframe == NA_INTEGER || minframe < 0)
-        errorcall(call, _("invalid '%s' argument"), "minframe");
-
-
-    Rboolean inherits = asLogical(CAR(args)); args = CDR(args);
-    if (inherits == NA_LOGICAL)
-        errorcall(call, _("invalid '%s' argument"), "inherits");
-
-
-    int N = asInteger(eval(expr_sys_nframe, rho));
-    SEXP which = allocVector(INTSXP, 1);
-    PROTECT(which); nprotect++;
-    int *iwhich = INTEGER(which);
-    SEXP getframe;
-    {
-        PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(getframe = CONS(which, R_NilValue), &indx); nprotect++;
-        REPROTECT(getframe = LCONS(getFromBase(sys_frameSymbol), getframe), indx);
-    }
-
-
-    SEXP frame, value;
-
-
-    for (iwhich[0] = N - 1; iwhich[0] >= minframe; iwhich[0]--) {
-        frame = eval(getframe, rho);
-        value = (inherits ? findVar(sym, frame) : findVarInFrame(frame, sym));
-        if (value != R_UnboundValue) {
-            if (TYPEOF(value) == PROMSXP) {
-                if (PRVALUE(value) == R_UnboundValue) {
-                    PROTECT(value);
-                    value = eval(value, R_EmptyEnv);
-                    UNPROTECT(1);
-                }
-                else value = PRVALUE(value);
-            }
-            UNPROTECT(nprotect);
-            return value;
-        }
-    }
-
-
-    UNPROTECT(nprotect);
-    return getInFrame(ifnotfoundSymbol, rho, FALSE);
 }
