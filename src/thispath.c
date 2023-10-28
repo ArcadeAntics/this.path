@@ -290,13 +290,11 @@ SEXP do_jupyter_path do_formals
 
 Rboolean validJupyterRNotebook(SEXP path)
 {
-    SEXP expr = LCONS(_validJupyterRNotebookSymbol, CONS(path, R_NilValue));
+    SEXP expr = LCONS(_getJupyterRNotebookContentsSymbol, CONS(path, R_NilValue));
     PROTECT(expr);
     SEXP value = eval(expr, mynamespace);
-    if (!IS_SCALAR(value, LGLSXP) || LOGICAL(value)[0] == NA_LOGICAL)
-        errorcall(expr, "invalid return value");
     UNPROTECT(1);
-    return LOGICAL(value)[0];
+    return (value != R_NilValue);
 }
 
 

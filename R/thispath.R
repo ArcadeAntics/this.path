@@ -335,10 +335,6 @@ delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
 }
 
 
-.validJupyterRNotebook <- function (path)
-!is.null(.getJupyterRNotebookContents())
-
-
 .jupyter.path <- evalq(envir = new.env(), {
     delayedAssign("ofile", NA_character_)
     ofile

@@ -175,7 +175,7 @@ extern0 SEXP0
     print_defaultSymbol                    INI_as(install("print.default")),
     _xDataSymbol                           INI_as(install(".xData")),
     _DataSymbol                            INI_as(install(".Data")),
-    _validJupyterRNotebookSymbol           INI_as(install(".validJupyterRNotebook")),
+    _getJupyterRNotebookContentsSymbol     INI_as(install(".getJupyterRNotebookContents")),
     R_LengthSymbol                         INI_as(install("length")),
     file_infoSymbol                        INI_as(install("file.info")),
     is_naSymbol                            INI_as(install("is.na")),

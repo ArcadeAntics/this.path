@@ -238,7 +238,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\{(utils|microbenchmark|compiler|box|IRkernel|jsonlite|knitr|plumber|rprojroot|rstudioapi|shiny|targets|testthat)\\}", x, value = TRUE)
+    x <- grep("_validJupyterRNotebookSymbol", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 
