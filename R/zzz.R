@@ -273,7 +273,7 @@ if (getRversion() < "3.0.0") {
     ## promises.R   ----
 
 
-    fix.External2.promise(".shINFO", ".gui.rstudio")
+    fix.External2.promise(".gui.rstudio", ".os.windows.maybe.unembedded.shell", ".shINFO", ".gui.rgui")
     fix.External2.fun(`.init.tools:rstudio`)
     fix.External2.fun(.PRINFO)
     fix.External2.fun(.mkPROMISE)
@@ -323,10 +323,12 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(.thisPathInZipFileError)
     fix.External2.fun(.thisPathInAQUAError)
     fix.External2.fun(.is.clipboard)
+    fix.External2.fun(.fixNewlines)
     fix.External2.fun(.jupyter.path)
     fix.External2.fun(.rgui.path)
     fix.External2.fun(.gui.path)
     fix.External2.fun(set.jupyter.path)
+    fix.External2.fun(set.gui.path)
     fix.External2.fun(.faster.subsequent.times.test)
     fix.External2.fun(sys.path)
     fix.External2.fun(sys.dir)
@@ -363,6 +365,10 @@ if (getRversion() < "3.0.0") {
 
     fix.External2.fun(.istrue)
     fix.External2.fun(.isfalse)
+    fix.External2.fun(.asInteger)
+    fix.External2.fun(.asIntegerGE0)
+    fix.External2.fun(.IS_SCALAR_STR)
+    fix.External2.fun(.scalar_streql)
     fix.External2.fun(get.dyn)
 
 
@@ -374,6 +380,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(unset.sys.path)
     fix.External2.fun(set.env.path)
     fix.External2.fun(set.src.path)
+    fix.External2.fun(set.sys.path.function)
 
 
     rm(fix.External2.promise, fix.External2.fun, fix.External2)

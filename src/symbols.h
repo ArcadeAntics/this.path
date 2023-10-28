@@ -150,7 +150,6 @@ extern0 SEXP0
     originalSymbol                         INI_as(install("original")),
     for_msgSymbol                          INI_as(install("for.msg")),
     contentsSymbol                         INI_as(install("contents")),
-    _custom_gui_path_characterSymbol       INI_as(install(".custom.gui.path.character")),
     _custom_gui_path_functionSymbol        INI_as(install(".custom.gui.path.function")),
     guinameSymbol                          INI_as(install("guiname")),
     _jupyter_pathSymbol                    INI_as(install(".jupyter.path")),

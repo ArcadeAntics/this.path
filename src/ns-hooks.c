@@ -183,10 +183,13 @@ SEXP do_onLoad do_formals
     /* rprojroot.R */
     LockCLOENV(install(".find.root"), TRUE);
     LockCLOENV(install(".proj"), FALSE);
-    /* ./R/thispath.R */
+    /* startup.R */
+    LockCLOENV(_site_fileSymbol, TRUE);
+    LockCLOENV(_init_fileSymbol, TRUE);
+    /* thispath.R */
     LockCLOENV(_shFILESymbol, TRUE);
     LockCLOENV(_jupyter_pathSymbol, TRUE);
-    /* ./R/zzz.R */
+    /* zzz.R */
     // LockCLOENV(install("eval.with.message"), FALSE);
 
 

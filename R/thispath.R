@@ -307,28 +307,36 @@ delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
 .gui.jupyter && isNamespaceLoaded("IRkernel") && (.identical)(sys.function(1L), IRkernel::main)
 
 
-.validJupyterRNotebook <- function (path)
+.getJupyterRNotebookContents <- function (path)
 {
+    ## similar to .getJupyterNotebookContents(), but does some error handling
+    ## and checks that the metadata is valid for a Jupyter R Notebook
+    path
     contents <- tryCatch(.getContents(path), error = identity)
     if (!inherits(contents, "error")) {
         contents <- tryCatch(jsonlite::parse_json(contents, simplifyVector = TRUE),
             error = identity)
         if (!inherits(contents, "error")) {
             language <- .getNamedElement(contents, c("metadata", "kernelspec", "language"))
-            name <- .getNamedElement(contents, c("metadata", "language_info", "name"))
-            version <- .getNamedElement(contents, c("metadata", "language_info", "version"))
-            source <- .getNamedElement(contents, c("cells", "source"))
-            if (.IS_SCALAR_STR(language) && !is.na(language) && language == "R" &&
-                .IS_SCALAR_STR(name)     && !is.na(name)     && name     == "R" &&
-                .IS_SCALAR_STR(version)  && !is.na(version)  && version  == as.character(getRversion()) &&
+            name     <- .getNamedElement(contents, c("metadata", "language_info", "name"))
+            version  <- .getNamedElement(contents, c("metadata", "language_info", "version"))
+            source   <- .getNamedElement(contents, c("cells", "source"))
+            # withAutoprint( { language; name; version; source } , spaced = TRUE, verbose = FALSE, width.cutoff = 60L); cat("\n\n\n\n\n")
+            if (.scalar_streql(language, "R") &&
+                .scalar_streql(name    , "R") &&
+                .scalar_streql(version , as.character(getRversion())) &&
                 is.list(source) && length(source) && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
             {
-                return(TRUE)
+                return(source)
             }
         }
     }
-    FALSE
+    NULL
 }
+
+
+.validJupyterRNotebook <- function (path)
+!is.null(.getJupyterRNotebookContents())
 
 
 .jupyter.path <- evalq(envir = new.env(), {
@@ -378,38 +386,14 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 
 
     for (file in c(ipynb, IPYNB, files)) {
-        CONTENTS <- tryCatch(.getContents(file), error = identity)
-        if (!inherits(CONTENTS, "error")) {
-            CONTENTS <- tryCatch(jsonlite::parse_json(CONTENTS, simplifyVector = TRUE),
+        for (lines in .getJupyterRNotebookContents(file)) {
+            exprs <- tryCatch(parse(text = lines, srcfile = NULL, keep.source = FALSE),
                 error = identity)
-            if (!inherits(CONTENTS, "error")) {
-
-
-                language <- .getNamedElement(CONTENTS, c("metadata", "kernelspec", "language"))
-                name     <- .getNamedElement(CONTENTS, c("metadata", "language_info", "name"))
-                version  <- .getNamedElement(CONTENTS, c("metadata", "language_info", "version"))
-                source   <- .getNamedElement(CONTENTS, c("cells", "source"))
-
-
-                # withAutoprint( { language; name; version; source } , spaced = TRUE, verbose = FALSE, width.cutoff = 60L); cat("\n\n\n\n\n")
-
-
-                if (.IS_SCALAR_STR(language) && !is.na(language) && language == "R" &&
-                    .IS_SCALAR_STR(name)     && !is.na(name)     && name     == "R" &&
-                    .IS_SCALAR_STR(version)  && !is.na(version)  && version  == as.character(getRversion()) &&
-                    is.list(source) && length(source) && all(vapply(source, is.character, NA, USE.NAMES = FALSE)))
-                {
-                    for (source0 in source) {
-                        exprs <- tryCatch(parse(text = source0, n = -1, keep.source = FALSE, srcfile = NULL),
-                            error = identity)
-                        if (!inherits(exprs, "error")) {
-                            for (expr in exprs) {
-                                if (identical(expr, call)) {
-                                    .External2(.C_set.jupyter.path, file, skipCheck = TRUE)
-                                    return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
-                                }
-                            }
-                        }
+            if (!inherits(exprs, "error")) {
+                for (expr in exprs) {
+                    if (identical(expr, call)) {
+                        .External2(.C_set.jupyter.path, file, skipCheck = TRUE)
+                        return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
                     }
                 }
             }

@@ -55,10 +55,12 @@ SEXP do_scalar_streql do_formals
 {
     do_start_no_call_op_rho("scalar_streql", 2);
     SEXP e1 = CAR(args); args = CDR(args);
+    if (!IS_SCALAR(e1, STRSXP))
+        return R_FalseValue;
     SEXP e2 = CAR(args); args = CDR(args);
     // if (IS_SCALAR(e2, LGLSXP) && LOGICAL(e2)[0] == NA_LOGICAL)
     //     e2 = ScalarString(NA_STRING);
-    if (!(IS_SCALAR(e1, STRSXP) && IS_SCALAR(e2, STRSXP)))
+    if (!IS_SCALAR(e2, STRSXP))
         return R_FalseValue;
     e1 = STRING_ELT(e1, 0);
     e2 = STRING_ELT(e2, 0);

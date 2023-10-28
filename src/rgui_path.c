@@ -293,12 +293,9 @@ SEXP do_CharacterMode do_formals
 {
     do_start_no_call_op_rho("CharacterMode", 0);
     switch (CharacterMode) {
-    case RGui:
-        return mkString("RGui");
-    case RTerm:
-        return mkString("RTerm");
-    case LinkDLL:
-        return mkString("LinkDLL");
+    case RGui:    return mkString("RGui");
+    case RTerm:   return mkString("RTerm");
+    case LinkDLL: return mkString("LinkDLL");
     }
     return ScalarString(NA_STRING);
 }
