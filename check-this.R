@@ -15,6 +15,14 @@ local({
 })
 
 
+local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
+    FILE <- "./tools/for-r-mac-builder"
+            if (!file.create(FILE)) stop(sprintf("unable to create file '%s'", FILE))
+    on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
+    essentials:::check.this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
+})
+
+
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
     upcoming.CRAN.version <- "2.2.0"
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
@@ -85,20 +93,6 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
     essentials:::.update.DESCRIPTION.Date()
     essentials:::check.this(  ## this.path
         INSTALL = FALSE, check = FALSE, chdir = TRUE
-    )
-})
-
-
-local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
-    FILE <- "./tools/for-r-mac-builder"
-            if (!file.create(FILE)) stop(sprintf("unable to create file '%s'", FILE))
-    on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
-    essentials:::check.this(
-        INSTALL = FALSE,
-
-        check = FALSE,
-
-        chdir = TRUE
     )
 })
 
