@@ -595,6 +595,6 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 .External2(.C_scalar_streql, e1, e2)
 
 
-get.dyn <- function (x, ifnotfound = stop(gettextf("object '%s' not found", as.character(x), domain = "R"), domain = NA),
+.get.dyn <- function (x, ifnotfound = stop(gettextf("object '%s' not found", as.character(x), domain = "R"), domain = NA),
     minframe = 1L, inherits = FALSE)
 .External2(.C_get.dyn, x, minframe, inherits)

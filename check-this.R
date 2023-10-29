@@ -238,7 +238,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("_validJupyterRNotebookSymbol", x, value = TRUE)
+    x <- grep("(?<!keep|sys)\\.source", x, perl = TRUE, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

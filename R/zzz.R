@@ -369,7 +369,7 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(.asIntegerGE0)
     fix.External2.fun(.IS_SCALAR_STR)
     fix.External2.fun(.scalar_streql)
-    fix.External2.fun(get.dyn)
+    fix.External2.fun(.get.dyn)
 
 
     ## wrapsource.R ----
