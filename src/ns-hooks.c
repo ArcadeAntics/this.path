@@ -108,6 +108,28 @@ SEXP do_onLoad do_formals
 #endif
 
 
+#ifdef R_VERSION
+    {
+        SEXP expr = LCONS(install("getRversion"), R_NilValue);
+        PROTECT(expr);
+        SEXP v = eval(expr, R_BaseEnv);
+        PROTECT(v);
+        if (IS_SCALAR(v, VECSXP)) {
+            v = VECTOR_ELT(v, 0);
+            if (TYPEOF(v) == INTSXP && LENGTH(v) == 3) {
+                int *iv = INTEGER(v);
+                if (iv[0] == atoi(R_MAJOR) &&
+                    iv[1] == atoi(R_MINOR));
+                else warningcall_immediate(R_NilValue,
+                    "package '%s' was built under R version %s.%s\n but is being loaded in R %d.%d.%d",
+                    CHAR(PRINTNAME(_packageName)), R_MAJOR, R_MINOR, iv[0], iv[1], iv[2]);
+            }
+        }
+        UNPROTECT(2);
+    }
+#endif
+
+
     /* get my namespace from the namespace registry */
     mynamespace = findVarInFrame(R_NamespaceRegistry, _packageName);
     if (TYPEOF(mynamespace) != ENVSXP)

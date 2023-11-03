@@ -29,98 +29,82 @@ extern UImode CharacterMode;
 
 
 static SEXP          EnumResult;
-static int           EnumCount;
+static HWND          EnumHandle;
 static PROTECT_INDEX EnumIndex;
 static DWORD         EnumProcessId;
 
 
-static BOOL CALLBACK EnumRichEditGetTextProc(HWND handle, LPARAM param)
+static BOOL CALLBACK EnumGetOnlyChildProc(HWND handle, LPARAM param)
 {
-    if (EnumCount) {
-        REPROTECT(EnumResult = NULL, EnumIndex);
+    if (EnumHandle) {
+        EnumHandle = NULL;
         return FALSE;
+    } else {
+        EnumHandle = handle;
+        return TRUE;
     }
-    EnumCount++;
+}
 
 
+static void HWND_lines(HWND handle, const char *title)
+{
+    EnumHandle = NULL;
+    EnumChildWindows(handle, EnumGetOnlyChildProc, 0);
+    if (!EnumHandle) return;
+
+
+    /* check that the class name is RichEdit20W or RichEdit20A */
     char className[13];
-    GetClassName(handle, className, 13);
-    if (strlen(className) == 11 &&
-        strncmp(className, "RichEdit20", 10) == 0 &&
-        (className[10] == 'W' || className[10] == 'A'));
-    else return FALSE;
+    GetClassName(EnumHandle, className, 13);
+    if (strncmp(className, "RichEdit20", 10) == 0 &&
+        (className[10] == 'W' || className[10] == 'A') &&
+        className[11] == '\0');
+    else return;
 
 
-    LRESULT len = SendMessage(handle, WM_GETTEXTLENGTH, 0, (LPARAM) 0);
-    if (len) {
-        char buf[len + 1];
-        if (!SendMessage(handle, WM_GETTEXT, len + 1, (LPARAM) buf))
-            error("unable to WM_GETTEXT from %s", className);
-        REPROTECT(EnumResult = mkChar(buf), EnumIndex);
+    REPROTECT(EnumResult = allocVector(VECSXP, 1), EnumIndex);
+    LRESULT len = SendMessage(EnumHandle, WM_GETTEXTLENGTH, 0, (LPARAM) 0);
+    /* if there is no text to get, then return list("") */
+    if (!len) {
+        SET_VECTOR_ELT(EnumResult, 0, R_BlankScalarString);
+        return;
     }
-    else REPROTECT(EnumResult = R_BlankScalarString, EnumIndex);
-
-
-    return TRUE;
-}
-
-
-static SEXP win_fixNewlines(SEXP x)
-{
-    Rboolean found_newlines = FALSE;
-    R_xlen_t num_new_strings = 0;
-    const char *str = CHAR(x);
+    char buf[len + 1];
+    if (!SendMessage(EnumHandle, WM_GETTEXT, len + 1, (LPARAM) buf))
+        error("unable to WM_GETTEXT from <pointer: %p>,\n  child of <pointer: %p> with title '%s'",
+              (void *) EnumHandle, (void *) handle, title);
+    const char *str = buf;
     const char *p = strstr(str, "\r\n");
-    if (p) {
-        found_newlines = TRUE;
-        do {
-            str = p + 2;
-            if (*str) {
-                num_new_strings++;
-                p = strstr(str, "\r\n");
-            }
-            else break;
-        } while (p);
+    /* if there are no newlines in the text, just return as is */
+    if (!p) {
+        SET_VECTOR_ELT(EnumResult, 0, mkString(buf));
+        return;
     }
-    if (found_newlines) {
-        SEXP y = allocVector(STRSXP, 1 + num_new_strings);
-        PROTECT(y);
-        R_xlen_t i = 0;
-        const char *str = CHAR(x);
-        const char *p = strstr(str, "\r\n");
-        do {
-            SET_STRING_ELT(y, i++, mkCharLen(str, p - str));
-            str = p + 2;
-            if (*str) {
-                p = strstr(str, "\r\n");
-            }
-            else break;
-        } while (p);
-        if (*str) SET_STRING_ELT(y, i++, mkChar(str));
-        UNPROTECT(1);
-        return y;
-    }
-    else return ScalarString(x);
-}
-
-
-static void HWND_lines(HWND handle)
-{
-    EnumCount = 0;
-
-
-    EnumChildWindows(handle, EnumRichEditGetTextProc, 0);
-
-
-    if (EnumResult) {
-        if (EnumResult != R_BlankScalarString)
-            REPROTECT(EnumResult = win_fixNewlines(EnumResult), EnumIndex);
-        SEXP EnumResult0;
-        PROTECT(EnumResult0 = EnumResult);
-        REPROTECT(EnumResult = allocVector(VECSXP, 1), EnumIndex);
-        SET_VECTOR_ELT(EnumResult, 0, EnumResult0);
-        UNPROTECT(1);  /* this unprotects EnumResult0 but not EnumResult */
-    }
+    /* count how many strings need to be allocated, then allocate them */
+    R_xlen_t n_strings = 1;
+    do {
+        str = p + 2;
+        if (*str) {
+            n_strings++;
+            p = strstr(str, "\r\n");
+        }
+        else break;
+    } while (p);
+    SEXP x = allocVector(STRSXP, n_strings);
+    SET_VECTOR_ELT(EnumResult, 0, x);
+    /* set the strings in the string vector */
+    R_xlen_t i = 0;
+    str = buf;
+    p = strstr(str, "\r\n");
+    do {
+        SET_STRING_ELT(x, i++, mkCharLen(str, p - str));
+        str = p + 2;
+        if (*str) {
+            p = strstr(str, "\r\n");
+        }
+        else break;
+    } while (p);
+    if (*str) SET_STRING_ELT(x, i++, mkChar(str));
 }
 
 
@@ -172,7 +156,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
                 Rprintf(EnumActive ? "Source: active document in Rgui\n" :\
                                      "Source: source document in Rgui\n")
             if (EnumContents) {
-                HWND_lines(handle);
+                HWND_lines(handle, title);
                 if (EnumResult) {
                     RprintRguiMessage;
                     return FALSE;
@@ -212,7 +196,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
 #define return_abs_path                                        \
                 RprintRguiMessage;                             \
                 if (EnumContents) {                            \
-                    HWND_lines(handle);                        \
+                    HWND_lines(handle, title);                 \
                     if (EnumResult) return FALSE;              \
                 }                                              \
                 if (EnumOriginal) {                            \

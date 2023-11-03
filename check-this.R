@@ -7,7 +7,7 @@ local({
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, no.stop.on.test.error = TRUE,
+        check = TRUE, no.stop.on.test.error = TRUE,
         as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
@@ -24,7 +24,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming.CRAN.version <- "2.2.0"
+    upcoming.CRAN.version <- "2.2.1"
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
 
@@ -91,9 +91,7 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
 
 
     essentials:::.update.DESCRIPTION.Date()
-    essentials:::check.this(  ## this.path
-        INSTALL = FALSE, check = FALSE, chdir = TRUE
-    )
+    essentials:::check.this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
 })
 
 
