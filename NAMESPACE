@@ -181,15 +181,14 @@ export(site.file, init.file)
 ## thispath.R   ----
 
 
-export(shFILE               , normalized.shFILE    ,
-       set.jupyter.path     , set.sys.path.jupyter , set.this.path.jupyter,
+export(shFILE               , set.jupyter.path     ,
+       set.sys.path.jupyter , set.this.path.jupyter,
        set.gui.path         , thisPathNotExistsError,
        sys.path             , sys.dir              ,
        env.path             , env.dir              ,
        src.path             , src.dir              ,
        this.path            , this.dir             ,
-       sys.srcref           , this.path2           ,
-       this.dir2            , this.dir3            ,
+       sys.srcref           ,
        sys.here             , env.here             ,
        src.here             , here                 ,
        ici                  , Sys.path             ,

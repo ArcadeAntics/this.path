@@ -4,6 +4,13 @@ CHANGES IN this.path devel:
 
   SIGNIFICANT USER-VISIBLE CHANGES:
 
+    * Previously defunct functions this.path2(), this.dir2(),
+      this.dir3(), and normalized.shFILE() were removed entirely.
+
+CHANGES IN this.path 2.2.0 (2023-10-29):
+
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
     * Active bindings 'FILE' and 'LINE' have been converted to regular
       bindings 'FILE()' and 'LINE()' after the unfortunate realization
       that active binding functions are always evaluated in the global

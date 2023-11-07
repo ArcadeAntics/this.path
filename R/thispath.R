@@ -61,11 +61,6 @@ shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
 }
 
 
-normalized.shFILE <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("shFILE", .(.pkgname), old = "normalized.shFILE"))
-)))
-
-
 
 
 
@@ -852,25 +847,6 @@ sys.srcref <- function (n = 1L, which = if (n) sys.parent(n) else 0L)
     n <- .External2(.C_asIntegerGE0, n)
     .External2(.C_sys.srcref, which)
 }
-
-
-
-
-
-this.path2 <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("sys.path(..., default = NULL)", .(.pkgname), old = "this.path2(...)"))
-)))
-
-
-this.dir2 <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("sys.dir(..., default = NULL)", .(.pkgname), old = "this.dir2(...)"))
-)))
-
-
-
-this.dir3 <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("sys.dir(..., default = getwd())", .(.pkgname), old = "this.dir3(...)"))
-)))
 
 
 

@@ -3,6 +3,15 @@
 \section{CHANGES IN VERSION devel}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
+      \item{Previously defunct functions \code{this.path2()},
+        \code{this.dir2()}, \code{this.dir3()}, and \code{normalized.shFILE()}
+        were removed entirely.}
+    }
+  }
+}
+\section{CHANGES IN VERSION 2.2.0 (2023-10-29)}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
       \item{Active bindings \codeorsQuote{FILE} and \codeorsQuote{LINE} have
         been converted to regular bindings \code{FILE()} and \code{LINE()}
         after the unfortunate realization that active binding functions are
