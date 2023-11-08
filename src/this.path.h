@@ -223,6 +223,7 @@ extern SEXP do_thisPathNotImplementedError              do_formals;
 extern SEXP do_thisPathNotExistsError                   do_formals;
 extern SEXP do_thisPathInZipFileError                   do_formals;
 extern SEXP do_thisPathInAQUAError                      do_formals;
+extern SEXP do_thisPathInEmacsError                     do_formals;
 
 extern SEXP do_is_clipboard       do_formals;
 extern SEXP do_init_tools_rstudio do_formals;

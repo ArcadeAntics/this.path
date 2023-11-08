@@ -188,6 +188,10 @@ delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
 .External2(.C_thisPathInAQUAError, if (call.) call)
 
 
+.thisPathInEmacsError <- function (call = .getCurrentCall(), call. = TRUE)
+.External2(.C_thisPathInEmacsError, if (call.) call)
+
+
 ## helper functions for sys.path()     ----
 
 
@@ -561,6 +565,15 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         if (for.msg)
             NA_character_
         else stop(.thisPathInAQUAError())
+    }
+
+
+    else if (.gui.emacs) {
+
+
+        if (for.msg)
+            NA_character_
+        else stop(.thisPathInEmacsError())
     }
 
 

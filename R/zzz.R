@@ -45,10 +45,11 @@ tmp(
     ".os.unix.console.radian", ".os.windows.console.radian", ".console.radian",
     ".gui.vscode",
     ".gui.jupyter",
+    ".gui.emacs",
     ".gui.aqua", ".gui.rgui", ".gui.tk",
     ".os.unix.in.shell", ".os.windows.in.shell", ".in.shell",
     ".unrecognized.manner",
-    "initwd", ".ucrt",
+    "initwd", ".ucrt", ".GUI",
 
 
     ## relpath.R  ----

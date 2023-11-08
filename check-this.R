@@ -230,7 +230,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("this\\.dir3", x, perl = TRUE, value = TRUE)
+    x <- grep("\\.gui\\.vscode", x, perl = TRUE, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

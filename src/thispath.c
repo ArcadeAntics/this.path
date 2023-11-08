@@ -70,6 +70,13 @@ SEXP do_thisPathInAQUAError do_formals
 }
 
 
+SEXP do_thisPathInEmacsError do_formals
+{
+    do_start_no_call_op_rho("thisPathInEmacsError", 1);
+    return thisPathInEmacsError(lazy_duplicate(CAR(args)));
+}
+
+
 SEXP do_is_clipboard do_formals
 {
     do_start_no_call_op_rho("is.clipboard", 1);

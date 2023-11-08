@@ -395,6 +395,20 @@ SEXP thisPathInAQUAError(SEXP call)
 }
 
 
+SEXP thisPathInEmacsError(SEXP call)
+{
+    const char *msg = "R is running from Emacs which is currently unimplemented\n"
+                      " consider using RStudio / / VSCode until such a time when this is implemented";
+    const char *cls[] = {
+        "thisPathInEmacsError",
+        thisPathNotFoundErrorCls,
+        thisPathNotImplementedErrorCls,
+        NULL
+    };
+    return errorCondition(msg, call, cls, 0);
+}
+
+
 void stop(SEXP cond)
 {
     SEXP expr = LCONS(stopSymbol, CONS(cond, R_NilValue));

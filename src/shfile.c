@@ -406,7 +406,6 @@ SEXP do_shINFO do_formals
 
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1187
     common_command_line(&ac, av, enc, &has_enc, &no_site_file, &no_init_file, &no_echo);
-    // Rprintf("--encoding=%s\nhas encoding: %s\n", enc, has_enc ? "TRUE" : "FALSE");
 
 
 #ifdef debug
@@ -418,16 +417,16 @@ SEXP do_shINFO do_formals
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1190
     while (--ac) {
         if (processing && **++av == '-') {
-            // if (!strcmp(*av, "--help") || !strcmp(*av, "-h"));
-            // else if (!strcmp(*av, "--cd-to-userdocs"));
-            // else if (!strcmp(*av, "--no-environ"));
-            // else if (!strcmp(*av, "--ess"));
-            // else if (!strcmp(*av, "--internet2"));
-            // else if (!strcmp(*av, "--mdi"));
-            // else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi"));
-            // else if (!strcmp(*av, "--debug"));
-            // else
-            if (!strcmp(*av, "--args")) {
+            /*
+            if (!strcmp(*av, "--help") || !strcmp(*av, "-h"));
+            else if (!strcmp(*av, "--cd-to-userdocs"));
+            else if (!strcmp(*av, "--no-environ"));
+            else if (!strcmp(*av, "--ess"));
+            else if (!strcmp(*av, "--internet2"));
+            else if (!strcmp(*av, "--mdi"));
+            else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi"));
+            else if (!strcmp(*av, "--debug"));
+            else */ if (!strcmp(*av, "--args")) {
                 break;
             } else if (CharacterMode == RTerm && !strcmp(*av, "-f")) {
                 has_input = TRUE;
@@ -499,7 +498,6 @@ SEXP do_shINFO do_formals
 
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L405
     common_command_line(&ac, av, enc, &has_enc, &no_site_file, &no_init_file, &no_echo);
-    // Rprintf("--encoding=%s\nhas encoding: %s\n", enc, has_enc ? "TRUE" : "FALSE");
 
 
 #ifdef debug
@@ -514,9 +512,9 @@ SEXP do_shINFO do_formals
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
     while (--ac) {
         if (**++av == '-') {
-            // if (!strcmp(*av, "--no-readline"));
-            // else
-            if (!strcmp(*av, "-f")) {
+            /*
+            if (!strcmp(*av, "--no-readline"));
+            else */ if (!strcmp(*av, "-f")) {
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac) {

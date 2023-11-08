@@ -175,6 +175,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"thisPathNotExistsError"                  , (DL_FUNC) &do_thisPathNotExistsError                  , 2},
 {"thisPathInZipFileError"                  , (DL_FUNC) &do_thisPathInZipFileError                  , 2},
 {"thisPathInAQUAError"                     , (DL_FUNC) &do_thisPathInAQUAError                     , 1},
+{"thisPathInEmacsError"                    , (DL_FUNC) &do_thisPathInEmacsError                    , 1},
 
 {"is.clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
 {"init.tools.rstudio", (DL_FUNC) &do_init_tools_rstudio, -1},

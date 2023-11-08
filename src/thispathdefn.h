@@ -128,6 +128,7 @@ extern SEXP thisPathNotImplementedError             (const char *msg, SEXP call)
 extern SEXP thisPathNotExistsError                  (const char *msg, SEXP call);
 extern SEXP thisPathInZipFileError                  (SEXP call, SEXP description);
 extern SEXP thisPathInAQUAError                     (SEXP call);
+extern SEXP thisPathInEmacsError                    (SEXP call);
 
 
 extern void stop(SEXP cond);
