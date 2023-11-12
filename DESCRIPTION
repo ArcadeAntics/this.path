@@ -1,12 +1,12 @@
 Package: this.path
-Version: 2.2.0.3
-Date: 2023-11-08
+Version: 2.2.0.4
+Date: 2023-11-12
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
 Description: Determine the path of the executing script. Compatible
         with a few popular GUIs: 'Rgui', 'RStudio', 'VSCode',
-        'Jupyter', and 'Rscript' (shell). Compatible with several
-        functions and packages: 'source()', 'sys.source()',
+        'Jupyter', 'Emacs', and 'Rscript' (shell). Compatible with
+        several functions and packages: 'source()', 'sys.source()',
         'debugSource()' in 'RStudio', 'compiler::loadcmp()',
         'box::use()', 'knitr::knit()', 'plumber::plumb()',
         'shiny::runApp()', 'package:targets', and

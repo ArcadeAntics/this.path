@@ -211,6 +211,7 @@ SEXP do_onLoad do_formals
     /* thispath.R */
     LockCLOENV(_shFILESymbol, TRUE);
     LockCLOENV(_jupyter_pathSymbol, TRUE);
+    LockCLOENV(install(".emacs.path"), TRUE);
     /* zzz.R */
     // LockCLOENV(install("eval.with.message"), FALSE);
 

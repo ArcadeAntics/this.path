@@ -410,6 +410,140 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 })
 
 
+.emacs.path <- evalq(envir = new.env(), {
+    delayedAssign("emacsclient", local({
+        x <- Sys.which("emacsclient")
+        if (nzchar(x)) return(x)
+        msg <- "command \"emacsclient\" not found"
+        if (.Platform$OS.type == "windows") {
+            x <- Sys.getenv("SystemDrive")
+            x <- paste0(x, "\\PROGRA~1\\Emacs\\")
+            x <- list.dirs(x, recursive = FALSE)
+            n <- length(x)
+            if (!n) stop(msg)
+            pattern <- "^emacs-((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
+            y <- basename2(x)
+            if (n == 1L)
+                x <- x[grep(pattern, y)]
+            else {
+                m <- regexec(pattern, y)
+                keep <- which(lengths(m) == 2L)
+                x <- x[keep]
+                if (length(x) > 1L) {
+                    v <- regmatches(y[keep], m[keep])
+                    v <- vapply(v, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
+                    v <- numeric_version(v)
+                    x <- x[which.max(xtfrm(v))]
+                }
+            }
+            if (length(x) != 1L) stop(msg)
+            x <- paste0(x, "\\bin\\emacsclient.exe")
+            if (file.access(x, 1L) != 0L)
+                stop(msg)
+            x
+        }
+        else stop(msg)
+    }))
+    expr <- '
+(let ((buffers (buffer-list))
+      value
+      found-matching-pid)
+  (while (and buffers (not (and value found-matching-pid)))
+    (with-current-buffer (car buffers)
+      (if buffer-file-name
+          (if (and (not value) (string= major-mode "ess-r-mode"))
+              (setq value %s)
+          )
+        (if (and (not found-matching-pid) (string= major-mode "inferior-ess-r-mode"))
+            (let ((process (get-buffer-process (current-buffer))))
+              (if (and process (= (process-id process) %d))
+                (setq found-matching-pid t)
+              )
+            )
+        )
+      )
+    )
+    (setq buffers (cdr buffers))
+  )
+  (if (not found-matching-pid)
+      (setq value nil)
+  )
+  value
+)
+    '
+    expr <- gsub("^[ \t\n]+|[ \t\n]+$", "", expr)
+    expr <- gsub(";.*?\n", "\n", expr)
+    expr <- gsub("[ \t\n]+", " ", expr)
+    expr <- gsub("( ", "(", expr, fixed = TRUE)
+    expr <- gsub(" )", ")", expr, fixed = TRUE)
+function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    expr <- sprintf(expr,
+        if (contents) "(save-restriction (widen) (buffer-substring-no-properties (point-min) (point-max)))" else "buffer-file-name",
+        Sys.getpid()
+    )
+    args <- c(emacsclient, "-e", expr)
+    command <- paste(shQuote(args), collapse = " ")
+    # cat(command, sep = "\n")
+    rval <- suppressWarnings(system(command, intern = TRUE))
+    if (!is.null(status <- attr(rval, "status")) && status)
+        stop("command \"emacsclient\" failed with message:\n\n", paste(rval, collapse = "\n"),
+            "\n\nperhaps add (server-start) to your ~/.emacs file and restart the session\n",
+            "or type M-x server-start in your current session?")
+
+
+    ## for the sake of debugging, don't modify rval
+
+
+    if (.scalar_streql(rval, "nil")) {
+        if (for.msg)
+            NA_character_
+        else stop("R is running from Emacs with no documents open")
+    }
+    else if (contents) {
+        x <- rval
+        i <- grep("^\\*ERROR\\*: Unknown message: ", x)
+        if (length(i)) {
+            y <- x[i]
+            y <- substring(y, 27L)
+            j <- intersect(which(y == "-"), grep("^print-nonl ", y) - 1L)
+            if (length(j)) {
+                y[j] <- ""
+                y[j + 1L] <- substring(y[j + 1L], 12L)
+            }
+            y <- sub("^_", " ", y)
+            m <- gregexpr("&[-_&]", y)
+            y <- regmatches(y, m, invert = NA)
+            y <- vapply(y, function(yy) {
+                j <- match(yy, c("&-", "&_", "&&"), 0L)
+                yy[as.logical(j)] <- c("-", " ", "&")[j]
+                paste(yy, collapse = "")
+            }, "", USE.NAMES = FALSE)
+            x[i] <- y
+        }
+        x <- paste(x, collapse = "")
+        x <- str2lang(x)
+        if (!.IS_SCALAR_STR(x))
+            stop("command \"emacsclient\" failed to return a character string")
+        if (verbose) cat("Source: document in Emacs\n")
+        x <- .External2(.C_fixNewlines, x)
+        # y <- readLines(this.path::path.join(Sys.getenv("APPDATA"), "Code", "test.R"))
+        # identical(x, y)
+        list(x)
+    }
+    else {
+        path <- tryCatch(str2lang(rval), error = function(e) NULL)
+        if (!.IS_SCALAR_STR(path))
+            stop("command \"emacsclient\" failed to return a character string")
+        if (verbose) cat("Source: document in Emacs\n")
+        if (.isfalse(original))
+            .normalizePath(path)
+        else path
+    }
+}
+})
+
+
 .rgui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 .External2(.C_rgui.path, verbose, original, for.msg, contents, .untitled, .r.editor)
 
@@ -473,7 +607,9 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                     else
                         "Source: source document in RStudio\n"
                 )
-            list(.External2(.C_remove_trailing_blank_string, context[["contents"]]))
+            x <- context[["contents"]]
+            x <- .External2(.C_remove_trailing_blank_string, x)
+            list(x)
         }
         else if (nzchar(path <- context[["path"]])) {
             ## the encoding is not explicitly set (at least on Windows),
@@ -525,7 +661,9 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         }
         else if (contents) {
             if (verbose) cat("Source: document in VSCode\n")
-            list(.External2(.C_remove_trailing_blank_string, context[["contents"]]))
+            x <- context[["contents"]]
+            x <- .External2(.C_remove_trailing_blank_string, x)
+            list(x)
         }
         else if (startsWith(context[["id"]], "untitled:")) {
             if (for.msg)
@@ -571,9 +709,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     else if (.gui.emacs) {
 
 
-        if (for.msg)
-            NA_character_
-        else stop(.thisPathInEmacsError())
+        .emacs.path(verbose, original, for.msg, contents)
     }
 
 
