@@ -414,18 +414,24 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     delayedAssign("emacsclient", local({
         x <- Sys.which("emacsclient")
         if (nzchar(x)) return(x)
-        msg <- "command \"emacsclient\" not found"
-        if (.Platform$OS.type == "windows") {
+        if (.os.windows) {
+            msg.start <- "command \"emacsclient.exe\" not found on PATH\n or in default install location because "
+            msg.end <- "\n add \"emacsclient.exe\" to PATH and retry"
             x <- Sys.getenv("SystemDrive")
-            x <- paste0(x, "\\PROGRA~1\\Emacs\\")
-            x <- list.dirs(x, recursive = FALSE)
+            if (!nzchar(x))
+                stop(msg.start, "{SystemDrive} is not set", msg.end)
+            path <- paste0(x, "/PROGRA~1/Emacs")
+            if (!file.exists(path))
+                stop(msg.start, path, " is not an existing directory", msg.end)
+            x <- list.dirs(path, recursive = FALSE)
             n <- length(x)
-            if (!n) stop(msg)
+            if (!n)
+                stop(msg.start, path, " does not contain a directory emacs-{version}", msg.end)
             pattern <- "^emacs-((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
             y <- basename2(x)
-            if (n == 1L)
+            if (n == 1L) {
                 x <- x[grep(pattern, y)]
-            else {
+            } else {
                 m <- regexec(pattern, y)
                 keep <- which(lengths(m) == 2L)
                 x <- x[keep]
@@ -436,13 +442,14 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                     x <- x[which.max(xtfrm(v))]
                 }
             }
-            if (length(x) != 1L) stop(msg)
-            x <- paste0(x, "\\bin\\emacsclient.exe")
+            if (length(x) != 1L)
+                stop(msg.start, path, " does not contain a directory emacs-{version}", msg.end)
+            x <- paste0(x, "/bin/emacsclient.exe")
             if (file.access(x, 1L) != 0L)
-                stop(msg)
-            x
+                stop(msg.start, x, " does not exist or is not executable", msg.end)
+            chartr("/", "\\", x)
         }
-        else stop(msg)
+        else stop("command \"emacsclient\" not found; add to PATH and retry")
     }))
     expr <- '
 (let ((buffers (buffer-list))
@@ -482,7 +489,8 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
         if (contents) "(save-restriction (widen) (buffer-substring-no-properties (point-min) (point-max)))" else "buffer-file-name",
         Sys.getpid()
     )
-    args <- c(emacsclient, "-e", expr)
+    exe <- .External2(.C_forcePromise.no.warn, "emacsclient")
+    args <- c(exe, "-e", expr)
     command <- paste(shQuote(args), collapse = " ")
     # cat(command, sep = "\n")
     rval <- suppressWarnings(system(command, intern = TRUE))

@@ -294,10 +294,9 @@ delayedAssign(".gui.emacs",
     interactive() &&
     Sys.getenv("STATATERM") == "emacs" &&
     .maybe.unembedded.shell &&
-    length(commandArgs()) == 2L &&
     (
-        (.os.unix    && commandArgs()[[2L]] == "--no-readline") ||
-        (.os.windows && commandArgs()[[2L]] == "--ess")
+        (.os.unix    && .shINFO[["no.readline"]]) ||
+        (.os.windows && .shINFO[["ess"]])
     )
 )
 

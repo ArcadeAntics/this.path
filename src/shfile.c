@@ -275,11 +275,12 @@ SEXP do_shINFO do_formals
 #endif
 
 
-#define return_shINFO(_ENC_, _NO_SITE_FILE_, _NO_INIT_FILE_, _NO_ECHO_, _FILE_, _EXPR_, _HAS_INPUT_)\
+#define return_shINFO(_ENC_, _NO_SITE_FILE_, _NO_INIT_FILE_, _NO_READLINE_, _NO_ECHO_, _ESS_, _FILE_, _EXPR_, _HAS_INPUT_)\
         do {                                                   \
-            SEXP value = allocVector(VECSXP, 7);               \
+            int len = 9;                                       \
+            SEXP value = allocVector(VECSXP, len);             \
             PROTECT(value);                                    \
-            SEXP names = allocVector(STRSXP, 7);               \
+            SEXP names = allocVector(STRSXP, len);             \
             setAttrib(value, R_NamesSymbol, names);            \
             int indx = -1;                                     \
             SET_STRING_ELT(names, ++indx, mkChar("ENC"));      \
@@ -288,8 +289,12 @@ SEXP do_shINFO do_formals
             SET_VECTOR_ELT(value,   indx, (_NO_SITE_FILE_));   \
             SET_STRING_ELT(names, ++indx, mkChar("no.init.file"));\
             SET_VECTOR_ELT(value,   indx, (_NO_INIT_FILE_));   \
+            SET_STRING_ELT(names, ++indx, mkChar("no.readline"));\
+            SET_VECTOR_ELT(value,   indx, (_NO_READLINE_));    \
             SET_STRING_ELT(names, ++indx, mkChar("no.echo"));  \
             SET_VECTOR_ELT(value,   indx, (_NO_ECHO_));        \
+            SET_STRING_ELT(names, ++indx, mkChar("ess"));      \
+            SET_VECTOR_ELT(value,   indx, (_ESS_));            \
             SET_STRING_ELT(names, ++indx, mkChar("FILE"));     \
             SET_VECTOR_ELT(value,   indx, (_FILE_));           \
             SET_STRING_ELT(names, ++indx, mkChar("EXPR"));     \
@@ -306,7 +311,9 @@ SEXP do_shINFO do_formals
             /* ENC          */ ScalarString(NA_STRING),
             /* no.site.file */ R_LogicalNAValue,
             /* no.init.file */ R_LogicalNAValue,
+            /* no.readline  */ R_LogicalNAValue,
             /* no.echo      */ R_LogicalNAValue,
+            /* ess          */ R_LogicalNAValue,
             /* FILE         */ ScalarString(NA_STRING),
             /* EXPR         */ ScalarString(NA_STRING),
             /* has.input    */ R_LogicalNAValue
@@ -337,6 +344,12 @@ SEXP do_shINFO do_formals
     char cmdlines[10000];
     cmdlines[0] = '\0';
     Rboolean has_input = FALSE;
+    Rboolean ess, no_readline;
+#ifdef _WIN32
+    ess = FALSE, no_readline = NA_LOGICAL;
+#else
+    ess = NA_LOGICAL, no_readline = FALSE;
+#endif
 
 
     if (ARGC <= 1) {
@@ -348,7 +361,9 @@ SEXP do_shINFO do_formals
             ScalarString(has_enc ? mkChar(enc) : NA_STRING),   \
             ScalarLogical(no_site_file),                       \
             ScalarLogical(no_init_file),                       \
+            ScalarLogical(no_readline),                        \
             ScalarLogical(no_echo),                            \
+            ScalarLogical(ess),                                \
             ScalarString(FILE ? mkChar(FILE) : NA_STRING),     \
             ScalarString(strlen(cmdlines) ? mkChar(cmdlines) : NA_STRING),\
             ScalarLogical(has_input)                           \
@@ -421,12 +436,15 @@ SEXP do_shINFO do_formals
             if (!strcmp(*av, "--help") || !strcmp(*av, "-h"));
             else if (!strcmp(*av, "--cd-to-userdocs"));
             else if (!strcmp(*av, "--no-environ"));
-            else if (!strcmp(*av, "--ess"));
+            else */ if (!strcmp(*av, "--ess")) {
+                ess = TRUE;
+            }
+            /*
             else if (!strcmp(*av, "--internet2"));
             else if (!strcmp(*av, "--mdi"));
             else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi"));
-            else if (!strcmp(*av, "--debug"));
-            else */ if (!strcmp(*av, "--args")) {
+            else if (!strcmp(*av, "--debug")); */
+            else if (!strcmp(*av, "--args")) {
                 break;
             } else if (CharacterMode == RTerm && !strcmp(*av, "-f")) {
                 has_input = TRUE;
@@ -512,9 +530,10 @@ SEXP do_shINFO do_formals
 // https://github.com/wch/r-source/blob/trunk/src/unix/system.c#L406
     while (--ac) {
         if (**++av == '-') {
-            /*
-            if (!strcmp(*av, "--no-readline"));
-            else */ if (!strcmp(*av, "-f")) {
+            if (!strcmp(*av, "--no-readline")) {
+                no_readline = TRUE;
+            }
+            else if (!strcmp(*av, "-f")) {
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac) {
