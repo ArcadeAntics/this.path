@@ -803,7 +803,7 @@ delayedAssign(".identical", {
 
 
 function (x, y)
-identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE,
     extptr.as.ref = TRUE)
 
@@ -812,7 +812,7 @@ identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
 
 
 function (x, y)
-identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE)
 
 
@@ -820,7 +820,7 @@ identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
 
 
 function (x, y)
-identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE)
 
 
@@ -828,7 +828,7 @@ identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
 
 
 function (x, y)
-identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE)
 
 
@@ -836,14 +836,14 @@ identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
 
 
 function (x, y)
-identical(x1, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE)
+identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE)
 
 
     } else {
 
 
 function (x, y)
-identical(x1, y)
+identical(x, y)
 
 
     }
