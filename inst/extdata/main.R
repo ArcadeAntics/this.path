@@ -81,10 +81,10 @@ if (sys.nframe() != 0L) {
 
 
         testing <- FALSE
-        # testing <- TRUE; warning("comment 'testing <- TRUE' out later", immediate. = TRUE)
+        # testing <- TRUE; warning("comment out 'testing <- TRUE' later", immediate. = TRUE)
 
 
-        ## there was a time when I was doing something more along the lines:
+        ## there was a time when I was doing something along the lines:
         ##
         ## ```
         ## for (language in rownames(.languages)) {
@@ -95,8 +95,10 @@ if (sys.nframe() != 0L) {
         ## ```
         ##
         ## but it doesn't work well for Microsoft Visual C++ Runtime
-        ## because the messages usually get mis-translated in the windows titles
+        ## because the messages usually get mistranslated in the windows titles
         ## but they don't with gettext()
+        ##
+        ## we want the exact windows titles, mistranslated or otherwise
         ##
         ## and it also doesn't work well for Universal C Runtime in Lithuanian
 
@@ -106,11 +108,13 @@ if (sys.nframe() != 0L) {
 
 
         exe <- "Rscript.exe"
-        path <- normalizePath(R.home(".."), "/", TRUE)
+        path <- R.home("..")
+        path <- normalizePath(path, "/", TRUE)
         path <- list.files(path, full.names = TRUE)
         path <- file.path(path, "bin", exe)
-        path <- path[file.exists(path)]
+        path <- path[file.access(path, 1L) == 0L]
         path <- c(file.path(R.home("bin"), exe), path)
+        path <- utils::shortPathName(path)
 
 
         # args <- c("--version")
@@ -123,18 +127,20 @@ if (sys.nframe() != 0L) {
         # stop("comment this out later")
 
 
-        FILE <- tempfile(fileext = ".R")
-        on.exit(unlink(FILE), add = TRUE, after = FALSE)
-        writeLines("writeLines(c(identical(R.version[['crt']], 'ucrt'), as.character(getRversion()), file.path(R.home('bin'), 'Rgui.exe')))", FILE)
-        args <- c("--default-packages=NULL", "--vanilla", FILE)
+        FILE.R <- tempfile(fileext = ".R")
+        on.exit(unlink(FILE.R))
+        writeLines("writeLines(c(identical(R.version[['crt']], 'ucrt'), as.character(getRversion()), file.path(R.home('bin'), 'Rgui.exe')))", FILE.R)
+        args <- c("--default-packages=NULL", "--vanilla", FILE.R)
         args <- paste(shQuote(args), collapse = " ")
         command <- paste(shQuote(path), args)
         x <- vapply(command, system, intern = TRUE,
             FUN.VALUE = character(3), USE.NAMES = FALSE)
+        on.exit()
+        unlink(FILE.R)
         x <- data.frame(
             ucrt    = as.logical(x[1L, ]),
-            version = as.numeric_version(x[2L, ]),
-            rgui    = x[3L, ]
+            version = numeric_version(x[2L, ]),
+            rgui    = utils::shortPathName(x[3L, ])
         )
         x <- x[!duplicated(x$version), , drop = FALSE]
         x <- x[order(x$version, decreasing = TRUE), , drop = FALSE]
@@ -173,30 +179,30 @@ if (sys.nframe() != 0L) {
         x <- x[i, , drop = FALSE]
 
 
-        # rgui <- x$rgui[[1L]]; warning("comment this out later", immediate. = TRUE)
-        # ucrt <- x$ucrt[[1L]]; warning("comment this out later", immediate. = TRUE)
-
-
-        # rgui <- x$rgui[[2L]]; warning("comment this out later", immediate. = TRUE)
-        # ucrt <- x$ucrt[[2L]]; warning("comment this out later", immediate. = TRUE)
-
-
         write.r.editor <- function(rgui, ucrt) {
+
+
+            # rgui <- x$rgui[[1L]]; warning("comment this out later", immediate. = TRUE)
+            # ucrt <- x$ucrt[[1L]]; warning("comment this out later", immediate. = TRUE)
+
+
+            # rgui <- x$rgui[[2L]]; warning("comment this out later", immediate. = TRUE)
+            # ucrt <- x$ucrt[[2L]]; warning("comment this out later", immediate. = TRUE)
 
 
             FILES <- tempfile(fileext = c(".txt", ".R", ".Rprofile"))
             on.exit(unlink(FILES))
-            tmptxt      <- FILES[[1L]]
-            tmpR        <- FILES[[2L]]
-            tmpRprofile <- FILES[[3L]]
-            file.create(tmpR)
+            FILE.txt <- FILES[[1L]]
+            FILE.R   <- FILES[[2L]]
+            Rprofile <- FILES[[3L]]
+            file.create(FILE.R)
 
 
             local({
-                conn <- file(tmpRprofile, "wb", encoding = "")
+                conn <- file(Rprofile, "wb", encoding = "")
                 on.exit(close(conn))
-                writeLines(paste0("tmptxt <- rawToChar(as.raw(c(", paste0(as.integer(charToRaw(tmptxt)), "L", collapse = ", "), ")))"), conn, useBytes = TRUE)
-                writeLines(paste0("tmpR   <- rawToChar(as.raw(c(", paste0(as.integer(charToRaw(tmpR  )), "L", collapse = ", "), ")))"), conn, useBytes = TRUE)
+                writeLines(paste0("FILE.txt <- rawToChar(as.raw(c(", paste0(as.integer(charToRaw(FILE.txt)), "L", collapse = ", "), ")))"), conn, useBytes = TRUE)
+                writeLines(paste0("FILE.R   <- rawToChar(as.raw(c(", paste0(as.integer(charToRaw(FILE.R  )), "L", collapse = ", "), ")))"), conn, useBytes = TRUE)
                 writeLines('
                     .First <- function() {
                         options(error = function() {
@@ -207,31 +213,24 @@ if (sys.nframe() != 0L) {
                             if (!is.null(conn) && isOpen(conn))
                                 close(conn)
                         }, onexit = TRUE)
-                        conn <- file(tmptxt, "ab", encoding = "")
-                        utils::file.edit(tmpR)
-                        text <- names(utils::getWindowsHandles())[[1L]]
-                        if (Encoding(text) == "unknown") {
-                            loc <- l10n_info()
-                            Encoding(text) <- if (loc$`UTF-8`)
-                                "UTF-8"
-                            else if (loc$`Latin-1`)
-                                "latin1"
-                            else "unknown"
+                        fun <- function() {
+                            text <- names(utils::getWindowsHandles())[[1L]]
+                            if (Encoding(text) == "unknown") {
+                                loc <- l10n_info()
+                                Encoding(text) <- if (loc$`UTF-8`)
+                                    "UTF-8"
+                                else if (loc$`Latin-1`)
+                                    "latin1"
+                                else "unknown"
+                            }
+                            writeLines(text, conn, useBytes = TRUE)
+                            writeLines(Encoding(text), conn, useBytes = TRUE)
                         }
-                        writeLines(text, conn, useBytes = TRUE)
-                        writeLines(Encoding(text), conn, useBytes = TRUE)
+                        conn <- file(FILE.txt, "ab", encoding = "")
+                        utils::file.edit(FILE.R)
+                        fun()
                         utils::file.edit("")
-                        text <- names(utils::getWindowsHandles())[[1L]]
-                        if (Encoding(text) == "unknown") {
-                            loc <- l10n_info()
-                            Encoding(text) <- if (loc$`UTF-8`)
-                                "UTF-8"
-                            else if (loc$`Latin-1`)
-                                "latin1"
-                            else "unknown"
-                        }
-                        writeLines(text, conn, useBytes = TRUE)
-                        writeLines(Encoding(text), conn, useBytes = TRUE)
+                        fun()
                         quit(save = "no")
                     }
                 ', conn, useBytes = TRUE)
@@ -244,7 +243,7 @@ if (sys.nframe() != 0L) {
             } else {
                 on.exit(Sys.setenv(R_PROFILE_USER = R_PROFILE_USER), add = TRUE, after = FALSE)
             }
-            Sys.setenv(R_PROFILE_USER = tmpRprofile)
+            Sys.setenv(R_PROFILE_USER = Rprofile)
 
 
             ## we want to provide --vanilla to enable factory-default settings
@@ -262,7 +261,7 @@ if (sys.nframe() != 0L) {
 
             n <- 0L
             for (language in rownames(.languages)) {
-                args <- c(rgui, options, .language.envvars(language, ucrt))
+                args <- c(rgui, .language.envvars(language, ucrt), options)
                 command <- paste(shQuote(args), collapse = " ")
                 ans <- system(command)
                 if (ans) {
@@ -278,7 +277,7 @@ if (sys.nframe() != 0L) {
                 lines <- local({
                     oopt <- options(warn = 2L)
                     on.exit(options(oopt))
-                    readLines(tmptxt, n = n + 1L, warn = TRUE)
+                    readLines(FILE.txt, n = n + 1L, warn = TRUE)
                 })
                 stopifnot(length(lines) == n)
             }
@@ -297,7 +296,7 @@ if (sys.nframe() != 0L) {
             }
 
 
-            txt <- readLines2(tmptxt, divisor = 4L)
+            txt <- readLines2(FILE.txt, divisor = 4L)
 
 
             r.editor <- txt[c(TRUE, FALSE)]
@@ -326,7 +325,7 @@ if (sys.nframe() != 0L) {
                     any(invalid <- !(vapply(r.editor, function(str) {
                         paste(charToRaw(str), collapse = "")
                     }, FUN.VALUE = "", USE.NAMES = FALSE) %in% vapply(readLines2(r.editor.path), function(str) {
-                        paste(c(charToRaw(tmpR), charToRaw(str)), collapse = "")
+                        paste(c(charToRaw(FILE.R), charToRaw(str)), collapse = "")
                     }, FUN.VALUE = "", USE.NAMES = FALSE)))
                 ) {
                     stop(ngettext(sum(invalid), "invalid \" - R Editor\" string:\n",
@@ -365,13 +364,13 @@ if (sys.nframe() != 0L) {
                 r.editor <- vapply(r.editor, function(str) {
                     bytes <- charToRaw(str)
                     ## all "R Editor" strings must start with this prefix
-                    prefix <- c(charToRaw(tmpR), charToRaw(" - "))
+                    prefix <- c(charToRaw(FILE.R), charToRaw(" - "))
                     if (length(bytes) < length(prefix) ||
                         any(bytes[seq_along(prefix)] != prefix))
                     {
                         stop("invalid \" - R Editor\" string: ", str, domain = NA)
                     }
-                    value <- rawToChar(bytes[seq_along(bytes) > length(prefix)])
+                    value <- rawToChar(bytes[seq_along(bytes) > length(prefix) - 3L])
                     Encoding(value) <- Encoding(str)
                     value
                 }, FUN.VALUE = "", USE.NAMES = FALSE)

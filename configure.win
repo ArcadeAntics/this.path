@@ -1,1 +1,1 @@
-"${R_HOME}/bin/Rscript.exe" --default-packages=NULL --vanilla ./tools/configure.R
+"${R_HOME}/bin${R_ARCH}/Rscript.exe" --default-packages=NULL --vanilla ./tools/configure.R

@@ -5,7 +5,7 @@
 \description{
   Determine the path of the executing script. Compatible with a few
   popular GUIs: \sQuote{Rgui}, \sQuote{\RStudio}, \sQuote{\VSCode},
-  \sQuote{\Jupyter}, and
+  \sQuote{\Jupyter}, \sQuote{\Emacs}, and
   \ifelse{html}{\sQuote{\code{\link[utils]{Rscript}}}}{\ifelse{text}{\code{Rscript}}{\sQuote{\code{Rscript}}}}
   (shell). Compatible with several functions and packages:
   \sourcesandlistlinks.

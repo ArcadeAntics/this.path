@@ -8,6 +8,11 @@
         were removed entirely.}
     }
   }
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{\code{this.path()} is now compatible with GUI \sQuote{\Emacs}.}
+    }
+  }
 }
 \section{CHANGES IN VERSION 2.2.0 (2023-10-29)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{

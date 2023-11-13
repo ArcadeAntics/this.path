@@ -7,7 +7,7 @@ local({
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = TRUE, no.stop.on.test.error = TRUE,
+        check = FALSE, no.stop.on.test.error = TRUE,
         as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
@@ -245,7 +245,7 @@ local({
 
 
     x <- this.path:::.readFiles(Rdfiles)
-    x <- grep("(?i)current", x, value = TRUE)
+    x <- grep(r"(\\Emacs|\\Jupyter|\\Python|\\radian|\\RStudio|\\VSCode)", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 })

@@ -7,6 +7,10 @@ CHANGES IN this.path devel:
     * Previously defunct functions this.path2(), this.dir2(),
       this.dir3(), and normalized.shFILE() were removed entirely.
 
+  NEW FEATURES:
+
+    * this.path() is now compatible with GUI 'Emacs'.
+
 CHANGES IN this.path 2.2.0 (2023-10-29):
 
   SIGNIFICANT USER-VISIBLE CHANGES:

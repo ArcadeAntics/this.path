@@ -414,60 +414,58 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     delayedAssign("emacsclient", local({
         x <- Sys.which("emacsclient")
         if (nzchar(x)) return(x)
-        if (.os.windows) {
-            msg.start <- "command \"emacsclient.exe\" not found on PATH\n or in default install location because "
-            msg.end <- "\n add \"emacsclient.exe\" to PATH and retry"
-            path <- Sys.getenv("SystemDrive")
-            if (!nzchar(path))
-                stop(msg.start, "{SystemDrive} is not set", msg.end)
-            path <- paste0(path, "/PROGRA~1")
-            if (!dir.exists(path))
-                stop(msg.start, path, " is not an existing directory", msg.end)
-            x <- character(0)
-            v <- character(0)
-            ## check $SystemDrive/PROGRA~1/Emacs for directories matching
-            ## emacs-version
-            evalq({
-                path1 <- paste0(path, "/Emacs")
-                x1 <- list.dirs(path1, recursive = FALSE)
-                n <- length(x1)
-                if (!n) return()
-                pattern <- "^emacs-((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
-                y <- basename2(x1)
-                m <- regexec(pattern, y)
-                keep <- which(lengths(m) == 2L)
-                x1 <- x1[keep]
-                v1 <- regmatches(y[keep], m[keep])
-                v1 <- vapply(v1, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
-                x <- c(x, x1)
-                v <- c(v, v1)
-            })
-            ## check $SystemDrive/PROGRA~1 for directories matching
-            ## GNU Emacs version
-            evalq({
-                x2 <- list.dirs(path, recursive = FALSE)
-                n <- length(x2)
-                if (!n) return()
-                pattern <- "^GNU Emacs ((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
-                y <- basename2(x2)
-                m <- regexec(pattern, y)
-                keep <- which(lengths(m) == 2L)
-                x2 <- x2[keep]
-                v2 <- regmatches(y[keep], m[keep])
-                v2 <- vapply(v2, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
-                x <- c(x, x2)
-                v <- c(v, v2)
-            })
-            v <- numeric_version(v)
-            x <- x[which.max(xtfrm(v))]
-            if (length(x) != 1L)
-                stop(msg.start, path, " does not contain a directory\n  'Emacs/emacs-{version}' nor 'GNU Emacs {version}'", msg.end)
-            x <- paste0(x, "/bin/emacsclient.exe")
-            if (file.access(x, 1L) != 0L)
-                stop(msg.start, x, " does not exist or is not executable", msg.end)
-            chartr("/", "\\", x)
-        }
-        else stop("command \"emacsclient\" not found; add to PATH and retry")
+        if (!.os.windows) stop("command \"emacsclient\" not found; add to PATH and retry")
+        msg.start <- "command \"emacsclient.exe\" not found on PATH\n or in default install location because "
+        msg.end <- "\n add \"emacsclient.exe\" to PATH and retry"
+        path <- Sys.getenv("SystemDrive")
+        if (!nzchar(path))
+            stop(msg.start, "{SystemDrive} is not set", msg.end)
+        path <- paste0(path, "/PROGRA~1")
+        if (!dir.exists(path))
+            stop(msg.start, path, " is not an existing directory", msg.end)
+        x <- character(0)
+        v <- character(0)
+        ## check $SystemDrive/PROGRA~1/Emacs for directories matching
+        ## emacs-version
+        evalq({
+            path1 <- paste0(path, "/Emacs")
+            x1 <- list.dirs(path1, recursive = FALSE)
+            n <- length(x1)
+            if (!n) return()
+            pattern <- "^emacs-((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
+            y <- basename2(x1)
+            m <- regexec(pattern, y)
+            keep <- which(lengths(m) == 2L)
+            x1 <- x1[keep]
+            v1 <- regmatches(y[keep], m[keep])
+            v1 <- vapply(v1, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
+            x <- c(x, x1)
+            v <- c(v, v1)
+        })
+        ## check $SystemDrive/PROGRA~1 for directories matching
+        ## GNU Emacs version
+        evalq({
+            x2 <- list.dirs(path, recursive = FALSE)
+            n <- length(x2)
+            if (!n) return()
+            pattern <- "^GNU Emacs ((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
+            y <- basename2(x2)
+            m <- regexec(pattern, y)
+            keep <- which(lengths(m) == 2L)
+            x2 <- x2[keep]
+            v2 <- regmatches(y[keep], m[keep])
+            v2 <- vapply(v2, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
+            x <- c(x, x2)
+            v <- c(v, v2)
+        })
+        v <- numeric_version(v)
+        x <- x[which.max(xtfrm(v))]
+        if (length(x) != 1L)
+            stop(msg.start, path, " does not contain a directory\n  'Emacs/emacs-{version}' nor 'GNU Emacs {version}'", msg.end)
+        x <- paste0(x, "/bin/emacsclient.exe")
+        if (file.access(x, 1L) != 0L)
+            stop(msg.start, x, " does not exist or is not executable", msg.end)
+        chartr("/", "\\", x)
     }))
     expr <- '
 (let ((buffers (buffer-list))
@@ -514,8 +512,8 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     rval <- suppressWarnings(system(command, intern = TRUE))
     if (!is.null(status <- attr(rval, "status")) && status) {
         if (status == -1L)
-            stop(gettextf("'%s' could not be run", "emacsclient", domain = "R"), domain = NA)
-        else stop(gettextf("'%s' execution failed with error code %d and message:\n\n", "emacsclient", status, domain = "R"),
+            stop(gettextf("'%s' could not be run", "emacsclient", domain = "R-base"), domain = NA)
+        else stop(sprintf("'%s' execution failed with error code %d and message:\n\n", "emacsclient", status),
             paste(rval, collapse = "\n"),
             "\n\nperhaps add (server-start) to your ~/.emacs file and restart the session\n",
             "or type M-x server-start in your current session?", domain = NA)

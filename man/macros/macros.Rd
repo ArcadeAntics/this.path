@@ -13,6 +13,7 @@
 \newcommand{\optionorsQuote}{\ifelse{text}{\sQuote{#1}}{\option{#1}}}
 
 
+\newcommand{\Emacs}{\href{https://ess.r-project.org/}{Emacs}}
 \newcommand{\Jupyter}{\href{https://jupyter.org/}{Jupyter}}
 \newcommand{\Python}{\href{https://www.python.org/}{Python}}
 \newcommand{\radian}{\href{https://github.com/randy3k/radian}{radian}}

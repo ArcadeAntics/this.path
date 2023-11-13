@@ -59,8 +59,8 @@ sys.dir(verbose = getOption("verbose"), local = FALSE,
 
   \enumerate{
     \item{in \sQuote{Rgui} / / \sQuote{\RStudio} / / \sQuote{\VSCode} / /
-      \sQuote{\Jupyter} by running the current line / / selection with the
-      \strong{Run} button / / appropriate keyboard shortcut}
+      \sQuote{\Jupyter} / / \sQuote{\Emacs} by running the current line / /
+      selection with the \strong{Run} button / / appropriate keyboard shortcut}
 
     \item{through a source call: a call to function \sourcesorlistlinks}
 
@@ -124,6 +124,19 @@ sys.dir(verbose = getOption("verbose"), local = FALSE,
   searching the contents of those files for an expression matching the
   top-level expression. Please be sure to save your notebook before using
   \code{sys.path()}, or explicitly use \code{\link{set.sys.path.jupyter}()}.
+
+  If \R is being run from \sQuote{\Emacs}, the source document's filename is
+  returned (at the time of evaluation). It is important to not leave the
+  current tab (either by closing or switching tabs) while any calls to
+  \code{sys.path()} have yet to be evaluated in the run selection. If multiple
+  \sQuote{Emacs} sessions are active, \code{sys.path()} will not work due to a
+  limitation in
+#ifdef windows
+  \sQuote{emacsclient.exe}.
+#endif
+#ifdef unix
+  \sQuote{emacsclient}.
+#endif
 
   If \R is being run from \sQuote{AQUA}, the executing script's path cannot be
   determined. Unlike \sQuote{Rgui}, \sQuote{RStudio}, and \sQuote{VSCode},
