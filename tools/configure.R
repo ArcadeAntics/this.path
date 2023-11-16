@@ -182,12 +182,13 @@ main <- function ()
                         "\\method{anyNA}{POSIXlt}(x, recursive = FALSE)"
                     ),
                     "3.2.0",
-                    c("isNamespaceLoaded", "dir.exists", "lengths", "file.mtime", "file.info"),
+                    c("isNamespaceLoaded", "dir.exists", "lengths", "file.mtime", "file.size", "file.info"),
                     c(
                         "isNamespaceLoaded(name)",
                         "dir.exists(paths)",
                         "lengths(x, use.names = TRUE)",
                         "file.mtime(...)",
+                        "file.size(...)",
                         "file.info(..., extra_cols = TRUE)"
                     ),
                     "3.3.0",

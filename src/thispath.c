@@ -573,6 +573,22 @@ SEXP do_fixNewlines do_formals
 }
 
 
+/*
+SEXP do_splitlines do_formals
+{
+    do_start_no_op_rho("splitlines", 1);
+    SEXP x = CAR(args);
+    if (!IS_SCALAR(x, STRSXP))
+        errorcall(call, _("argument must be a character string"));
+    const char *str = CHAR(STRING_ELT(x, 0));
+    const char *cr = strchr(str, '\r');
+    // if there are no carriage returns, just split the lines by \n, much easier
+    if (!cr) return fixNewlines(x);
+    return R_NilValue;
+}
+*/
+
+
 typedef enum {
     GUIPATH_DEFAULT  ,
     GUIPATH_FUNCTION ,

@@ -80,7 +80,7 @@ The only equivalent to `this.path()` (that I have seen) is
     2.1. takes argument `chdir` into account.
 
     2.2. recognizes that `file = ""`, `file = "clipboard"`, and
-         `file = "stdin"` are not referring files and skips them.
+         `file = "stdin"` are not referring to files and skips them.
 
     2.3. accounts for `file` being a URL pathname.
 

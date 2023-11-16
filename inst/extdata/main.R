@@ -195,6 +195,7 @@ if (sys.nframe() != 0L) {
             FILE.txt <- FILES[[1L]]
             FILE.R   <- FILES[[2L]]
             Rprofile <- FILES[[3L]]
+            file.create(FILE.txt)
             file.create(FILE.R)
 
 

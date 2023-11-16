@@ -5,10 +5,10 @@ local({
     essentials:::check.this(  ## this.path
         special = TRUE,
 
-        # INSTALL = FALSE, # html = TRUE, latex = TRUE,
+        INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
-        check = FALSE, no.stop.on.test.error = TRUE,
-        as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        check = TRUE, no.stop.on.test.error = TRUE,
+        as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = FALSE,
 
         chdir = TRUE
     )
@@ -230,7 +230,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\.gui\\.vscode", x, perl = TRUE, value = TRUE)
+    x <- grep("file\\.mtime", x, perl = TRUE, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

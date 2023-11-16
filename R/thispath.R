@@ -412,74 +412,52 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 
 .emacs.path <- evalq(envir = new.env(), {
     delayedAssign("emacsclient", local({
-        x <- Sys.which("emacsclient")
-        if (nzchar(x)) return(x)
-        if (!.os.windows) stop("command \"emacsclient\" not found; add to PATH and retry")
-        msg.start <- "command \"emacsclient.exe\" not found on PATH\n or in default install location because "
-        msg.end <- "\n add \"emacsclient.exe\" to PATH and retry"
-        path <- Sys.getenv("SystemDrive")
-        if (!nzchar(path))
-            stop(msg.start, "{SystemDrive} is not set", msg.end)
-        path <- paste0(path, "/PROGRA~1")
-        if (!dir.exists(path))
-            stop(msg.start, path, " is not an existing directory", msg.end)
-        x <- character(0)
-        v <- character(0)
-        ## check $SystemDrive/PROGRA~1/Emacs for directories matching
-        ## emacs-version
-        evalq({
-            path1 <- paste0(path, "/Emacs")
-            x1 <- list.dirs(path1, recursive = FALSE)
-            n <- length(x1)
-            if (!n) return()
-            pattern <- "^emacs-((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
-            y <- basename2(x1)
-            m <- regexec(pattern, y)
-            keep <- which(lengths(m) == 2L)
-            x1 <- x1[keep]
-            v1 <- regmatches(y[keep], m[keep])
-            v1 <- vapply(v1, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
-            x <- c(x, x1)
-            v <- c(v, v1)
-        })
-        ## check $SystemDrive/PROGRA~1 for directories matching
-        ## GNU Emacs version
-        evalq({
-            x2 <- list.dirs(path, recursive = FALSE)
-            n <- length(x2)
-            if (!n) return()
-            pattern <- "^GNU Emacs ((?:[[:digit:]]+[.-]){1,}[[:digit:]]+)$"
-            y <- basename2(x2)
-            m <- regexec(pattern, y)
-            keep <- which(lengths(m) == 2L)
-            x2 <- x2[keep]
-            v2 <- regmatches(y[keep], m[keep])
-            v2 <- vapply(v2, `[[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
-            x <- c(x, x2)
-            v <- c(v, v2)
-        })
-        v <- numeric_version(v)
-        x <- x[which.max(xtfrm(v))]
-        if (length(x) != 1L)
-            stop(msg.start, path, " does not contain a directory\n  'Emacs/emacs-{version}' nor 'GNU Emacs {version}'", msg.end)
-        x <- paste0(x, "/bin/emacsclient.exe")
-        if (file.access(x, 1L) != 0L)
-            stop(msg.start, x, " does not exist or is not executable", msg.end)
-        chartr("/", "\\", x)
+        ## https://www.gnu.org/software/emacs/manual/html_node/emacs/Misc-Variables.html#index-emacs_005fdir
+        if (.os.windows) {
+            x <- Sys.getenv("emacs_dir")
+            if (!nzchar(x)) stop("environment variable 'emacs_dir' is unset; are you actually in Emacs?")
+            x <- utils::shortPathName(x)
+            paste0(x, "\\bin\\emacsclient.exe")
+        } else {
+            x <- Sys.which("emacsclient")
+            if (!nzchar(x)) stop("command 'emacsclient' not found; add to PATH and retry")
+            x
+        }
     }))
-    expr <- '
-(let ((buffers (buffer-list))
-      value
+    ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Buffer-File-Name.html
+    expr <- "
+(let ((R-pid %d)
+      (contents %s)
+      (filename %s)
+      (buffers (buffer-list))
+      status
       found-matching-pid)
-  (while (and buffers (not (and value found-matching-pid)))
+  ;; for testing purposes
+  (if (= R-pid 0) (setq found-matching-pid t))
+  (while (and buffers (not (and status found-matching-pid)))
     (with-current-buffer (car buffers)
       (if buffer-file-name
-          (if (and (not value) (or (string= major-mode "ess-r-mode") (string= major-mode "ess-mode")))
-              (setq value %s)
+          (if (and (not status) (or (string= major-mode \"ess-r-mode\") (string= major-mode \"ess-mode\")))
+              (if contents
+                  (progn
+                    (write-region nil nil filename)
+                    (setq status 'success)
+                  )
+                ;; else
+                (if buffer-file-number
+                    (progn
+                      (write-region buffer-file-name nil filename)
+                      (setq status 'success)
+                    )
+                  ;; else
+                  (setq status 'untitled)
+                )
+              )
           )
-        (if (and (not found-matching-pid) (or (string= major-mode "inferior-ess-r-mode") (string= major-mode "inferior-ess-mode")))
+        ;; else
+        (if (and (not found-matching-pid) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
             (let ((process (get-buffer-process (current-buffer))))
-              (if (and process (= (process-id process) %d))
+              (if (and process (= (process-id process) R-pid))
                 (setq found-matching-pid t)
               )
             )
@@ -488,12 +466,9 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     )
     (setq buffers (cdr buffers))
   )
-  (if (not found-matching-pid)
-      (setq value nil)
-  )
-  value
+  (if found-matching-pid status 'no-matching-pid)
 )
-    '
+    "
     expr <- gsub("^[ \t\n]+|[ \t\n]+$", "", expr)
     expr <- gsub(";.*?\n", "\n", expr)
     expr <- gsub("[ \t\n]+", " ", expr)
@@ -501,12 +476,21 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     expr <- gsub(" )", ")", expr, fixed = TRUE)
 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
-    expr <- sprintf(expr,
-        if (contents) "(save-restriction (widen) (buffer-substring-no-properties (point-min) (point-max)))" else "buffer-file-name",
-        Sys.getpid()
-    )
+    # exe <- Sys.which("emacsclient"); contents <- TRUE; Sys.getpid <- function() 0L; stop("comment this out later")
+
+
+    filename <- tempfile(fileext = ".txt")
+    on.exit(unlink(filename))
+    ## create right now so no other program
+    ## may claim this filename in the meantime
+    file.create(filename)
     exe <- .External2(.C_forcePromise.no.warn, "emacsclient")
-    args <- c(exe, "-e", expr)
+    EXPR <- sprintf(expr,
+        Sys.getpid(),
+        if (contents) "t" else "nil",
+        encodeString(filename, quote = "\"")
+    )
+    args <- c(exe, "-e", EXPR)
     command <- paste(shQuote(args), collapse = " ")
     # cat(command, sep = "\n")
     rval <- suppressWarnings(system(command, intern = TRUE))
@@ -520,7 +504,8 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     }
 
 
-    ## for the sake of debugging, don't modify rval
+    if (!.IS_SCALAR_STR(rval))
+        stop("command 'emacsclient' failed to return a character string")
 
 
     if (.scalar_streql(rval, "nil")) {
@@ -528,46 +513,27 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
             NA_character_
         else stop("R is running from Emacs with no documents open")
     }
-    else if (contents) {
-        x <- rval
-        i <- grep("^\\*ERROR\\*: Unknown message: ", x)
-        if (length(i)) {
-            y <- x[i]
-            y <- substring(y, 27L)
-            j <- intersect(which(y == "-"), grep("^print-nonl ", y) - 1L)
-            if (length(j)) {
-                y[j] <- ""
-                y[j + 1L] <- substring(y[j + 1L], 12L)
-            }
-            y <- sub("^_", " ", y)
-            m <- gregexpr("&[-_&]", y)
-            y <- regmatches(y, m, invert = NA)
-            y <- vapply(y, function(yy) {
-                j <- match(yy, c("&-", "&_", "&&"), 0L)
-                yy[as.logical(j)] <- c("-", " ", "&")[j]
-                paste(yy, collapse = "")
-            }, "", USE.NAMES = FALSE)
-            x[i] <- y
-        }
-        x <- paste(x, collapse = "")
-        x <- str2lang(x)
-        if (!.IS_SCALAR_STR(x))
-            stop("command \"emacsclient\" failed to return a character string")
-        if (verbose) cat("Source: document in Emacs\n")
-        x <- .External2(.C_fixNewlines, x)
-        # y <- readLines(this.path::path.join(Sys.getenv("APPDATA"), "Code", "test.R"))
-        # identical(x, y)
-        list(x)
+    else if (.scalar_streql(rval, "untitled")) {
+        if (for.msg)
+            gettext("Untitled", domain = "RGui", trim = FALSE)
+        else stop("document in Emacs does not exist")
     }
-    else {
-        path <- tryCatch(str2lang(rval), error = function(e) NULL)
-        if (!.IS_SCALAR_STR(path))
-            stop("command \"emacsclient\" failed to return a character string")
-        if (verbose) cat("Source: document in Emacs\n")
-        if (.isfalse(original))
-            .normalizePath(path)
-        else path
+    else if (.scalar_streql(rval, "no-matching-pid")) {
+        if (for.msg)
+            NA_character_
+        else stop("R process not found in current Emacs frame\n this.path() only works in primary Emacs session :'(")
     }
+    else if (.scalar_streql(rval, "success")) {
+        x <- readChar(filename, nchars = file.size(filename), useBytes = TRUE)
+        if (verbose) cat("Source: document in Emacs\n")
+        if (contents)
+            # list(.External2(.C_splitlines, x))
+            strsplit(x, "\r\n|[\r\n]", useBytes = TRUE)
+        else if (.isfalse(original))
+            .normalizePath(x)
+        else x
+    }
+    else stop("invalid 'emacsclient' return value")
 }
 })
 

@@ -34,6 +34,7 @@ if (getRversion() < "3.2.0") {
     export(lengths)
     S3method(lengths, default, .lengths.default)
     export(file.mtime)
+    export(file.size)
     export(file.info)
 }
 

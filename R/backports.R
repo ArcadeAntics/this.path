@@ -92,6 +92,12 @@ file.info(...)$mtime
 )
 
 
+file.size <- evalq(envir = .BaseNamespaceEnv,
+function (...)
+file.info(...)$size
+)
+
+
 file.info <- evalq(envir = .BaseNamespaceEnv,
 function (..., extra_cols = TRUE)
 {
