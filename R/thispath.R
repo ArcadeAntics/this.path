@@ -424,49 +424,67 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
             x
         }
     }))
+    ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Finding-All-Frames.html
     ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Buffer-File-Name.html
     expr <- "
-(let ((R-pid %d)
-      (contents %s)
+(let ((R-pid    %d)
       (filename %s)
-      (buffers (buffer-list))
-      status
-      found-matching-pid)
+      (contents %s)
+      (frames (frame-list-z-order))
+      ess-r-mode-buffer
+      found-matching-pid
+      active)
   ;; for testing purposes
-  (if (= R-pid 0) (setq found-matching-pid t))
-  (while (and buffers (not (and status found-matching-pid)))
-    (with-current-buffer (car buffers)
-      (if buffer-file-name
-          (if (and (not status) (or (string= major-mode \"ess-r-mode\") (string= major-mode \"ess-mode\")))
-              (if contents
-                  (progn
-                    (write-region nil nil filename)
-                    (setq status 'success)
-                  )
-                ;; else
-                (if buffer-file-number
-                    (progn
-                      (write-region buffer-file-name nil filename)
-                      (setq status 'success)
-                    )
-                  ;; else
-                  (setq status 'untitled)
-                )
+  (setq found-matching-pid (= R-pid 0))
+  (while frames
+    (setq ess-r-mode-buffer nil)
+    (setq active t)
+    (let ((buffers (frame-parameter (car frames) 'buffer-list))
+          (found-matching-pid-in-frame (= R-pid 0)))
+      (while buffers
+        (with-current-buffer (car buffers)
+          (if buffer-file-name
+              (if (and (not ess-r-mode-buffer) (or (string= major-mode \"ess-r-mode\") (string= major-mode \"ess-mode\"))) (progn
+                  (setq ess-r-mode-buffer (current-buffer))
+                  (if found-matching-pid-in-frame (setq active nil))
+              ))
+          ;; else
+          (if (and (not found-matching-pid-in-frame) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
+              (let ((process (get-buffer-process (current-buffer))))
+                (if (and process (= (process-id process) R-pid)) (progn
+                    (setq found-matching-pid-in-frame t)
+                    (setq found-matching-pid t)
+                ))
               )
-          )
-        ;; else
-        (if (and (not found-matching-pid) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
-            (let ((process (get-buffer-process (current-buffer))))
-              (if (and process (= (process-id process) R-pid))
-                (setq found-matching-pid t)
-              )
-            )
+          ))
         )
+        (if (and ess-r-mode-buffer found-matching-pid-in-frame) (progn
+            (setq buffers nil)
+            (setq frames nil)
+        ))
+        (setq buffers (cdr buffers))
       )
     )
-    (setq buffers (cdr buffers))
+    (setq frames (cdr frames))
   )
-  (if found-matching-pid status 'no-matching-pid)
+  (if found-matching-pid
+      (if ess-r-mode-buffer
+          (with-current-buffer ess-r-mode-buffer
+            (if contents (progn
+                (write-region nil nil filename nil 0)
+                (if active 'success-active 'success-source)
+            ) ;; else
+            (if buffer-file-number (progn
+                (write-region buffer-file-name nil filename nil 0)
+                (if active 'success-active 'success-source)
+            ) ;; else
+                (if active 'untitled-active 'untitled-source)
+            ))
+          )
+      )
+  ;; else
+      'no-matching-pid
+  )
 )
     "
     expr <- gsub("^[ \t\n]+|[ \t\n]+$", "", expr)
@@ -479,16 +497,16 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     # exe <- Sys.which("emacsclient"); contents <- TRUE; Sys.getpid <- function() 0L; stop("comment this out later")
 
 
-    filename <- tempfile(fileext = ".txt")
-    on.exit(unlink(filename))
+    file <- tempfile(fileext = ".txt")
+    on.exit(unlink(file))
     ## create right now so no other program
     ## may claim this filename in the meantime
-    file.create(filename)
+    file.create(file)
     exe <- .External2(.C_forcePromise.no.warn, "emacsclient")
     EXPR <- sprintf(expr,
         Sys.getpid(),
-        if (contents) "t" else "nil",
-        encodeString(filename, quote = "\"")
+        encodeString(file, quote = "\""),
+        if (contents) "t" else "nil"
     )
     args <- c(exe, "-e", EXPR)
     command <- paste(shQuote(args), collapse = " ")
@@ -508,30 +526,45 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
         stop("command 'emacsclient' failed to return a character string")
 
 
-    if (.scalar_streql(rval, "nil")) {
-        if (for.msg)
-            NA_character_
-        else stop("R is running from Emacs with no documents open")
-    }
-    else if (.scalar_streql(rval, "untitled")) {
-        if (for.msg)
-            gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop("document in Emacs does not exist")
-    }
-    else if (.scalar_streql(rval, "no-matching-pid")) {
-        if (for.msg)
-            NA_character_
-        else stop("R process not found in current Emacs frame\n this.path() only works in primary Emacs session :'(")
-    }
-    else if (.scalar_streql(rval, "success")) {
-        x <- readChar(filename, nchars = file.size(filename), useBytes = TRUE)
-        if (verbose) cat("Source: document in Emacs\n")
+    if (.scalar_streql(rval, "success-active")) {
+        x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
+        if (verbose) cat("Source: active document in Emacs\n")
         if (contents)
             # list(.External2(.C_splitlines, x))
             strsplit(x, "\r\n|[\r\n]", useBytes = TRUE)
         else if (.isfalse(original))
             .normalizePath(x)
         else x
+    }
+    else if (.scalar_streql(rval, "success-source")) {
+        x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
+        if (verbose) cat("Source: source document in Emacs\n")
+        if (contents)
+            # list(.External2(.C_splitlines, x))
+            strsplit(x, "\r\n|[\r\n]", useBytes = TRUE)
+        else if (.isfalse(original))
+            .normalizePath(x)
+        else x
+    }
+    else if (.scalar_streql(rval, "untitled-active")) {
+        if (for.msg)
+            gettext("Untitled", domain = "RGui", trim = FALSE)
+        else stop("active document in Emacs does not exist")
+    }
+    else if (.scalar_streql(rval, "untitled-source")) {
+        if (for.msg)
+            gettext("Untitled", domain = "RGui", trim = FALSE)
+        else stop("source document in Emacs does not exist")
+    }
+    else if (.scalar_streql(rval, "nil")) {
+        if (for.msg)
+            NA_character_
+        else stop("R is running from Emacs with no documents open")
+    }
+    else if (.scalar_streql(rval, "no-matching-pid")) {
+        if (for.msg)
+            NA_character_
+        else stop(sprintf("R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session :'(", Sys.getpid()))
     }
     else stop("invalid 'emacsclient' return value")
 }

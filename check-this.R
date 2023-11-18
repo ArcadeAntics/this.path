@@ -5,10 +5,10 @@ local({
     essentials:::check.this(  ## this.path
         special = TRUE,
 
-        INSTALL = FALSE, # html = TRUE, latex = TRUE,
+        # INSTALL = FALSE, # html = TRUE, latex = TRUE,
 
         check = TRUE, no.stop.on.test.error = TRUE,
-        as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = FALSE,
+        as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )
