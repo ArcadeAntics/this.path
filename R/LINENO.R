@@ -7,22 +7,27 @@
     tryCatch({
         normalizePath(path, "/")
     }, warning = function(w) {
-        if (.os.windows)
-            chartr("\\", "/", path)
-        else path
+        if (.os.windows) {
+            path <- chartr("\\", "/", path)
+            if (startsWith(path, "//"))
+                substr(path, 1L, 2L) <- "\\\\"
+        }
+        path
     })
 }
 
 
 .LINENO <- function (path, to = 1L)
 {
-    for (which in (sys.nframe() - 1L):to) {
+    for (which in seq.int(to = to, by = -1L, length.out = sys.nframe() - to)) {
         call <- sys.call(which)
         srcref <- attr(call, "srcref", exact = TRUE)
         if (!is.null(srcref)) {
             srcfile <- attr(srcref, "srcfile", exact = TRUE)
-            filename <- .try.normalizePath(srcfile$filename, srcfile$wd)
-            if (path == filename) {
+            filename <- srcfile$filename
+            if (path == filename ||
+                path == .try.normalizePath(filename, srcfile$wd))
+            {
                 # return(srcref[7L])
 
                 ## srcref[1L] is better, it respects #line directives
@@ -38,7 +43,7 @@ sys.LINENO <- function ()
 {
     success <- tryCatch({
         context.number <- .External2(.C_getframenumber)
-        if (context.number == 0L)
+        if (is.na(context.number) || context.number == 0L)
             return(NA_integer_)
         path <- .External2(.C_sys.path)
         TRUE
@@ -53,14 +58,27 @@ env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = get
 {
     n <- .External2(.C_asIntegerGE0, n)
     envir
-    matchThisEnv
-    success <- tryCatch({
-        path <- .External2(.C_env.path, envir, matchThisEnv)
-        TRUE
-    }, error = function(e) FALSE)
-    if (success)
-        .LINENO(path)
-    else NA_integer_
+    if (missing(matchThisEnv) ||
+        is.null(matchThisEnv) ||
+        identical(matchThisEnv, getOption("topLevelEnvironment"))) {
+    } else warning(sprintf("argument '%s' is deprecated.", "matchThisEnv"))
+    value <- NA_integer_
+    if (typeof(envir) == "environment") {
+        parents <- sys.parents()
+        for (i in seq.int(to = 1L, by = -1L, along.with = parents)) {
+            ## if the parent frame matches envir,
+            ## look for a srcref on the corresponding call
+            if (identical(envir, sys.frame(parents[[i]]))) {
+                call <- sys.call(i)
+                srcref <- attr(call, "srcref", exact = TRUE)
+                if (!is.null(srcref)) {
+                    value <- srcref[1L]
+                    break
+                }
+            }
+        }
+    }
+    value
 }
 
 
@@ -75,7 +93,8 @@ src.LINENO <- function (n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 
 
 LINENO <- eval(call("function", as.pairlist(alist(n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L)), bquote({
-    value <- .(body(src.LINENO))
+    .(body(src.LINENO)[[2L]])
+    value <- .(body(src.LINENO)[-2L])
     if (is.na(value)) {
         value <- .(body(env.LINENO)[-2L])
         if (is.na(value))
@@ -101,7 +120,6 @@ LINE <- eval(call("function", NULL, bquote({
                 tmp <- env.LINENO
                 as.call(c(as.list(quote({
                     envir <- parent.frame()
-                    matchThisEnv <- getOption("topLevelEnvironment")
                 })), as.list(body(tmp)[-seq_len(length(formals(tmp)) + 1L)])))
             })
         )

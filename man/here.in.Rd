@@ -1,75 +1,83 @@
 \name{here}
-\alias{sys.here}
-\alias{env.here}
-\alias{src.here}
 \alias{here}
 \alias{ici}
-\title{Construct Path to File, Starting with Script's Directory}
+\alias{this.proj}
+\alias{reset.proj}
+\title{Construct Path to File, Starting With Script's Directory}
 \description{
-  Construct the path to a file from components / / paths in a
-  platform-\strong{DEPENDENT} way, starting with \code{\link{sys.dir}()},
-  \code{\link{env.dir}()}, or \code{\link{this.dir}()}.
+  \code{here()} constructs file paths starting with \code{\link{this.dir}()}.
+
+  \code{this.proj()} constructs file paths starting with the project root of
+  \code{this.dir()}.
+
+  \code{reset.proj()} resets the path cache of \code{this.proj()}. This can be
+  useful if you create a new project that you would like to be detected without
+  restarting your \R session.
 }
 \usage{
-sys.here(..., .. = 0, local = FALSE)
-env.here(..., .. = 0, n = 0, envir = parent.frame(n + 1),
-         matchThisEnv = getOption("topLevelEnvironment"))
-src.here(..., .. = 0, n = 0,
-         srcfile = if (n) sys.parent(n) else 0)
-
-here(..., .. = 0, local = FALSE, n = 0,
+here(..., local = FALSE, n = 0,
      envir = parent.frame(n + 1),
      matchThisEnv = getOption("topLevelEnvironment"),
-     srcfile = if (n) sys.parent(n) else 0)
+     srcfile = if (n) sys.parent(n) else 0, .. = 0)
+
+this.proj(..., local = FALSE, n = 0,
+          envir = parent.frame(n + 1),
+          matchThisEnv = getOption("topLevelEnvironment"),
+          srcfile = if (n) sys.parent(n) else 0)
+
+reset.proj()
 
 ## alias for 'here'
-ici(..., .. = 0, local = FALSE, n = 0,
+ici(..., local = FALSE, n = 0,
     envir = parent.frame(n + 1),
     matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = if (n) sys.parent(n) else 0)
+    srcfile = if (n) sys.parent(n) else 0, .. = 0)
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}.}
 
+  \item{local, n, envir, matchThisEnv, srcfile}{See
+    \code{?\link{this.path}()}.}
+
   \item{..}{the number of directories to go back.}
-
-  \item{local}{See \code{?\link{sys.path}()}.}
-
-  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
-  The path to a file starts with a base. The base is \code{..} number of
-  directories back from the executing script's directory (\code{this.dir()}).
-  The argument is named \code{..} because \string{..} refers to the parent
-  directory on Windows, under Unix-alikes, and for URL pathnames.
+  For \code{this.proj()}, the project root has the same criterion as
+  \code{here::here()}, but unlike \code{here::here()}, \code{this.proj()}
+  supports sub-projects and multiple projects in use at once. Additionally,
+  \code{this.proj()} is independent of working directory, whereas
+  \code{here::here()} relies on the working directory being set somewhere
+  within the project when \code{package:here} is loaded. Arguably, this makes
+  it better than \code{here::here()}.
 }
 \value{
-  A character vector of the arguments concatenated term-by-term, starting with
-  the executing script's directory.
+  A character vector of the arguments concatenated term-by-term.
 }
 \examples{
-FILE.R <- tempfile(fileext = ".R")
+tmpdir <- tempfile(pattern = "dir")
+dir.create(tmpdir)
+
+writeLines("this file signifies that its directory is the project root",
+    this.path::path.join(tmpdir, ".here"))
+
+FILE.R <- this.path::path.join(tmpdir, "src", "R", "script1.R")
+dir.create(this.path::dirname2(FILE.R), recursive = TRUE)
 this.path:::.write.code({
-
-
-    this.path::here()
-    this.path::here(.. = 1)
-    this.path::here(.. = 2)
-
-
-    ## use 'here' to read input from a file located nearby
-    this.path::here(.. = 1, "input", "file1.csv")
-
-
-    ## or maybe to run another script
+    this.path::this.path()
+    if (requireNamespace("rprojroot"))
+        this.path::this.proj()
+    ## use 'here' to run another script located nearby
     this.path::here("script2.R")
-
-
+    ## or maybe to read input from a file
+    this.path::here(.. = 2, "input", "data1.csv")
+    ## but sometimes it is easier to use the project root
+    ## this allows you to move the R script up or down
+    ## a directory without changing the .. number
+    if (requireNamespace("rprojroot"))
+        this.path::this.proj("input", "data1.csv")
 }, FILE.R)
 
+source(FILE.R, echo = TRUE)
 
-source(FILE.R, echo = TRUE, verbose = FALSE)
-
-
-unlink(FILE.R)
+unlink(tmpdir, recursive = TRUE)
 }

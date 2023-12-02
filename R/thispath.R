@@ -432,33 +432,33 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
       (contents %s)
       (frames (frame-list-z-order))
       ess-r-mode-buffer
-      found-matching-pid
+      found-matching-pid-anywhere
       active)
   ;; for testing purposes
-  (setq found-matching-pid (= R-pid 0))
+  (setq found-matching-pid-anywhere (= R-pid 0))
   (while frames
     (setq ess-r-mode-buffer nil)
     (setq active t)
     (let ((buffers (frame-parameter (car frames) 'buffer-list))
-          (found-matching-pid-in-frame (= R-pid 0)))
+          (found-matching-pid (= R-pid 0)))
       (while buffers
         (with-current-buffer (car buffers)
           (if buffer-file-name
               (if (and (not ess-r-mode-buffer) (or (string= major-mode \"ess-r-mode\") (string= major-mode \"ess-mode\"))) (progn
                   (setq ess-r-mode-buffer (current-buffer))
-                  (if found-matching-pid-in-frame (setq active nil))
+                  (if found-matching-pid (setq active nil))
               ))
           ;; else
-          (if (and (not found-matching-pid-in-frame) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
+          (if (and (not found-matching-pid) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
               (let ((process (get-buffer-process (current-buffer))))
                 (if (and process (= (process-id process) R-pid)) (progn
-                    (setq found-matching-pid-in-frame t)
                     (setq found-matching-pid t)
+                    (setq found-matching-pid-anywhere t)
                 ))
               )
           ))
         )
-        (if (and ess-r-mode-buffer found-matching-pid-in-frame) (progn
+        (if (and ess-r-mode-buffer found-matching-pid) (progn
             (setq buffers nil)
             (setq frames nil)
         ))
@@ -467,7 +467,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     )
     (setq frames (cdr frames))
   )
-  (if found-matching-pid
+  (if found-matching-pid-anywhere
       (if ess-r-mode-buffer
           (with-current-buffer ess-r-mode-buffer
             (if contents (progn
@@ -564,7 +564,8 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     else if (.scalar_streql(rval, "no-matching-pid")) {
         if (for.msg)
             NA_character_
-        else stop(sprintf("R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session :'(", Sys.getpid()))
+        else stop(sprintf("R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions in Emacs, do not run multiple\n Emacs sessions, one R session each. instead run one Emacs session with\n multiple frames, one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
+            Sys.getpid()), domain = NA)
     }
     else stop("invalid 'emacsclient' return value")
 }
@@ -1048,7 +1049,7 @@ sys.srcref <- function (n = 1L, which = if (n) sys.parent(n) else 0L)
 }
 
 
-sys.here <- function (..., .. = 0L, local = FALSE)
+sys.here <- function (..., local = FALSE, .. = 0L)
 {
     base <- .External2(.C_sys.path, local)
     base <- .here(base, ..)
@@ -1056,8 +1057,8 @@ sys.here <- function (..., .. = 0L, local = FALSE)
 }
 
 
-env.here <- function (..., .. = 0L, n = 0L, envir = parent.frame(n + 1L),
-    matchThisEnv = getOption("topLevelEnvironment"))
+env.here <- function (..., n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"),
+    .. = 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_env.path, envir, matchThisEnv)
@@ -1066,7 +1067,8 @@ env.here <- function (..., .. = 0L, n = 0L, envir = parent.frame(n + 1L),
 }
 
 
-src.here <- function (..., .. = 0L, n = 0L, srcfile = if (n) sys.parent(n) else 0L)
+src.here <- function (..., n = 0L, srcfile = if (n) sys.parent(n) else 0L,
+    .. = 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_src.path, srcfile)
@@ -1075,9 +1077,9 @@ src.here <- function (..., .. = 0L, n = 0L, srcfile = if (n) sys.parent(n) else 
 }
 
 
-here <- function (..., .. = 0L, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
-    matchThisEnv = getOption("topLevelEnvironment"),
-    srcfile = if (n) sys.parent(n) else 0L)
+here <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
+    matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L,
+    .. = 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
     base <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)

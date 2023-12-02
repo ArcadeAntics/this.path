@@ -14,9 +14,7 @@ path.functions(file, local = FALSE, n = 0,
 \arguments{
   \item{file}{a character string giving the pathname of the file or URL.}
 
-  \item{local}{See \code{?\link{sys.path}()}.}
-
-  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
+  \item{local, n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \value{
   An environment with at least the following bindings:
@@ -26,8 +24,7 @@ path.functions(file, local = FALSE, n = 0,
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path, the original file path, or the contents of the file.}
 
-  \item{this.dir}{Function with formals \code{NULL} which returns the directory
-    of the
+  \item{this.dir}{Function of no arguments which returns the directory of the
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path.}
 
@@ -35,11 +32,11 @@ path.functions(file, local = FALSE, n = 0,
     paths, starting with the file's directory.}
 
   \item{this.proj}{Function with formals \code{(..., .. = 0)} which constructs
-    file paths, starting with the project's root directory.}
+    file paths, starting with the project root.}
 
   \item{rel2here, rel2proj}{Functions with formals \code{(path)} which turn
     absolute paths into relative paths, against the file's directory / /
-    project's root directory.}
+    project root.}
 
   \item{LINENO}{Function with formals \code{NULL} which returns the line number
     of the executing expression in \code{file}.}

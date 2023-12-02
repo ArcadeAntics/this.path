@@ -84,4 +84,4 @@
 
   Maintainer: \packageMaintainer{this.path}
 }
-\keyword{ package }
+\keyword{package}

@@ -15,8 +15,10 @@
 \alias{set.this.path}
 \alias{unset.this.path}
 \title{Defunct Functions in Package 'this.path'}
-\description{The functions or variables listed here are no longer part of
-  \pkg{this.path} as they are no longer needed.}
+\description{
+  The functions or variables listed here are no longer part of \pkg{this.path}
+  as they are no longer needed.
+}
 \usage{
 # Defunct in 1.1.0
 this.path2(...)

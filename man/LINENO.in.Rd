@@ -1,18 +1,10 @@
 \name{LINENO}
-\alias{sys.LINENO}
-\alias{env.LINENO}
-\alias{src.LINENO}
 \alias{LINENO}
 \title{Line Number of Executing Expression}
 \description{
   Get the line number of the executing expression.
 }
 \usage{
-sys.LINENO()
-env.LINENO(n = 0, envir = parent.frame(n + 1),
-           matchThisEnv = getOption("topLevelEnvironment"))
-src.LINENO(n = 0, srcfile = if (n) sys.parent(n) else 0)
-
 LINENO(n = 0, envir = parent.frame(n + 1),
        matchThisEnv = getOption("topLevelEnvironment"),
        srcfile = if (n) sys.parent(n) else 0)
@@ -21,49 +13,46 @@ LINENO(n = 0, envir = parent.frame(n + 1),
   \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
-  \code{sys.LINENO()} returns the line number of the most recent expression
-  with a source reference and a source file equal to \code{\link{sys.path}()}.
+  \code{LINENO()} starts by examining argument \code{srcfile}. If it is a
+  \code{srcref} or contains one, it will return the \code{first_line} number.
 
-  \code{env.LINENO()} returns the line number of the most recent expression
-  with a source reference and a source file equal to \code{\link{env.path}()}.
+  If it does not find a line number associated with \code{srcfile}, it will
+  look for a path in a similar manner to \code{\link{this.path}()} except it
+  skips the \code{srcfile} and GUI aspects. If it finds a path, it will look
+  for the most recent expression that has a source reference and has a source
+  file equal to the path. If it finds one, it will return the \code{first_line}
+  number.
 
-  \code{src.LINENO()} returns the line number of its source file.
-
-  \code{LINENO()} returns the line number of the most recent expression
-  with a source reference and a source file equal to \code{\link{this.path}()}.
-
-  In general, \code{LINENO()} is the most useful. It works whether your \R code
-  is \sourcelink-d or modularized.
+  If it does not find a line number, it will return \code{NA_integer_}.
 }
 \value{
-  An integer, \code{NA_integer_} if the line number cannot be determined.
+  integer.
 }
 \note{
   \code{LINENO()} only works if the expressions have a
-  \codelink2{base:srcfile}{srcref} and a \codelink2{base}{srcfile}.
+  \codelink2{base:srcfile}{srcref}.
 
   Scripts run with \Rscriptlink do not store their \code{srcref}, even when
   \codelink3{base:options}{getOption}{("keep.source")} is \code{TRUE}.
 
-  For \sourcelink or \syssourcelink, make sure to supply argument
-  \code{keep.source = TRUE} directly, or set the options \string{keep.source}
-  or \string{keep.source.pkgs} to \code{TRUE}.
+  For \sourcelink and \syssourcelink, make sure to supply argument
+  \code{keep.source = TRUE} directly, or set options \string{keep.source} and
+  \string{keep.source.pkgs} to \code{TRUE}.
 
   For \debugSourceinRStudiolink, it has no argument \code{keep.source}, so set
-  the option \string{keep.source} to \code{TRUE} before calling.
+  option \string{keep.source} to \code{TRUE} before calling.
 
   For \compilerloadcmplink, the \code{srcref} is never stored for the compiled
   code, there is nothing that can be done.
 
   For \knitrknitlink, the \code{srcref} is never stored, there is nothing that
-  can be done. I am looking into a fix for such a thing.
+  can be done. I am looking into a fix.
 
   For \targetslink, set option \string{keep.source} to \code{TRUE} before
   calling.
 
   For \boxuselink, \plumberplumblink, \shinyrunApplink, and
-  \testthatsourcefilelink, the \code{srcref} is always stored, so you do not
-  need to do anything special before calling.
+  \testthatsourcefilelink, the \code{srcref} is always stored.
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")

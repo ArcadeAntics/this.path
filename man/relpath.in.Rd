@@ -1,14 +1,8 @@
 \name{relpath}
 \alias{relpath}
-\alias{rel2sys.dir}
-\alias{rel2sys.proj}
-\alias{rel2env.dir}
-\alias{rel2env.proj}
-\alias{rel2src.dir}
-\alias{rel2src.proj}
 \alias{rel2here}
 \alias{rel2proj}
-\title{Make a Path Relative to Another Path}
+\title{Make a Path Relative to Another}
 \description{
   When working with \pkg{this.path}, you will be dealing with a lot of absolute
   paths. These paths are not portable for saving within files nor tables, so
@@ -22,22 +16,10 @@ relpath(path, relative.to = getwd())
 relpath(path, relative.to = normalizePath(getwd(), "/", TRUE))
 #endif
 
-rel2sys.dir(path, local = FALSE)
-rel2sys.proj(path, local = FALSE)
-
-rel2env.dir(path, n = 0, envir = parent.frame(n + 1),
-            matchThisEnv = getOption("topLevelEnvironment"))
-rel2env.proj(path, n = 0, envir = parent.frame(n + 1),
-             matchThisEnv = getOption("topLevelEnvironment"))
-
-rel2src.dir(path, n = 0,
-            srcfile = if (n) sys.parent(n) else 0)
-rel2src.proj(path, n = 0,
-             srcfile = if (n) sys.parent(n) else 0)
-
 rel2here(path, local = FALSE, n = 0, envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
          srcfile = if (n) sys.parent(n) else 0)
+
 rel2proj(path, local = FALSE, n = 0,
          envir = parent.frame(n + 1),
          matchThisEnv = getOption("topLevelEnvironment"),
@@ -49,9 +31,8 @@ rel2proj(path, local = FALSE, n = 0,
   \item{relative.to}{character string; the file / / URL pathname to make
     \code{path} relative to.}
 
-  \item{local}{See \code{?\link{sys.path}()}.}
-
-  \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
+  \item{local, n, envir, matchThisEnv, srcfile}{See
+    \code{?\link{this.path}()}.}
 }
 \details{
   Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) is first done on
@@ -64,15 +45,6 @@ rel2proj(path, local = FALSE, n = 0,
 }
 \value{
   character vector of the same length as \code{path}.
-}
-\note{
-  \code{rel2sys.dir()}, \code{rel2sys.proj()}, \code{rel2env.dir()},
-  \code{rel2env.proj()}, \code{rel2src.dir()}, \code{rel2src.proj()},
-  \code{rel2here()}, and \code{rel2proj()} are variants of \code{relpath()} in
-  which \code{relative.to} is \code{\link{sys.dir}()},
-  \code{\link{sys.proj}()}, \code{\link{env.dir}()}, \code{\link{env.proj}()},
-  \code{\link{src.dir}()}, \code{\link{src.proj}()}, \code{\link{here}()}, and
-  \code{\link{this.proj}()}.
 }
 #ifdef unix
 \examples{
