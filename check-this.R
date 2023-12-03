@@ -1,7 +1,7 @@
 local({
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
-    # essentials:::.update.DESCRIPTION.Date()
+    essentials:::.update.DESCRIPTION.Date()
     essentials:::check.this(  ## this.path
         special = TRUE,
 
@@ -24,7 +24,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming.CRAN.version <- "2.3.0"
+    upcoming.CRAN.version <- "2.3.1"
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
 
