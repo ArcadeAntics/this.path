@@ -1,6 +1,6 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
-\section{CHANGES IN VERSION devel}{
+\section{CHANGES IN VERSION 2.3.0 (2023-12-02)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item{Previously defunct functions \code{this.path2()},
