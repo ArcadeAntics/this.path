@@ -26,7 +26,7 @@ check.proj(...)
 }
 \details{
   \code{check.proj()} is a specialized version of \code{check.path()} that
-  checks the path all the way up to the project's directory.
+  checks the path up to the project root.
 }
 \value{
   If the expected path / / directory matches \code{this.path()} / /

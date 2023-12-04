@@ -100,10 +100,9 @@ function (path = getwd(), subdir = NULL)
 
 
 .find.root <- evalq(envir = new.env(), {
-    environment(tmp$find_file) <- environment()
-    environment(tmp$make_fix_file) <- environment()
+    environment(tmp$find_file) <<- environment()
+    environment(tmp$make_fix_file) <<- environment()
     .default_criterion_if_rprojroot_is_not_available <- tmp
-    rm(tmp)
     delayedAssign("default.criterion", {
         if (requireNamespace("rprojroot"))
             rprojroot::has_file(".here")     |

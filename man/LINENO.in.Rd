@@ -13,22 +13,6 @@ LINENO(n = 0, envir = parent.frame(n + 1),
   \item{n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
 \details{
-  \code{LINENO()} starts by examining argument \code{srcfile}. If it is a
-  \code{srcref} or contains one, it will return the \code{first_line} number.
-
-  If it does not find a line number associated with \code{srcfile}, it will
-  look for a path in a similar manner to \code{\link{this.path}()} except it
-  skips the \code{srcfile} and GUI aspects. If it finds a path, it will look
-  for the most recent expression that has a source reference and has a source
-  file equal to the path. If it finds one, it will return the \code{first_line}
-  number.
-
-  If it does not find a line number, it will return \code{NA_integer_}.
-}
-\value{
-  integer.
-}
-\note{
   \code{LINENO()} only works if the expressions have a
   \codelink2{base:srcfile}{srcref}.
 
@@ -49,10 +33,13 @@ LINENO(n = 0, envir = parent.frame(n + 1),
   can be done. I am looking into a fix.
 
   For \targetslink, set option \string{keep.source} to \code{TRUE} before
-  calling.
+  calling associated functions.
 
   For \boxuselink, \plumberplumblink, \shinyrunApplink, and
   \testthatsourcefilelink, the \code{srcref} is always stored.
+}
+\value{
+  integer; \code{NA_integer_} if the line number is not found.
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")

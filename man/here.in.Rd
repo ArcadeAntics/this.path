@@ -64,8 +64,7 @@ FILE.R <- this.path::path.join(tmpdir, "src", "R", "script1.R")
 dir.create(this.path::dirname2(FILE.R), recursive = TRUE)
 this.path:::.write.code({
     this.path::this.path()
-    if (requireNamespace("rprojroot"))
-        this.path::this.proj()
+    this.path::this.proj()
     ## use 'here' to run another script located nearby
     this.path::here("script2.R")
     ## or maybe to read input from a file
@@ -73,8 +72,7 @@ this.path:::.write.code({
     ## but sometimes it is easier to use the project root
     ## this allows you to move the R script up or down
     ## a directory without changing the .. number
-    if (requireNamespace("rprojroot"))
-        this.path::this.proj("input", "data1.csv")
+    this.path::this.proj("input", "data1.csv")
 }, FILE.R)
 
 source(FILE.R, echo = TRUE)
