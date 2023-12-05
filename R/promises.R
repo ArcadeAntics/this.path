@@ -261,7 +261,7 @@ delayedAssign(".gui.vscode",
 )
 
 
-.IRkernel.main.call <- as.call(list(call("::", as.symbol("IRkernel"), as.symbol("main"))))
+.IRkernel.main.call <- quote(IRkernel::main())
 ## jupyter build a competent API challenge (impossible)
 delayedAssign(".gui.jupyter",
     !interactive() &&

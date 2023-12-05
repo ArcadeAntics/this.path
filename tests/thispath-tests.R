@@ -173,14 +173,14 @@ local({
 
 
         setwd(basename.dir)
-        fun(knitr::knit(.(basename.Rmd)                         , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(basename.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
+        fun(knitr::knit(.(basename.Rmd)                     , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(basename.Rmd))), output = stdout(), quiet = TRUE)); close(conn)
         setwd(rel.path.dir)
-        fun(knitr::knit(.(rel.path.Rmd)                         , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(rel.path.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
+        fun(knitr::knit(.(rel.path.Rmd)                     , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(rel.path.Rmd))), output = stdout(), quiet = TRUE)); close(conn)
         setwd(abs.path.dir)
-        fun(knitr::knit(.(abs.path.Rmd)                         , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(abs.path.Rmd)))    , output = stdout(), quiet = TRUE)); close(conn)
+        fun(knitr::knit(.(abs.path.Rmd)                     , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(abs.path.Rmd))), output = stdout(), quiet = TRUE)); close(conn)
     }
 
 

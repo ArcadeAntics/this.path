@@ -182,9 +182,19 @@ example:
 
 ```R
 ## substitute 'rprojroot::criteria$is_r_package' with your criterion
+
 fix_file <- this.path::path.functions(
     rprojroot::criteria$is_r_package$find_file(
         path = this.path::here()
+    )
+)$here
+
+## or
+
+fix_file <- this.path::path.functions(
+    rprojroot::find_root(
+        rprojroot::criteria$is_r_package,
+        this.path::here()
     )
 )$here
 ```

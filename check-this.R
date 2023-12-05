@@ -230,7 +230,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\\\enumerate\\{", x, perl = TRUE, value = TRUE)
+    x <- grep("(?<!this\\.path)::", x, perl = TRUE, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

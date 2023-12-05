@@ -58,10 +58,7 @@ env.LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = get
 {
     n <- .External2(.C_asIntegerGE0, n)
     envir
-    if (missing(matchThisEnv) ||
-        is.null(matchThisEnv) ||
-        identical(matchThisEnv, getOption("topLevelEnvironment"))) {
-    } else warning(sprintf("argument '%s' is deprecated.", "matchThisEnv"))
+    matchThisEnv ## this is unused
     value <- NA_integer_
     if (typeof(envir) == "environment") {
         parents <- sys.parents()

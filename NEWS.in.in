@@ -1,5 +1,14 @@
 this.path News
 
+CHANGES IN this.path devel:
+
+  BUG FIXES:
+
+    * sys.srcref() (and by extension this.path() and LINENO()) now
+      works when passed as a non-forced argument to a function
+      containing source references.
+
+
 CHANGES IN this.path 2.3.0 (2023-12-02):
 
   SIGNIFICANT USER-VISIBLE CHANGES:

@@ -2384,50 +2384,83 @@ SEXP do_env_path do_formals
 }
 
 
-SEXP sys_srcref(int k, SEXP rho)
+SEXP _sys_srcref(int k, Rboolean most_recent, SEXP rho)
 {
-    SEXP which = CADR(expr_sys_call_which);
-    int *iwhich = INTEGER(which);
-    iwhich[0] = k;
-    SEXP expr = eval(expr_sys_call_which, rho);
-    PROTECT(expr);
-    SEXP srcref = getAttrib(expr, srcrefSymbol);
-    UNPROTECT(1);
-    if (srcref != R_NilValue)
-        return srcref;
-
-
-    SEXP sysparents = eval(expr_sys_parents, rho);
-    PROTECT(sysparents);
-    int framedepth = LENGTH(sysparents);
-    if (framedepth < 2) {
-        UNPROTECT(1);
-        return R_NilValue;
-    }
-    int *isysparents = INTEGER(sysparents);
-    if (iwhich[0] > 0)
-        iwhich[0] -= framedepth;
-    int indx = framedepth + iwhich[0] - 1;
-    int sysparent = isysparents[indx];
-    int previous_equal = 1, current_equal = 1;
-    while (--indx >= sysparent) {
-        iwhich[0]--;
+    SEXP Rparents = eval(expr_sys_parents, rho);
+    PROTECT(Rparents);
+    int framedepth = LENGTH(Rparents);
+    int *parents = INTEGER(Rparents);
+    // make k negative; this speeds up call stack inspection
+    if (k > 0) k -= framedepth;
+    // -1 because R is index 1 and C is index 0
+    int indx = framedepth + k - 1;
+    int parent = parents[indx];
+    int *which = INTEGER(CADR(expr_sys_call_which));
+    which[0] = k;
+    int minimum_k = k;
+    for (int previous_equal = 1, current_equal = 1; indx >= parent; indx--, which[0]--) {
         previous_equal = current_equal;
-        current_equal = (isysparents[indx] == sysparent);
-        if (current_equal) {
-            PROTECT(expr = eval(expr_sys_call_which, rho));
-            srcref = getAttrib(expr, srcrefSymbol);
-            if (srcref != R_NilValue) {
-                UNPROTECT(2);
-                return srcref;
-            }
-            UNPROTECT(1);
-        }
+        current_equal = (parents[indx] == parent);
+        if (current_equal)
+            minimum_k = which[0];
         else if (previous_equal && (eval(expr_sys_function_which, rho) == eval_op))
             break;
     }
+    which[0] = minimum_k;
+    SEXP expr = eval(expr_sys_call_which, rho);
+    PROTECT(expr);
+    SEXP srcref = getAttrib(expr, srcrefSymbol);
+    if (most_recent && srcref != R_NilValue) {
+        PROTECT(srcref);
+        SEXP srcfile = getAttrib(srcref, srcfileSymbol);
+        if (TYPEOF(srcfile) == ENVSXP) {
+            PROTECT(srcfile);
+            indx = framedepth + k - 1;
+            which[0] = k;
+            for (int do_break = 0; indx >= parent; indx--, which[0]--) {
+                if (parents[indx] == parent) {
+                    SEXP current_expr = eval(expr_sys_call_which, rho);
+                    PROTECT(current_expr);
+                    SEXP current_srcref = getAttrib(current_expr, srcrefSymbol);
+                    if (current_srcref != R_NilValue) {
+                        PROTECT(current_srcref);
+                        SEXP current_srcfile = getAttrib(current_srcref, srcfileSymbol);
+                        UNPROTECT(1);
+                        if (srcfile == current_srcfile) {
+                            srcref = current_srcref;
+                            do_break = 1;
+                        }
+                    }
+                    UNPROTECT(1);
+                }
+                if (do_break) break;
+            }
+            UNPROTECT(1);
+        }
+        UNPROTECT(1);
+    }
+    UNPROTECT(2);
+    return srcref;
+}
+
+
+SEXP sys_srcref(int k, SEXP rho)
+{
+    return _sys_srcref(k, TRUE, rho);
+}
+
+
+SEXP sys_srcfile(int k, SEXP rho)
+{
+    /* since we're only interested in the 'srcfile', we do not need the most
+     * recent source reference */
+    SEXP srcref = _sys_srcref(k, FALSE, rho);
+    if (srcref == R_NilValue)
+        return R_NilValue;
+    PROTECT(srcref);
+    SEXP srcfile = getAttrib(srcref, srcfileSymbol);
     UNPROTECT(1);
-    return R_NilValue;
+    return srcfile;
 }
 
 
@@ -2530,9 +2563,9 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
         } while (0)
 
 
-        PROTECT(srcref = sys_srcref(x ? INTEGER(x)[0] : 0, rho)); nprotect++;
-        if (srcref != R_NilValue)
-            get_srcfile_from_srcref;
+        srcfile = sys_srcfile(x ? INTEGER(x)[0] : 0, rho);
+        if (TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
+        else { PROTECT(srcfile); nprotect++; }
     }
     else switch (TYPEOF(x)) {
     case SYMSXP:

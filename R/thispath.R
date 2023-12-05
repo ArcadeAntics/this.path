@@ -416,7 +416,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
         if (.os.windows) {
             x <- Sys.getenv("emacs_dir")
             if (!nzchar(x)) stop("environment variable 'emacs_dir' is unset; are you actually in Emacs?")
-            x <- utils::shortPathName(x)
+            if (requireNamespace("utils"))
+                x <- utils::shortPathName(x)
             paste0(x, "\\bin\\emacsclient.exe")
         } else {
             x <- Sys.which("emacsclient")
