@@ -2417,19 +2417,18 @@ SEXP _sys_srcref(int k, Rboolean most_recent, SEXP rho)
             PROTECT(srcfile);
             indx = framedepth + k - 1;
             which[0] = k;
-            for (int do_break = 0; indx >= parent; indx--, which[0]--) {
+            for (int do_break = 0; which[0] > minimum_k; indx--, which[0]--) {
                 if (parents[indx] == parent) {
                     SEXP current_expr = eval(expr_sys_call_which, rho);
                     PROTECT(current_expr);
                     SEXP current_srcref = getAttrib(current_expr, srcrefSymbol);
                     if (current_srcref != R_NilValue) {
                         PROTECT(current_srcref);
-                        SEXP current_srcfile = getAttrib(current_srcref, srcfileSymbol);
-                        UNPROTECT(1);
-                        if (srcfile == current_srcfile) {
+                        if (srcfile == getAttrib(current_srcref, srcfileSymbol)) {
                             srcref = current_srcref;
                             do_break = 1;
                         }
+                        UNPROTECT(1);
                     }
                     UNPROTECT(1);
                 }

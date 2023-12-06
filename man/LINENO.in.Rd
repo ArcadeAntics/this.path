@@ -41,6 +41,10 @@ LINENO(n = 0, envir = parent.frame(n + 1),
 \value{
   integer; \code{NA_integer_} if the line number is not found.
 }
+\note{
+  You can get a more accurate line number by wrapping \code{LINENO()} in
+  braces: \preformatted{{ LINENO() }}
+}
 \examples{
 FILE.R <- tempfile(fileext = ".R")
 writeLines(c("
