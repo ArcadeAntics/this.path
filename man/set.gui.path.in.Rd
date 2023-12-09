@@ -3,9 +3,10 @@
 \alias{thisPathNotExistsError}
 \title{Declare GUI's Active Document}
 \description{
-  \code{set.gui.path()} can be used to implement \code{\link{sys.path}()} for
+  \code{set.gui.path()} can be used to implement \code{\link{this.path}()} for
   arbitrary GUIs. This is similar to \code{\link{set.sys.path}()} which can be
-  used to implement \code{sys.path()} for arbitrary \sourcelink-like functions.
+  used to implement \code{\link{sys.path}()} for arbitrary \sourcelink-like
+  functions.
 }
 \usage{
 set.gui.path(...)
@@ -32,7 +33,7 @@ thisPathNotExistsError(..., call. = TRUE, domain = NULL,
 
   If two or three arguments are passed to \code{set.gui.path()}, they must be
   the name of the GUI, the path of the active document, and optionally a
-  function to read the contents of the document. If provided, the function must
+  function to get the contents of the document. If provided, the function must
   accept at least one argument which will be the normalized path of the
   document. This makes sense for a GUI which can edit and run \R code from only
   one document such as \Jupyter and shell.

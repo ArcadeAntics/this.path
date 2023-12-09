@@ -557,16 +557,46 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
     if (length(args) == 0L)
         as.list(Sys.getenv())
     else {
+        visible <- FALSE
         if (length(args) == 1L &&
             typeof(args[[1L]]) %in% c("NULL", "pairlist", "language",
                 "...", "list", "expression") &&
             is.null(names(args)))
         {
             args <- args[[1L]]
+            if (typeof(args) == "...") {
+                ... <- args
+                args <- list(...)
+            }
         }
-        value <- as.list(Sys.getenv(names(args), names = TRUE))
-        do.call("Sys.setenv", args, quote = TRUE)
-        invisible(value)
+        if (!length(args))
+            value <- structure(list(), names = character())
+        else if (is.null(tags <- names(args)) ||
+                all(i <- tags == ""))
+        {
+            visible <- TRUE
+            tags <- vapply(args, .AS_SCALAR_STR, "", USE.NAMES = FALSE)
+            value <- as.list(Sys.getenv(tags, unset = NA, names = TRUE))
+        }
+        else {
+            if (any(i)) {
+                visible <- TRUE
+                tags[i] <- vapply(args[i], .AS_SCALAR_STR, "", USE.NAMES = FALSE)
+                args <- args[!i]
+            }
+            value <- as.list(Sys.getenv(tags, unset = NA, names = TRUE))
+            args <- lapply(args, .AS_SCALAR_STR)
+            na <- vapply(args, identical, NA_character_, FUN.VALUE = NA, USE.NAMES = FALSE)
+            if (any(na)) {
+                Sys.unsetenv(names(args)[na])
+                args <- args[!na]
+            }
+            if (length(args))
+                do.call("Sys.setenv", args, quote = TRUE)
+        }
+        if (visible)
+            value
+        else invisible(value)
     }
 }
 
@@ -589,6 +619,10 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 
 .IS_SCALAR_STR <- function (x)
 .External2(.C_IS_SCALAR_STR, x)
+
+
+.AS_SCALAR_STR <- function (x)
+.External2(.C_AS_SCALAR_STR, x)
 
 
 .scalar_streql <- function (e1, e2)

@@ -64,3 +64,4 @@ for (FILE in FILES) {
 unlink(FILES)
 }
 \keyword{error}
+\keyword{internal}

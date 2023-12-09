@@ -41,9 +41,11 @@ New additions include:
 *   `shFILE()` looks through the command line arguments, extracting
     *FILE* from either of the following: `-f FILE` or `--file=FILE`
 
-*   `wrap.source()`, `set.sys.path()`, and `unset.sys.path()` implement
-    `this.path()` for any `source()`-like functions outside of the
-    builtins.
+*   `set.sys.path()` implements `this.path()` for any `source()`-like
+    functions outside of the builtins.
+
+*   with_site.file() and with_init.file() allow this.path() and related
+    to be used in the site-wide startup profile file or a user profile.
 
 `package:this.path` also provides functions for constructing and
 manipulating file paths:

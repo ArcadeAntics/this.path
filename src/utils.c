@@ -51,6 +51,13 @@ SEXP do_IS_SCALAR_STR do_formals
 }
 
 
+SEXP do_AS_SCALAR_STR do_formals
+{
+    do_start_no_call_op_rho("AS_SCALAR_STR", 1);
+    return ScalarString(asChar(CAR(args)));
+}
+
+
 SEXP do_scalar_streql do_formals
 {
     do_start_no_call_op_rho("scalar_streql", 2);

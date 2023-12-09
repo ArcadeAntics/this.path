@@ -210,6 +210,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"asInteger"    , (DL_FUNC) &do_asInteger    , 1},
 {"asIntegerGE0" , (DL_FUNC) &do_asIntegerGE0 , 1},
 {"IS_SCALAR_STR", (DL_FUNC) &do_IS_SCALAR_STR, 1},
+{"AS_SCALAR_STR", (DL_FUNC) &do_AS_SCALAR_STR, 1},
 {"scalar_streql", (DL_FUNC) &do_scalar_streql, 2},
 {"get.dyn"      , (DL_FUNC) &do_get_dyn      , 3},
 

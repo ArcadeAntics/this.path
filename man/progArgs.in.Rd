@@ -29,9 +29,7 @@ withArgs(...)
     \codelink2{base:DateTimeClasses}{POSIXt} vectors.
 
     for \code{withArgs()}, the first argument should be an (unevaluated) call
-    to \sourcescompatiblewithwithArgslistlinks, or a \sourcenolink-like
-    function containing \code{\link{set.sys.path}()} / /
-    \code{\link{wrap.source}()}.}
+    to a \sourcenolink-like function.}
 }
 \details{
   \code{fileArgs()} will return the arguments associated with the executing
@@ -88,7 +86,6 @@ FILE.R <- tempfile(fileext = ".R")
 this.path:::.write.code({
     this.path:::.withAutoprint({
         this.path::sys.path()
-        this.path::fileArgs()
         this.path::progArgs()
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE.R)
@@ -99,13 +96,8 @@ this.path::withArgs(
     source(FILE.R, local = TRUE, verbose = FALSE),
     letters[6:10], pi, exp(1)
 )
-this.path::withArgs(
-    sys.source(FILE.R, environment()),
-    letters[11:15], pi + 1i * exp(1)
-)
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE.R,
     this.path::asArgs(letters[16:20], pi, Sys.time())))
-## fileArgs() will be character(0) because there is no executing script
 this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
     rbind("-e", readLines(FILE.R)[-2L]),
     this.path::asArgs(letters[16:20], pi, Sys.time())))
@@ -115,11 +107,9 @@ this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
 # ## make calls to withArgs() more intuitive:
 # source(FILE.R, local = TRUE, verbose = FALSE) |> this.path::withArgs(
 #     letters[6:10], pi, exp(1))
-# sys.source(FILE.R, environment()) |> this.path::withArgs(
-#     letters[11:15], pi + 1i * exp(1))
 
 
-## withArgs() also works with set.sys.path() and wrap.source()
+## withArgs() also works with set.sys.path()
 sourcelike <- function (file, envir = parent.frame())
 {
     file <- set.sys.path(file)
@@ -130,20 +120,6 @@ sourcelike <- function (file, envir = parent.frame())
 this.path::withArgs(sourcelike(FILE.R), letters[21:26])
 
 
-sourcelike2 <- function (file, envir = parent.frame())
-{
-    envir <- as.environment(envir)
-    exprs <- parse(n = -1, file = file)
-    for (i in seq_along(exprs)) eval(exprs[i], envir)
-}
-sourcelike3 <- function (file, envir = parent.frame())
-{
-    envir <- as.environment(envir)
-    wrap.source(sourcelike2(file = file, envir = envir))
-}
-this.path::withArgs(sourcelike3(FILE.R), LETTERS[1:5])
-this.path::withArgs(wrap.source(sourcelike2(FILE.R)), LETTERS[6:10])
-
-
 unlink(FILE.R)
 }
+\keyword{internal}

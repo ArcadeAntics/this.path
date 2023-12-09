@@ -24,3 +24,4 @@ source(FILE.R, verbose = FALSE, keep.source = TRUE)
 fun()
 unlink(FILE.R)
 }
+\keyword{internal}

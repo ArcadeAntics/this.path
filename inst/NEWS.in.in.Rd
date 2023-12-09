@@ -4,8 +4,8 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item{\code{sys.srcref()} now works when passed as a non-forced argument
-        to a function containing source references, and by extension,
-        \code{this.path()} and \code{LINENO()}).}
+        to a function containing source references. By extension,
+        \code{this.path()} and \code{LINENO()} now work as well.}
     }
   }
 }

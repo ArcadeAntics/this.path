@@ -258,6 +258,7 @@ extern SEXP do_isfalse       do_formals;
 extern SEXP do_asInteger     do_formals;
 extern SEXP do_asIntegerGE0  do_formals;
 extern SEXP do_IS_SCALAR_STR do_formals;
+extern SEXP do_AS_SCALAR_STR do_formals;
 extern SEXP do_scalar_streql do_formals;
 extern SEXP do_get_dyn       do_formals;
 

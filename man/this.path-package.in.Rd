@@ -11,7 +11,7 @@
   \sourcesandlistlinks.
 }
 \details{
-  The most important functions from \pkg{this.path} are
+  The most important functions from \pkg{package:this.path} are
   \code{\link{this.path}()}, \code{\link{this.dir}()}, \code{\link{here}()},
   and \code{\link{this.proj}()}:
 
@@ -29,8 +29,26 @@
       root of \code{this.dir()}.}
   }
 
-  \pkg{this.path} also provides functions for constructing and manipulating
-  file paths:
+  New additions include:
+
+  \itemize{
+    \item{\code{\link{LINENO}()} returns the line number of the executing
+      expression.}
+
+    \item{\code{\link{shFILE}()} looks through the command line arguments,
+      extracting \option{FILE} from either of the following: \option{-f}
+      \option{FILE} or \option{--file=FILE}}
+
+    \item{\code{\link{set.sys.path}()} implements \code{\link{this.path}()} for
+      any \sourcelink-like functions outside of the builtins.}
+
+    \item{\code{\link{with_site.file}()} and \code{\link{with_init.file}()}
+      allow \code{this.path()} and related to be used in the site-wide startup
+      profile file or a user profile.}
+  }
+
+  \pkg{package:this.path} also provides functions for constructing and
+  manipulating file paths:
 
   \itemize{
     \item{\code{\link{path.join}()}, \code{\link{basename2}()}, and
@@ -50,29 +68,11 @@
     \item{\code{\link{relpath}()}, \code{\link{rel2here}()}, and
       \code{\link{rel2proj}()} turn absolute paths into relative paths.}
   }
-
-  New additions to \pkg{this.path} include:
-
-  \itemize{
-    \item{\code{\link{with_site.file}()} and \code{\link{with_init.file}()}
-      allow \code{this.path()} and related to be used in the site-wide startup
-      profile file or a user profile.}
-
-    \item{\code{\link{LINENO}()} returns the line number of the executing
-      expression.}
-
-    \item{\code{\link{set.sys.path}()} implements \code{\link{this.path}()} for
-      any \sourcelink-like functions outside of \sourcesandlistlinks.}
-
-    \item{\code{\link{shFILE}()} looks through the command line arguments,
-      extracting \option{FILE} from either of the following: \option{-f}
-      \option{FILE} or \option{--file=FILE}}
-  }
 }
 \note{
-  This package started from a stack overflow posting, found at:
+  This package started from a stack overflow posting:
 
-  \href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script}{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script}
+  \href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}
 
   If you like this package, please consider upvoting my answer so that more
   people will see it! If you have an issue with this package, please use

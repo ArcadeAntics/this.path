@@ -13,3 +13,4 @@ source.exprs(exprs, evaluated = FALSE, envir = parent.frame(),
   \item{exprs, evaluated, envir, echo, print.eval}{See
     \codelink3{base:source}{withAutoprint}{()}.}
 }
+\keyword{internal}

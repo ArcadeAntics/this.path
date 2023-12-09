@@ -24,7 +24,7 @@ path.functions(file, local = FALSE, n = 0,
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path, the original file path, or the contents of the file.}
 
-  \item{this.dir}{Function of no arguments which returns the directory of the
+  \item{this.dir}{Function with no formals which returns the directory of the
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path.}
 
@@ -38,6 +38,6 @@ path.functions(file, local = FALSE, n = 0,
     absolute paths into relative paths, against the file's directory / /
     project root.}
 
-  \item{LINENO}{Function with formals \code{NULL} which returns the line number
-    of the executing expression in \code{file}.}
+  \item{LINENO}{Function with no formals which returns the line number of the
+    executing expression in \code{file}.}
 }

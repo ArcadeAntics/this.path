@@ -66,4 +66,5 @@ as.character(x)
 
 unlink(FILE.R)
 }
+\keyword{internal}
 \keyword{print}

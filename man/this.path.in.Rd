@@ -105,9 +105,8 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   call: a call to function \sourcesorlistlinks. If a source call is found, the
   file argument is returned from the function's evaluation environment. If you
   have your own \sourcenolink-like function that you would like to be
-  recognized by \code{this.path()}, please use \code{\link{set.sys.path}()} / /
-  \code{\link{wrap.source}()} or contact the package maintainer so that it can
-  be implemented.
+  recognized by \code{this.path()}, please use \code{\link{set.sys.path}()} or
+  contact the package maintainer so that it can be implemented.
 
   If no source call is found up the calling stack, it will next examine the GUI
   in use. If \R is running from:
@@ -283,7 +282,7 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
 \seealso{
   \code{\link{shFILE}()}
 
-  \code{\link{set.sys.path}()}, \code{\link{wrap.source}()}
+  \code{\link{set.sys.path}()}
 }
 \examples{
 FILE1.R <- tempfile(fileext = ".R")

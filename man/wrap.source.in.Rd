@@ -12,13 +12,14 @@
 \description{
   \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.
 
-  \code{set.sys.path()} and \code{wrap.source()} can be used to implement
-  \code{sys.path()} for any other \sourcenolink-like functions.
+  \code{set.sys.path()} can be used to implement \code{sys.path()} for any
+  other \sourcenolink-like functions.
 
   \code{set.env.path()} and \code{set.src.path()} can be used along side
   \code{set.sys.path()} to implement \code{\link{env.path}()} and
-  \code{\link{src.path}()}. Note that \code{set.env.path()} only makes sense if
-  the code is being modularized, see examples.
+  \code{\link{src.path}()}, fully implementing \code{\link{this.path}()}. Note
+  that \code{set.env.path()} only makes sense if the code is being modularized,
+  see examples.
 
   \code{unset.sys.path()} will undo a call to \code{set.sys.path()}. You will
   need to use this if you wish to call \code{set.sys.path()} multiple times
@@ -42,33 +43,11 @@
   See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
   \code{set.sys.path()} was called.
+
+  \code{wrap.source()} should not be used, save for one specific use-case. See
+  details.
 }
 \usage{
-wrap.source(expr,
-    path.only = FALSE,
-    character.only = path.only,
-    file.only = path.only,
-    conv2utf8 = FALSE,
-    allow.blank.string = FALSE,
-    allow.clipboard = !file.only,
-    allow.stdin = !file.only,
-    allow.url = !file.only,
-    allow.file.uri = !path.only,
-    allow.unz = !path.only,
-    allow.pipe = !file.only,
-    allow.terminal = !file.only,
-    allow.textConnection = !file.only,
-    allow.rawConnection = !file.only,
-    allow.sockconn = !file.only,
-    allow.servsockconn = !file.only,
-    allow.customConnection = !file.only,
-    ignore.all = FALSE,
-    ignore.blank.string = ignore.all,
-    ignore.clipboard = ignore.all,
-    ignore.stdin = ignore.all,
-    ignore.url = ignore.all,
-    ignore.file.uri = ignore.all)
-
 set.sys.path(file,
     path.only = FALSE,
     character.only = path.only,
@@ -106,14 +85,39 @@ set.sys.path.function(fun)
 with_sys.path(file, expr, ...)
 with_site.file(expr, n = 0)
 with_init.file(expr, n = 0)
+
+wrap.source(expr,
+    path.only = FALSE,
+    character.only = path.only,
+    file.only = path.only,
+    conv2utf8 = FALSE,
+    allow.blank.string = FALSE,
+    allow.clipboard = !file.only,
+    allow.stdin = !file.only,
+    allow.url = !file.only,
+    allow.file.uri = !path.only,
+    allow.unz = !path.only,
+    allow.pipe = !file.only,
+    allow.terminal = !file.only,
+    allow.textConnection = !file.only,
+    allow.rawConnection = !file.only,
+    allow.sockconn = !file.only,
+    allow.servsockconn = !file.only,
+    allow.customConnection = !file.only,
+    ignore.all = FALSE,
+    ignore.blank.string = ignore.all,
+    ignore.clipboard = ignore.all,
+    ignore.stdin = ignore.all,
+    ignore.url = ignore.all,
+    ignore.file.uri = ignore.all)
 }
 \arguments{
-  \item{expr}{for \code{wrap.source()}, an (unevaluated) call to a
-    \sourcenolink-like function.
-
-    for \code{with_sys.path()}, \code{with_site.file()}, and
+  \item{expr}{for \code{with_sys.path()}, \code{with_site.file()}, and
     \code{with_init.file()}, an expression to evaluate within the context of a
-    file.}
+    file.
+
+    for \code{wrap.source()}, an (unevaluated) call to a \sourcenolink-like
+    function.}
 
   \item{file}{a
     \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
@@ -215,8 +219,6 @@ with_init.file(expr, n = 0)
   \code{set.sys.path()} instead.
 }
 \value{
-  for \code{wrap.source()}, the result of evaluating \code{expr}.
-
   for \code{set.sys.path()}, if \code{file} is a path, then the normalized
   path with the same attributes, otherwise \code{file} itself. The return value
   of \code{set.sys.path()} should be assigned to a variable before use,
@@ -224,6 +226,8 @@ with_init.file(expr, n = 0)
     file <- set.sys.path(file, ...)
     sourcelike(file)
 }}
+
+  for \code{wrap.source()}, the result of evaluating \code{expr}.
 }
 \section{Using 'ofile'}{
   \code{ofile} can be used when the \code{file} argument supplied to
@@ -250,57 +254,6 @@ with_init.file(expr, n = 0)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
     invisible()
 }}
-}
-\note{
-  Both functions should only be called within another function.
-
-  Suppose that the functions \sourcesandlistnolinks were not implemented with
-  \code{sys.path()}. You could use \code{set.sys.path()} to implement each of
-  them as follows:
-
-  \describe{
-
-    \item{\sourcenolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- set.sys.path(file)
-    source(file = file, ...)
-}}}
-
-    \item{\syssourcenolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- set.sys.path(file, path.only = TRUE)
-    sys.source(file = file, ...)
-}}}
-
-    \item{\debugSourceinRStudionolink}{\preformatted{wrapper <- function(fileName, ...) {
-    fileName <- set.sys.path(fileName, character.only = TRUE,
-        conv2utf8 = TRUE, allow.blank.string = TRUE)
-    debugSource(fileName = fileName, ...)
-}}}
-
-    \item{\compilerloadcmpnolink}{\preformatted{wrapper <- function(file, ...) {
-    file <- set.sys.path(file, path.only = TRUE)
-    compiler::loadcmp(file = file, ...)
-}}}
-
-    \item{\knitrknitnolink}{\preformatted{wrapper <- function(input, ...) {
-    ## this works for the most part, but will not work in child mode
-    input <- set.sys.path(input, allow.file.uri = FALSE)
-    knitr::knit(input = input, ...)
-}}}
-
-    \item{\testthatsourcefilenolink}{\preformatted{wrapper <- function(path, ...) {
-    ## before testthat_3.1.2, source_file() used readLines() to read
-    ## the input lines. changed in 3.1.2, source_file() uses
-    ## brio::read_lines() which normalizes 'path' before reading,
-    ## disregarding the special meaning of the strings listed above
-    path <- set.sys.path(path, path.only = TRUE, ignore.all =
-        as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2")
-    testthat::source_file(path = path, ...)
-}}}
-
-    \boxusenolink, \plumberplumbnolink, \shinyrunAppnolink, and \targetsnolink
-    do not have any simple implementations using \code{set.sys.path()} since
-    the sourcing functions are the internal objects of these namespaces.
-  }
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")

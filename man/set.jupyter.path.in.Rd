@@ -3,7 +3,7 @@
 \alias{set.sys.path.jupyter}
 \title{Declare Executing 'Jupyter' Notebook's Filename}
 \description{
-  \code{\link{sys.path}()} does some guess work to determine the path of the
+  \code{\link{this.path}()} does some guess work to determine the path of the
   executing notebook in \sQuote{\Jupyter}. This involves listing all the files
   in the initial working directory, filtering those which are \R notebooks,
   then filtering those with contents matching the top-level expression.
@@ -37,5 +37,5 @@ set.sys.path.jupyter(...)
 #
 # set.jupyter.path("file50b816a24ec1.ipynb")
 #
-# ## and then sys.path() will return "~/file50b816a24ec1.ipynb"
+# ## and then this.path() will return "~/file50b816a24ec1.ipynb"
 }

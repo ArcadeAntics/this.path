@@ -42,3 +42,4 @@ fun <- function ()
 { print(fun()) }
 { try(print(fun())) }
 }
+\keyword{internal}
