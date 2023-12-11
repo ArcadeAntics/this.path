@@ -64,7 +64,21 @@ manipulating file paths:
 *   `relpath()`, `rel2here()`, and `rel2proj()` turn absolute paths
     into relative paths.
 
+## Note
+
+This package started from a stack overflow posting:
+
+[https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649](https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649)
+
+If you like this package, please consider upvoting my answer so that
+more people will see it! If you have an issue with this package, please
+use `bug.report(package = "this.path")` to report your issue.
+
 ## Alternatives
+
+If you are unhappy with the performance of `package:this.path`, or
+would otherwise like to know some other solutions, here are 4
+alternatives:
 
 ### Alternative 1: Other Packages That Determine Current R Script
 

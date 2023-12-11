@@ -565,14 +565,17 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
         {
             args <- args[[1L]]
             if (typeof(args) == "...") {
-                ... <- args
+                # ... <- args
+                assign("...", args)
                 args <- list(...)
             }
+            else if (!is.vector(args) || is.object(args))
+                args <- as.list(args)
         }
         if (!length(args))
             value <- structure(list(), names = character())
         else if (is.null(tags <- names(args)) ||
-                all(i <- tags == ""))
+                 all(i <- tags == ""))
         {
             visible <- TRUE
             tags <- vapply(args, .AS_SCALAR_STR, "", USE.NAMES = FALSE)
@@ -619,6 +622,28 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 
 .IS_SCALAR_STR <- function (x)
 .External2(.C_IS_SCALAR_STR, x)
+
+
+.AS_SCALAR_STR <- function (x)
+{
+    switch (typeof(x),
+    `NULL` = NA_character_,
+    logical = ,
+    integer = ,
+    double = ,
+    complex = ,
+    character = ,
+    raw = {
+        if (is.object(x))
+            x <- unclass(x)
+        if (length(x))
+            as.character(x[[1L]])
+        else NA_character_
+    },
+    char = as.character(list(x)),
+    symbol = as.character(x),
+    NA_character_)
+}
 
 
 .AS_SCALAR_STR <- function (x)

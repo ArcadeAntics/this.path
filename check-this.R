@@ -1,7 +1,7 @@
 local({
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to 'check.this()', not the maintainer's copy")
-    essentials:::.update.DESCRIPTION.Date()
+    # essentials:::.update.DESCRIPTION.Date()
     essentials:::check.this(  ## this.path
         special = TRUE,
 

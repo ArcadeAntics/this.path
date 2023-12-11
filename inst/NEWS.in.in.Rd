@@ -1,6 +1,6 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
-\section{CHANGES IN VERSION devel}{
+\section{CHANGES IN VERSION 2.3.1 (2023-12-10)}{
   \subsection{BUG FIXES}{
     \itemize{
       \item{\code{sys.srcref()} now works when passed as a non-forced argument

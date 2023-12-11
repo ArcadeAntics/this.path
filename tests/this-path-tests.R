@@ -308,7 +308,7 @@ local({
     on.exit(unlink(FILE.R))
     this.path:::.write.code({
         stopifnot(identical(
-            print(this.path::this.path(verbose = TRUE)),
+            this.path::this.path(),
             getOption("this.path::this.path() expectation")
         ))
     }, FILE.R)
@@ -343,4 +343,38 @@ local({
         eval(parse(FILE.R)),
         list(FILE.R, normalizePath(FILE.R, "/", TRUE))[c(1L, 1L, 2L, 1L, 2L)]
     ))
+})
+
+
+local({
+    FILE1.R <- tempfile(pattern = "file1_", fileext = ".R")
+    on.exit(unlink(FILE1.R), add = TRUE)
+    this.path:::.write.code({
+        fun <- function(x) x
+        fun1 <- function() fun(this.path::src.path())
+    }, FILE1.R)
+    source(FILE1.R, environment(), keep.source = TRUE)
+
+
+    FILE2.R <- tempfile(pattern = "file2_", fileext = ".R")
+    on.exit(unlink(FILE2.R), add = TRUE)
+    this.path:::.write.code({
+        fun2 <- function() fun(this.path::src.path())
+    }, FILE2.R)
+    source(FILE2.R, environment(), keep.source = TRUE)
+
+
+    ## it might seem weird to use eval(expression())
+    ## it is just to prevent the expressions from having source references
+    stopifnot(identical(eval(expression(fun1())), normalizePath(FILE1.R, "/", TRUE)))
+    stopifnot(identical(eval(expression(fun2())), normalizePath(FILE2.R, "/", TRUE)))
+
+
+    FILE3.R <- tempfile("file3_", fileext = ".R")
+    on.exit(unlink(FILE3.R), add = TRUE)
+    this.path:::.write.code({
+        x <- list(fun1(), fun2(), fun(this.path::src.path()))
+    }, FILE3.R)
+    source(FILE3.R, environment(), keep.source = TRUE)
+    stopifnot(identical(x, as.list(normalizePath(c(FILE1.R, FILE2.R, FILE3.R), "/", TRUE))))
 })
