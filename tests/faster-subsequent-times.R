@@ -1,11 +1,8 @@
-main <- function ()
-{
+local({
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE)
     this.path:::.write.code(file = FILE, {
         if (requireNamespace("microbenchmark")) {
-            invisible(loadNamespace("microbenchmark"))
-            invisible(loadNamespace("this.path"))
             print(this.path:::.faster.subsequent.times.test())
         } else cat("\n'package:microbenchmark' is not available :(\n")
     })
@@ -19,7 +16,4 @@ main <- function ()
 
     cat("\n> source(FILE, chdir = TRUE)\n")
     source(FILE, chdir = TRUE)
-}
-
-
-main()
+})

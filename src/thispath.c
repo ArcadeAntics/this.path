@@ -889,7 +889,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     SEXP frame, function;
 
 
-    int to = ((local) ? N : (1 + asInteger(eval(expr__toplevel_context_number, R_EmptyEnv))));
+    int minimum_which = ((local) ? N : (1 + asInteger(eval(expr__toplevel_nframe, R_EmptyEnv))));
 
 
 /* the number of objects protected in each iteration (that must be unprotected
@@ -897,7 +897,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 #define nprotect_loop 1
 
 
-    for (iwhich[0] = N; iwhich[0] >= to; iwhich[0]--, UNPROTECT(nprotect_loop)) {
+    for (iwhich[0] = N; iwhich[0] >= minimum_which; iwhich[0]--, UNPROTECT(nprotect_loop)) {
         frame = eval(getframe, rho);
         // PROTECT(frame);
         function = eval(getfunction, rho);
@@ -1011,6 +1011,11 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 if (ofile == R_UnboundValue) continue;
 
 
+                SEXP wd = findVarInFrame(frame, owdSymbol);
+                if (srcfile && wd == R_UnboundValue)
+                    wd = findVarInFrame(srcfile, wdSymbol);
+
+
 #define checkfile2(call, sym, ofile, frame, as_binding,        \
     normalize_action, maybe_chdir, getowd, hasowd,             \
     character_only, conv2utf8, allow_blank_string,             \
@@ -1049,7 +1054,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* as_binding             */ TRUE,
                     /* normalize_action       */ NA_DEFAULT,
                     /* maybe_chdir            */ TRUE,
-                    /* getowd                 */ findVarInFrame(frame, owdSymbol),
+                    /* getowd                 */ wd,
                     /* hasowd                 */ ((owd) != R_UnboundValue && (owd) != R_NilValue),
                     /* character_only         */ FALSE,
                     /* conv2utf8              */ FALSE,
@@ -2384,7 +2389,14 @@ SEXP do_env_path do_formals
 }
 
 
-SEXP _sys_srcref(int k, Rboolean most_recent, SEXP rho)
+typedef enum {
+    CALLSTACK_WHICHES,
+    CALLSTACK_SRCREF ,
+    CALLSTACK_SRCFILE
+} CALLSTACKOP;
+
+
+SEXP _callstack(int k, CALLSTACKOP op, SEXP rho)
 {
     SEXP Rparents = eval(expr_sys_parents, rho);
     PROTECT(Rparents);
@@ -2392,13 +2404,16 @@ SEXP _sys_srcref(int k, Rboolean most_recent, SEXP rho)
     int *parents = INTEGER(Rparents);
     // make k negative; this speeds up call stack inspection
     if (k > 0) k -= framedepth;
+    // this would normally be 0, but not in Jupyter
+    int toplevel_framedepth = asInteger(eval(expr__toplevel_nframe, R_EmptyEnv));
+    if (k <= toplevel_framedepth - framedepth) k = 0;
     // -1 because R is index 1 and C is index 0
     int indx = framedepth + k - 1;
     int parent = parents[indx];
     int *which = INTEGER(CADR(expr_sys_call_which));
     which[0] = k;
     int minimum_k = k;
-    for (int previous_equal = 1, current_equal = 1; indx >= parent; indx--, which[0]--) {
+    for (int previous_equal = 1, current_equal = 1; indx >= parent && indx >= toplevel_framedepth; indx--, which[0]--) {
         previous_equal = current_equal;
         current_equal = (parents[indx] == parent);
         if (current_equal)
@@ -2406,18 +2421,40 @@ SEXP _sys_srcref(int k, Rboolean most_recent, SEXP rho)
         else if (previous_equal && (eval(expr_sys_function_which, rho) == eval_op))
             break;
     }
+    if (op == CALLSTACK_WHICHES) {
+        int len = 0;
+        k += framedepth - 1;
+        minimum_k += framedepth - 1;
+        for (indx = minimum_k; indx <= k; indx++)
+            len += (parents[indx] == parent);
+        SEXP value = allocVector(INTSXP, len);
+        int *ivalue = INTEGER(value);
+        int ivalueindx = -1;
+        for (indx = minimum_k; indx <= k; indx++)
+            if (parents[indx] == parent)
+                // +1 because R is index 1
+                ivalue[++ivalueindx] = indx + 1;
+        UNPROTECT(1);
+        return value;
+    }
     which[0] = minimum_k;
     SEXP expr = eval(expr_sys_call_which, rho);
     PROTECT(expr);
     SEXP srcref = getAttrib(expr, srcrefSymbol);
-    if (most_recent && srcref != R_NilValue) {
+    if (srcref == R_NilValue);
+    else if (op == CALLSTACK_SRCFILE) {
+        PROTECT(srcref);
+        srcref = getAttrib(srcref, srcfileSymbol);
+        UNPROTECT(1);
+    }
+    else if (op == CALLSTACK_SRCREF) {
         PROTECT(srcref);
         SEXP srcfile = getAttrib(srcref, srcfileSymbol);
         if (TYPEOF(srcfile) == ENVSXP) {
             PROTECT(srcfile);
             indx = framedepth + k - 1;
             which[0] = k;
-            for (int do_break = 0; which[0] > minimum_k; indx--, which[0]--) {
+            for (int do_break = 0; which[0] > minimum_k && indx >= toplevel_framedepth; indx--, which[0]--) {
                 if (parents[indx] == parent) {
                     SEXP current_expr = eval(expr_sys_call_which, rho);
                     PROTECT(current_expr);
@@ -2445,21 +2482,20 @@ SEXP _sys_srcref(int k, Rboolean most_recent, SEXP rho)
 
 SEXP sys_srcref(int k, SEXP rho)
 {
-    return _sys_srcref(k, TRUE, rho);
+    return _callstack(k, CALLSTACK_SRCREF, rho);
 }
 
 
 SEXP sys_srcfile(int k, SEXP rho)
 {
-    /* since we're only interested in the 'srcfile', we do not need the most
-     * recent source reference */
-    SEXP srcref = _sys_srcref(k, FALSE, rho);
-    if (srcref == R_NilValue)
-        return R_NilValue;
-    PROTECT(srcref);
-    SEXP srcfile = getAttrib(srcref, srcfileSymbol);
-    UNPROTECT(1);
-    return srcfile;
+    return _callstack(k, CALLSTACK_SRCFILE, rho);
+}
+
+
+SEXP do_sys_whiches do_formals
+{
+    do_start_no_call_op("sys.whiches", 1);
+    return _callstack(asInteger(CAR(args)), CALLSTACK_WHICHES, rho);
 }
 
 

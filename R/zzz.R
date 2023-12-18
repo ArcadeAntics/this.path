@@ -92,21 +92,27 @@ if (getRversion() < "3.0.0") {
         recurse <- function(e) {
             if (is.function(e)) {
                 if (!is.primitive(e)) {
+                    body_is_bytecode <- (typeof(.Internal(bodyCode(e))) == "bytecode")
                     formals(e) <- recurse(formals(e))
                     body(e) <- recurse(body(e))
+                    if (body_is_bytecode && requireNamespace("compiler", quietly = TRUE))
+                        e <- compiler::cmpfun(e)
                 }
                 e
             }
             else if (is.pairlist(e))
                 as.pairlist(lapply(e, recurse))
             else if (is.call(e)) {
-                if (typeof(e[[1L]]) == "symbol" && e[[1L]] == ".External2")  {
+                if (typeof(e[[1L]]) == "symbol" && e[[1L]] == ".External2") {
+                    # e <- body(this.path:::print.ThisPathDocumentContext)
                     e[[1L]] <- as.symbol(".External")
-                    e <- as.call(append(as.list(e), list(
+                    e <- append(as.list(e), after = 2L, list(
                         call("quote", e),
                         as.symbol(".External"),
                         call("environment")
-                    ), 2L))
+                    ))
+                    e <- as.call(e)
+                    # e[[1L]] <- as.symbol(".External")
                     e
                 }
                 else as.call(lapply(e, recurse))
@@ -207,6 +213,7 @@ if (getRversion() < "3.0.0") {
     ## lineno.R     ----
 
 
+    fix.External2.fun(.LINENO)
     fix.External2.fun(sys.LINENO)
     fix.External2.fun(env.LINENO)
     fix.External2.fun(src.LINENO)
@@ -371,8 +378,10 @@ if (getRversion() < "3.0.0") {
     fix.External2.fun(.asInteger)
     fix.External2.fun(.asIntegerGE0)
     fix.External2.fun(.IS_SCALAR_STR)
+    fix.External2.fun(.AS_SCALAR_STR)
     fix.External2.fun(.scalar_streql)
     fix.External2.fun(.get.dyn)
+    fix.External2.fun(.getframenumber)
 
 
     ## wrapsource.R ----
@@ -387,4 +396,25 @@ if (getRversion() < "3.0.0") {
 
 
     rm(fix.External2.promise, fix.External2.fun, fix.External2)
+}
+
+
+if (requireNamespace("compiler", quietly = TRUE)) {
+    ocompilePKGS <- compiler::compilePKGS(FALSE)
+    compiler::compilePKGS(ocompilePKGS)
+    if (ocompilePKGS) {
+        tmp <- environment(.find.root)
+        tmp$.default_criterion_if_rprojroot_is_not_available$testfun[] <- lapply(
+            tmp$.default_criterion_if_rprojroot_is_not_available$testfun,
+            compiler::cmpfun
+        )
+        tmp$.default_criterion_if_rprojroot_is_not_available$find_file <-
+            compiler::cmpfun(tmp$.default_criterion_if_rprojroot_is_not_available$find_file)
+        tmp$.default_criterion_if_rprojroot_is_not_available$make_fix_file <-
+            compiler::cmpfun(tmp$.default_criterion_if_rprojroot_is_not_available$make_fix_file)
+        tmp$format.root_criterion <- compiler::cmpfun(tmp$format.root_criterion)
+        tmp$print.root_criterion <- compiler::cmpfun(tmp$print.root_criterion)
+        rm(tmp)
+    }
+    rm(ocompilePKGS)
 }

@@ -578,8 +578,34 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         if (TYPEOF(fun) != CLOSXP)
             error(_("invalid '%s' value"), "fun");
         SEXP documentcontext = src_context(fun, rho);
+        if (documentcontext == R_EmptyEnv) {
+            INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
+            R_LockBinding(documentcontextSymbol, frame);
+            set_R_Visible(FALSE);
+            UNPROTECT(nprotect);
+            return R_NilValue;
+        }
+        documentcontext = duplicateEnv(documentcontext);
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
+        SEXP osource = findVarInFrame(documentcontext, sourceSymbol);
+        if (osource == R_UnboundValue)
+            error(_("object '%s' not found"), EncodeChar(PRINTNAME(sourceSymbol)));
+        if (TYPEOF(osource) != CHARSXP)
+            error(_("invalid '%s' value"), EncodeChar(PRINTNAME(sourceSymbol)));
+        const char *ostr = CHAR(osource);
+        const char *str = "call to function 'set.sys.path.function'";
+        SEXP source;
+        if (!LENGTH(osource))
+            source = mkChar(str);
+        else {
+            const char *fmt = "%s, copied from %s";
+            int pwidth = 1 + ((int) strlen(fmt)) + ((int) strlen(str)) + ((int) strlen(ostr)) - 4;
+            char buf[pwidth];
+            snprintf(buf, pwidth, fmt, str, ostr);
+            source = mkChar(buf);
+        }
+        INCREMENT_NAMED_defineVar(sourceSymbol, source, documentcontext);
         defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
         define_n(parent, documentcontext);
         set_R_Visible(FALSE);
@@ -592,8 +618,11 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
             error("%s cannot be called before set.sys.path()", name);
         if (TYPEOF(documentcontext) != ENVSXP)
             error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
-        if (!R_existsVarInFrame(documentcontext, setsyspathwashereSymbol))
+        if (documentcontext != R_EmptyEnv &&
+            !R_existsVarInFrame(documentcontext, setsyspathwashereSymbol))
+        {
             error("%s cannot be called before set.sys.path()", name);
+        }
         SEXP returnthis = R_NilValue;
         switch (op) {
         case SETPATHOP_UNSETSYSPATH:

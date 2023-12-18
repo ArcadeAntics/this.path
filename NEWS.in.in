@@ -1,5 +1,42 @@
 this.path News
 
+CHANGES IN this.path devel:
+
+  NEW FEATURES:
+
+    * Removed the restriction that reset.proj() could only be called
+      from a top level context.
+
+    * withArgs() will now be found anywhere on the stack as long as it
+      and the source()-like function are called in the same frame.
+
+      e.g. withArgs(try(source("./example.R")), 1, 2, 3) now works as
+      intended.
+
+  DEPRECATED AND DEFUNCT:
+
+    * set.sys.path.jupyter() is defunct and should be replaced with
+      set.jupyter.path().
+
+    * fileArgs() is defunct and should be replaced with progArgs().
+
+  BUG FIXES:
+
+    * Updated shFILE() to work better with older versions of R.
+
+    * Improved LINENO(), specifically sys.LINENO(), when comparing
+      paths to determine the appropriate source reference.
+
+    * Unified behaviour of is.main() across all GUIs.
+
+    * All promises are now braced, giving a more sensible call stack in
+      case of warnings / / errors.
+
+    * Namespaces loaded with requireNamespace() are now loaded quietly.
+
+    * this.proj() now throws an error that it does not work for URL
+      pathnames.
+
 CHANGES IN this.path 2.3.1 (2023-12-10):
 
   BUG FIXES:

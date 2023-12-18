@@ -1,19 +1,19 @@
-.try.normalizePath <- function (path, wd)
+.fixslash <- function (s)
 {
-    if (!missing(wd) && !is.null(wd)) {
-        oldwd <- setwd(wd)
-        on.exit(setwd(oldwd))
+    if (.os.windows) {
+        path <- chartr("\\", "/", path)
+        if (startsWith(path, "//"))
+            substr(path, 1L, 2L) <- "\\\\"
     }
-    tryCatch({
-        normalizePath(path, "/")
-    }, warning = function(w) {
-        if (.os.windows) {
-            path <- chartr("\\", "/", path)
-            if (startsWith(path, "//"))
-                substr(path, 1L, 2L) <- "\\\\"
-        }
-        path
-    })
+    path
+}
+
+
+.fixbackslash <- function (s)
+{
+    if (.os.windows)
+        path <- chartr("/", "\\", path)
+    path
 }
 
 
@@ -23,15 +23,35 @@
         call <- sys.call(which)
         srcref <- attr(call, "srcref", exact = TRUE)
         if (!is.null(srcref)) {
-            srcfile <- attr(srcref, "srcfile", exact = TRUE)
-            filename <- srcfile$filename
-            if (path == filename ||
-                path == .try.normalizePath(filename, srcfile$wd))
-            {
-                # return(srcref[7L])
+            ## try to get the normalized filename
+            success <- tryCatch({
+                value <- .External2(.C_src.path, srcref)
+                TRUE
+            }, error = function(e) FALSE)
+            if (success) {
+                ## compare the filenames
+                if (path == value) {
+                    # return(srcref[7L])
 
-                ## srcref[1L] is better, it respects #line directives
-                return(srcref[1L])
+                    ## srcref[1L] is better, it respects #line directives
+                    return(srcref[1L])
+                }
+            }
+            else {
+                ## try to get the original filename
+                success <- tryCatch({
+                    value <- .External2(.C_src.path, FALSE, TRUE, FALSE, FALSE, srcref)
+                    TRUE
+                }, error = function(e) FALSE)
+                if (success) {
+                    if (grepl("^file://", value))
+                        value <- .fixslash(.file.uri.path(value))
+                    else if (grepl("^(https|http|ftp|ftps)://", value))
+                        value <- .normalizeurl(value)
+                    else value <- .fixslash(value)
+                    if (path == value)
+                        return(srcref[1L])
+                }
             }
         }
     }
@@ -162,8 +182,7 @@ LINE <- eval(call("function", NULL, bquote({
         if (is.character(file)) {
             if (!length(file) || file == "")
                 stop("empty file/url name")
-            have_encoding <- !missing(encoding) && !identical(encoding,
-                "unknown")
+            have_encoding <- !missing(encoding) && !identical(encoding, "unknown")
             if (identical(encoding, "unknown")) {
                 enc <- utils::localeToCharset()
                 encoding <- enc[length(enc)]
@@ -349,12 +368,8 @@ LINE <- eval(call("function", NULL, bquote({
                 cat(".... mode(ei[[1L]])=", mode(ei[[1L]]), "; paste(curr.fun)=")
                 utils::str(paste(curr.fun))
             }
-            if (print.eval && yy$visible) {
-                if (isS4(yy$value))
-                  # methods::show(yy$value)
-                  get("show", envir = getNamespace("methods"), inherits = FALSE)(yy$value)
-                else print(yy$value)
-            }
+            if (print.eval && yy$visible)
+                .PrintValueEnv(yy$value, envir)
             if (verbose)
                 cat(" .. after ", sQuote(deparse(ei, control = unique(c(deparseCtrl,
                   "useSource")))), "\n", sep = "")

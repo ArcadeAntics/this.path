@@ -1,5 +1,47 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
+\section{CHANGES IN VERSION devel}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{Removed the restriction that \code{reset.proj()} could only be
+        called from a top level context.}
+
+      \item{\code{withArgs()} will now be found anywhere on the stack as long
+        as it and the \sourcenolink-like function are called in the same frame.
+
+        e.g. \code{withArgs(try(source("./example.R")), 1, 2, 3)} now works as
+        intended.}
+    }
+  }
+  \subsection{DEPRECATED AND DEFUNCT}{
+    \itemize{
+      \item{\code{set.sys.path.jupyter()} is defunct and should be replaced
+        with \code{set.jupyter.path()}.}
+
+      \item{\code{fileArgs()} is defunct and should be replaced
+        with \code{progArgs()}.}
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{Updated \code{shFILE()} to work better with older versions of \R.}
+
+      \item{Improved \code{LINENO()}, specifically \code{sys.LINENO()}, when
+        comparing paths to determine the appropriate source reference.}
+
+      \item{Unified behaviour of \code{is.main()} across all GUIs.}
+
+      \item{All promises are now braced, giving a more sensible call stack in
+        case of warnings / / errors.}
+
+      \item{Namespaces loaded with \code{requireNamespace()} are now loaded
+        quietly.}
+
+      \item{\code{this.proj()} now throws an error that it does not work for
+        URL pathnames.}
+    }
+  }
+}
 \section{CHANGES IN VERSION 2.3.1 (2023-12-10)}{
   \subsection{BUG FIXES}{
     \itemize{

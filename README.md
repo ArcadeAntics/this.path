@@ -2,9 +2,8 @@
 
 ## Description
 
-`package:this.path` provides a mechanism to retrieve the path of an R
-script within itself without the explicit need to write its path
-elsewhere.
+`package:this.path` provides a mechanism for an **R** script to
+retrieve its own path without the explicit need to write it elsewhere.
 
 ## Installation
 
@@ -44,8 +43,8 @@ New additions include:
 *   `set.sys.path()` implements `this.path()` for any `source()`-like
     functions outside of the builtins.
 
-*   with_site.file() and with_init.file() allow this.path() and related
-    to be used in the site-wide startup profile file or a user profile.
+*   `with_site.file()` and `with_init.file()` allow `this.path()` to be
+    used in the site-wide startup profile file or a user profile.
 
 `package:this.path` also provides functions for constructing and
 manipulating file paths:
@@ -80,21 +79,21 @@ If you are unhappy with the performance of `package:this.path`, or
 would otherwise like to know some other solutions, here are 4
 alternatives:
 
-### Alternative 1: Other Packages That Determine Current R Script
+### Alternative 1: Other Packages That Determine Current **R** Script
 
 There are a few other packages and functions that provide the ability
-to retrieve the path of the current R script:
+to retrieve the path of the current **R** script:
 
-*   [`package:envDocument`](https://CRAN.R-project.org/package=envDocument),
+*   [`package:envDocument`](https://CRAN.R-project.org/package=envDocument)
     specifically `envDocument::getScriptPath()`
 
-*   [`package:funr`](https://CRAN.R-project.org/package=funr),
+*   [`package:funr`](https://CRAN.R-project.org/package=funr)
     specifically `funr::get_script_path()` and `funr::sys.script()`
 
-*   [`package:scriptName`](https://CRAN.R-project.org/package=scriptName),
+*   [`package:scriptName`](https://CRAN.R-project.org/package=scriptName)
     specifically `scriptName::current_filename()`
 
-*   [`package:whereami`](https://CRAN.R-project.org/package=whereami),
+*   [`package:whereami`](https://CRAN.R-project.org/package=whereami)
     specifically `whereami::thisfile()`
 
 These are lacking in functionality compared to `package:this.path`:
@@ -177,9 +176,9 @@ but it lacks functionality:
 
 *   `here::here()` does not work when the initial working directory is
     set outside the context of the project. Occasionally, I would set
-    the working directory to a temporary directory where my R script
-    would create a log file of the details of the script. This leads to
-    `package:here` not being able to find the project root and
+    the working directory to a temporary directory where my **R**
+    script would create a log file of the details of the script. This
+    leads to `package:here` not being able to find the project root and
     incorrectly returning the initial working directory.
 
 *   `here::here()` does not work when multiple projects are in use nor
@@ -189,12 +188,11 @@ but it lacks functionality:
     root of "B", so the script in "A" fails.
 
 [`package:rprojroot`](https://CRAN.R-project.org/package=rprojroot) is
-the R package upon which `package:here` is built. It provides a list of
-project root criteria `rprojroot::criteria`. `package:rprojroot` is not
-useful on its own since, like `here::here()`, it does not work when the
+the **R** package upon which `package:here` is built. It provides a
+list of project root criteria `rprojroot::criteria`. It is not useful
+on its own since, like `here::here()`, it does not work when the
 working directory is set outside the context of the project. However,
-you can combine it with `package:this.path` to get the best results. An
-example:
+you can combine it with `package:this.path` to get the best results:
 
 ```R
 ## substitute 'rprojroot::criteria$is_r_package' with your criterion
@@ -250,8 +248,8 @@ source("/path/to/file.R", chdir = TRUE)
 ```
 
 This fails when moving amongst files in different directories.
-Additionally, sometimes it is convenient to have the working directory
-set elsewhere. This means that R scripts cannot be made to act like
+Additionally, it is sometimes convenient to have the working directory
+set elsewhere. This means that **R** scripts cannot be made to act like
 executables. If a script needs to call other scripts in the same
 directory, it could not do so without the its own path.
 
@@ -266,8 +264,8 @@ lengthy).
 
 This fails in interactive use since scripts must be run with
 `source()`. Also, it means option `keep.source` must be set to `TRUE`;
-this may not be a big deal, but something to be aware of. This means R
-scripts could not be run from a shell ever again, making it an
+this may not be a big deal, but something to be aware of. This means
+**R** scripts could not be run from a shell ever again, making it an
 incredibly inconvenient substitute.
 
 ## Closing

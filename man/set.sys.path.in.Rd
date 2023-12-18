@@ -1,13 +1,13 @@
-\name{wrap.source}
-\alias{wrap.source}
+\name{set.sys.path}
 \alias{set.sys.path}
-\alias{unset.sys.path}
 \alias{set.env.path}
 \alias{set.src.path}
+\alias{unset.sys.path}
 \alias{set.sys.path.function}
 \alias{with_sys.path}
 \alias{with_site.file}
 \alias{with_init.file}
+\alias{wrap.source}
 \title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
   \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.

@@ -236,6 +236,7 @@ extern SEXP do_set_gui_path       do_formals;
 extern SEXP do_sys_path           do_formals;
 extern SEXP do_getframenumber     do_formals;
 extern SEXP do_env_path           do_formals;
+extern SEXP do_sys_whiches        do_formals;
 extern SEXP do_sys_srcref         do_formals;
 extern SEXP do_src_path           do_formals;
 extern SEXP do_src_LINENO         do_formals;

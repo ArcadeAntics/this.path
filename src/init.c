@@ -3,7 +3,27 @@
 #include "this.path.h"         /* need declarations of C functions */
 
 
+// #include "backports.h"
+// SEXP do_testing do_formals
+// {
+//     do_start_no_call_op_rho("testing", -1);
+//     SEXP value = allocVector(INTSXP, 5);
+//     PROTECT(value);
+//     SET_TRUELENGTH(value, XLENGTH(value));
+//     SETLENGTH(value, 3);
+//     SET_GROWABLE_BIT(value);
+//     Rprintf("XLENGTH(value): %.0f\n", (double) XLENGTH(value));
+//     Rprintf("XTRUELENGTH(value): %.0f\n", (double) XTRUELENGTH(value));
+//     Rprintf("IS_GROWABLE(value): %s\n", (IS_GROWABLE(value)) ? "TRUE" : "FALSE");
+//     UNPROTECT(1);
+//     return value;
+// }
+
+
 static const R_ExternalMethodDef externalRoutines[] = {
+
+
+// {"testing", (DL_FUNC) &do_testing, -1},
 
 
 /* aquarootscript.c */
@@ -188,6 +208,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"sys.path"          , (DL_FUNC) &do_sys_path          , -1},
 {"getframenumber"    , (DL_FUNC) &do_getframenumber    ,  0},
 {"env.path"          , (DL_FUNC) &do_env_path          , -1},
+{"sys.whiches"       , (DL_FUNC) &do_sys_whiches       ,  1},
 {"sys.srcref"        , (DL_FUNC) &do_sys_srcref        ,  1},
 {"src.path"          , (DL_FUNC) &do_src_path          , -1},
 {"src.LINENO"        , (DL_FUNC) &do_src_LINENO        , -1},

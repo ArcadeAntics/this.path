@@ -513,4 +513,7 @@ do {                                                           \
                      (nargs), (name), (expected_nargs)
 
 
+extern SEXP duplicateEnv(SEXP env);
+
+
 #endif /* R_THISPATH_THISPATHDEFN_H */

@@ -1,25 +1,3 @@
-# .onLoad <- evalq(envir = new.env(), {
-#     delayedAssign(".otoplevel", Sys.getenv("R_THIS_PATH_TOP_LEVEL", NA))
-# function (libname, pkgname)
-# {
-#     if (is.na(.otoplevel))
-#         Sys.setenv(R_THIS_PATH_TOP_LEVEL = TRUE)
-#     else if (otoplevel)
-#         Sys.setenv(R_THIS_PATH_TOP_LEVEL = FALSE)
-# }
-# })
-#
-#
-# .onUnload <- evalq(envir = environment(.onLoad),
-# function (libpath)
-# {
-#     if (is.na(otoplevel))
-#         Sys.unsetenv("R_THIS_PATH_TOP_LEVEL")
-#     else if (otoplevel)
-#         Sys.setenv(R_THIS_PATH_TOP_LEVEL = TRUE)
-# })
-
-
 ## a series of functions which need to be
 ## converted to active bindings during loading
 .mbcslocale <- function ()

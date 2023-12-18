@@ -716,3 +716,47 @@ int is_file_uri(const char *url)
 {
     return strncmp(url, "file://", 7) == 0;
 }
+
+
+SEXP duplicateEnv(SEXP env)
+{
+    if (TYPEOF(env) != ENVSXP)
+        error("wtf are you doing? %s %d", __FILE__, __LINE__);
+    if (env == R_EmptyEnv)
+        return env;
+    SEXP value = R_NewEnv(
+        /* enclos */ ENCLOS(env),
+        /* hash */ HASHTAB(env) != R_NilValue,
+        /* size */ 29
+    );
+    PROTECT(value);
+    SEXP names = R_lsInternal3(env, TRUE, FALSE);
+    PROTECT(names);
+    for (int i = LENGTH(names) - 1; i >= 0; i--) {
+        SEXP sym = installTrChar(STRING_ELT(names, i));
+#if R_version_at_least(4, 0, 0)
+        if (R_BindingIsActive(sym, env))
+            R_MakeActiveBinding(sym, R_ActiveBindingFunction(sym, env), value);
+        else
+#endif
+            INCREMENT_NAMED_defineVar(sym, findVarInFrame(env, sym), value);
+        if (R_BindingIsLocked(sym, env))
+            R_LockBinding(sym, value);
+    }
+    if (R_EnvironmentIsLocked(env))
+        R_LockEnvironment(value, FALSE);
+    DUPLICATE_ATTRIB(/* to */ value, /* from */ env);
+    if (OBJECT(env))
+        SET_OBJECT(value, 1);
+    if (IS_S4_OBJECT(env))
+        SET_S4_OBJECT(value);
+    UNPROTECT(2);
+    return value;
+}
+
+
+// SEXP do_duplicateEnv do_formals
+// {
+//     do_start_no_call_op_rho("duplicateEnv", 1);
+//     return duplicateEnv(CAR(args));
+// }

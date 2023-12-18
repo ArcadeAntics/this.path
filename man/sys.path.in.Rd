@@ -1,5 +1,6 @@
-\name{this.path-miscellaneous}
-\alias{this.path-miscellaneous}
+\name{sys.path}
+\alias{sys.path}
+
 \alias{src.path}
 \alias{src.dir}
 \alias{src.here}
@@ -8,6 +9,7 @@
 \alias{rel2src.proj}
 \alias{src.LINENO}
 \alias{try.src.path}
+
 \alias{env.path}
 \alias{env.dir}
 \alias{env.here}
@@ -16,6 +18,7 @@
 \alias{rel2env.proj}
 \alias{env.LINENO}
 \alias{try.env.path}
+
 \alias{sys.path}
 \alias{sys.dir}
 \alias{sys.here}
@@ -24,6 +27,9 @@
 \alias{rel2sys.proj}
 \alias{sys.LINENO}
 \alias{try.sys.path}
+
+\alias{this.path-miscellaneous}
+
 \title{Variants of Core Functions in Package 'this.path'}
 \description{
   \code{\link{this.path}()} is composed of three sections:

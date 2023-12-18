@@ -3,7 +3,7 @@
 if (getRversion() < "3.0.0") {
 
 
-delayedAssign(".C_mapply", getNativeSymbolInfo("do_mapply", PACKAGE = "base"))
+delayedAssign(".C_mapply", { getNativeSymbolInfo("do_mapply", PACKAGE = "base") })
 
 
 .mapply <- function (FUN, dots, MoreArgs)
@@ -14,6 +14,7 @@ delayedAssign(".C_mapply", getNativeSymbolInfo("do_mapply", PACKAGE = "base"))
 .External2(.C_SET_PRSEEN_2, ptr)
 
 
+## parse(keep.source = getOption("keep.source")) was added in R 3.0.0
 parse <- evalq(envir = .BaseNamespaceEnv,
 function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),
     srcfile = NULL, encoding = "unknown")
@@ -85,7 +86,17 @@ lengths <- function (x, use.names = TRUE)
 .External2(.C_lengths.default, x, use.names)
 
 
-## file.info() did not have argument 'extra_cols' at this time
+## file.info(extra_cols = TRUE) was added in R 3.2.0
+file.info <- evalq(envir = .BaseNamespaceEnv,
+function (..., extra_cols = TRUE)
+{
+    if (extra_cols)
+        file.info(...)
+    else file.info(...)[1:6]
+}
+)
+
+
 file.mtime <- evalq(envir = .BaseNamespaceEnv,
 function (...)
 file.info(...)$mtime
@@ -98,23 +109,13 @@ file.info(...)$size
 )
 
 
-file.info <- evalq(envir = .BaseNamespaceEnv,
-function (..., extra_cols = TRUE)
-{
-    if (extra_cols)
-        file.info(...)
-    else file.info(...)[1:6]
-}
-)
-
-
 .isdir <- evalq(envir = .BaseNamespaceEnv,
 function (...)
 file.info(...)$isdir
 )
 
 
-} else {
+} else {  ## (getRversion() >= "3.2.0")
 
 
 .isdir <- evalq(envir = .BaseNamespaceEnv,
@@ -182,7 +183,7 @@ if (getRversion() < "3.4.0") {
 withAutoprint <- .withAutoprint
 
 
-} else {
+} else {  ## (getRversion() >= "3.4.0")
 
 
 .withAutoprint <- evalq(envir = .BaseNamespaceEnv,
@@ -223,6 +224,9 @@ if (getRversion() < "3.5.0") {
 .External2(.C_...length)
 
 
+## isTRUE(x) was previously defined as:
+## function (x)
+## identical(TRUE, x)
 isTRUE <- evalq(envir = .BaseNamespaceEnv,
 function (x)
 is.logical(x) && length(x) == 1L && !is.na(x) && x
@@ -350,6 +354,7 @@ function (..., domain = NULL, trim = TRUE)
 )
 
 
+## gettextf(trim = TRUE) was added in R 4.2.0
 gettextf <- evalq(envir = .BaseNamespaceEnv,
 function (fmt, ..., domain = NULL, trim = TRUE)
 sprintf(gettext(fmt, domain = domain), ...)

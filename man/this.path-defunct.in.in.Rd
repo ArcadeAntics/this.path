@@ -14,6 +14,8 @@
 \alias{inside.source}
 \alias{set.this.path}
 \alias{unset.this.path}
+\alias{set.sys.path.jupyter}
+\alias{fileArgs}
 \title{Defunct Functions in Package 'this.path'}
 \description{
   The functions or variables listed here are no longer part of \pkg{this.path}
@@ -60,15 +62,19 @@ set.this.path(file, path.only = FALSE, character.only = path.only,
     ignore.stdin = ignore.all, ignore.url = ignore.all, ignore.file.uri = ignore.all,
     Function = NULL, ofile)
 unset.this.path()
+
+# Defunct in devel
+set.sys.path.jupyter(...)
+fileArgs()
 }
 \details{
   \code{this.path2()}, \code{this.dir2()}, and \code{this.dir3()} were used
-  before \code{\link{sys.path}()} and \code{\link{sys.dir}()} were given an
+  before \code{\link{this.path}()} and \code{\link{this.dir}()} were given an
   argument \code{default}. Should be replaced by
-  \code{\link{sys.path}(default = NULL)},
-  \code{\link{sys.dir}(default = NULL)}, and
-  \ifelse{html}{\code{\link{sys.dir}(default = \link[base]{getwd}())}}{\code{\link{sys.dir}(default = getwd())}}
-  , respectively.
+  \code{\link{this.path}(default = NULL)},
+  \code{\link{this.dir}(default = NULL)}, and
+  \ifelse{html}{\code{\link{this.dir}(default = \link[base]{getwd}())}}{\code{\link{this.dir}(default = getwd())}},
+  respectively.
 
   \code{normalized.shFILE()} was used before \code{\link{shFILE}()} was given
   an argument \code{original}. Should be replaced by \code{\link{shFILE}()}.
@@ -77,24 +83,32 @@ unset.this.path()
   given their functionality. Should be replaced by \code{\link{rel2here}()}.
 
   \code{local.path()} was used when it called a different C function than
-  \code{\link{sys.path}()}. Should be replaced by
-  \code{\link{sys.path}(local = TRUE)}.
+  \code{\link{this.path}()}. Should be replaced by
+  \code{\link{this.path}(local = TRUE)}.
 
-  \code{Sys.path()} and \code{Sys.dir()} are worse names for \code{sys.path()}
-  and \code{sys.dir()}. Functions that start with \string{Sys} are related to
-  the operating system, while functions that start with \string{sys} are
-  related to the R system; the call stack. These new names are much better.
+  \code{Sys.path()} and \code{Sys.dir()} are worse names for
+  \code{\link{sys.path}()} and \code{\link{sys.dir}()}. Functions that start
+  with \string{Sys} are related to the operating system, while functions that
+  start with \string{sys} are related to the \R system; the call stack. These
+  new names are much better.
 
-  \code{reset.this.proj()} was used when \code{this.proj()} was the only
-  project related function. Now that \code{sys.proj()} and \code{env.proj()}
-  exist, the function was renamed to \code{reset.proj()}.
+  \code{reset.this.proj()} was used when \code{\link{this.proj}()} was the only
+  project related function. Now that \code{\link{src.proj}()},
+  \code{\link{env.proj}()}, and \code{\link{sys.proj}()} exist, the function
+  was renamed to \code{\link{reset.proj}()}.
 
-  \code{this.path()} was renamed to \code{sys.path()}, so
+  In \pkg{this.path 2.0.0}, the original implementation of
+  \code{\link{this.path}()} was renamed to \code{\link{sys.path}()}, so
   \code{set.this.path.jupyter()}, \code{set.this.path()}, and
   \code{unset.this.path()} were accordingly renamed to
-  \code{set.jupyter.path()}, \code{set.sys.path()}, and
-  \code{unset.sys.path()}. Since \code{set.this.path()} was already being made
-  defunct, \code{inside.source()} was also made defunct.
+  \code{\link{set.jupyter.path}()}, \code{\link{set.sys.path}()}, and
+  \code{\link{unset.sys.path}()}. Since \code{set.this.path()} was already
+  being made defunct, \code{inside.source()} was also made defunct.
+
+  \code{set.sys.path.jupyter()} was renamed to
+  \code{\link{set.jupyter.path}()}.
+
+  \code{fileArgs()} should be replaced by \code{\link{progArgs}()}.
 }
 \seealso{
   \code{\link{Defunct}}

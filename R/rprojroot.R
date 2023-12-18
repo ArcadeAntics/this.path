@@ -86,17 +86,17 @@ tmp$find_file <- function (..., path = ".")
 }
 
 
-tmp$make_fix_file <- `attributes<-`(eval(bquote(
+tmp$make_fix_file <- .removeSourceFromSubFunctions(
 function (path = getwd(), subdir = NULL)
 {
     path <- normalizePath(path, winslash = "/", mustWork = TRUE)
     root <- .find.root(path = path, criterion = .default_criterion_if_rprojroot_is_not_available)
     value <- function(...) NULL
-    body(value) <- .(quote(bquote(path.join(.(root), ...))))
-    environment(value) <- getNamespace(.(.pkgname))
+    body(value) <- call("path.join", root, as.symbol("..."))
+    environment(value) <- .mynamespace
     value
 }
-)), NULL)
+)
 
 
 .find.root <- evalq(envir = new.env(), {
@@ -104,7 +104,7 @@ function (path = getwd(), subdir = NULL)
     environment(tmp$make_fix_file) <<- environment()
     .default_criterion_if_rprojroot_is_not_available <- tmp
     delayedAssign("default.criterion", {
-        if (requireNamespace("rprojroot"))
+        if (requireNamespace("rprojroot", quietly = TRUE))
             rprojroot::has_file(".here")     |
             rprojroot::is_rstudio_project    |
             rprojroot::is_r_package          |
@@ -114,9 +114,22 @@ function (path = getwd(), subdir = NULL)
         else
             .default_criterion_if_rprojroot_is_not_available
     })
+    format.root_criterion <- function (x, ...)
+{
+    if (length(x$desc) > 1L)
+        c("Root criterion: one of", paste0("- ", x$desc))
+    else paste0("Root criterion: ", x$desc)
+}
+    print.root_criterion <- function (x, ...)
+{
+    cat(format(x), sep = "\n")
+    invisible(x)
+}
 function (path = getwd(), verbose = FALSE, criterion = default.criterion)
 {
     # path <- "\\\\host\\share\\path\\to\\file\\"
+    if (grepl("^(https|http|ftp|ftps)://", path))
+        stop("this.proj() does not work for URL pathnames")
     if (!inherits(criterion, "root_criterion"))
         criterion <- rprojroot::as.root_criterion(criterion)
     opath <- path
@@ -141,11 +154,7 @@ function (path = getwd(), verbose = FALSE, criterion = default.criterion)
     }
     stop(sprintf("no root directory found in %s or its parent directories\n%s",
         encodeString(opath, quote = "\""),
-        paste({
-            if (length(criterion$desc) > 1L)
-                c("Root criterion: one of", paste0("- ", criterion$desc))
-            else paste0("Root criterion: ", criterion$desc)
-        }, collapse = "\n")))
+        paste(format(criterion), collapse = "\n")))
 }
 })
 
@@ -213,11 +222,7 @@ this.proj <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
 
 
 reset.proj <- function ()
-{
-    if (sys.nframe() != .toplevel.context.number() + 1L)
-        stop(gettextf("'%s' can only be called from a top level context", "reset.proj"))
-    .External2(.C_reset.proj)
-}
+.External2(.C_reset.proj)
 
 
 reset.this.proj <- eval(call("function", NULL, bquote(

@@ -72,12 +72,12 @@
 \note{
   This package started from a stack overflow posting:
 
-  \href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}
+  \Sexpr[results=rd,stage=install]{if (getRversion() >= "3.0.0") "\\\\href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}" else "\\\\ifelse{latex}{\\\\href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649}{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649}}{\\\\href{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}{https://stackoverflow.com/questions/1815606/determine-path-of-the-executing-script/64129649#64129649}}"}
 
   If you like this package, please consider upvoting my answer so that more
   people will see it! If you have an issue with this package, please use
-  \codelink3{utils:bug.report}{utils::bug.report}{(package = "this.path")} to
-  report your issue.
+  \codelink3{utils:bug.report}{bug.report}{(package = "this.path")} to report
+  your issue.
 }
 \author{
   \packageAuthor{this.path}

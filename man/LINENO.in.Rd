@@ -59,14 +59,13 @@ cat(sprintf('invalid value \%d at \%s, line \%d\\\\n',
 "), FILE.R)
 
 
-# ## previously used:
-#
-# source(FILE.R, echo = TRUE, verbose = FALSE,
-#     max.deparse.length = Inf, keep.source = TRUE)
-#
-# ## but it echoes incorrectly with #line directives
-this.path:::.source(FILE.R, echo = TRUE, verbose = FALSE,
-    max.deparse.length = Inf, keep.source = TRUE)
+if (getRversion() >= "4.3.0") {
+    source(FILE.R, echo = TRUE, verbose = FALSE,
+        max.deparse.length = Inf, keep.source = TRUE)
+} else {
+    this.path:::.source(FILE.R, echo = TRUE, verbose = FALSE,
+        max.deparse.length = Inf, keep.source = TRUE)
+}
 
 
 unlink(FILE.R)

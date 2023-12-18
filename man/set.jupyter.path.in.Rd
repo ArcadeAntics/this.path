@@ -1,6 +1,5 @@
 \name{set.jupyter.path}
 \alias{set.jupyter.path}
-\alias{set.sys.path.jupyter}
 \title{Declare Executing 'Jupyter' Notebook's Filename}
 \description{
   \code{\link{this.path}()} does some guess work to determine the path of the
@@ -14,7 +13,6 @@
 }
 \usage{
 set.jupyter.path(...)
-set.sys.path.jupyter(...)
 }
 \arguments{
   \item{\dots}{further arguments passed to \code{\link{path.join}()}. If no

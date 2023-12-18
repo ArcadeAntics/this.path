@@ -1,5 +1,5 @@
-oopt <- options(keep.source = FALSE)
-path.functions <- function (file, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
+path.functions <- .removeSourceFromSubFunctions(
+function (file, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
     srcfile = if (n) sys.parent(n) else 0L)
 {
@@ -69,5 +69,4 @@ LINENO <- function ()
     lockEnvironment(environment(), bindings = TRUE)
     environment()
 }
-options(oopt)
-rm(oopt)
+)

@@ -13,13 +13,29 @@ local({
     abs.path.R <- tempfile("test", fileext = ".R")
     on.exit(unlink(abs.path.R), add = TRUE)
     this.path:::.write.code({
+        n <- this.path:::.getframenumber()
+        if (is.na(n)) stop("invalid traceback")
+        stopifnot(bindingIsLocked(
+            sym <- ".this.path::document.context",
+            frame <- sys.frame(n)
+        ))
         cat("\n> getwd()\n")
         print(getwd())
+        cat("\n> ", paste(deparse(call("dynGet", sym)), collapse = "\n+ "), "\n", sep = "")
+        print(frame[[sym]])
+        cat("\n> this.path::sys.path(original = TRUE)\n")
+        print(this.path::sys.path(original = TRUE))
+        cat("\n> this.path::sys.path(for.msg = TRUE)\n")
+        print(this.path::sys.path(for.msg = TRUE))
         cat("\n> sys.path(verbose = TRUE)\n")
         stopifnot(identical(
             print(this.path::sys.path(verbose = TRUE)),
             getOption("this.path::sys.path() expectation")
         ))
+        cat("\n> this.path::sys.path(original = TRUE)\n")
+        print(this.path::sys.path(original = TRUE))
+        cat("\n> this.path::sys.path(for.msg = TRUE)\n")
+        print(this.path::sys.path(for.msg = TRUE))
     }, file = abs.path.R)
     abs.path.R <- normalizePath(abs.path.R, "/", TRUE)
     abs.path.dir <- normalizePath(R.home(), "/", TRUE)

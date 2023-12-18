@@ -33,7 +33,7 @@ SEXP expr_commandArgs                               = NULL,
      expr_knitr_output_dir                          = NULL,
      expr_testthat_source_file_uses_brio_read_lines = NULL,
      expr_getOption_topLevelEnvironment             = NULL,
-     expr__toplevel_context_number                  = NULL,
+     expr__toplevel_nframe                          = NULL,
      expr__isMethodsDispatchOn                      = NULL,
      expr_UseMethod_lengths                         = NULL;
 
@@ -135,6 +135,9 @@ SEXP do_onLoad do_formals
     if (TYPEOF(mynamespace) != ENVSXP)
         error(_("not an environment"));
     R_PreserveObject(mynamespace);
+
+
+    INCREMENT_NAMED_defineVar(install(".mynamespace"), mynamespace, mynamespace);
 
 
     const char *Class[] = { "ThisPathDocumentContext", "environment", NULL };
@@ -572,10 +575,10 @@ SEXP do_onLoad do_formals
     }
 
 
-    expr__toplevel_context_number = LCONS(getFromMyNS(install(".toplevel.context.number")), R_NilValue);
-    R_PreserveObject(expr__toplevel_context_number);
-    if (!isFunction(CAR(expr__toplevel_context_number)))
-        error(_("object '%s' of mode '%s' was not found"), ".toplevel.context.number", "function");
+    expr__toplevel_nframe = LCONS(getFromMyNS(install(".toplevel.nframe")), R_NilValue);
+    R_PreserveObject(expr__toplevel_nframe);
+    if (!isFunction(CAR(expr__toplevel_nframe)))
+        error(_("object '%s' of mode '%s' was not found"), ".toplevel.nframe", "function");
 
 
     expr__isMethodsDispatchOn = LCONS(getFromBase(_isMethodsDispatchOnSymbol), R_NilValue);
@@ -651,7 +654,7 @@ SEXP do_onUnload do_formals
     maybe_release(expr_knitr_output_dir);
     maybe_release(expr_testthat_source_file_uses_brio_read_lines);
     maybe_release(expr_getOption_topLevelEnvironment);
-    maybe_release(expr__toplevel_context_number);
+    maybe_release(expr__toplevel_nframe);
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
 

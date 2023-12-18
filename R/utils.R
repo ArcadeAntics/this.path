@@ -575,27 +575,52 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
         if (!length(args))
             value <- structure(list(), names = character())
         else if (is.null(tags <- names(args)) ||
-                 all(i <- tags == ""))
+                 all(i <- !nzchar(tags)))
         {
             visible <- TRUE
             tags <- vapply(args, .AS_SCALAR_STR, "", USE.NAMES = FALSE)
             value <- as.list(Sys.getenv(tags, unset = NA, names = TRUE))
         }
         else {
+            args <- lapply(args, .AS_SCALAR_STR)
             if (any(i)) {
                 visible <- TRUE
-                tags[i] <- vapply(args[i], .AS_SCALAR_STR, "", USE.NAMES = FALSE)
-                args <- args[!i]
+                tags[i] <- names(args)[i] <- as.character(args[i])
+                # args[i] <- list(NULL)
             }
-            value <- as.list(Sys.getenv(tags, unset = NA, names = TRUE))
-            args <- lapply(args, .AS_SCALAR_STR)
-            na <- vapply(args, identical, NA_character_, FUN.VALUE = NA, USE.NAMES = FALSE)
-            if (any(na)) {
-                Sys.unsetenv(names(args)[na])
-                args <- args[!na]
+            tags[is.na(tags)] <- "NA"
+            if (.Platform$OS.type == "windows")
+                tags <- tolower(tags)
+            i <- !i
+            base_case <- function(args, i) {
+                # print(args)
+                # cat("\n\n\n\n\n")
+                value <- as.list(Sys.getenv(names(args), unset = NA, names = TRUE))
+                args <- args[i]
+                na <- is.na(args)
+                if (any(na)) {
+                    Sys.unsetenv(names(args)[na])
+                    args <- args[!na]
+                }
+                if (length(args))
+                    do.call("Sys.setenv", args)
+                value
             }
-            if (length(args))
-                do.call("Sys.setenv", args, quote = TRUE)
+            recurse <- function(args, tags, i) {
+                if (first_setter <- match(TRUE, i, 0L)) {
+                    n <- length(args)
+                    if (dup <- anyDuplicated(tags[first_setter:n])) {
+                        dup <- dup - 1L + first_setter
+                        indxs <- seq_len(dup - 1L)
+                        value <- base_case(args[indxs], i[indxs])
+                        indxs <- dup:n
+                        c(value, recurse(args[indxs], tags[indxs], i[indxs]))
+                    }
+                    else base_case(args, i)
+                }
+                else as.list(Sys.getenv(names(args), unset = NA, names = TRUE))
+            }
+            value <- recurse(args, tags, i)
         }
         if (visible)
             value
@@ -627,7 +652,6 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 .AS_SCALAR_STR <- function (x)
 {
     switch (typeof(x),
-    `NULL` = NA_character_,
     logical = ,
     integer = ,
     double = ,
@@ -657,3 +681,7 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 .get.dyn <- function (x, ifnotfound = stop(gettextf("object '%s' not found", as.character(x), domain = "R"), domain = NA),
     minframe = 1L, inherits = FALSE)
 .External2(.C_get.dyn, x, minframe, inherits)
+
+
+.getframenumber <- function ()
+.External2(.C_getframenumber)

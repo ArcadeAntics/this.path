@@ -173,7 +173,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
     SEXP klass = getAttrib(x, R_ClassSymbol);
-    int nklass = LENGTH(klass);
+    int nklass = ((klass == R_NilValue) ? 0 : LENGTH(klass));
     if (nklass) {
         SETCADR(expr, klass);
         SETCADDR(expr, mkString("\""));

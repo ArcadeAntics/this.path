@@ -1,6 +1,5 @@
 \name{progArgs}
 \alias{asArgs}
-\alias{fileArgs}
 \alias{progArgs}
 \alias{withArgs}
 \title{Providing Arguments to a Script}
@@ -9,16 +8,15 @@
   arguments. As opposed to running with \Rscriptlink, the code will be
   evaluated in the same session in an environment of your choosing.
 
-  \code{fileArgs()} / / \code{progArgs()} are generalized versions of
+  \code{progArgs()} is a generalized version of
   \codelink3{base}{commandArgs}{(trailingOnly = TRUE)}, allowing you to access
-  the script's arguments whether it was sourced or run from a shell.
+  the program's arguments whether it was \sourcenolink-ed or run from a shell.
 
   \code{asArgs()} coerces \R objects into a character vector, for use with
   command line applications and \code{withArgs()}.
 }
 \usage{
 asArgs(...)
-fileArgs()
 progArgs()
 withArgs(...)
 }
@@ -32,9 +30,6 @@ withArgs(...)
     to a \sourcenolink-like function.}
 }
 \details{
-  \code{fileArgs()} will return the arguments associated with the executing
-  script, or \code{character(0)} when there is no executing script.
-
   \code{progArgs()} will return the arguments associated with the executing
   script, or \code{commandArgs(trailingOnly = TRUE)} when there is no executing
   script.
@@ -71,8 +66,7 @@ withArgs(...)
   strings).
 }
 \value{
-  for \code{asArgs()}, \code{fileArgs()}, and \code{progArgs()}, a character
-  vector.
+  for \code{asArgs()} and \code{progArgs()}, a character vector.
 
   for \code{withArgs()}, the result of evaluating the first argument.
 }

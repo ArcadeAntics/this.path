@@ -21,14 +21,14 @@
 
 
 .shFILE <- evalq(envir = new.env(), {
-    delayedAssign("ofile", if (.in.shell) .shINFO[["FILE"]] else NA_character_)
-    delayedAssign("file", .normalizePath(ofile))
+    delayedAssign("ofile", { if (.in.shell) .shINFO[["FILE"]] else NA_character_ })
+    delayedAssign("file" , { .normalizePath(ofile) })
 function (original = TRUE, for.msg = FALSE)
 .External2(.C_shFILE, original, for.msg)
 })
 
 
-delayedAssign(".has.shFILE", !is.na(.shFILE()))
+delayedAssign(".has.shFILE", { !is.na(.shFILE()) })
 
 
 shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
@@ -177,7 +177,7 @@ delayedAssign(".untitled", {
 .External2(.C_thisPathNotExistsError, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
+delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
 
 .thisPathInZipFileError <- function (description, call = .getCurrentCall(), call. = TRUE)
@@ -247,39 +247,6 @@ delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
 }
 
 
-.removeSource <- function (fn)
-{
-    recurse <- function(part) {
-        if (is.name(part))
-            return(part)
-        attr(part, "srcref") <- NULL
-        attr(part, "wholeSrcref") <- NULL
-        attr(part, "srcfile") <- NULL
-        if (is.language(part) && is.recursive(part)) {
-            for (i in seq_along(part)) part[i] <- list(recurse(part[[i]]))
-        }
-        part
-    }
-    if (is.function(fn)) {
-        if (!is.primitive(fn)) {
-            attr(fn, "srcref") <- NULL
-            at <- attributes(fn)
-            attr(body(fn), "wholeSrcref") <- NULL
-            attr(body(fn), "srcfile") <- NULL
-            body(fn) <- recurse(body(fn))
-            if (!is.null(at))
-                attributes(fn) <- at
-        }
-        fn
-    }
-    else if (is.language(fn)) {
-        recurse(fn)
-    }
-    else stop("argument is not a function or language object:",
-        typeof(fn))
-}
-
-
 .getNamedElement <- function (x, names)
 {
     for (name in names) {
@@ -335,9 +302,9 @@ delayedAssign("thisPathNotExistsError", .thisPathNotExistsError)
 
 
 .jupyter.path <- evalq(envir = new.env(), {
-    delayedAssign("ofile", NA_character_)
+    delayedAssign("ofile", { NA_character_ })
     ofile
-    delayedAssign("file", .normalizePath(ofile))
+    delayedAssign("file" , { .normalizePath(ofile) })
 eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)), bquote(
 {
     if (!is.na(ofile))
@@ -386,7 +353,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
                 error = identity)
             if (!inherits(exprs, "error")) {
                 for (expr in exprs) {
-                    if (identical(expr, call)) {
+                    if ((.identical)(expr, call)) {
                         .External2(.C_set.jupyter.path, file, skipCheck = TRUE)
                         return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
                     }
@@ -411,20 +378,22 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
 
 
 .emacs.path <- evalq(envir = new.env(), {
-    delayedAssign("emacsclient", local({
-        ## https://www.gnu.org/software/emacs/manual/html_node/emacs/Misc-Variables.html#index-emacs_005fdir
-        if (.os.windows) {
-            x <- Sys.getenv("emacs_dir")
-            if (!nzchar(x)) stop("environment variable 'emacs_dir' is unset; are you actually in Emacs?")
-            if (requireNamespace("utils"))
-                x <- utils::shortPathName(x)
-            paste0(x, "\\bin\\emacsclient.exe")
-        } else {
-            x <- Sys.which("emacsclient")
-            if (!nzchar(x)) stop("command 'emacsclient' not found; add to PATH and retry")
-            x
-        }
-    }))
+    delayedAssign("emacsclient", {
+        local({
+            ## https://www.gnu.org/software/emacs/manual/html_node/emacs/Misc-Variables.html#index-emacs_005fdir
+            if (.os.windows) {
+                x <- Sys.getenv("emacs_dir")
+                if (!nzchar(x)) stop("environment variable 'emacs_dir' is unset; are you actually in Emacs?")
+                if (requireNamespace("utils", quietly = TRUE))
+                    x <- utils::shortPathName(x)
+                paste0(x, "\\bin\\emacsclient.exe")
+            } else {
+                x <- Sys.which("emacsclient")
+                if (!nzchar(x)) stop("command 'emacsclient' not found; add to PATH and retry")
+                x
+            }
+        })
+    })
     ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Finding-All-Frames.html
     ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Buffer-File-Name.html
     expr <- "
@@ -785,7 +754,9 @@ set.jupyter.path <- function (...)
 }
 
 
-delayedAssign("set.sys.path.jupyter", set.jupyter.path)
+set.sys.path.jupyter <- eval(call("function", as.pairlist(alist(... = )), bquote(
+stop(.defunctError("set.jupyter.path", .(.pkgname), old = "set.sys.path.jupyter"))
+)))
 
 
 set.this.path.jupyter <- eval(call("function", as.pairlist(alist(... = )), bquote(
@@ -1087,7 +1058,7 @@ here <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     base <- .here(base, ..)
     path.join(base, ...)
 }
-delayedAssign("ici", here)
+delayedAssign("ici", { here })
 
 
 
