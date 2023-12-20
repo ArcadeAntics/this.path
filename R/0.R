@@ -6,32 +6,25 @@
 .pkgname <- Sys.getenv("R_PACKAGE_NAME")
 
 
-.R_FunctionSymbol <- as.symbol("function")
-
-
 .removeSource <- function (fn)
 {
     recurse <- function(part) {
-        if (is.name(part))
-            return(part)
+        if (is.name(part)) return(part)
+        if (inherits(part, "srcfile")) return(NULL)
         attr(part, "srcref") <- NULL
         attr(part, "wholeSrcref") <- NULL
         attr(part, "srcfile") <- NULL
         if (is.pairlist(part)) {
-            for (i in seq_along(part)) part[i] <- list(recurse(part[[i]]))
-            ## as.pairlist() keeps attributes
-            return(as.pairlist(part))
+            for (i in seq_along(part))
+                part[i] <- list(recurse(part[[i]]))
+            as.pairlist(part)
         }
-        if (is.language(part) && is.recursive(part)) {
-            for (i in seq_along(part)) part[i] <- list(recurse(part[[i]]))
+        else if (is.language(part) && is.recursive(part)) {
+            for (i in seq_along(part))
+                part[i] <- list(recurse(part[[i]]))
+            part
         }
-        if (is.call(part) &&
-            length(part) >= 4L &&
-            identical(part[[1L]], .R_FunctionSymbol))
-        {
-            part[4L] <- list(NULL)
-        }
-        part
+        else part
     }
     if (is.function(fn)) {
         if (!is.primitive(fn)) {
@@ -49,9 +42,11 @@
     else if (is.language(fn)) {
         recurse(fn)
     }
-    else stop("argument is not a function or language object:",
-        typeof(fn))
+    else stop("argument is not a function or language object:", typeof(fn))
 }
+
+
+.R_FunctionSymbol <- as.symbol("function")
 
 
 .removeSourceFromSubFunctions <- function (fn)
@@ -61,12 +56,13 @@
     recurse <- function(part) {
         if (is.name(part))
             part
-        else if (is.function(part))
-            .removeSource(part)
+        # else if (is.function(part))
+        #     .removeSource(part)
         else if (is.call(part) && identical(part[[1L]], .R_FunctionSymbol))
             .removeSource(part)
         else if (is.language(part) && is.recursive(part)) {
-            for (i in seq_along(part)) part[i] <- list(recurse(part[[i]]))
+            for (i in seq_along(part))
+                part[i] <- list(recurse(part[[i]]))
             part
         }
         else part
@@ -84,6 +80,5 @@
     else if (is.language(fn)) {
         recurse(fn)
     }
-    else stop("argument is not a function or language object:",
-        typeof(fn))
+    else stop("argument is not a function or language object:", typeof(fn))
 }
