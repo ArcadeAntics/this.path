@@ -10,7 +10,7 @@
 {
     recurse <- function(part) {
         if (is.name(part)) return(part)
-        if (inherits(part, "srcfile")) return(NULL)
+        if (inherits(part, "srcref")) return(NULL)
         attr(part, "srcref") <- NULL
         attr(part, "wholeSrcref") <- NULL
         attr(part, "srcfile") <- NULL
@@ -56,8 +56,6 @@
     recurse <- function(part) {
         if (is.name(part))
             part
-        # else if (is.function(part))
-        #     .removeSource(part)
         else if (is.call(part) && identical(part[[1L]], .R_FunctionSymbol))
             .removeSource(part)
         else if (is.language(part) && is.recursive(part)) {
