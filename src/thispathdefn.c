@@ -193,9 +193,9 @@ SEXP as_environment_char(const char *what)
 }
 
 
-SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numFields)
+SEXP errorCondition(const char *msg, SEXP call, const char **Class, int numFields)
 {
-    /* 'cls' is an array of strings */
+    /* 'Class' is an array of strings */
 
 
     SEXP value = allocVector(VECSXP, 2 + numFields);
@@ -210,17 +210,17 @@ SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numFields)
     SET_VECTOR_ELT(value, 1, call);
 
 
-    /* count the number of strings in 'cls' */
-    int numCls = 0;
-    while (cls[numCls]) ++numCls;
+    /* count the number of strings in 'Class' */
+    int nClass = 0;
+    while (Class[nClass]) ++nClass;
 
 
-    SEXP klass = allocVector(STRSXP, numCls + 2);
+    SEXP klass = allocVector(STRSXP, nClass + 2);
     setAttrib(value, R_ClassSymbol, klass);
-    for (int i = 0; i < numCls; i++)
-        SET_STRING_ELT(klass, i         , mkChar(cls[i]));
-    SET_STRING_ELT(    klass, numCls    , mkChar("error"));
-    SET_STRING_ELT(    klass, numCls + 1, mkChar("condition"));
+    for (int i = 0; i < nClass; i++)
+        SET_STRING_ELT(klass, i         , mkChar(Class[i]));
+    SET_STRING_ELT(    klass, nClass    , mkChar("error"));
+    SET_STRING_ELT(    klass, nClass + 1, mkChar("condition"));
 
 
     UNPROTECT(1);
@@ -228,9 +228,9 @@ SEXP errorCondition(const char *msg, SEXP call, const char **cls, int numFields)
 }
 
 
-SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int numFields)
+SEXP errorCondition1(const char *msg, SEXP call, const char *Class, int numFields)
 {
-    /* 'cls' is a string */
+    /* 'Class' is a string */
 
 
     SEXP value = allocVector(VECSXP, 2 + numFields);
@@ -247,7 +247,7 @@ SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int numFields)
 
     SEXP klass = allocVector(STRSXP, 3);
     setAttrib(value, R_ClassSymbol, klass);
-    SET_STRING_ELT(klass, 0, mkChar(cls));
+    SET_STRING_ELT(klass, 0, mkChar(Class));
     SET_STRING_ELT(klass, 1, mkChar("error"));
     SET_STRING_ELT(klass, 2, mkChar("condition"));
 
@@ -333,37 +333,37 @@ SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
 SEXP thisPathUnrecognizedMannerError(SEXP call)
 {
     const char *msg = "R is running in an unrecognized manner";
-    const char *cls[] = {
+    const char *Class[] = {
         "this.path::thisPathUnrecognizedMannerError",
-        thisPathNotFoundErrorCls,
+        thisPathNotFoundErrorClass,
         NULL
     };
-    return errorCondition(msg, call, cls, 0);
+    return errorCondition(msg, call, Class, 0);
 }
 
 
 SEXP thisPathNotImplementedError(const char *msg, SEXP call)
 {
-#define thisPathNotImplementedErrorCls                         \
+#define thisPathNotImplementedErrorClass                       \
     "this.path::thisPathNotImplementedError",                  \
     "this.path_this.path_unimplemented_error",                 \
     "notImplementedError",                                     \
     "NotImplementedError"
-    const char *cls[] = {thisPathNotImplementedErrorCls, NULL};
-    return errorCondition(msg, call, cls, 0);
+    const char *Class[] = {thisPathNotImplementedErrorClass, NULL};
+    return errorCondition(msg, call, Class, 0);
 }
 
 
 SEXP thisPathNotExistsError(const char *msg, SEXP call)
 {
-    const char *cls[] = {
-        thisPathNotExistsErrorCls,
+    const char *Class[] = {
+        thisPathNotExistsErrorClass,
         "this.path::thisPathNotExistError",
         "this.path_this.path_not_exists_error",
-        thisPathNotFoundErrorCls,
+        thisPathNotFoundErrorClass,
         NULL
     };
-    return errorCondition(msg, call, cls, 0);
+    return errorCondition(msg, call, Class, 0);
 }
 
 
@@ -385,13 +385,13 @@ SEXP thisPathInAQUAError(SEXP call)
 {
     const char *msg = "R is running from AQUA which is currently unimplemented\n"
                       " consider using RStudio / / VSCode until such a time when this is implemented";
-    const char *cls[] = {
+    const char *Class[] = {
         "this.path::thisPathInAQUAError",
-        thisPathNotFoundErrorCls,
-        thisPathNotImplementedErrorCls,
+        thisPathNotFoundErrorClass,
+        thisPathNotImplementedErrorClass,
         NULL
     };
-    return errorCondition(msg, call, cls, 0);
+    return errorCondition(msg, call, Class, 0);
 }
 
 
@@ -399,13 +399,13 @@ SEXP thisPathInEmacsError(SEXP call)
 {
     const char *msg = "R is running from Emacs which is currently unimplemented\n"
                       " consider using RStudio / / VSCode until such a time when this is implemented";
-    const char *cls[] = {
+    const char *Class[] = {
         "thisPathInEmacsError",
-        thisPathNotFoundErrorCls,
-        thisPathNotImplementedErrorCls,
+        thisPathNotFoundErrorClass,
+        thisPathNotImplementedErrorClass,
         NULL
     };
-    return errorCondition(msg, call, cls, 0);
+    return errorCondition(msg, call, Class, 0);
 }
 
 

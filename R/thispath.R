@@ -943,7 +943,7 @@ this.dir <- function (verbose = getOption("verbose"), local = FALSE, n = 0L, env
 
 
 tmp <- readLines("./src/thispathdefn.h")
-tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorCls[ \t]*\\\\[ \t]*$", tmp) + 1L]]
+tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorClass[ \t]*\\\\[ \t]*$", tmp) + 1L]]
 tmp <- str2lang(tmp)
 if (!is.character(tmp) || length(tmp) != 1L || is.na(tmp))
     stop("could not determine class name")

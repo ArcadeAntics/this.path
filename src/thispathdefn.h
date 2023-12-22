@@ -101,18 +101,18 @@ extern SEXP findFunction(SEXP symbol, SEXP rho);
 extern SEXP as_environment_char(const char *what);
 
 
-extern SEXP errorCondition (const char *msg, SEXP call, const char **cls, int numFields);
-extern SEXP errorCondition1(const char *msg, SEXP call, const char *cls, int numFields);
+extern SEXP errorCondition (const char *msg, SEXP call, const char **Class, int numFields);
+extern SEXP errorCondition1(const char *msg, SEXP call, const char *Class, int numFields);
 extern SEXP simpleError(const char *msg, SEXP call);
 
 
 /* this code is written this way on purpose, do not reformat it */
-#define thisPathNotExistsErrorCls                              \
+#define thisPathNotExistsErrorClass                            \
     "this.path::thisPathNotExistsError"
 
 
 /* this code is written this way on purpose, do not reformat it */
-#define thisPathNotFoundErrorCls                               \
+#define thisPathNotFoundErrorClass                             \
     "this.path::thisPathNotFoundError"
 
 
