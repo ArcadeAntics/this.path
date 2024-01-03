@@ -27,6 +27,8 @@ extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 #define XLENGTH LENGTH
 #define xlength length
 #define R_xlen_t R_len_t
+#define R_XLEN_T_MAX R_LEN_T_MAX
+#define asXLength asLength
 #endif
 
 

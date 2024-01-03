@@ -14,9 +14,6 @@ delayedAssign(".C_mapply", { getNativeSymbolInfo("do_mapply", PACKAGE = "base") 
 .External2(.C_SET_PRSEEN_2, ptr)
 
 
-delayedAssign(".base_list.files", base::list.files)
-
-
 list.files <- function (path = ".", pattern = NULL, all.files = FALSE, full.names = FALSE,
     recursive = FALSE, ignore.case = FALSE, include.dirs = FALSE,
     no.. = FALSE)
@@ -24,7 +21,7 @@ list.files <- function (path = ".", pattern = NULL, all.files = FALSE, full.name
     no.. <- .asLogical(no..)
     if (is.na(no..))
         stop(gettextf("invalid '%s' argument", "no..", domain = "R"), domain = NA)
-    value <- .base_list.files(path = path, pattern = pattern,
+    value <- .BaseNamespaceEnv$list.files(path = path, pattern = pattern,
         all.files = all.files, full.names = full.names, recursive = recursive,
         ignore.case = ignore.case, include.dirs = include.dirs)
     if (all.files && no..)

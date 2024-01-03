@@ -52,7 +52,7 @@ l10n_info()[[3L]]
     sym <- "RweaveLatexRuncode"
     fun <- ns[[sym]]
     if (typeof(fun) == "closure" &&
-        is.call(b <- body(fun)) && length(b) >= 33L &&
+        is.call(b <- body(fun)) && length(b) >= 34L &&
         is.call(b_13 <- b[[13L]]) && length(b_13) >= 3L &&
         is.call(b_13_3 <- b_13[[3L]]) && length(b_13_3) >= 2L &&
         identical(b_13_3[[2L]], quote(parse(text = chunk, srcfile = srcfile))) &&
@@ -60,7 +60,7 @@ l10n_info()[[3L]]
         is.call(b_14_3 <- b_14[[3L]]) && length(b_14_3) >= 3L &&
         is.call(b_14_3_3 <- b_14_3[[3L]]) && length(b_14_3_3) >= 2L &&
         identical(b_14_3_3[[2L]], " parse(text = chunk, srcfile = srcfile) : \n ") &&
-        is.call(b_33 <- b[[33L]]) && length(b_33) >= 4L &&
+        is.call(b_33 <- b[[indx33 <- 33L + identical(b[[29L]], quote(refline <- NA))]]) && length(b_33) >= 4L &&
         is.call(b_33_4 <- b_33[[4L]]) && length(b_33_4) >= 6L &&
         is.call(b_33_4_6 <- b_33_4[[6L]]) && length(b_33_4_6) >= 3L &&
         is.call(b_33_4_6_3 <- b_33_4_6[[3L]]) && length(b_33_4_6_3) >= 4L &&
@@ -71,7 +71,7 @@ l10n_info()[[3L]]
     {
         b[[c(13L, 3L, 2L)]] <- quote(parse(text = chunk, srcfile = srcfile, keep.source = FALSE))
         b[[c(14L, 3L, 3L, 2L)]] <- " parse(text = chunk, srcfile = srcfile, keep.source = FALSE) : \n "
-        b[[c(33L, 4L, 6L, 3L, 4L, 3L, 2L, 2L)]] <- quote(chunkexps[nce])
+        b[[c(indx33, 4L, 6L, 3L, 4L, 3L, 2L, 2L)]] <- quote(chunkexps[nce])
         body(fun) <- b
         if (bindingIsLocked(sym, ns)) {
             (unlockBinding)(sym, ns)

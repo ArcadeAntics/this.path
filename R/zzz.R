@@ -338,6 +338,7 @@ if (getRversion() < "3.0.0") {
     fix_External2.function(.gui.path)
     fix_External2.function(set.jupyter.path)
     fix_External2.function(set.gui.path)
+    fix_External2.function(.normalize_srcfilealias)
     fix_External2.function(.faster_subsequent_times_test)
     fix_External2.function(sys.path)
     fix_External2.function(sys.dir)
