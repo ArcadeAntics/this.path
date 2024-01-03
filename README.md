@@ -105,7 +105,7 @@ These are lacking in functionality compared to `package:this.path`:
     '[Emacs](https://www.gnu.org/software/emacs/)' +
     '[ESS](https://ess.r-project.org/)', as well as functions and
     packages `sys.source()`, `debugSource()` in 'RStudio',
-    `compiler::loadcmp()`,
+    `compiler::loadcmp()`, `utils::Sweave()`,
     [`box::use()`](https://CRAN.R-project.org/package=box),
     [`knitr::knit()`](https://CRAN.R-project.org/package=knitr),
     [`plumber::plumb()`](https://CRAN.R-project.org/package=plumber),
@@ -157,6 +157,8 @@ as:
 *   searching for a path in the wrong order
 
 *   searching for a source call by name instead of by value
+
+*   returning a non-normalzied path
 
 *   changing global options without explicit user permission
 

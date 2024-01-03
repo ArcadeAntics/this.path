@@ -21,14 +21,14 @@
 
 
 .shFILE <- evalq(envir = new.env(), {
-    delayedAssign("ofile", { if (.in.shell) .shINFO[["FILE"]] else NA_character_ })
+    delayedAssign("ofile", { if (.in_shell) .shINFO[["FILE"]] else NA_character_ })
     delayedAssign("file" , { .normalizePath(ofile) })
 function (original = TRUE, for.msg = FALSE)
 .External2(.C_shFILE, original, for.msg)
 })
 
 
-delayedAssign(".has.shFILE", { !is.na(.shFILE()) })
+delayedAssign(".has_shFILE", { !is.na(.shFILE()) })
 
 
 shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
@@ -40,14 +40,14 @@ shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
     }
     else {
         if (missing(else.)) {
-            if (.has.shFILE)
+            if (.has_shFILE)
                 .shFILE(original, for.msg)
             else if (for.msg)
                 NA_character_
             else default
         }
         else {
-            if (.has.shFILE) {
+            if (.has_shFILE) {
                 value <- .shFILE(original, for.msg)
                 (else.)(value)
             }
@@ -64,8 +64,8 @@ shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
 
 
 
-.is.abs.path <- function (path)
-.External2(.C_is.abs.path, path)
+.is_abs_path <- function (path)
+.External2(.C_is_abs_path, path)
 
 
 
@@ -95,8 +95,8 @@ readLines2 <- function (path, default = character(0))
 }
 
 
-.r.editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
-.r.editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
+.r_editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
+.r_editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
 
 
 .untitled_msvcrt <- readLines2("./inst/extdata/untitled_msvcrt.txt", "Untitled - R Editor")
@@ -109,15 +109,15 @@ rm(readLines2)
 
 
 
-delayedAssign(".r.editor", {
-    if (.gui.rgui) {
+delayedAssign(".r_editor", {
+    if (.GUI_Rgui) {
         if (.ucrt)
-            .r.editor_ucrt
-        else .r.editor_msvcrt
+            .r_editor_ucrt
+        else .r_editor_msvcrt
     }
 })
 delayedAssign(".untitled", {
-    if (.gui.rgui) {
+    if (.GUI_Rgui) {
         if (.ucrt)
             .untitled_ucrt
         else .untitled_msvcrt
@@ -188,15 +188,11 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 .External2(.C_thisPathInAQUAError, if (call.) call)
 
 
-.thisPathInEmacsError <- function (call = .getCurrentCall(), call. = TRUE)
-.External2(.C_thisPathInEmacsError, if (call.) call)
-
-
 ## helper functions for sys.path()     ----
 
 
-.is.clipboard <- function (file)
-.External2(.C_is.clipboard, file)
+.is_clipboard <- function (file)
+.External2(.C_is_clipboard, file)
 
 
 .getContents <- function (file, encoding = getOption("encoding"))
@@ -270,7 +266,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
 
 .isJupyterLoaded <- function ()
-.gui.jupyter && isNamespaceLoaded("IRkernel") && (.identical)(sys.function(1L), IRkernel::main)
+.GUI_jupyter && isNamespaceLoaded("IRkernel") && (.identical)(sys.function(1L), IRkernel::main)
 
 
 .getJupyterRNotebookContents <- function (path)
@@ -301,14 +297,14 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 }
 
 
-.jupyter.path <- evalq(envir = new.env(), {
+.jupyter_path <- evalq(envir = new.env(), {
     delayedAssign("ofile", { NA_character_ })
     ofile
     delayedAssign("file" , { .normalizePath(ofile) })
-eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)), bquote(
+                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (!is.na(ofile))
-        return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
+        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
 
 
     if (is.null(initwd)) {
@@ -331,13 +327,7 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     call <- .removeSource(ocall)
 
 
-    files <- list.files(initwd, all.files = TRUE, full.names = TRUE,
-        ..(
-            if (getRversion() < "3.0.0")
-                expression()
-            else expression(no.. = TRUE)
-        )
-    )
+    files <- list.files(initwd, all.files = TRUE, full.names = TRUE, no.. = TRUE)
     files <- files[!dir.exists(files)]
     i <- grepl("\\.ipynb$", files, useBytes = TRUE)
     ipynb <- files[i]
@@ -354,8 +344,8 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
             if (!inherits(exprs, "error")) {
                 for (expr in exprs) {
                     if ((.identical)(expr, call)) {
-                        .External2(.C_set.jupyter.path, file, skipCheck = TRUE)
-                        return(.External2(.C_jupyter.path, verbose, original, for.msg, contents))
+                        .External2(.C_set_jupyter_path, file, skipCheck = TRUE)
+                        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
                     }
                 }
             }
@@ -373,15 +363,14 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
             paste(if (is.integer(t)) as.character(t) else deparse(ocall), collapse = "\n")
         }))
 }
-, splice = TRUE)))
 })
 
 
-.emacs.path <- evalq(envir = new.env(), {
+.emacs_path <- evalq(envir = new.env(), {
     delayedAssign("emacsclient", {
         local({
             ## https://www.gnu.org/software/emacs/manual/html_node/emacs/Misc-Variables.html#index-emacs_005fdir
-            if (.os.windows) {
+            if (.OS_windows) {
                 x <- Sys.getenv("emacs_dir")
                 if (!nzchar(x)) stop("environment variable 'emacs_dir' is unset; are you actually in Emacs?")
                 if (requireNamespace("utils", quietly = TRUE))
@@ -397,72 +386,72 @@ eval(call("function", as.pairlist(alist(verbose = FALSE, original = FALSE, for.m
     ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Finding-All-Frames.html
     ## https://www.gnu.org/software/emacs/manual/html_node/elisp/Buffer-File-Name.html
     expr <- "
-(let ((R-pid    %d)
-      (filename %s)
-      (contents %s)
-      (frames (frame-list-z-order))
-      ess-r-mode-buffer
-      found-matching-pid-anywhere
-      active)
-  ;; for testing purposes
-  (setq found-matching-pid-anywhere (= R-pid 0))
-  (while frames
-    (setq ess-r-mode-buffer nil)
-    (setq active t)
-    (let ((buffers (frame-parameter (car frames) 'buffer-list))
-          (found-matching-pid (= R-pid 0)))
-      (while buffers
-        (with-current-buffer (car buffers)
-          (if buffer-file-name
-              (if (and (not ess-r-mode-buffer) (or (string= major-mode \"ess-r-mode\") (string= major-mode \"ess-mode\"))) (progn
-                  (setq ess-r-mode-buffer (current-buffer))
-                  (if found-matching-pid (setq active nil))
-              ))
-          ;; else
-          (if (and (not found-matching-pid) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
-              (let ((process (get-buffer-process (current-buffer))))
-                (if (and process (= (process-id process) R-pid)) (progn
-                    (setq found-matching-pid t)
-                    (setq found-matching-pid-anywhere t)
+        (let ((R-pid    %d)
+              (filename %s)
+              (contents %s)
+              (frames (frame-list-z-order))
+              ess-r-mode-buffer
+              found-matching-pid-anywhere
+              active)
+          ;; for testing purposes
+          (setq found-matching-pid-anywhere (= R-pid 0))
+          (while frames
+            (setq ess-r-mode-buffer nil)
+            (setq active t)
+            (let ((buffers (frame-parameter (car frames) 'buffer-list))
+                  (found-matching-pid (= R-pid 0)))
+              (while buffers
+                (with-current-buffer (car buffers)
+                  (if buffer-file-name
+                      (if (and (not ess-r-mode-buffer) (or (string= major-mode \"ess-r-mode\") (string= major-mode \"ess-mode\"))) (progn
+                          (setq ess-r-mode-buffer (current-buffer))
+                          (if found-matching-pid (setq active nil))
+                      ))
+                  ;; else
+                  (if (and (not found-matching-pid) (or (string= major-mode \"inferior-ess-r-mode\") (string= major-mode \"inferior-ess-mode\")))
+                      (let ((process (get-buffer-process (current-buffer))))
+                        (if (and process (= (process-id process) R-pid)) (progn
+                            (setq found-matching-pid t)
+                            (setq found-matching-pid-anywhere t)
+                        ))
+                      )
+                  ))
+                )
+                (if (and ess-r-mode-buffer found-matching-pid) (progn
+                    (setq buffers nil)
+                    (setq frames nil)
                 ))
+                (setq buffers (cdr buffers))
               )
-          ))
-        )
-        (if (and ess-r-mode-buffer found-matching-pid) (progn
-            (setq buffers nil)
-            (setq frames nil)
-        ))
-        (setq buffers (cdr buffers))
-      )
-    )
-    (setq frames (cdr frames))
-  )
-  (if found-matching-pid-anywhere
-      (if ess-r-mode-buffer
-          (with-current-buffer ess-r-mode-buffer
-            (if contents (progn
-                (write-region nil nil filename nil 0)
-                (if active 'success-active 'success-source)
-            ) ;; else
-            (if buffer-file-number (progn
-                (write-region buffer-file-name nil filename nil 0)
-                (if active 'success-active 'success-source)
-            ) ;; else
-                (if active 'untitled-active 'untitled-source)
-            ))
+            )
+            (setq frames (cdr frames))
           )
-      )
-  ;; else
-      'no-matching-pid
-  )
-)
+          (if found-matching-pid-anywhere
+              (if ess-r-mode-buffer
+                  (with-current-buffer ess-r-mode-buffer
+                    (if contents (progn
+                        (write-region nil nil filename nil 0)
+                        (if active 'success-active 'success-source)
+                    ) ;; else
+                    (if buffer-file-number (progn
+                        (write-region buffer-file-name nil filename nil 0)
+                        (if active 'success-active 'success-source)
+                    ) ;; else
+                        (if active 'untitled-active 'untitled-source)
+                    ))
+                  )
+              )
+          ;; else
+              'no-matching-pid
+          )
+        )
     "
     expr <- gsub("^[ \t\n]+|[ \t\n]+$", "", expr)
     expr <- gsub(";.*?\n", "\n", expr)
     expr <- gsub("[ \t\n]+", " ", expr)
     expr <- gsub("( ", "(", expr, fixed = TRUE)
     expr <- gsub(" )", ")", expr, fixed = TRUE)
-function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+               function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     # exe <- Sys.which("emacsclient"); contents <- TRUE; Sys.getpid <- function() 0L; stop("comment this out later")
 
@@ -472,7 +461,7 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     ## create right now so no other program
     ## may claim this filename in the meantime
     file.create(file)
-    exe <- .External2(.C_forcePromise.no.warn, "emacsclient")
+    exe <- .External2(.C_forcePromise_no_warn, "emacsclient")
     EXPR <- sprintf(expr,
         Sys.getpid(),
         encodeString(file, quote = "\""),
@@ -542,14 +531,14 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 })
 
 
-.rgui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-.External2(.C_rgui.path, verbose, original, for.msg, contents, .untitled, .r.editor)
+.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
 
 
 .gui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
-    if (.in.shell) {
-        if (contents && .has.shFILE)
+    if (.in_shell) {
+        if (contents && .has_shFILE)
             for.msg <- FALSE
         value <- shFILE(original, for.msg, default = {
             stop(.thisPathNotExistsError(
@@ -562,10 +551,10 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 
 
     ## running from 'RStudio'
-    else if (.gui.rstudio) {
+    else if (.GUI_RStudio) {
 
 
-        if (!`.init.tools:rstudio`()) {
+        if (!`.init_tools:rstudio`()) {
             if (for.msg) {
                 return(NA_character_)
             }
@@ -635,7 +624,7 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     }
 
 
-    else if (.gui.vscode) {
+    else if (.GUI_vscode) {
 
 
         ## evaluate this BEFORE the tryCatch in case the package
@@ -682,20 +671,20 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 
 
     ## running from 'jupyter'
-    else if (.gui.jupyter) {
-        .jupyter.path(verbose, original, for.msg, contents)
+    else if (.GUI_jupyter) {
+        .jupyter_path(verbose, original, for.msg, contents)
     }
 
 
     ## running from 'Rgui' on Windows
-    else if (.gui.rgui) {
+    else if (.GUI_Rgui) {
 
 
-        .External2(.C_rgui.path, verbose, original, for.msg, contents, .untitled, .r.editor)
+        .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
     }
 
 
-    else if (.gui.aqua) {
+    else if (.GUI_AQUA) {
 
 
         if (for.msg)
@@ -704,15 +693,15 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
     }
 
 
-    else if (.gui.emacs) {
+    else if (.GUI_emacs) {
 
 
-        .emacs.path(verbose, original, for.msg, contents)
+        .emacs_path(verbose, original, for.msg, contents)
     }
 
 
     ## running from a shell under Unix-alikes with GUI 'Tk'
-    else if (.gui.tk) {
+    else if (.GUI_Tk) {
 
 
         if (for.msg)
@@ -735,7 +724,7 @@ function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 
 set.jupyter.path <- function (...)
 {
-    if (!.gui.jupyter)
+    if (!.GUI_jupyter)
         stop(gettextf("'%s' can only be called in Jupyter",
             "set.jupyter.path"))
     if (!.isJupyterLoaded())
@@ -750,22 +739,20 @@ set.jupyter.path <- function (...)
     else if (is.null(initwd))
         path.join(...)
     else path.join(initwd, ...)
-    .External2(.C_set.jupyter.path, path)
+    .External2(.C_set_jupyter_path, path)
 }
 
 
-set.sys.path.jupyter <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("set.jupyter.path", .(.pkgname), old = "set.sys.path.jupyter"))
-)))
+set.sys.path.jupyter <- function (...)
+stop(.defunctError("set.jupyter.path", "this.path", old = "set.sys.path.jupyter"))
 
 
-set.this.path.jupyter <- eval(call("function", as.pairlist(alist(... = )), bquote(
-stop(.defunctError("set.jupyter.path", .(.pkgname), old = "set.this.path.jupyter"))
-)))
+set.this.path.jupyter <- function (...)
+stop(.defunctError("set.jupyter.path", "this.path", old = "set.this.path.jupyter"))
 
 
 set.gui.path <- function (...)
-.External2(.C_set.gui.path)
+.External2(.C_set_gui_path)
 
 
 delayedAssign(".identical", {
@@ -845,14 +832,61 @@ normalizePath(path, winslash, mustWork)
 }
 
 
-.normalizeAgainst <- function (wd, path)
+.normalizeAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
 {
     owd <- getwd()
     if (is.null(owd))
         stop("cannot '.normalizeAgainst' as current directory is unknown")
     on.exit(setwd(owd))
     setwd(wd)
-    .normalizePath(path)
+    normalizePath(path, winslash, mustWork)
+}
+
+
+.normalizeNotDirectoryAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
+{
+    owd <- getwd()
+    if (is.null(owd))
+        stop("cannot '.normalizeAgainst' as current directory is unknown")
+    on.exit(setwd(owd))
+    setwd(wd)
+    x <- normalizePath(path, winslash, mustWork)
+    if (.isfalse(.isdir(x)))
+        x
+    else stop(sprintf("'%s' is not a regular file", path), domain = NA)
+}
+
+
+.normalizeFixDirectoryAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
+{
+    owd <- getwd()
+    if (is.null(owd))
+        stop("cannot '.normalizeAgainst' as current directory is unknown")
+    on.exit(setwd(owd))
+    setwd(wd)
+    x <- normalizePath(path, winslash, mustWork)
+    if (.istrue(.isdir(x)))
+        path.join(x, ".")
+    else x
+}
+
+
+.normalize_srcfilealias <- function (original, path, winslash = "/", mustWork = TRUE)
+{
+    value <- .External2(.C_src_path, original)
+    value <- .dir(value)
+    if (grepl("^(https|http|ftp|ftps)://", value)) {
+        ## do not use file.path(), will convert text to native encoding
+        .normalizeurl(paste(value, path, sep = "/"))
+    }
+    else {
+        owd <- getwd()
+        if (is.null(owd))
+            stop("cannot '.normalize_srcfilealias' as current directory is unknown")
+        on.exit(setwd(owd))
+        setwd(value)
+        normalizePath(path, winslash, mustWork)
+    }
 }
 
 
@@ -870,59 +904,216 @@ normalizePath(path, winslash, mustWork)
 
 
 
-.faster.subsequent.times.test <- function ()
+.faster_subsequent_times_test <- function ()
 {
-    first.time <- microbenchmark::microbenchmark(
-        `first time` = .External2(.C_sys.path),
+    first_time <- microbenchmark::microbenchmark(
+        `first time` = .External2(.C_sys_path),
         times = 1
     )
     subsequent <- microbenchmark::microbenchmark(
-        subsequent = .External2(.C_sys.path),
+        subsequent = .External2(.C_sys_path),
         times = 100
     )
-    rbind(first.time, subsequent)
+    rbind(first_time, subsequent)
 }
 
 
 
 
 
+local({
+    tmp <- readLines("./src/thispathdefn.h")
+    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorClass[ \t]*\\\\[ \t]*$", tmp) + 1L]]
+    tmp <- str2lang(tmp)
+    if (!is.character(tmp) || length(tmp) != 1L || is.na(tmp))
+        stop("could not determine class name")
+    expected <- "this.path::thisPathNotExistsError"
+    if (tmp != expected)
+        stop(sprintf("thisPathNotExistsErrorClass found in ./src/thispathdefn.h (%s)\n does not match expected value in this.path.R (%s)",
+            tmp, expected))
+})
+
+
 sys.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
     contents = FALSE, local = FALSE, default, else.)
-.External2(.C_sys.path, verbose, original, for.msg, contents, local)
+{
+    if (missing(default)) {
+        if (missing(else.))
+            .External2(.C_sys_path, verbose, original, for.msg, contents, local)
+        else stop("'sys.path' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        original
+        for.msg
+        contents
+        local
+        if (missing(else.))
+            tryCatch({
+                .External2(.C_sys_path, verbose, original, for.msg, contents, local)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_sys_path, verbose, original, for.msg, contents, local)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
+}
 
 
 sys.dir <- function (verbose = getOption("verbose"), local = FALSE, default, else.)
 {
-    value <- .External2(.C_sys.path, verbose, local)
-    .dir(value)
+    if (missing(default)) {
+        if (missing(else.)) {
+            value <- .External2(.C_sys_path, verbose, local)
+            .dir(value)
+        }
+        else stop("'sys.dir' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        local
+        if (missing(else.))
+            tryCatch({
+                value <- .External2(.C_sys_path, verbose, local)
+                .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_sys_path, verbose, local)
+                value <- .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
 }
 
 
 env.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
     contents = FALSE, n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"),
     default, else.)
-.External2(.C_env.path, verbose, original, for.msg, contents, envir, matchThisEnv)
+{
+    n <- .External2(.C_asIntegerGE0, n)
+    if (missing(default)) {
+        if (missing(else.))
+            .External2(.C_env_path, verbose, original, for.msg,contents, envir, matchThisEnv)
+        else stop("'env.path' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        original
+        for.msg
+        contents
+        envir
+        matchThisEnv
+        if (missing(else.))
+            tryCatch({
+                .External2(.C_env_path, verbose, original, for.msg, contents, envir, matchThisEnv)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_env_path, verbose, original, for.msg, contents, envir, matchThisEnv)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
+}
 
 
 env.dir <- function (verbose = getOption("verbose"), n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"), default, else.)
 {
-    value <- .External2(.C_env.path, verbose, envir, matchThisEnv)
-    .dir(value)
+    n <- .External2(.C_asIntegerGE0, n)
+    if (missing(default)) {
+        if (missing(else.)) {
+            value <- .External2(.C_env_path, verbose, envir, matchThisEnv)
+            .dir(value)
+        }
+        else stop("'env.dir' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        envir
+        matchThisEnv
+        if (missing(else.))
+            tryCatch({
+                value <- .External2(.C_env_path, verbose, envir, matchThisEnv)
+                .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_env_path, verbose, envir, matchThisEnv)
+                value <- .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
 }
 
 
 src.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
     contents = FALSE, n = 0L, srcfile = if (n) sys.parent(n) else 0L, default, else.)
-.External2(.C_src.path, verbose, original, for.msg, contents, srcfile)
+{
+    n <- .External2(.C_asIntegerGE0, n)
+    if (missing(default)) {
+        if (missing(else.))
+            .External2(.C_src_path, verbose, original, for.msg, contents, srcfile)
+        else stop("'src.path' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        original
+        for.msg
+        contents
+        srcfile
+        if (missing(else.))
+            tryCatch({
+                .External2(.C_src_path, verbose, original, for.msg, contents, srcfile)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_src_path, verbose, original, for.msg, contents, srcfile)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
+}
 
 
 src.dir <- function (verbose = getOption("verbose"), n = 0L, srcfile = if (n) sys.parent(n) else 0L,
     default, else.)
 {
-    value <- .External2(.C_src.path, verbose, srcfile)
-    .dir(value)
+    n <- .External2(.C_asIntegerGE0, n)
+    if (missing(default)) {
+        if (missing(else.)) {
+            value <- .External2(.C_src_path, verbose, srcfile)
+            .dir(value)
+        }
+        else stop("'src.dir' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        srcfile
+        if (missing(else.))
+            tryCatch({
+                value <- .External2(.C_src_path, verbose, srcfile)
+                .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_src_path, verbose, srcfile)
+                value <- .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
 }
 
 
@@ -930,65 +1121,70 @@ this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg
     contents = FALSE, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L,
     default, else.)
-.External2(.C_this.path, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
+{
+    n <- .External2(.C_asIntegerGE0, n)
+    if (missing(default)) {
+        if (missing(else.))
+            .External2(.C_this_path, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
+        else stop("'this.path' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        original
+        for.msg
+        contents
+        local
+        envir
+        matchThisEnv
+        srcfile
+        if (missing(else.))
+            tryCatch({
+                .External2(.C_this_path, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
+        else {
+            tryCatch2({
+                value <- .External2(.C_this_path, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
+        }
+    }
+}
 
 
 this.dir <- function (verbose = getOption("verbose"), local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L,
     default, else.)
 {
-    value <- .External2(.C_this.path, verbose, local, envir, matchThisEnv, srcfile)
-    .dir(value)
-}
-
-
-tmp <- readLines("./src/thispathdefn.h")
-tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorClass[ \t]*\\\\[ \t]*$", tmp) + 1L]]
-tmp <- str2lang(tmp)
-if (!is.character(tmp) || length(tmp) != 1L || is.na(tmp))
-    stop("could not determine class name")
-tmpfun <- function (fun)
-{
-    R_BraceSymbol <- as.symbol("{")
-    e <- body(fun)
-    e2 <- e
-    if (e2[[1L]] != R_BraceSymbol)
-        e2 <- call("{", e2)
-    e2 <- bquote(tryCatch(.(e2), function(e) default))
-    names(e2)[3L] <- tmp
-    e3 <- e
-    if (e3[[1L]] != R_BraceSymbol)
-        e3 <- call("{", e3)
-    e3 <- bquote(tryCatch2(value <- .(e3), function(e) default, else. = (else.)(value)))
-    names(e3)[3L] <- tmp
-    body(fun) <- bquote({
-        ..(if ("n" %in% names(formals(fun))) expression(n <- .External2(.C_asIntegerGE0, n)) else list())
-        if (missing(default)) {
-            if (missing(else.))
-                .(e)
-            else stop(.(sprintf("'%s' with 'else.' but not 'default' makes no sense", as.character(substitute(fun)))))
+    n <- .External2(.C_asIntegerGE0, n)
+    if (missing(default)) {
+        if (missing(else.)) {
+            value <- .External2(.C_this_path, verbose, local, envir, matchThisEnv, srcfile)
+            .dir(value)
         }
+        else stop("'this.dir' with 'else.' but not 'default' makes no sense")
+    }
+    else {
+        ## force the promises
+        verbose
+        local
+        envir
+        matchThisEnv
+        srcfile
+        if (missing(else.))
+            tryCatch({
+                value <- .External2(.C_this_path, verbose, local, envir, matchThisEnv, srcfile)
+                .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default)
         else {
-            ## force the promises
-            ..(lapply(setdiff(names(formals(fun)), c("n", "default", "else.")), as.symbol))
-            if (missing(else.))
-                .(e2)
-            else {
-                .(e3)
-            }
+            tryCatch2(value <- {
+                value <- .External2(.C_this_path, verbose, local, envir, matchThisEnv, srcfile)
+                .dir(value)
+            }, `this.path::thisPathNotExistsError` = function(e) default,
+                else. = (else.)(value))
         }
-    }, splice = TRUE)
-    fun
+    }
 }
-sys.path  <- tmpfun(sys.path )
-sys.dir   <- tmpfun(sys.dir  )
-env.path  <- tmpfun(env.path )
-env.dir   <- tmpfun(env.dir  )
-src.path  <- tmpfun(src.path )
-src.dir   <- tmpfun(src.dir  )
-this.path <- tmpfun(this.path)
-this.dir  <- tmpfun(this.dir )
-rm(tmpfun, tmp)
 
 
 sys.srcref <- function (n = 1L, which = if (n) sys.parent(n) else 0L)
@@ -1023,7 +1219,7 @@ sys.srcref <- function (n = 1L, which = if (n) sys.parent(n) else 0L)
 
 sys.here <- function (..., local = FALSE, .. = 0L)
 {
-    base <- .External2(.C_sys.path, local)
+    base <- .External2(.C_sys_path, local)
     base <- .here(base, ..)
     path.join(base, ...)
 }
@@ -1033,7 +1229,7 @@ env.here <- function (..., n = 0L, envir = parent.frame(n + 1L), matchThisEnv = 
     .. = 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_env.path, envir, matchThisEnv)
+    base <- .External2(.C_env_path, envir, matchThisEnv)
     base <- .here(base, ..)
     path.join(base, ...)
 }
@@ -1043,7 +1239,7 @@ src.here <- function (..., n = 0L, srcfile = if (n) sys.parent(n) else 0L,
     .. = 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_src.path, srcfile)
+    base <- .External2(.C_src_path, srcfile)
     base <- .here(base, ..)
     path.join(base, ...)
 }
@@ -1054,7 +1250,7 @@ here <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     .. = 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
+    base <- .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
     base <- .here(base, ..)
     path.join(base, ...)
 }
@@ -1064,14 +1260,12 @@ delayedAssign("ici", { here })
 
 
 
-Sys.path <- eval(call("function", NULL, bquote(
-stop(.defunctError("sys.path(verbose = FALSE)", .(.pkgname), old = "Sys.path()"))
-)))
+Sys.path <- function ()
+stop(.defunctError("sys.path(verbose = FALSE)", "this.path", old = "Sys.path()"))
 
 
-Sys.dir <- eval(call("function", NULL, bquote(
-stop(.defunctError("sys.dir(verbose = FALSE)", .(.pkgname), old = "Sys.dir()"))
-)))
+Sys.dir <- function ()
+stop(.defunctError("sys.dir(verbose = FALSE)", "this.path", old = "Sys.dir()"))
 
 
 
@@ -1087,13 +1281,13 @@ try.sys.path <- function (contents = FALSE, local = FALSE)
     contents
     local
     success <- tryCatch({
-        value <- .External2(.C_sys.path, FALSE, FALSE, FALSE, contents, local)
+        value <- .External2(.C_sys_path, FALSE, FALSE, FALSE, contents, local)
         TRUE
     }, error = function(e) FALSE)
     if (success)
         value
     else {
-        .External2(.C_sys.path, FALSE, FALSE, TRUE, contents, local)
+        .External2(.C_sys_path, FALSE, FALSE, TRUE, contents, local)
     }
 }
 
@@ -1106,13 +1300,13 @@ try.env.path <- function (contents = FALSE, n = 0L, envir = parent.frame(n + 1L)
     envir
     matchThisEnv
     success <- tryCatch({
-        value <- .External2(.C_env.path, FALSE, FALSE, FALSE, contents, envir, matchThisEnv)
+        value <- .External2(.C_env_path, FALSE, FALSE, FALSE, contents, envir, matchThisEnv)
         TRUE
     }, error = function(e) FALSE)
     if (success)
         value
     else {
-        .External2(.C_env.path, FALSE, FALSE, TRUE, contents, envir, matchThisEnv)
+        .External2(.C_env_path, FALSE, FALSE, TRUE, contents, envir, matchThisEnv)
     }
 }
 
@@ -1123,13 +1317,13 @@ try.src.path <- function (contents = FALSE, n = 0L, srcfile = if (n) sys.parent(
     contents
     srcfile
     success <- tryCatch({
-        value <- .External2(.C_src.path, FALSE, FALSE, FALSE, contents, srcfile)
+        value <- .External2(.C_src_path, FALSE, FALSE, FALSE, contents, srcfile)
         TRUE
     }, error = function(e) FALSE)
     if (success)
         value
     else {
-        .External2(.C_src.path, FALSE, FALSE, TRUE, contents, srcfile)
+        .External2(.C_src_path, FALSE, FALSE, TRUE, contents, srcfile)
     }
 }
 
@@ -1145,37 +1339,41 @@ try.this.path <- function (contents = FALSE, local = FALSE, n = 0L, envir = pare
     matchThisEnv
     srcfile
     success <- tryCatch({
-        value <- .External2(.C_this.path, FALSE, FALSE, FALSE,
+        value <- .External2(.C_this_path, FALSE, FALSE, FALSE,
             contents, local, envir, matchThisEnv, srcfile)
         TRUE
     }, error = function(e) FALSE)
     if (success)
         value
     else {
-        .External2(.C_this.path, FALSE, FALSE, TRUE, contents,
+        .External2(.C_this_path, FALSE, FALSE, TRUE, contents,
             local, envir, matchThisEnv, srcfile)
     }
 }
 
 
-FILE <- local({
-    tmp <- try.this.path
-    f <- formals(tmp)
-    formals(tmp) <- NULL
-    body(tmp) <- as.call(c(as.list(quote({
-        contents <- FALSE
-        local <- FALSE
-        envir <- parent.frame()
-        matchThisEnv <- getOption("topLevelEnvironment")
-        srcfile <- 0L
-    })), as.list(body(tmp)[-seq_len(length(f) + 1L)])))
-    tmp
-})
+FILE <- function ()
+{
+    contents <- FALSE
+    local <- FALSE
+    envir <- parent.frame()
+    matchThisEnv <- getOption("topLevelEnvironment")
+    srcfile <- 0L
+    success <- tryCatch({
+        value <- .External2(.C_this_path, FALSE, FALSE, FALSE, contents, local, envir, matchThisEnv, srcfile)
+        TRUE
+    }, error = function(e) FALSE)
+    if (success)
+        value
+    else {
+        .External2(.C_this_path, FALSE, FALSE, TRUE, contents, local, envir, matchThisEnv, srcfile)
+    }
+}
 
 
 
 
 
-local.path <- eval(call("function", as.pairlist(alist(verbose = getOption("verbose"), original = FALSE, for.msg = FALSE, contents = FALSE, default = , else. = )), bquote(
-stop(.defunctError("sys.path(..., local = TRUE)", .(.pkgname), old = "local.path(...)"))
-)))
+local.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
+    contents = FALSE, default, else.)
+stop(.defunctError("sys.path(..., local = TRUE)", "this.path", old = "local.path(...)"))

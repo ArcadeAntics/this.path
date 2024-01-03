@@ -119,7 +119,7 @@ try.sys.path(contents = FALSE, local = FALSE)
 \examples{
 ## the important difference between 'this.path()' and 'sys.path()'
 FILE1.R <- tempfile("FILE1-", fileext = ".R")
-this.path:::.write.code({
+this.path:::.writeCode({
     fun <- function() {
         cat("\\n> this.path()\\n")
         print(this.path::this.path(verbose = TRUE))
@@ -133,7 +133,7 @@ this.path:::.write.code({
 source(FILE1.R, keep.source = TRUE)
 
 FILE2.R <- tempfile("FILE2-", fileext = ".R")
-this.path:::.write.code({
+this.path:::.writeCode({
     ## 'this.path()' and 'sys.path()' should no longer be identical
     ## since FILE2.R is now the executing script, and FILE1.R is not
     fun()

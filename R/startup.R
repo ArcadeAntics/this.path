@@ -1,4 +1,4 @@
-.site.file <- evalq(envir = new.env(), {
+.site_file <- evalq(envir = new.env(), {
     ## https://github.com/wch/r-source/blob/trunk/src/main/startup.c#L91
     delayedAssign("filename", {
         local({
@@ -16,7 +16,7 @@
         })
     })
     delayedAssign("ofile", {
-        if (isTRUE(.shINFO[["no.site.file"]]))
+        if (isTRUE(.shINFO[["no_site_file"]]))
             NA_character_
         else if (file.exists(filename))
             filename
@@ -24,31 +24,31 @@
     })
     delayedAssign("file", { .normalizePath(ofile) })
 function (original = TRUE, for.msg = FALSE)
-.External2(.C_site.file, original, for.msg)
+.External2(.C_site_file, original, for.msg)
 })
 
 
-delayedAssign(".has.site.file", { !is.na(.site.file()) })
+delayedAssign(".has_site_file", { !is.na(.site_file()) })
 
 
 site.file <- function (original = FALSE, for.msg = FALSE, default, else.)
 {
     if (missing(default)) {
         if (missing(else.))
-            .site.file(original, for.msg)
+            .site_file(original, for.msg)
         else stop("'site.file' with 'else.' but not 'default' makes no sense")
     }
     else {
         if (missing(else.)) {
-            if (.has.site.file)
-                .site.file(original, for.msg)
+            if (.has_site_file)
+                .site_file(original, for.msg)
             else if (for.msg)
                 NA_character_
             else default
         }
         else {
-            if (.has.site.file) {
-                value <- .site.file(original, for.msg)
+            if (.has_site_file) {
+                value <- .site_file(original, for.msg)
                 (else.)(value)
             }
             else if (for.msg) {
@@ -77,11 +77,11 @@ site.file <- function (original = FALSE, for.msg = FALSE, default, else.)
 # }
 
 
-.init.file <- evalq(envir = new.env(), {
+.init_file <- evalq(envir = new.env(), {
     delayedAssign("filename", {
         local({
             ## https://github.com/wch/r-source/blob/trunk/src/gnuwin32/sys-win32.c#L40
-            if (.os.windows) {
+            if (.OS_windows) {
                 p <- Sys.getenv("R_PROFILE_USER", NA_character_)
                 if (!is.na(p)) {
                     if (!nzchar(p)) return(NA_character_)
@@ -111,7 +111,7 @@ site.file <- function (original = FALSE, for.msg = FALSE, default, else.)
         })
     })
     delayedAssign("ofile", {
-        if (isTRUE(.shINFO[["no.init.file"]]))
+        if (isTRUE(.shINFO[["no_init_file"]]))
             NA_character_
         else if (file.exists(filename))
             filename
@@ -119,31 +119,31 @@ site.file <- function (original = FALSE, for.msg = FALSE, default, else.)
     })
     delayedAssign("file", { .normalizePath(ofile) })
 function (original = TRUE, for.msg = FALSE)
-.External2(.C_init.file, original, for.msg)
+.External2(.C_init_file, original, for.msg)
 })
 
 
-delayedAssign(".has.init.file", { !is.na(.init.file()) })
+delayedAssign(".has_init_file", { !is.na(.init_file()) })
 
 
 init.file <- function (original = FALSE, for.msg = FALSE, default, else.)
 {
     if (missing(default)) {
         if (missing(else.))
-            .init.file(original, for.msg)
+            .init_file(original, for.msg)
         else stop("'init.file' with 'else.' but not 'default' makes no sense")
     }
     else {
         if (missing(else.)) {
-            if (.has.init.file)
-                .init.file(original, for.msg)
+            if (.has_init_file)
+                .init_file(original, for.msg)
             else if (for.msg)
                 NA_character_
             else default
         }
         else {
-            if (.has.init.file) {
-                value <- .init.file(original, for.msg)
+            if (.has_init_file) {
+                value <- .init_file(original, for.msg)
                 (else.)(value)
             }
             else if (for.msg) {

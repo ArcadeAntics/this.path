@@ -1,11 +1,12 @@
 local({
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
-        stop("unable to 'check.this()', not the maintainer's copy")
-    essentials:::.update.DESCRIPTION.Date()
-    essentials:::check.this(  ## this.path
+        stop("unable to '.check_this()', not the maintainer's copy")
+    essentials:::.update_DESCRIPTION_Date()
+    essentials:::.check_this(  ## this.path
         special = TRUE,
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
+        # with.keep.source = TRUE,
 
         check = FALSE, no.stop.on.test.error = TRUE,
         as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
@@ -19,14 +20,14 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
     FILE <- "./tools/for-r-mac-builder"
             if (!file.create(FILE)) stop(sprintf("unable to create file '%s'", FILE))
     on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
-    essentials:::check.this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
+    essentials:::.check_this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
 })
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
     upcoming.CRAN.version <- "2.3.1"
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
-        stop("unable to 'check.this()', not the maintainer's copy")
+        stop("unable to '.check_this()', not the maintainer's copy")
 
 
 
@@ -91,7 +92,51 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
 
 
     essentials:::.update.DESCRIPTION.Date()
-    essentials:::check.this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
+    essentials:::.check_this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
+})
+
+
+local({
+    x <- this.path:::.readFiles(list.files("./src", full.names = TRUE))
+    pattern <- "\n    do_start(?:|_no_call|_no_op|_no_rho|_no_call_op|_no_call_rho|_no_op_rho|_no_call_op_rho)\\(\"([^\n\"]+)\" *, *(-?[[:digit:]]+)\\);\n"
+    m <- gregexec(pattern, x)
+    keep <- which(lengths(m) > 1L)
+    x <- x[keep]
+    m <- m[keep]
+    y <- regmatches(x, m)
+    y <- lapply(y, `[`, c(FALSE, TRUE, TRUE))
+    filenames <- names(y)
+    times <- as.integer(lengths(y)/2)
+
+
+    x <- readLines("./src/init.c")
+    pattern <- "^\\{\"([^\"]+)\" *, \\(DL_FUNC\\) &do_.* *, *(-?[[:digit:]]+)\\},$"
+    m <- regexec(pattern, x)
+    keep <- which(lengths(m) > 1L)
+    x <- x[keep]
+    m <- m[keep]
+    z <- regmatches(x, m)
+    z <- lapply(z, `[`, c(FALSE, TRUE, TRUE))
+
+
+    y <- matrix(unlist(y), nrow = 2L)
+    z <- matrix(unlist(z), nrow = 2L)
+    if (any(x <- !(y[1L, ] %in% z[1L, ]))) {
+        warning("names found in files but not in init.c:\n",
+            paste(utils::capture.output(split(y[1L, x], rep(filenames, times)[x])), collapse = "\n"))
+        y <- y[, !x, drop = FALSE]
+    }
+    if (length(x <- setdiff(z[1L, ], y[1L, ]))) {
+        warning("names found in init.c but not in files:\n",
+            paste(utils::capture.output(x), collapse = "\n"))
+        z <- z[, !(z[1L, ] %in% x), drop = FALSE]
+    }
+    x <- cbind(y, z)
+    x <- lapply(split(seq_len(ncol(x)), x[1L, ]), function(i) as.integer(x[2L, i]))
+    x <- x[lengths(lapply(x, unique)) != 1L]
+    if (length(x))
+        warning("found differing number of expected arguments:\n",
+            paste(utils::capture.output(x), collapse = "\n"))
 })
 
 
@@ -99,7 +144,7 @@ local({  ## testing this.path() with source(gzcon())
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE, after = FALSE)
     writeLines(c(
-        "sys.frame(.External2(this.path:::.C_getframenumber))$ofile",
+        "sys.frame(this.path:::.getframenumber())$ofile",
         "this.path::this.path(original = TRUE)",
         "this.path::this.path()"
     ), FILE)
@@ -127,7 +172,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("eval\\(parse\\(", x, perl = TRUE, value = TRUE)
+    x <- grep("sources1stargisfile", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

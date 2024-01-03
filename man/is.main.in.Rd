@@ -24,7 +24,7 @@ from.shell()
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.write.code({
+this.path:::.writeCode({
     this.path:::.withAutoprint({
         from.shell()
         is.main()

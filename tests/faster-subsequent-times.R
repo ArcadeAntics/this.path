@@ -1,9 +1,9 @@
 local({
     FILE <- tempfile(fileext = ".R")
     on.exit(unlink(FILE), add = TRUE)
-    this.path:::.write.code(file = FILE, {
+    this.path:::.writeCode(file = FILE, {
         if (requireNamespace("microbenchmark")) {
-            print(this.path:::.faster.subsequent.times.test())
+            print(this.path:::.faster_subsequent_times_test())
         } else cat("\n'package:microbenchmark' is not available :(\n")
     })
     cat("\n")

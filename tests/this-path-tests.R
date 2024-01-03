@@ -12,13 +12,14 @@ local({
     ## * sourcing a file by specifying one of its relative paths
     abs.path.R <- tempfile("test", fileext = ".R")
     on.exit(unlink(abs.path.R), add = TRUE)
-    this.path:::.write.code({
+    this.path:::.writeCode({
         n <- this.path:::.getframenumber()
         if (is.na(n)) stop("invalid traceback")
-        stopifnot(bindingIsLocked(
-            sym <- ".this.path::document.context",
-            frame <- sys.frame(n)
-        ))
+        sym <- ".this.path::document.context"
+        frame <- sys.frame(n)
+        if (!exists(sym, envir = frame, inherits = FALSE))
+            sym <- paste0(sym, "s")
+        stopifnot(bindingIsLocked(sym, frame))
         cat("\n> getwd()\n")
         print(getwd())
         cat("\n> ", paste(deparse(call("dynGet", sym)), collapse = "\n+ "), "\n", sep = "")
@@ -190,7 +191,14 @@ local({
         on.exit(unlink(abs.path.Rmd), add = TRUE)
         writeLines(c(
             "```{r}",
-            readLines(abs.path.R)[-c(1L, 3L)],
+            ## remove expressions starting with 'cat'
+            {
+                exprs <- parse(abs.path.R)
+                exprs <- exprs[!vapply(exprs, function(expr) {
+                    is.call(expr) && identical(expr[[1L]], as.symbol("cat"))
+                }, NA, USE.NAMES = FALSE)]
+                this.path:::.writeCode(exprs, NULL)
+            },
             "```"
         ), abs.path.Rmd)
 
@@ -237,7 +245,7 @@ local({
         options(`this.path::sys.path() expectation` = normalizePath(abs.path.R, "/", TRUE))
         setwd(basename.dir); box::set_script_path(this.path::path.join(basename.dir, "."))
         fun(box::use(module = ./.(as.symbol(sub("\\.R$", "", basename.R))))); box::unload(module)
-        if (!this.path:::.is.abs.path(rel.path.R)) {
+        if (!this.path:::.is_abs_path(rel.path.R)) {
             tmp.fun <- function(x) {
                 n <- length(x)
                 if (n > 1L)
@@ -315,6 +323,49 @@ local({
     }
 
 
+    ## 'utils::Sweave' cannot handle file URIs nor connections
+    if (requireNamespace("utils", quietly = TRUE)) {
+        basename.Rnw <- basename.R; this.path::ext(basename.Rnw) <- ".Rnw"
+        rel.path.Rnw <- rel.path.R; this.path::ext(rel.path.Rnw) <- ".Rnw"
+        abs.path.Rnw <- abs.path.R; this.path::ext(abs.path.Rnw) <- ".Rnw"
+
+
+        on.exit(unlink(abs.path.Rnw), add = TRUE)
+        writeLines(c(
+            "\\documentclass{article}",
+            "",
+            "\\begin{document}",
+            "",
+            "<<>>=",
+            ## remove expressions starting with 'cat'
+            {
+                exprs <- parse(abs.path.R)
+                exprs <- exprs[!vapply(exprs, function(expr) {
+                    is.call(expr) && identical(expr[[1L]], as.symbol("cat"))
+                }, NA, USE.NAMES = FALSE)]
+                this.path:::.writeCode(exprs, NULL)
+            },
+            "@",
+            "",
+            "\\end{document}"
+        ), abs.path.Rnw)
+
+
+        options(`this.path::sys.path() expectation` = normalizePath(abs.path.Rnw, "/", TRUE))
+        setwd(basename.dir)
+        outputname <- fun(utils::Sweave(.(basename.Rnw)))
+        writeLines(readLines(outputname))
+        unlink(outputname)
+
+
+        tmpdir <- tempfile("dir")
+        on.exit(unlink(tmpdir, recursive = TRUE, force = TRUE))
+        dir.create(tmpdir)
+        setwd(tmpdir)
+        writeLines(readLines(fun(utils::Sweave(.(this.path::path.join("..", basename.Rnw))))))
+    }
+
+
     invisible()
 })
 
@@ -322,7 +373,7 @@ local({
 local({
     FILE.R <- tempfile(fileext = ".R")
     on.exit(unlink(FILE.R))
-    this.path:::.write.code({
+    this.path:::.writeCode({
         stopifnot(identical(
             this.path::this.path(),
             getOption("this.path::this.path() expectation")
@@ -344,7 +395,7 @@ local({
 local({
     FILE.R <- tempfile(fileext = ".R")
     on.exit(unlink(FILE.R))
-    this.path:::.write.code({
+    this.path:::.writeCode({
         list(
             this.path::src.path(original = TRUE),
             this.path::src.path(original = NA),
@@ -365,7 +416,7 @@ local({
 local({
     FILE1.R <- tempfile(pattern = "file1_", fileext = ".R")
     on.exit(unlink(FILE1.R), add = TRUE)
-    this.path:::.write.code({
+    this.path:::.writeCode({
         fun <- function(x) x
         fun1 <- function() fun(this.path::src.path())
     }, FILE1.R)
@@ -374,7 +425,7 @@ local({
 
     FILE2.R <- tempfile(pattern = "file2_", fileext = ".R")
     on.exit(unlink(FILE2.R), add = TRUE)
-    this.path:::.write.code({
+    this.path:::.writeCode({
         fun2 <- function() fun(this.path::src.path())
     }, FILE2.R)
     source(FILE2.R, environment(), keep.source = TRUE)
@@ -388,7 +439,7 @@ local({
 
     FILE3.R <- tempfile("file3_", fileext = ".R")
     on.exit(unlink(FILE3.R), add = TRUE)
-    this.path:::.write.code({
+    this.path:::.writeCode({
         x <- list(fun1(), fun2(), fun(this.path::src.path()))
     }, FILE3.R)
     source(FILE3.R, environment(), keep.source = TRUE)

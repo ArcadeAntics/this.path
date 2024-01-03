@@ -1,12 +1,12 @@
-path.functions <- .removeSourceFromSubFunctions(
+path.functions <- .removeSource_from_inner_functions(
 function (file, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
     srcfile = if (n) sys.parent(n) else 0L)
 {
     if (missing(file)) {
         n <- .External2(.C_asIntegerGE0, n)
-        ofile <- .External2(.C_this.path, FALSE, TRUE, FALSE, FALSE, local, envir, matchThisEnv, srcfile)
-        file <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
+        ofile <- .External2(.C_this_path, FALSE, TRUE, FALSE, FALSE, local, envir, matchThisEnv, srcfile)
+        file <- .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
     }
     else {
         ofile <- file

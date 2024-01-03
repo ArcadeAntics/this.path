@@ -8,9 +8,9 @@ check <- function (path, root, ext, compression = FALSE)
 }
 
 
-splitext  <- this.path:::.windows.splitext
-removeext <- this.path:::.windows.removeext
-ext       <- this.path:::.windows.ext
+splitext  <- this.path:::.windows_splitext
+removeext <- this.path:::.windows_removeext
+ext       <- this.path:::.windows_ext
 
 
 check(character(), character(), character())
@@ -61,9 +61,9 @@ check(letters, letters, character(26))
 
 
 
-splitext  <- this.path:::.unix.splitext
-removeext <- this.path:::.unix.removeext
-ext       <- this.path:::.unix.ext
+splitext  <- this.path:::.unix_splitext
+removeext <- this.path:::.unix_removeext
+ext       <- this.path:::.unix_ext
 
 
 check(character(), character(), character())
@@ -104,8 +104,8 @@ check(letters, letters, character(26))
 ## windows replacement tests ----
 
 
-ext     <- this.path:::.windows.ext
-`ext<-` <- this.path:::`.windows.ext<-`
+ext     <- this.path:::.windows_ext
+`ext<-` <- this.path:::`.windows_ext<-`
 
 
 x   <- c(NA, "", ""    , "C:"  , "//host/share", "C:/" , "/path/to/fi", "/path/to/.", "/path/to/..", "/"   )
@@ -136,8 +136,8 @@ stopifnot(identical(x, "a.5"))
 ## unix replacement tests ----
 
 
-ext     <- this.path:::.unix.ext
-`ext<-` <- this.path:::`.unix.ext<-`
+ext     <- this.path:::.unix_ext
+`ext<-` <- this.path:::`.unix_ext<-`
 
 
 x <- "C:.jpg"

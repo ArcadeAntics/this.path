@@ -3,6 +3,9 @@
 \section{CHANGES IN VERSION devel}{
   \subsection{NEW FEATURES}{
     \itemize{
+      \item{\code{this.path()} is now compatible with function
+        \code{utils::Sweave()}.}
+
       \item{Removed the restriction that \code{reset.proj()} could only be
         called from a top level context.}
 
@@ -24,6 +27,8 @@
   }
   \subsection{BUG FIXES}{
     \itemize{
+      \item{\code{this.path()} now works correctly with source file aliases.}
+
       \item{Updated \code{shFILE()} to work better with older versions of \R.}
 
       \item{Improved \code{LINENO()}, specifically \code{sys.LINENO()}, when

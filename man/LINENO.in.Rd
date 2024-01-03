@@ -29,6 +29,9 @@ LINENO(n = 0, envir = parent.frame(n + 1),
   For \compilerloadcmplink, the \code{srcref} is never stored for the compiled
   code, there is nothing that can be done.
 
+  For \utilsSweavelink, the \code{srcref} is never stored, there is nothing
+  that can be done.
+
   For \knitrknitlink, the \code{srcref} is never stored, there is nothing that
   can be done. I am looking into a fix.
 

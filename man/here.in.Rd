@@ -62,7 +62,7 @@ writeLines("this file signifies that its directory is the project root",
 
 FILE.R <- this.path::path.join(tmpdir, "src", "R", "script1.R")
 dir.create(this.path::dirname2(FILE.R), recursive = TRUE)
-this.path:::.write.code({
+this.path:::.writeCode({
     this.path::this.path()
     this.path::this.proj()
     ## use 'here' to run another script located nearby

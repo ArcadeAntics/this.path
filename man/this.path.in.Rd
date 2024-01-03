@@ -318,7 +318,7 @@ this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
 tryCatch({
     source(paste0("https://raw.githubusercontent.com/ArcadeAntics/",
                   "this.path/main/tests/sys-path-with-urls.R"))
-}, condition = this.path:::.cat.condition)
+}, condition = this.path:::.cat_condition)
 
 unlink(FILE1.R)
 }

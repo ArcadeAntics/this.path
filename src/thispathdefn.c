@@ -395,20 +395,6 @@ SEXP thisPathInAQUAError(SEXP call)
 }
 
 
-SEXP thisPathInEmacsError(SEXP call)
-{
-    const char *msg = "R is running from Emacs which is currently unimplemented\n"
-                      " consider using RStudio / / VSCode until such a time when this is implemented";
-    const char *Class[] = {
-        "thisPathInEmacsError",
-        thisPathNotFoundErrorClass,
-        thisPathNotImplementedErrorClass,
-        NULL
-    };
-    return errorCondition(msg, call, Class, 0);
-}
-
-
 void stop(SEXP cond)
 {
     SEXP expr = LCONS(stopSymbol, CONS(cond, R_NilValue));
@@ -433,7 +419,7 @@ SEXP DocumentContext(void)
  * document.context$ofile <- NULL
  * to declare that a document context does not refer to a file, now we do:
  * document.context <- emptyenv()
- * this is much easier to test for and to read and to debug
+ * this is much easier to test for, to read, and to debug
  */
 
 
@@ -443,39 +429,48 @@ SEXP DocumentContext(void)
     defineVar(fileSymbol, e, (documentcontext))
 
 
-static R_INLINE
-SEXP NA_TYPE2sym(NA_TYPE normalize_action)
-{
-    switch (normalize_action) {
-    case NA_DEFAULT: return _normalizePathSymbol        ;
-    case NA_NOT_DIR: return _normalizeNotDirectorySymbol;
-    case NA_FIX_DIR: return _normalizeFixDirectorySymbol;
-    default:
-        errorcall(R_NilValue, _("invalid '%s' value"), "normalize_action");
-        return R_NilValue;
+#define _assign_default(srcfile_original, owd, file, documentcontext, normalize_action)\
+    if (srcfile_original) {                                    \
+        SET_PRCODE(e, LCONS(_normalize_srcfilealiasSymbol,     \
+                            CONS(srcfile_original,             \
+                                 CONS(file, R_NilValue))));    \
+    }                                                          \
+    else if (owd) {                                            \
+        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);\
+        SEXP sym;                                              \
+        switch (normalize_action) {                            \
+        case NA_DEFAULT: sym = _normalizeAgainstSymbol            ; break;\
+        case NA_NOT_DIR: sym = _normalizeNotDirectoryAgainstSymbol; break;\
+        case NA_FIX_DIR: sym = _normalizeFixDirectoryAgainstSymbol; break;\
+        default:                                               \
+            errorcall(R_NilValue, _("invalid '%s' value"), "normalize_action");\
+            sym = R_NilValue;                                  \
+        }                                                      \
+        SET_PRCODE(e, LCONS(sym, CONS(wdSymbol, CONS(file, R_NilValue))));\
+    }                                                          \
+    else {                                                     \
+        SEXP sym;                                              \
+        switch (normalize_action) {                            \
+        case NA_DEFAULT: sym = _normalizePathSymbol        ; break;\
+        case NA_NOT_DIR: sym = _normalizeNotDirectorySymbol; break;\
+        case NA_FIX_DIR: sym = _normalizeFixDirectorySymbol; break;\
+        default:                                               \
+            errorcall(R_NilValue, _("invalid '%s' value"), "normalize_action");\
+            sym = R_NilValue;                                  \
+        }                                                      \
+        SET_PRCODE(e, LCONS(sym, CONS(file, R_NilValue)));     \
     }
-}
 
 
-void assign_default(SEXP file, SEXP documentcontext, NA_TYPE normalize_action)
+void assign_default(SEXP srcfile_original, SEXP owd, SEXP file, SEXP documentcontext, NA_TYPE normalize_action)
 {
     _assign(file, documentcontext);
-    SET_PRCODE(e, LCONS(NA_TYPE2sym(normalize_action), CONS(file, R_NilValue)));
-}
-
-
-void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext)
-{
-    _assign(file, documentcontext);
-    INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
-    SET_PRCODE(e, LCONS(_normalizeAgainstSymbol,
-                        CONS(wdSymbol,
-                             CONS(file, R_NilValue))));
+    _assign_default(srcfile_original, owd, file, documentcontext, normalize_action);
     return;
 }
 
 
-void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action)
+void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action)
 {
     _assign(ofile, documentcontext);
 
@@ -507,12 +502,11 @@ void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normal
 #endif
 
 
-    SET_PRCODE(e, LCONS(NA_TYPE2sym(normalize_action),
-                        CONS(ScalarString(mkCharCE(url, ienc)), R_NilValue)));
+    _assign_default(srcfile_original, owd, ScalarString(mkCharCE(url, ienc)), documentcontext, normalize_action);
 }
 
 
-void assign_file_uri2(SEXP description, SEXP documentcontext, NA_TYPE normalize_action)
+void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP documentcontext, NA_TYPE normalize_action)
 {
     const char *url = CHAR(description);
     char _buf[8 + strlen(url) + 1];
@@ -534,8 +528,7 @@ void assign_file_uri2(SEXP description, SEXP documentcontext, NA_TYPE normalize_
 
     SEXP ofile = ScalarString(mkCharCE(buf, getCharCE(description)));
     _assign(ofile, documentcontext);
-    SET_PRCODE(e, LCONS(NA_TYPE2sym(normalize_action),
-                        CONS(ScalarString(description), R_NilValue)));
+    _assign_default(srcfile_original, owd, ScalarString(description), documentcontext, normalize_action);
 }
 
 
@@ -555,6 +548,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 }
 
 
+#undef _assign_default
 #undef _assign
 
 

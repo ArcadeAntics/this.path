@@ -206,7 +206,7 @@ SEXP do_onLoad do_formals
 
 
     /* rprojroot.R */
-    LockCLOENV(install(".find.root"), TRUE);
+    LockCLOENV(install(".find_root"), TRUE);
     LockCLOENV(install(".proj"), FALSE);
     /* startup.R */
     LockCLOENV(_site_fileSymbol, TRUE);
@@ -214,7 +214,7 @@ SEXP do_onLoad do_formals
     /* thispath.R */
     LockCLOENV(_shFILESymbol, TRUE);
     LockCLOENV(_jupyter_pathSymbol, TRUE);
-    LockCLOENV(install(".emacs.path"), TRUE);
+    LockCLOENV(install(".emacs_path"), TRUE);
     /* zzz.R */
     // LockCLOENV(install("eval.with.message"), FALSE);
 
@@ -595,9 +595,27 @@ SEXP do_onLoad do_formals
 
 
     {
-        /* if package:plumber is loaded, call '.fix.plumber.parseUTF8' */
+        /* if package:utils is loaded, call '.fix_utils' */
+        if (!ISUNBOUND(findVarInFrame(R_NamespaceRegistry, utilsSymbol))) {
+            SEXP expr = LCONS(install(".fix_utils"), R_NilValue);
+            PROTECT(expr);
+            eval(expr, mynamespace);
+            UNPROTECT(1);
+        }
+
+
+        /* for when package:utils is loaded (or possibly unloaded then reloaded), set as a hook */
+        SEXP expr = LCONS(install(".maybe_setHook_packageEvent_utils_fix_utils"), R_NilValue);
+        PROTECT(expr);
+        eval(expr, mynamespace);
+        UNPROTECT(1);
+    }
+
+
+    {
+        /* if package:plumber is loaded, call '.fix_plumber_parseUTF8' */
         if (!ISUNBOUND(findVarInFrame(R_NamespaceRegistry, plumberSymbol))) {
-            SEXP expr = LCONS(install(".fix.plumber.parseUTF8"), R_NilValue);
+            SEXP expr = LCONS(install(".fix_plumber_parseUTF8"), R_NilValue);
             PROTECT(expr);
             eval(expr, mynamespace);
             UNPROTECT(1);
@@ -605,7 +623,7 @@ SEXP do_onLoad do_formals
 
 
         /* for when package:plumber is loaded (or possibly unloaded then reloaded), set as a hook */
-        SEXP expr = LCONS(install(".maybe.setHook.packageEvent.plumber.fix.plumber.parseUTF8"), R_NilValue);
+        SEXP expr = LCONS(install(".maybe_setHook_packageEvent_plumber_fix_plumber_parseUTF8"), R_NilValue);
         PROTECT(expr);
         eval(expr, mynamespace);
         UNPROTECT(1);

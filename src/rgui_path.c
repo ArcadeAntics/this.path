@@ -227,11 +227,11 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
 }
 
 
-SEXP rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
+SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
 {
     if (!RConsole)
-        error("attempt to use 'rgui_path' while not in RGui");
+        error("attempt to use 'Rgui_path' while not in RGui");
 
 
     PROTECT_WITH_INDEX(EnumResult = NULL, &EnumIndex);
@@ -299,10 +299,10 @@ SEXP do_RConsole do_formals
 #include "backports.h"
 
 
-SEXP rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
+SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
 {
-    error("rgui_path() is implemented only on Windows");
+    error("Rgui_path() is implemented only on Windows");
     return R_NilValue;
 }
 

@@ -45,7 +45,7 @@ init.file(original = FALSE, for.msg = FALSE, default, else.)
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.write.code({
+this.path:::.writeCode({
     this.path:::.withAutoprint({
         shFILE(original = TRUE)
         shFILE()

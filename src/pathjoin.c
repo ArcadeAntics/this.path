@@ -692,21 +692,21 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
 SEXP do_windows_path_join do_formals
 {
-    do_start_no_op("windows.path.join", 0);
+    do_start_no_op("windows_path_join", 0);
     return path_join(call, TRUE, ".windows.path.join", args, rho);
 }
 
 
 SEXP do_unix_path_join do_formals
 {
-    do_start_no_op("unix.path.join", 0);
+    do_start_no_op("unix_path_join", 0);
     return path_join(call, FALSE, ".unix.path.join", args, rho);
 }
 
 
 SEXP do_path_join do_formals
 {
-    do_start_no_op("path.join", 0);
+    do_start_no_op("path_join", 0);
 #ifdef _WIN32
     return path_join(call, TRUE, "path.join", args, rho);
 #else

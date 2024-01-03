@@ -166,9 +166,12 @@ main <- function ()
                 }
                 backports <- make.backports(
                     "3.0.0",
-                    c(".mapply", "parse"),
+                    c(".mapply", "list.files", "parse"),
                     c(
                         ".mapply(FUN, dots, MoreArgs)",
+                        "list.files(path = \".\", pattern = NULL, all.files = FALSE,",
+                        "           full.names = FALSE, recursive = FALSE,",
+                        "           ignore.case = FALSE, include.dirs = FALSE, no.. = FALSE)",
                         "parse(file = \"\", n = NULL, text = NULL, prompt = \"?\",",
                         "      keep.source = getOption(\"keep.source\"),",
                         "      srcfile = NULL, encoding = \"unknown\")"

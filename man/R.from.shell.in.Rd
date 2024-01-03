@@ -58,7 +58,7 @@
   \href{https://cran.r-project.org/submit.html}{submitting a package to CRAN}.
   \command{R CMD INSTALL} will install an \R package (specified by a directory
   or tarball), and is used by
-  \codelink3{utils:install.packages}{utils::install.packages}{()}.
+  \codelink3{utils:install.packages}{install.packages}{()}.
   \command{R CMD check} will check an \R package (specified by a tarball) for
   possible errors in code, documentation, tests, and much more.
 

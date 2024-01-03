@@ -33,21 +33,21 @@ SEXP isabspath(int windows, SEXP args)
 
 SEXP do_windows_is_abs_path do_formals
 {
-    do_start_no_call_op_rho("windows.is.abs.path", 1);
+    do_start_no_call_op_rho("windows_is_abs_path", 1);
     return isabspath(TRUE, args);
 }
 
 
 SEXP do_unix_is_abs_path do_formals
 {
-    do_start_no_call_op_rho("unix.is.abs.path", 1);
+    do_start_no_call_op_rho("unix_is_abs_path", 1);
     return isabspath(FALSE, args);
 }
 
 
 SEXP do_is_abs_path do_formals
 {
-    do_start_no_call_op_rho("is.abs.path", 1);
+    do_start_no_call_op_rho("is_abs_path", 1);
 #ifdef _WIN32
     return isabspath(TRUE, args);
 #else

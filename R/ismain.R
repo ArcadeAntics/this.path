@@ -9,7 +9,7 @@ is.main <- function ()
 }
 
 
-delayedAssign(".has.shINPUT", { .in.shell && .shINFO[["has.input"]] })
+delayedAssign(".has_shINPUT", { .in_shell && .shINFO[["has_input"]] })
 
 
 from.shell <- function ()
@@ -19,13 +19,13 @@ from.shell <- function ()
         NA
     else if (n)
         FALSE
-    else .has.shINPUT
+    else .has_shINPUT
 }
 
 
 .toplevel.nframe <- function ()
 {
-    if (.gui.jupyter) {
+    if (.GUI_jupyter) {
         if (.isJupyterLoaded())
             sys.frame(1L)$kernel$executor$nframe + 1L
         else 0L
@@ -51,9 +51,9 @@ from.shell <- function ()
 #
 # pragma_once <- function (expr)
 # ## forceAndCall was introduced in R 3.2.0
-# # forceAndCall(1L, .pragma_once, .External2(.C_this.path))
+# # forceAndCall(1L, .pragma_once, .External2(.C_this_path))
 # {
-#     path <- .External2(.C_this.path)
+#     path <- .External2(.C_this_path)
 #     if (.pragma_once(path)) {
 #         rm(path)
 #         expr

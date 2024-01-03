@@ -1,6 +1,6 @@
 .fixslash <- function (s)
 {
-    if (.os.windows) {
+    if (.OS_windows) {
         path <- chartr("\\", "/", path)
         if (startsWith(path, "//"))
             substr(path, 1L, 2L) <- "\\\\"
@@ -11,7 +11,7 @@
 
 .fixbackslash <- function (s)
 {
-    if (.os.windows)
+    if (.OS_windows)
         path <- chartr("/", "\\", path)
     path
 }
@@ -25,7 +25,7 @@
         if (!is.null(srcref)) {
             ## try to get the normalized filename
             success <- tryCatch({
-                value <- .External2(.C_src.path, srcref)
+                value <- .External2(.C_src_path, srcref)
                 TRUE
             }, error = function(e) FALSE)
             if (success) {
@@ -40,12 +40,12 @@
             else {
                 ## try to get the original filename
                 success <- tryCatch({
-                    value <- .External2(.C_src.path, FALSE, TRUE, FALSE, FALSE, srcref)
+                    value <- .External2(.C_src_path, FALSE, TRUE, FALSE, FALSE, srcref)
                     TRUE
                 }, error = function(e) FALSE)
                 if (success) {
                     if (grepl("^file://", value))
-                        value <- .fixslash(.file.uri.path(value))
+                        value <- .fixslash(.file_uri_path(value))
                     else if (grepl("^(https|http|ftp|ftps)://", value))
                         value <- .normalizeurl(value)
                     else value <- .fixslash(value)
@@ -65,7 +65,7 @@ sys.LINENO <- function ()
         context.number <- .External2(.C_getframenumber)
         if (is.na(context.number) || context.number == 0L)
             return(NA_integer_)
-        path <- .External2(.C_sys.path)
+        path <- .External2(.C_sys_path)
         TRUE
     }, error = function(e) FALSE)
     if (success)
@@ -104,48 +104,90 @@ src.LINENO <- function (n = 0L, srcfile = if (n) sys.parent(n) else 0L)
     n <- .External2(.C_asIntegerGE0, n)
     srcfile
     tryCatch({
-        .External2(.C_src.LINENO, srcfile)
+        .External2(.C_src_LINENO, srcfile)
     }, error = function(e) NA_integer_)
 }
 
 
-LINENO <- eval(call("function", as.pairlist(alist(n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L)), bquote({
-    .(body(src.LINENO)[[2L]])
-    value <- .(body(src.LINENO)[-2L])
+LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOption("topLevelEnvironment"),
+    srcfile = if (n) sys.parent(n) else 0L)
+{
+    n <- .External2(.C_asIntegerGE0, n)
+    srcfile
+    value <- tryCatch({
+        .External2(.C_src_LINENO, srcfile)
+    }, error = function(e) NA_integer_)
     if (is.na(value)) {
-        value <- .(body(env.LINENO)[-2L])
-        if (is.na(value))
-            .(body(sys.LINENO))
+        envir
+        matchThisEnv
+        value <- NA_integer_
+        if (typeof(envir) == "environment") {
+            parents <- sys.parents()
+            for (i in seq.int(to = 1L, by = -1L, along.with = parents)) {
+                if (identical(envir, sys.frame(parents[[i]]))) {
+                    call <- sys.call(i)
+                    srcref <- attr(call, "srcref", exact = TRUE)
+                    if (!is.null(srcref)) {
+                        value <- srcref[1L]
+                        break
+                    }
+                }
+            }
+        }
+        if (is.na(value)) {
+            success <- tryCatch({
+                context.number <- .External2(.C_getframenumber)
+                if (is.na(context.number) || context.number == 0L)
+                    return(NA_integer_)
+                path <- .External2(.C_sys_path)
+                TRUE
+            }, error = function(e) FALSE)
+            if (success)
+                .LINENO(path, context.number + 1L)
+            else NA_integer_
+        }
         else value
     }
     else value
-})))
+}
 
 
-LINE <- eval(call("function", NULL, bquote({
-    value <- .(
-        local({
-           tmp <- src.LINENO
-           as.call(c(as.list(quote({
-               srcfile <- 0L
-           })), as.list(body(tmp)[-seq_len(length(formals(tmp)) + 1L)])))
-        })
-    )
+LINE <- function ()
+{
+    srcfile <- 0L
+    value <- tryCatch({
+        .External2(.C_src_LINENO, srcfile)
+    }, error = function(e) NA_integer_)
     if (is.na(value)) {
-        value <- .(
-            local({
-                tmp <- env.LINENO
-                as.call(c(as.list(quote({
-                    envir <- parent.frame()
-                })), as.list(body(tmp)[-seq_len(length(formals(tmp)) + 1L)])))
-            })
-        )
-        if (is.na(value))
-            .(body(sys.LINENO))
+        envir <- parent.frame()
+        value <- NA_integer_
+        parents <- sys.parents()
+        for (i in seq.int(to = 1L, by = -1L, along.with = parents)) {
+            if (identical(envir, sys.frame(parents[[i]]))) {
+                call <- sys.call(i)
+                srcref <- attr(call, "srcref", exact = TRUE)
+                if (!is.null(srcref)) {
+                    value <- srcref[1L]
+                    break
+                }
+            }
+        }
+        if (is.na(value)) {
+            success <- tryCatch({
+                context.number <- .External2(.C_getframenumber)
+                if (is.na(context.number) || context.number == 0L)
+                    return(NA_integer_)
+                path <- .External2(.C_sys_path)
+                TRUE
+            }, error = function(e) FALSE)
+            if (success)
+                .LINENO(path, context.number + 1L)
+            else NA_integer_
+        }
         else value
     }
     else value
-})))
+}
 
 
 .source <- function (file, local = FALSE, echo = verbose, print.eval = echo,
@@ -219,7 +261,7 @@ LINE <- eval(call("function", NULL, bquote({
                   on.exit()
                   close(file)
                   srcfile <- srcfilecopy(filename, lines, file.mtime(filename)[1],
-                    isFile = .is.abs.path(filename))
+                    isFile = .is_abs_path(filename))
                 }
                 else {
                   from_file <- TRUE
@@ -384,7 +426,7 @@ source.exprs <- function (exprs, evaluated = FALSE, envir = parent.frame(), echo
     if (!evaluated) {
         exprs <- substitute(exprs)
         if (is.call(exprs)) {
-            if (typeof(exprs[[1]]) == "symbol" && exprs[[1]] == "{")
+            if (identical(exprs[[1]], .R_BraceSymbol))
                 exprs <- as.list(exprs)[-1]
         }
     }

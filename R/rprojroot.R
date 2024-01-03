@@ -81,16 +81,16 @@ rm(i)
 tmp$find_file <- function (..., path = ".")
 {
     path <- normalizePath(path, winslash = "/", mustWork = TRUE)
-    root <- .find.root(path = path, criterion = .default_criterion_if_rprojroot_is_not_available)
+    root <- .find_root(path = path, criterion = package_here_criterion_if_rprojroot_is_not_available)
     path.join(root, ...)
 }
 
 
-tmp$make_fix_file <- .removeSourceFromSubFunctions(
+tmp$make_fix_file <- .removeSource_from_inner_functions(
 function (path = getwd(), subdir = NULL)
 {
     path <- normalizePath(path, winslash = "/", mustWork = TRUE)
-    root <- .find.root(path = path, criterion = .default_criterion_if_rprojroot_is_not_available)
+    root <- .find_root(path = path, criterion = package_here_criterion_if_rprojroot_is_not_available)
     value <- function(...) NULL
     body(value) <- call("path.join", root, as.symbol("..."))
     environment(value) <- .mynamespace
@@ -99,11 +99,11 @@ function (path = getwd(), subdir = NULL)
 )
 
 
-.find.root <- evalq(envir = new.env(), {
+.find_root <- evalq(envir = new.env(), {
     environment(tmp$find_file) <<- environment()
     environment(tmp$make_fix_file) <<- environment()
-    .default_criterion_if_rprojroot_is_not_available <- tmp
-    delayedAssign("default.criterion", {
+    package_here_criterion_if_rprojroot_is_not_available <- tmp
+    delayedAssign("package_here_criterion", {
         if (requireNamespace("rprojroot", quietly = TRUE))
             rprojroot::has_file(".here")     |
             rprojroot::is_rstudio_project    |
@@ -112,7 +112,7 @@ function (path = getwd(), subdir = NULL)
             rprojroot::is_projectile_project |
             rprojroot::is_vcs_root
         else
-            .default_criterion_if_rprojroot_is_not_available
+            package_here_criterion_if_rprojroot_is_not_available
     })
     format.root_criterion <- function (x, ...)
 {
@@ -125,10 +125,14 @@ function (path = getwd(), subdir = NULL)
     cat(format(x), sep = "\n")
     invisible(x)
 }
-function (path = getwd(), verbose = FALSE, criterion = default.criterion)
+function (path = getwd(), verbose = FALSE, criterion = package_here_criterion)
 {
     # path <- "\\\\host\\share\\path\\to\\file\\"
-    if (grepl("^(https|http|ftp|ftps)://", path))
+    if (is.null(path))
+        stop("cannot '.find_root' as current directory is unknown")
+    if (.OS_windows && missing(path))
+        path <- .normalizePath(path)
+    else if (grepl("^(https|http|ftp|ftps)://", path))
         stop("this.proj() does not work for URL pathnames")
     if (!inherits(criterion, "root_criterion"))
         criterion <- rprojroot::as.root_criterion(criterion)
@@ -162,11 +166,6 @@ function (path = getwd(), verbose = FALSE, criterion = default.criterion)
 rm(tmp)
 
 
-if (.Platform$OS.type == "windows") {
-    formals(.find.root)$path <- quote(normalizePath(getwd(), "/", TRUE))
-}
-
-
 .proj <- evalq(envir = new.env(), {
     x <- structure(character(0), names = character(0))
 function (path, verbose = FALSE)
@@ -174,14 +173,14 @@ function (path, verbose = FALSE)
     ## 'path' should be normalized
     if (indx <- match(path, names(x), 0L))
         x[[indx]]
-    else (x[[path]] <<- .find.root(path, verbose))
+    else (x[[path]] <<- .find_root(path, verbose))
 }
 })
 
 
 sys.proj <- function (..., local = FALSE)
 {
-    base <- .External2(.C_sys.path, local)
+    base <- .External2(.C_sys_path, local)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -192,7 +191,7 @@ env.proj <- function (..., n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"))
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_env.path, envir, matchThisEnv)
+    base <- .External2(.C_env_path, envir, matchThisEnv)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -202,7 +201,7 @@ env.proj <- function (..., n = 0L, envir = parent.frame(n + 1L),
 src.proj <- function (..., n = 0L, srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_src.path, srcfile)
+    base <- .External2(.C_src_path, srcfile)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -214,7 +213,7 @@ this.proj <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     srcfile = if (n) sys.parent(n) else 0L)
 {
     n <- .External2(.C_asIntegerGE0, n)
-    base <- .External2(.C_this.path, local, envir, matchThisEnv, srcfile)
+    base <- .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
     base <- .dir(base)
     base <- .proj(base)
     path.join(base, ...)
@@ -222,9 +221,8 @@ this.proj <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
 
 
 reset.proj <- function ()
-.External2(.C_reset.proj)
+.External2(.C_reset_proj)
 
 
-reset.this.proj <- eval(call("function", NULL, bquote(
-stop(.defunctError("reset.proj", .(.pkgname), old = "reset.this.proj"))
-)))
+reset.this.proj <- function ()
+stop(.defunctError("reset.proj", "this.path", old = "reset.this.proj"))

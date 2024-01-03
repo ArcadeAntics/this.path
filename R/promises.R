@@ -215,8 +215,8 @@
 ## evaluated during the regular use of the package
 
 
-delayedAssign(".os.unix"   , { .Platform$OS.type == "unix"    })
-delayedAssign(".os.windows", { .Platform$OS.type == "windows" })
+delayedAssign(".OS_unix"   , { .Platform$OS.type == "unix"    })
+delayedAssign(".OS_windows", { .Platform$OS.type == "windows" })
 
 
 ## we need to determine the type of GUI in use. unfortunately, .Platform$GUI is
@@ -226,53 +226,53 @@ delayedAssign(".os.windows", { .Platform$OS.type == "windows" })
 ## have been run (see ?Startup).
 ##
 ## as such, I've made my own ways of determining the type of GUI in use
-delayedAssign(".gui.rstudio", {
+delayedAssign(".GUI_RStudio", {
     commandArgs()[[1L]] == "RStudio" &&
     isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")) &&
-    if (.Platform$GUI == "RStudio") { .External2(.C_init.tools.rstudio, skipCheck = TRUE); TRUE }
+    if (.Platform$GUI == "RStudio") { .External2(.C_init_tools_rstudio, skipCheck = TRUE); TRUE }
     else (
-        (.os.unix    && .Platform$GUI %in% c("X11", "unknown", "none")) ||
-        (.os.windows && .Platform$GUI == "Rgui")
+        (.OS_unix    && .Platform$GUI %in% c("X11", "unknown", "none")) ||
+        (.OS_windows && .Platform$GUI == "Rgui")
     )
 })
 
 
-delayedAssign(".os.unix.maybe.unembedded.shell"   , { .os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") &&                        "R" == basename2(commandArgs()[[1L]])                                             })
-delayedAssign(".os.windows.maybe.unembedded.shell", { .os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])) && .External2(.C_CharacterMode) == "RTerm" })
-delayedAssign(".maybe.unembedded.shell", { .os.unix.maybe.unembedded.shell || .os.windows.maybe.unembedded.shell })
+delayedAssign(".OS_unix_maybe_unembedded_shell"   , { .OS_unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") &&                        "R" == basename2(commandArgs()[[1L]])                                             })
+delayedAssign(".OS_windows_maybe_unembedded_shell", { .OS_windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])) && .External2(.C_CharacterMode) == "RTerm" })
+delayedAssign(".maybe_unembedded_shell", { .OS_unix_maybe_unembedded_shell || .OS_windows_maybe_unembedded_shell })
 
 
 ## see function do_shINFO in file ./src/shfile.c
 delayedAssign(".shINFO", { .External2(.C_shINFO) })
 
 
-delayedAssign(".os.unix.console.radian"   , { .os.unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && commandArgs()[[1L]] == "radian" })
-delayedAssign(".os.windows.console.radian", { .os.windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && commandArgs()[[1L]] == "radian" })
-delayedAssign(".console.radian", { .os.unix.console.radian || .os.windows.console.radian })
+delayedAssign(".OS_unix_console_radian"   , { .OS_unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && commandArgs()[[1L]] == "radian" })
+delayedAssign(".OS_windows_console_radian", { .OS_windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && commandArgs()[[1L]] == "radian" })
+delayedAssign(".console_radian", { .OS_unix_console_radian || .OS_windows_console_radian })
 
 
-delayedAssign(".gui.vscode", {
+delayedAssign(".GUI_vscode", {
     interactive() &&
     isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") &&
     (
-        (is.na(.shINFO[["ENC"]]) && isFALSE(.shINFO[["has.input"]])) ||
-        .console.radian
+        (is.na(.shINFO[["ENC"]]) && isFALSE(.shINFO[["has_input"]])) ||
+        .console_radian
     )
 })
 
 
-.IRkernel.main.call <- quote(IRkernel::main())
+.IRkernel_main_call <- quote(IRkernel::main())
 ## jupyter build a competent API challenge (impossible)
-delayedAssign(".gui.jupyter", {
+delayedAssign(".GUI_jupyter", {
     !interactive() &&
 
     Sys.getenv("JPY_API_TOKEN") != "" &&
     Sys.getenv("JPY_PARENT_PID") != "" &&
 
-    .maybe.unembedded.shell &&
+    .maybe_unembedded_shell &&
 
     is.na(.shINFO[["ENC"]]) &&
-    isTRUE(.shINFO[["has.input"]]) &&
+    isTRUE(.shINFO[["has_input"]]) &&
     is.na(.shINFO[["FILE"]]) &&
     !is.na(.shINFO[["EXPR"]]) &&
 
@@ -285,31 +285,31 @@ delayedAssign(".gui.jupyter", {
             error = identity)
         !inherits(exprs, "error") &&
             length(exprs) &&
-            (.identical)(exprs[[length(exprs)]], .IRkernel.main.call)
+            (.identical)(exprs[[length(exprs)]], .IRkernel_main_call)
     })
 })
 
 
-delayedAssign(".gui.emacs", {
+delayedAssign(".GUI_emacs", {
     interactive() &&
     Sys.getenv("STATATERM") == "emacs" &&
-    .maybe.unembedded.shell &&
+    .maybe_unembedded_shell &&
     (
-        (.os.unix    && .shINFO[["no.readline"]]) ||
-        (.os.windows && .shINFO[["ess"]])
+        (.OS_unix    && .shINFO[["no_readline"]]) ||
+        (.OS_windows && .shINFO[["ess"]])
     )
 })
 
 
-delayedAssign(".gui.aqua", { .os.unix    && .Platform$GUI == "AQUA" && !.gui.rstudio && !.gui.vscode && !.gui.jupyter && !.gui.emacs                            })
-delayedAssign(".gui.rgui", { .os.windows && .Platform$GUI == "Rgui" && !.gui.rstudio && !.gui.vscode && !.gui.jupyter && !.gui.emacs && .External2(.C_RConsole) })
-delayedAssign(".gui.tk"  , { .os.unix    && .Platform$GUI == "Tk"   && !.gui.rstudio && !.gui.vscode && !.gui.jupyter && !.gui.emacs                            })
+delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs                            })
+delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && .External2(.C_RConsole) })
+delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs                            })
 
 
 `.tools:rstudio` <- emptyenv()
 .rs.api.getActiveDocumentContext <- function (...)
 {
-    if (.gui.rstudio)
+    if (.GUI_RStudio)
         stop(.thisPathNotExistsError("RStudio has not finished loading"))
     else stop("RStudio is not running")
 }
@@ -317,38 +317,38 @@ delayedAssign(".gui.tk"  , { .os.unix    && .Platform$GUI == "Tk"   && !.gui.rst
 .debugSource <- .rs.api.getActiveDocumentContext
 
 
-`.init.tools:rstudio` <- function ()
-.External2(.C_init.tools.rstudio)
+`.init_tools:rstudio` <- function ()
+.External2(.C_init_tools_rstudio)
 
 
-delayedAssign(".os.unix.in.shell"   , { .os.unix.maybe.unembedded.shell    && !.gui.vscode && !.gui.jupyter && !.gui.emacs })
-delayedAssign(".os.windows.in.shell", { .os.windows.maybe.unembedded.shell && !.gui.vscode && !.gui.jupyter && !.gui.emacs })
-delayedAssign(".in.shell", { .os.unix.in.shell || .os.windows.in.shell })
+delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs })
+delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs })
+delayedAssign(".in_shell", { .OS_unix_in_shell || .OS_windows_in_shell })
 
 
-delayedAssign(".unrecognized.manner", {
-    !.in.shell &&
-    !.gui.rstudio &&
-    !.gui.vscode &&
-    !.gui.jupyter &&
-    !.gui.emacs &&
-    !.gui.rgui &&
-    !.gui.aqua &&
-    !.gui.tk
+delayedAssign(".unrecognized_manner", {
+    !.in_shell &&
+    !.GUI_RStudio &&
+    !.GUI_vscode &&
+    !.GUI_jupyter &&
+    !.GUI_emacs &&
+    !.GUI_Rgui &&
+    !.GUI_AQUA &&
+    !.GUI_Tk
 })
 
 
 delayedAssign("initwd", { getwd() })
 delayedAssign(".ucrt", { identical(R.version[["crt"]], "ucrt") })
 delayedAssign(".GUI", {
-    if (.in.shell) .Platform$GUI
-    else if (.gui.rstudio) "RStudio"
-    else if (.gui.vscode) "vscode"
-    else if (.gui.jupyter) "jupyter"
-    else if (.gui.emacs) "emacs"
-    # else if (.gui.rgui) "Rgui"
-    # else if (.gui.aqua) "AQUA"
-    # else if (.gui.tk) "Tk"
+    if (.in_shell) .Platform$GUI
+    else if (.GUI_RStudio) "RStudio"
+    else if (.GUI_vscode) "vscode"
+    else if (.GUI_jupyter) "jupyter"
+    else if (.GUI_emacs) "emacs"
+    # else if (.GUI_Rgui) "Rgui"
+    # else if (.GUI_AQUA) "AQUA"
+    # else if (.GUI_Tk) "Tk"
     else .Platform$GUI
 })
 

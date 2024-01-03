@@ -22,6 +22,13 @@ SEXP do_isfalse do_formals
 }
 
 
+SEXP do_asLogical do_formals
+{
+    do_start_no_call_op_rho("asLogical", 1);
+    return ScalarLogical(asLogical(CAR(args)));
+}
+
+
 SEXP do_asInteger do_formals
 {
     do_start_no_call_op_rho("asInteger", 1);
@@ -81,7 +88,7 @@ SEXP do_scalar_streql do_formals
 
 SEXP do_get_dyn do_formals
 {
-    do_start_no_op("get.dyn", 3);
+    do_start_no_op("get_dyn", 3);
 
 
     int nprotect = 0;

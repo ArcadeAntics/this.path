@@ -3,11 +3,11 @@ tryCatch2 <- function (expr, ..., else., finally)
 
 
 .last.condition <- function (c)
-.External2(.C_last.condition, c)
+.External2(.C_last_condition, c)
 
 
 last.condition <- function ()
-.External2(.C_last.condition)
+.External2(.C_last_condition)
 
 
 tryCatch3 <- function (expr, ..., else., finally)

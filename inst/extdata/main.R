@@ -28,10 +28,11 @@ rownames(.languages) <- .languages[, "LANGUAGE"]
 .locales <- .languages[, "locale"]
 
 
-.language.envvars <- function (LANGUAGE = Sys.getenv("LANGUAGE"), utf8 = identical(R.version[["crt"]], "ucrt"))
+.language_envvars <- function (LANGUAGE = Sys.getenv("LANGUAGE"), utf8 = identical(R.version[["crt"]], "ucrt"))
 {
     if (!is.character(LANGUAGE) || length(LANGUAGE) != 1L)
-        stop(gettextf("'%s' must be a character string", "LANGUAGE", domain = "R"), domain = NA)
+        stop(gettextf("'%s' must be a character string",
+            "LANGUAGE", domain = "R"), domain = NA)
     if (.Platform$OS.type == "windows") {
         if (!nzchar(LANGUAGE))
             return(c("LANGUAGE=", "LC_ALL="))
@@ -41,7 +42,8 @@ rownames(.languages) <- .languages[, "LANGUAGE"]
         paste0(
             c("LANGUAGE=", "LC_ALL="),
             c(LANGUAGE, .locales[[LANGUAGE]]),
-            if (nzchar(.locales[[LANGUAGE]])) c("", if (utf8) ".utf8" else paste0(".", .codepages[[LANGUAGE]]))
+            if (nzchar(.locales[[LANGUAGE]]))
+                c("", if (utf8) ".utf8" else paste0(".", .codepages[[LANGUAGE]]))
         )
     } else {
         if (!nzchar(LANGUAGE))
@@ -71,9 +73,7 @@ Sys.putenv <- function (x)
 }
 
 
-if (sys.nframe() != 0L) {
-} else if (isNamespace(environment()) && getNamespaceName(environment()) == "this.path") {
-} else {
+if (sys.nframe() == 0L && !isNamespace(environment())) {
     stopifnot(.Platform$OS.type == "windows")
 
 
@@ -88,7 +88,7 @@ if (sys.nframe() != 0L) {
         ##
         ## ```
         ## for (language in rownames(.languages)) {
-        ##     Sys.putenv(.language.envvars(language))
+        ##     Sys.putenv(.language_envvars(language))
         ##     gettext("Untitled", domain = "RGui")
         ##     gettext("R Editor", domain = "RGui")
         ## }
@@ -179,7 +179,7 @@ if (sys.nframe() != 0L) {
         x <- x[i, , drop = FALSE]
 
 
-        write.r.editor <- function(rgui, ucrt) {
+        write_r_editor <- function(rgui, ucrt) {
 
 
             # rgui <- x$rgui[[1L]]; warning("comment this out later", immediate. = TRUE)
@@ -262,7 +262,7 @@ if (sys.nframe() != 0L) {
 
             n <- 0L
             for (language in rownames(.languages)) {
-                args <- c(rgui, .language.envvars(language, ucrt), options)
+                args <- c(rgui, .language_envvars(language, ucrt), options)
                 command <- paste(shQuote(args), collapse = " ")
                 ans <- system(command)
                 if (ans) {
@@ -423,7 +423,7 @@ if (sys.nframe() != 0L) {
 
 
         invisible(lapply(seq_len(nrow(x)), function(i) {
-            write.r.editor(rgui = x$rgui[[i]], ucrt = x$ucrt[[i]])
+            write_r_editor(rgui = x$rgui[[i]], ucrt = x$ucrt[[i]])
         }))
     }
 

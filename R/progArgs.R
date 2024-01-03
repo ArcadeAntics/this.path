@@ -36,9 +36,8 @@ asArgs <- function (...)
 .asArgs(list(...))
 
 
-fileArgs <- eval(call("function", NULL, bquote(
-stop(.defunctError("progArgs", .(.pkgname), old = "fileArgs"))
-)))
+fileArgs <- function ()
+stop(.defunctError("progArgs", "this.path", old = "fileArgs"))
 
 
 progArgs <- function ()
@@ -57,7 +56,7 @@ progArgs <- function ()
         }
         value
     }
-    else if (.in.shell)
+    else if (.in_shell)
         commandArgs(trailingOnly = TRUE)
     else character()
 }

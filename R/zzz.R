@@ -1,6 +1,3 @@
-rm(.pkgname)
-
-
 if (FALSE) {
 
 
@@ -38,17 +35,17 @@ tmp(
     ## promises.R ----
 
 
-    ".os.unix", ".os.windows",
-    ".gui.rstudio",
-    ".os.unix.maybe.unembedded.shell", ".os.windows.maybe.unembedded.shell", ".maybe.unembedded.shell",
+    ".OS_unix", ".OS_windows",
+    ".GUI_RStudio",
+    ".OS_unix_maybe_unembedded_shell", ".OS_windows_maybe_unembedded_shell", ".maybe_unembedded_shell",
     ".shINFO",
-    ".os.unix.console.radian", ".os.windows.console.radian", ".console.radian",
-    ".gui.vscode",
-    ".gui.jupyter",
-    ".gui.emacs",
-    ".gui.aqua", ".gui.rgui", ".gui.tk",
-    ".os.unix.in.shell", ".os.windows.in.shell", ".in.shell",
-    ".unrecognized.manner",
+    ".OS_unix_console_radian", ".OS_windows_console_radian", ".console_radian",
+    ".GUI_vscode",
+    ".GUI_jupyter",
+    ".GUI_emacs",
+    ".GUI_AQUA", ".GUI_Rgui", ".GUI_Tk",
+    ".OS_unix_in_shell", ".OS_windows_in_shell", ".in_shell",
+    ".unrecognized_manner",
     "initwd", ".ucrt", ".GUI",
 
 
@@ -61,15 +58,15 @@ tmp(
     ## thispath.R ----
 
 
-    ".has.shFILE",
-    ".r.editor", ".untitled",
+    ".has_shFILE",
+    ".r_editor", ".untitled",
     ".identical"
 )
 
 
 ## rprojroot.R ----
-envir <- environment(.find.root)
-tmp("default.criterion", envir = envir)
+envir <- environment(.find_root)
+tmp("package_here_criterion", envir = envir)
 rm(envir)
 
 
@@ -88,15 +85,18 @@ rm(tmp)
 if (getRversion() < "3.0.0") {
 
 
-    fix.External2 <- function(fn) {
+    fix_External2 <- function(fn) {
         recurse <- function(e) {
             if (is.function(e)) {
                 if (!is.primitive(e)) {
+                    at <- attributes(e)
                     body_is_bytecode <- (typeof(.Internal(bodyCode(e))) == "bytecode")
                     formals(e) <- recurse(formals(e))
                     body(e) <- recurse(body(e))
                     if (body_is_bytecode && requireNamespace("compiler", quietly = TRUE))
                         e <- compiler::cmpfun(e)
+                    if (!is.null(at))
+                        attributes(e) <- at
                 }
                 e
             }
@@ -121,15 +121,15 @@ if (getRversion() < "3.0.0") {
         }
         recurse(fn)
     }
-    fix.External2.fun <- function(fn, envir = parent.frame()) {
+    fix_External2.function <- function(fn, envir = parent.frame()) {
         symbol <- substitute(fn)
         if (typeof(symbol) != "symbol")
             stop(gettext("not a symbol", domain = "R"), domain = NA)
         if (typeof(fn) != "closure")
             stop("not a function")
-        envir[[as.character(symbol)]] <- fix.External2(fn)
+        envir[[as.character(symbol)]] <- fix_External2(fn)
     }
-    fix.External2.promise <- function(..., envir = parent.frame()) {
+    fix_External2.promise <- function(..., envir = parent.frame()) {
         if (!is.environment(envir))
             envir <- as.environment(envir)
         lapply(as.character(c(...)), function(sym) {
@@ -137,7 +137,7 @@ if (getRversion() < "3.0.0") {
                 stop(gettextf("object '%s' not found", sym, domain = "R"), domain = NA)
             expr <- call("substitute", as.symbol(sym))
             expr <- eval(expr, envir)
-            expr <- fix.External2(expr)
+            expr <- fix_External2(expr)
             expr <- call("delayedAssign", sym, expr)
             eval(expr, envir)
         })
@@ -148,254 +148,254 @@ if (getRversion() < "3.0.0") {
     ## backports.R  ----
 
 
-    fix.External2.fun(.SET_PRSEEN_2)
+    fix_External2.function(.SET_PRSEEN_2)
 
-    fix.External2.fun(anyNA)
-    fix.External2.fun(anyNA.data.frame)
-    fix.External2.fun(anyNA.numeric_version)
-    fix.External2.fun(.anyNA.default)
+    fix_External2.function(anyNA)
+    fix_External2.function(anyNA.data.frame)
+    fix_External2.function(anyNA.numeric_version)
+    fix_External2.function(.anyNA.default)
 
-    fix.External2.fun(isNamespaceLoaded)
-    fix.External2.fun(dir.exists)
-    fix.External2.fun(lengths)
-    fix.External2.fun(.lengths.default)
+    fix_External2.function(isNamespaceLoaded)
+    fix_External2.function(dir.exists)
+    fix_External2.function(lengths)
+    fix_External2.function(.lengths.default)
 
-    fix.External2.fun(strrep)
-    fix.External2.fun(startsWith)
-    fix.External2.fun(endsWith)
+    fix_External2.function(strrep)
+    fix_External2.function(startsWith)
+    fix_External2.function(endsWith)
 
-    fix.External2.fun(...length)
+    fix_External2.function(...length)
 
 
     ## basename2.R  ----
 
 
-    fix.External2.fun(.windows.basename2)
-    fix.External2.fun(.unix.basename2)
-    fix.External2.fun(basename2)
-    fix.External2.fun(.windows.dirname2)
-    fix.External2.fun(.unix.dirname2)
-    fix.External2.fun(dirname2)
+    fix_External2.function(.windows_basename2)
+    fix_External2.function(.unix_basename2)
+    fix_External2.function(basename2)
+    fix_External2.function(.windows_dirname2)
+    fix_External2.function(.unix_dirname2)
+    fix_External2.function(dirname2)
 
 
     ## checkpath.R  ----
 
 
-    fix.External2.fun(check.path)
-    fix.External2.fun(check.dir)
-    fix.External2.fun(check.proj)
+    fix_External2.function(check.path)
+    fix_External2.function(check.dir)
+    fix_External2.function(check.proj)
 
 
     ## ext.R        ----
 
 
-    fix.External2.fun(.windows.splitext)
-    fix.External2.fun(.unix.splitext)
-    fix.External2.fun(splitext)
-    fix.External2.fun(.windows.removeext)
-    fix.External2.fun(.unix.removeext)
-    fix.External2.fun(removeext)
-    fix.External2.fun(.windows.ext)
-    fix.External2.fun(.unix.ext)
-    fix.External2.fun(ext)
-    fix.External2.fun(`.windows.ext<-`)
-    fix.External2.fun(`.unix.ext<-`)
-    fix.External2.fun(`ext<-`)
+    fix_External2.function(.windows_splitext)
+    fix_External2.function(.unix_splitext)
+    fix_External2.function(splitext)
+    fix_External2.function(.windows_removeext)
+    fix_External2.function(.unix_removeext)
+    fix_External2.function(removeext)
+    fix_External2.function(.windows_ext)
+    fix_External2.function(.unix_ext)
+    fix_External2.function(ext)
+    fix_External2.function(`.windows_ext<-`)
+    fix_External2.function(`.unix_ext<-`)
+    fix_External2.function(`ext<-`)
 
 
     ## fromshell.R  ----
 
 
-    fix.External2.fun(from.shell)
-    fix.External2.fun(is.main)
+    fix_External2.function(from.shell)
+    fix_External2.function(is.main)
 
 
     ## lineno.R     ----
 
 
-    fix.External2.fun(.LINENO)
-    fix.External2.fun(sys.LINENO)
-    fix.External2.fun(env.LINENO)
-    fix.External2.fun(src.LINENO)
-    fix.External2.fun(LINENO)
-    fix.External2.fun(LINE)
+    fix_External2.function(.LINENO)
+    fix_External2.function(sys.LINENO)
+    fix_External2.function(env.LINENO)
+    fix_External2.function(src.LINENO)
+    fix_External2.function(LINENO)
+    fix_External2.function(LINE)
 
 
     ## makefuns.R   ----
 
 
-    fix.External2.fun(path.functions)
+    fix_External2.function(path.functions)
 
 
     ## ns-hooks.R   ----
 
 
-    fix.External2.fun(.mbcslocale)
-    # fix.External2.fun(.utf8locale)
-    # fix.External2.fun(.latin1locale)
-    fix.External2.fun(.R_MB_CUR_MAX)
+    fix_External2.function(.mbcslocale)
+    # fix_External2.function(.utf8locale)
+    # fix_External2.function(.latin1locale)
+    fix_External2.function(.R_MB_CUR_MAX)
 
 
-    fix.External2.fun(.onLoad)
-    fix.External2.fun(.onUnload)
+    fix_External2.function(.onLoad)
+    fix_External2.function(.onUnload)
 
 
     ## pathjoin.R   ----
 
 
-    fix.External2.fun(.windows.path.join)
-    fix.External2.fun(.unix.path.join)
-    fix.External2.fun(path.join)
+    fix_External2.function(.windows.path.join)
+    fix_External2.function(.unix.path.join)
+    fix_External2.function(path.join)
 
 
     ## pathsplit.R  ----
 
 
-    fix.External2.fun(.windows.path.split)
-    fix.External2.fun(.unix.path.split)
-    fix.External2.fun(path.split)
-    fix.External2.fun(.windows.path.split.1)
-    fix.External2.fun(.unix.path.split.1)
-    fix.External2.fun(path.split.1)
-    fix.External2.fun(.windows.path.unsplit)
-    fix.External2.fun(.unix.path.unsplit)
-    fix.External2.fun(path.unsplit)
+    fix_External2.function(.windows.path.split)
+    fix_External2.function(.unix.path.split)
+    fix_External2.function(path.split)
+    fix_External2.function(.windows.path.split.1)
+    fix_External2.function(.unix.path.split.1)
+    fix_External2.function(path.split.1)
+    fix_External2.function(.windows.path.unsplit)
+    fix_External2.function(.unix.path.unsplit)
+    fix_External2.function(path.unsplit)
 
 
     ## print.R      ----
 
 
-    fix.External2.fun(.PrintValueEnv)
-    fix.External2.fun(.maybePrintValueEnv)
-    fix.External2.fun(print.ThisPathDocumentContext)
+    fix_External2.function(.PrintValueEnv)
+    fix_External2.function(.maybePrintValueEnv)
+    fix_External2.function(print.ThisPathDocumentContext)
 
 
     ## progargs.R   ----
 
 
-    fix.External2.fun(fileArgs)
-    fix.External2.fun(progArgs)
-    fix.External2.fun(withArgs)
+    fix_External2.function(fileArgs)
+    fix_External2.function(progArgs)
+    fix_External2.function(withArgs)
 
 
     ## promises.R   ----
 
 
-    fix.External2.promise(".gui.rstudio", ".os.windows.maybe.unembedded.shell", ".shINFO", ".gui.rgui")
-    fix.External2.fun(`.init.tools:rstudio`)
-    fix.External2.fun(.PRINFO)
-    fix.External2.fun(.mkPROMISE)
-    fix.External2.fun(.mkEVPROMISE)
-    fix.External2.fun(.unlockEnvironment)
+    fix_External2.promise(".GUI_RStudio", ".OS_windows_maybe_unembedded_shell", ".shINFO", ".GUI_Rgui")
+    fix_External2.function(`.init_tools:rstudio`)
+    fix_External2.function(.PRINFO)
+    fix_External2.function(.mkPROMISE)
+    fix_External2.function(.mkEVPROMISE)
+    fix_External2.function(.unlockEnvironment)
 
 
     ## relpath.R    ----
 
 
-    fix.External2.fun(rel2sys.dir)
-    fix.External2.fun(rel2sys.proj)
-    fix.External2.fun(rel2env.dir)
-    fix.External2.fun(rel2env.proj)
-    fix.External2.fun(rel2src.dir)
-    fix.External2.fun(rel2src.proj)
-    fix.External2.fun(rel2here)
-    fix.External2.fun(rel2proj)
+    fix_External2.function(rel2sys.dir)
+    fix_External2.function(rel2sys.proj)
+    fix_External2.function(rel2env.dir)
+    fix_External2.function(rel2env.proj)
+    fix_External2.function(rel2src.dir)
+    fix_External2.function(rel2src.proj)
+    fix_External2.function(rel2here)
+    fix_External2.function(rel2proj)
 
 
     ## rprojroot.R  ----
 
 
-    fix.External2.fun(sys.proj)
-    fix.External2.fun(env.proj)
-    fix.External2.fun(src.proj)
-    fix.External2.fun(this.proj)
-    fix.External2.fun(reset.proj)
+    fix_External2.function(sys.proj)
+    fix_External2.function(env.proj)
+    fix_External2.function(src.proj)
+    fix_External2.function(this.proj)
+    fix_External2.function(reset.proj)
 
 
     ## startup.R    ----
 
 
-    fix.External2.fun(.site.file)
-    fix.External2.fun(.init.file)
+    fix_External2.function(.site_file)
+    fix_External2.function(.init_file)
 
 
     ## thispath.R   ----
 
 
-    fix.External2.fun(.shFILE)
-    fix.External2.fun(.is.abs.path)
-    fix.External2.fun(.thisPathUnrecognizedConnectionClassError)
-    fix.External2.fun(.thisPathUnrecognizedMannerError)
-    fix.External2.fun(.thisPathNotImplementedError)
-    fix.External2.fun(.thisPathNotExistsError)
-    fix.External2.fun(.thisPathInZipFileError)
-    fix.External2.fun(.thisPathInAQUAError)
-    fix.External2.fun(.thisPathInEmacsError)
-    fix.External2.fun(.is.clipboard)
-    fix.External2.fun(.fixNewlines)
-    fix.External2.fun(.jupyter.path)
-    fix.External2.fun(.emacs.path)
-    fix.External2.fun(.rgui.path)
-    fix.External2.fun(.gui.path)
-    fix.External2.fun(set.jupyter.path)
-    fix.External2.fun(set.gui.path)
-    fix.External2.fun(.faster.subsequent.times.test)
-    fix.External2.fun(sys.path)
-    fix.External2.fun(sys.dir)
-    fix.External2.fun(env.path)
-    fix.External2.fun(env.dir)
-    fix.External2.fun(src.path)
-    fix.External2.fun(src.dir)
-    fix.External2.fun(this.path)
-    fix.External2.fun(this.dir)
-    fix.External2.fun(sys.srcref)
-    fix.External2.fun(.here)
-    fix.External2.fun(sys.here)
-    fix.External2.fun(env.here)
-    fix.External2.fun(src.here)
-    fix.External2.fun(here)
-    fix.External2.fun(try.sys.path)
-    fix.External2.fun(try.env.path)
-    fix.External2.fun(try.src.path)
-    fix.External2.fun(try.this.path)
-    fix.External2.fun(FILE)
+    fix_External2.function(.shFILE)
+    fix_External2.function(.is_abs_path)
+    fix_External2.function(.thisPathUnrecognizedConnectionClassError)
+    fix_External2.function(.thisPathUnrecognizedMannerError)
+    fix_External2.function(.thisPathNotImplementedError)
+    fix_External2.function(.thisPathNotExistsError)
+    fix_External2.function(.thisPathInZipFileError)
+    fix_External2.function(.thisPathInAQUAError)
+    fix_External2.function(.is_clipboard)
+    fix_External2.function(.fixNewlines)
+    fix_External2.function(.jupyter_path)
+    fix_External2.function(.emacs_path)
+    fix_External2.function(.Rgui_path)
+    fix_External2.function(.gui.path)
+    fix_External2.function(set.jupyter.path)
+    fix_External2.function(set.gui.path)
+    fix_External2.function(.faster_subsequent_times_test)
+    fix_External2.function(sys.path)
+    fix_External2.function(sys.dir)
+    fix_External2.function(env.path)
+    fix_External2.function(env.dir)
+    fix_External2.function(src.path)
+    fix_External2.function(src.dir)
+    fix_External2.function(this.path)
+    fix_External2.function(this.dir)
+    fix_External2.function(sys.srcref)
+    fix_External2.function(.here)
+    fix_External2.function(sys.here)
+    fix_External2.function(env.here)
+    fix_External2.function(src.here)
+    fix_External2.function(here)
+    fix_External2.function(try.sys.path)
+    fix_External2.function(try.env.path)
+    fix_External2.function(try.src.path)
+    fix_External2.function(try.this.path)
+    fix_External2.function(FILE)
 
 
     ## trycatch.R   ----
 
 
-    fix.External2.fun(tryCatch2)
-    fix.External2.fun(.last.condition)
-    fix.External2.fun(last.condition)
-    fix.External2.fun(tryCatch3)
+    fix_External2.function(tryCatch2)
+    fix_External2.function(.last.condition)
+    fix_External2.function(last.condition)
+    fix_External2.function(tryCatch3)
 
 
     ## utils.R      ----
 
 
-    fix.External2.fun(.istrue)
-    fix.External2.fun(.isfalse)
-    fix.External2.fun(.asInteger)
-    fix.External2.fun(.asIntegerGE0)
-    fix.External2.fun(.IS_SCALAR_STR)
-    fix.External2.fun(.AS_SCALAR_STR)
-    fix.External2.fun(.scalar_streql)
-    fix.External2.fun(.get.dyn)
-    fix.External2.fun(.getframenumber)
+    fix_External2.function(.istrue)
+    fix_External2.function(.isfalse)
+    fix_External2.function(.asLogical)
+    fix_External2.function(.asInteger)
+    fix_External2.function(.asIntegerGE0)
+    fix_External2.function(.IS_SCALAR_STR)
+    fix_External2.function(.AS_SCALAR_STR)
+    fix_External2.function(.scalar_streql)
+    fix_External2.function(.get.dyn)
+    fix_External2.function(.getframenumber)
 
 
     ## wrapsource.R ----
 
 
-    fix.External2.fun(wrap.source)
-    fix.External2.fun(set.sys.path)
-    fix.External2.fun(unset.sys.path)
-    fix.External2.fun(set.env.path)
-    fix.External2.fun(set.src.path)
-    fix.External2.fun(set.sys.path.function)
+    fix_External2.function(wrap.source)
+    fix_External2.function(set.sys.path)
+    fix_External2.function(unset.sys.path)
+    fix_External2.function(set.env.path)
+    fix_External2.function(set.src.path)
+    fix_External2.function(set.sys.path.function)
 
 
-    rm(fix.External2.promise, fix.External2.fun, fix.External2)
+    rm(fix_External2.promise, fix_External2.function, fix_External2)
 }
 
 
@@ -403,15 +403,15 @@ if (requireNamespace("compiler", quietly = TRUE)) {
     ocompilePKGS <- compiler::compilePKGS(FALSE)
     compiler::compilePKGS(ocompilePKGS)
     if (ocompilePKGS) {
-        tmp <- environment(.find.root)
-        tmp$.default_criterion_if_rprojroot_is_not_available$testfun[] <- lapply(
-            tmp$.default_criterion_if_rprojroot_is_not_available$testfun,
+        tmp <- environment(.find_root)
+        tmp$package_here_criterion_if_rprojroot_is_not_available$testfun[] <- lapply(
+            tmp$package_here_criterion_if_rprojroot_is_not_available$testfun,
             compiler::cmpfun
         )
-        tmp$.default_criterion_if_rprojroot_is_not_available$find_file <-
-            compiler::cmpfun(tmp$.default_criterion_if_rprojroot_is_not_available$find_file)
-        tmp$.default_criterion_if_rprojroot_is_not_available$make_fix_file <-
-            compiler::cmpfun(tmp$.default_criterion_if_rprojroot_is_not_available$make_fix_file)
+        tmp$package_here_criterion_if_rprojroot_is_not_available$find_file <-
+            compiler::cmpfun(tmp$package_here_criterion_if_rprojroot_is_not_available$find_file)
+        tmp$package_here_criterion_if_rprojroot_is_not_available$make_fix_file <-
+            compiler::cmpfun(tmp$package_here_criterion_if_rprojroot_is_not_available$make_fix_file)
         tmp$format.root_criterion <- compiler::cmpfun(tmp$format.root_criterion)
         tmp$print.root_criterion <- compiler::cmpfun(tmp$print.root_criterion)
         rm(tmp)

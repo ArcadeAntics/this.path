@@ -193,7 +193,7 @@ wrap.source(expr,
   argument \code{file}. Instead, an attempt is made to extract the file from
   \code{expr}, after which \code{expr} is evaluated. It is assumed that the
   file is the first argument of the function, as is the case with
-  \sources1stargisfileandlistnolinks. The function of the call is evaluated,
+  \sourcesfirstargisfileandlistnolinks. The function of the call is evaluated,
   its \code{\link[base]{formals}()} are retrieved, and then the arguments of
   \code{expr} are searched for a name matching the name of the first formal
   argument. If a match cannot be found by name, the first unnamed argument is
@@ -257,7 +257,7 @@ wrap.source(expr,
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.write.code({
+this.path:::.writeCode({
     this.path::sys.path(verbose = TRUE)
     try(this.path::env.path(verbose = TRUE))
     this.path::src.path(verbose = TRUE)

@@ -1,6 +1,6 @@
 Package: this.path
-Version: 2.3.1.4
-Date: 2023-12-22
+Version: 2.3.1.5
+Date: 2024-01-03
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
 Description: Determine the path of the executing script. Compatible
@@ -8,8 +8,8 @@ Description: Determine the path of the executing script. Compatible
         'Jupyter', 'Emacs', and 'Rscript' (shell). Compatible with
         several functions and packages: 'source()', 'sys.source()',
         'debugSource()' in 'RStudio', 'compiler::loadcmp()',
-        'box::use()', 'knitr::knit()', 'plumber::plumb()',
-        'shiny::runApp()', 'package:targets', and
+        'utils::Sweave()', 'box::use()', 'knitr::knit()',
+        'plumber::plumb()', 'shiny::runApp()', 'package:targets', and
         'testthat::source_file()'.
 Author: Iris Simmons
 Maintainer: Iris Simmons <ikwsimmo@gmail.com>

@@ -4,6 +4,8 @@ CHANGES IN this.path devel:
 
   NEW FEATURES:
 
+    * this.path() is now compatible with function utils::Sweave().
+
     * Removed the restriction that reset.proj() could only be called
       from a top level context.
 
@@ -21,6 +23,8 @@ CHANGES IN this.path devel:
     * fileArgs() is defunct and should be replaced with progArgs().
 
   BUG FIXES:
+
+    * this.path() now works correctly with source file aliases.
 
     * Updated shFILE() to work better with older versions of R.
 

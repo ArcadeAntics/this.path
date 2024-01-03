@@ -2,9 +2,10 @@
     show.command = TRUE, intern = TRUE, show.output.on.console = show.command,
     ...)
 {
-    command <- path.join(R.home("bin"), if (.os.windows)
-        "Rscript.exe"
-    else "Rscript")
+    command <- path.join(
+        R.home("bin"),
+        if (.OS_windows) "Rscript.exe" else "Rscript"
+    )
     args <- c(command, options)
     args <- c(shQuote(args), trailing)
     command <- paste(args, collapse = " ")
@@ -20,7 +21,7 @@
 
 
 .build.this <- eval(call("function", as.pairlist(alist(chdir = FALSE, file = here(), which = "tar")), bquote({
-    ## .build.this {this.path}                                   R Documentation
+    ## .build.this               package:this.path               R Documentation
     ##
     ## Building Packages
     ##
@@ -518,7 +519,7 @@
 }
 
 
-.write.code <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
+.writeCode <- function (x, file = stdout(), evaluated, simplify.brace = TRUE,
     width.cutoff = 60L, deparseCtrl = c("keepInteger", "showAttributes", "useSource", "keepNA", "digits17"))
 {
     x <- .maybeQuote(x, evaluated, simplify.brace)
@@ -539,8 +540,8 @@ if (getRversion() < "3.2.0") {
     formals(.code2character)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
 
 
-    tmp <- formals(.write.code)[["deparseCtrl"]]
-    formals(.write.code)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
+    tmp <- formals(.writeCode)[["deparseCtrl"]]
+    formals(.writeCode)[["deparseCtrl"]] <- tmp[!vapply(tmp, identical, "digits17", FUN.VALUE = NA)]
 
 
     rm(tmp)
@@ -637,6 +638,10 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 .External2(.C_isfalse, x)
 
 
+.asLogical <- function (x)
+.External2(.C_asLogical, x)
+
+
 .asInteger <- function (x)
 .External2(.C_asInteger, x)
 
@@ -680,7 +685,7 @@ vapply(files, function(file) paste0(readLines(file), "\n", collapse = ""), "")
 
 .get.dyn <- function (x, ifnotfound = stop(gettextf("object '%s' not found", as.character(x), domain = "R"), domain = NA),
     minframe = 1L, inherits = FALSE)
-.External2(.C_get.dyn, x, minframe, inherits)
+.External2(.C_get_dyn, x, minframe, inherits)
 
 
 .getframenumber <- function ()

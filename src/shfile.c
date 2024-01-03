@@ -15,7 +15,7 @@ extern UImode CharacterMode;
 
 SEXP do_site_file do_formals
 {
-    do_start_no_call_op_rho("site.file", 2);
+    do_start_no_call_op_rho("site_file", 2);
 #define get_file_from_closure2(sym)                            \
     (get_file_from_closure(asLogical(CAR(args)), asLogical(CADR(args)), (sym)))
     return get_file_from_closure2(_site_fileSymbol);
@@ -24,7 +24,7 @@ SEXP do_site_file do_formals
 
 SEXP do_init_file do_formals
 {
-    do_start_no_call_op_rho("init.file", 2);
+    do_start_no_call_op_rho("init_file", 2);
     return get_file_from_closure2(_init_fileSymbol);
 }
 
@@ -254,7 +254,7 @@ SEXP do_shINFO do_formals
 
         character string; command line argument 'EXPR' or NA_character_
 
-    has.input
+    has_input
 
         length-one logical vector; was 'FILE' or 'EXPR' provided?
      */
@@ -276,13 +276,13 @@ SEXP do_shINFO do_formals
             int indx = -1;                                     \
             SET_STRING_ELT(names, ++indx, mkChar("ENC"));      \
             SET_VECTOR_ELT(value,   indx, (_ENC_));            \
-            SET_STRING_ELT(names, ++indx, mkChar("no.site.file"));\
+            SET_STRING_ELT(names, ++indx, mkChar("no_site_file"));\
             SET_VECTOR_ELT(value,   indx, (_NO_SITE_FILE_));   \
-            SET_STRING_ELT(names, ++indx, mkChar("no.init.file"));\
+            SET_STRING_ELT(names, ++indx, mkChar("no_init_file"));\
             SET_VECTOR_ELT(value,   indx, (_NO_INIT_FILE_));   \
-            SET_STRING_ELT(names, ++indx, mkChar("no.readline"));\
+            SET_STRING_ELT(names, ++indx, mkChar("no_readline"));\
             SET_VECTOR_ELT(value,   indx, (_NO_READLINE_));    \
-            SET_STRING_ELT(names, ++indx, mkChar("no.echo"));  \
+            SET_STRING_ELT(names, ++indx, mkChar("no_echo"));  \
             SET_VECTOR_ELT(value,   indx, (_NO_ECHO_));        \
             SET_STRING_ELT(names, ++indx, mkChar("ess"));      \
             SET_VECTOR_ELT(value,   indx, (_ESS_));            \
@@ -290,7 +290,7 @@ SEXP do_shINFO do_formals
             SET_VECTOR_ELT(value,   indx, (_FILE_));           \
             SET_STRING_ELT(names, ++indx, mkChar("EXPR"));     \
             SET_VECTOR_ELT(value,   indx, (_EXPR_));           \
-            SET_STRING_ELT(names, ++indx, mkChar("has.input"));\
+            SET_STRING_ELT(names, ++indx, mkChar("has_input"));\
             SET_VECTOR_ELT(value,   indx, (_HAS_INPUT_));      \
             UNPROTECT(1);                                      \
             return value;                                      \
@@ -299,14 +299,14 @@ SEXP do_shINFO do_formals
 
         return_shINFO(
             /* ENC          */ ScalarString(NA_STRING),
-            /* no.site.file */ R_LogicalNAValue,
-            /* no.init.file */ R_LogicalNAValue,
-            /* no.readline  */ R_LogicalNAValue,
-            /* no.echo      */ R_LogicalNAValue,
+            /* no_site_file */ R_LogicalNAValue,
+            /* no_init_file */ R_LogicalNAValue,
+            /* no_readline  */ R_LogicalNAValue,
+            /* no_echo      */ R_LogicalNAValue,
             /* ess          */ R_LogicalNAValue,
             /* FILE         */ ScalarString(NA_STRING),
             /* EXPR         */ ScalarString(NA_STRING),
-            /* has.input    */ R_LogicalNAValue
+            /* has_input    */ R_LogicalNAValue
         );
     }
 

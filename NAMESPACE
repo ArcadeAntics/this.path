@@ -12,6 +12,7 @@ export(Sys.putenv)
 
 if (getRversion() < "3.0.0") {
     export(.mapply)
+    export(list.files)
     export(parse)
 }
 

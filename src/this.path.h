@@ -33,12 +33,12 @@ the first element of 'args' is '.NAME', as usual. The next 3 elements must be
 the 'call', 'op', and 'rho' that would have been provided if .External2() was
 available. for example:
 
- .External2(.C_sys.path, verbose)
+ .External2(.C_sys_path, verbose)
 
 becomes:
 
- .External(.C_sys.path,
-     quote(.External(.C_sys.path, verbose)),
+ .External(.C_sys_path,
+     quote(.External(.C_sys_path, verbose)),
      .External,
      environment(),
      verbose)
@@ -223,13 +223,12 @@ extern SEXP do_thisPathNotImplementedError              do_formals;
 extern SEXP do_thisPathNotExistsError                   do_formals;
 extern SEXP do_thisPathInZipFileError                   do_formals;
 extern SEXP do_thisPathInAQUAError                      do_formals;
-extern SEXP do_thisPathInEmacsError                     do_formals;
 
 extern SEXP do_is_clipboard       do_formals;
 extern SEXP do_init_tools_rstudio do_formals;
 extern SEXP do_jupyter_path       do_formals;
 extern SEXP do_set_jupyter_path   do_formals;
-extern SEXP do_rgui_path          do_formals;
+extern SEXP do_Rgui_path          do_formals;
 extern SEXP do_remove_trailing_blank_string do_formals;
 extern SEXP do_fixNewlines        do_formals;
 extern SEXP do_set_gui_path       do_formals;
@@ -256,6 +255,7 @@ extern SEXP do_tryCatch3      do_formals;
 
 extern SEXP do_istrue        do_formals;
 extern SEXP do_isfalse       do_formals;
+extern SEXP do_asLogical     do_formals;
 extern SEXP do_asInteger     do_formals;
 extern SEXP do_asIntegerGE0  do_formals;
 extern SEXP do_IS_SCALAR_STR do_formals;

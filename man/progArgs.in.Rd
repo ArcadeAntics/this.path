@@ -77,7 +77,7 @@ this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
 
 
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.write.code({
+this.path:::.writeCode({
     this.path:::.withAutoprint({
         this.path::sys.path()
         this.path::progArgs()

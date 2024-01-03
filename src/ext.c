@@ -522,14 +522,14 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
 
 SEXP do_windows_splitext do_formals
 {
-    do_start_no_op("windows.splitext", 2);
+    do_start_no_op("windows_splitext", 2);
     return ext(call, EXTOP_SPLITEXT, TRUE, args, rho);
 }
 
 
 SEXP do_unix_splitext do_formals
 {
-    do_start_no_op("unix.splitext", 2);
+    do_start_no_op("unix_splitext", 2);
     return ext(call, EXTOP_SPLITEXT, FALSE, args, rho);
 }
 
@@ -547,14 +547,14 @@ SEXP do_splitext do_formals
 
 SEXP do_windows_removeext do_formals
 {
-    do_start_no_op("windows.removeext", 2);
+    do_start_no_op("windows_removeext", 2);
     return ext(call, EXTOP_REMOVEEXT, TRUE, args, rho);
 }
 
 
 SEXP do_unix_removeext do_formals
 {
-    do_start_no_op("unix.removeext", 2);
+    do_start_no_op("unix_removeext", 2);
     return ext(call, EXTOP_REMOVEEXT, FALSE, args, rho);
 }
 
@@ -572,14 +572,14 @@ SEXP do_removeext do_formals
 
 SEXP do_windows_ext do_formals
 {
-    do_start_no_op("windows.ext", 2);
+    do_start_no_op("windows_ext", 2);
     return ext(call, EXTOP_EXT, TRUE, args, rho);
 }
 
 
 SEXP do_unix_ext do_formals
 {
-    do_start_no_op("unix.ext", 2);
+    do_start_no_op("unix_ext", 2);
     return ext(call, EXTOP_EXT, FALSE, args, rho);
 }
 
@@ -597,14 +597,14 @@ SEXP do_ext do_formals
 
 SEXP do_windows_extgets do_formals
 {
-    do_start_no_op("windows.ext<-", 3);
+    do_start_no_op("windows_ext<-", 3);
     return ext(call, EXTOP_EXTGETS, TRUE, args, rho);
 }
 
 
 SEXP do_unix_extgets do_formals
 {
-    do_start_no_op("unix.ext<-", 3);
+    do_start_no_op("unix_ext<-", 3);
     return ext(call, EXTOP_EXTGETS, FALSE, args, rho);
 }
 

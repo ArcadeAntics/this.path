@@ -44,7 +44,7 @@ SEXP do_SET_PRSEEN_2 do_formals
 
 SEXP do_wrap_source do_formals
 {
-    do_start_no_op("wrap.source", 20);
+    do_start_no_op("wrap_source", 20);
 
 
     int nprotect = 0;
@@ -454,12 +454,12 @@ SEXP do_wrap_source do_formals
     SEXP returnvalue;  /* this is never used */
 
 
-    checkfile(
+    set_documentcontext(
         /* call                   */ R_CurrentExpression,
         /* sym                    */ fileSymbol,
         /* ofile                  */ ofile,
-        /* frame                  */ frame,
-        /* as_binding             */ TRUE,
+        /* assign_here            */ frame,
+        /* assign_as_binding      */ TRUE,
         /* normalize_action       */ NA_NOT_DIR,
         /* forcepromise           */ TRUE,
         /* assign_returnvalue     */ FALSE,
@@ -473,7 +473,8 @@ SEXP do_wrap_source do_formals
         allow_rawConnection, allow_sockconn, allow_servsockconn,
         allow_customConnection, ignore_blank_string, ignore_clipboard,
         ignore_stdin, ignore_url, ignore_file_uri,
-        /* source                 */ mkChar("call to function wrap.source from package this.path")
+        /* source                 */ mkChar("call to function wrap.source from package this.path"),
+        /* srcfile_original       */ NULL
     );
 
 
@@ -855,12 +856,12 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
 
 
     SEXP returnvalue = R_NilValue;
-    checkfile(
+    set_documentcontext(
         /* call                   */ R_CurrentExpression,
         /* sym                    */ fileSymbol,
         /* ofile                  */ ofile,
-        /* frame                  */ frame,
-        /* as_binding             */ TRUE,
+        /* assign_here            */ frame,
+        /* assign_as_binding      */ TRUE,
         /* normalize_action       */ NA_FIX_DIR,
         /* forcepromise           */ TRUE,
         /* assign_returnvalue     */ TRUE,
@@ -874,7 +875,8 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         allow_rawConnection, allow_sockconn, allow_servsockconn,
         allow_customConnection, ignore_blank_string, ignore_clipboard,
         ignore_stdin, ignore_url, ignore_file_uri,
-        /* source                 */ source
+        /* source                 */ source,
+        /* srcfile_original       */ NULL
     );
     PROTECT(returnvalue); nprotect++;
 
@@ -895,34 +897,34 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
 
 SEXP do_set_sys_path do_formals
 {
-    do_start_no_call_op("set.sys.path", 21);
+    do_start_no_call_op("set_sys_path", 21);
     return set_path(SETPATHOP_SETSYSPATH, args, rho);
 }
 
 
 SEXP do_unset_sys_path do_formals
 {
-    do_start_no_call_op("unset.sys.path", 0);
+    do_start_no_call_op("unset_sys_path", 0);
     return set_path(SETPATHOP_UNSETSYSPATH, args, rho);
 }
 
 
 SEXP do_set_env_path do_formals
 {
-    do_start_no_call_op("set.env.path", 2);
+    do_start_no_call_op("set_env_path", 2);
     return set_path(SETPATHOP_SETENVPATH, args, rho);
 }
 
 
 SEXP do_set_src_path do_formals
 {
-    do_start_no_call_op("set.src.path", 1);
+    do_start_no_call_op("set_src_path", 1);
     return set_path(SETPATHOP_SETSRCPATH, args, rho);
 }
 
 
 SEXP do_set_sys_path_function do_formals
 {
-    do_start_no_call_op("set.sys.path.function", 1);
+    do_start_no_call_op("set_sys_path_function", 1);
     return set_path(SETPATHOP_SETSYSPATHFUNCTION, args, rho);
 }

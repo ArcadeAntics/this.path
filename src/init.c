@@ -3,27 +3,7 @@
 #include "this.path.h"         /* need declarations of C functions */
 
 
-// #include "backports.h"
-// SEXP do_testing do_formals
-// {
-//     do_start_no_call_op_rho("testing", -1);
-//     SEXP value = allocVector(INTSXP, 5);
-//     PROTECT(value);
-//     SET_TRUELENGTH(value, XLENGTH(value));
-//     SETLENGTH(value, 3);
-//     SET_GROWABLE_BIT(value);
-//     Rprintf("XLENGTH(value): %.0f\n", (double) XLENGTH(value));
-//     Rprintf("XTRUELENGTH(value): %.0f\n", (double) XTRUELENGTH(value));
-//     Rprintf("IS_GROWABLE(value): %s\n", (IS_GROWABLE(value)) ? "TRUE" : "FALSE");
-//     UNPROTECT(1);
-//     return value;
-// }
-
-
 static const R_ExternalMethodDef externalRoutines[] = {
-
-
-// {"testing", (DL_FUNC) &do_testing, -1},
 
 
 /* aquarootscript.c */
@@ -66,41 +46,41 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* basename2.c */
 
 
-{"windows.basename2", (DL_FUNC) &do_windows_basename2, 1},
-{"unix.basename2"   , (DL_FUNC) &do_unix_basename2   , 1},
+{"windows_basename2", (DL_FUNC) &do_windows_basename2, 1},
+{"unix_basename2"   , (DL_FUNC) &do_unix_basename2   , 1},
 {"basename2"        , (DL_FUNC) &do_basename2        , 1},
 
-{"windows.dirname2", (DL_FUNC) &do_windows_dirname2, -1},
-{"unix.dirname2"   , (DL_FUNC) &do_unix_dirname2   , -1},
+{"windows_dirname2", (DL_FUNC) &do_windows_dirname2, -1},
+{"unix_dirname2"   , (DL_FUNC) &do_unix_dirname2   , -1},
 {"dirname2"        , (DL_FUNC) &do_dirname2        , -1},
 
 
 /* ext.c */
 
 
-{"windows.splitext", (DL_FUNC) &do_windows_splitext, 2},
-{"unix.splitext"   , (DL_FUNC) &do_unix_splitext   , 2},
+{"windows_splitext", (DL_FUNC) &do_windows_splitext, 2},
+{"unix_splitext"   , (DL_FUNC) &do_unix_splitext   , 2},
 {"splitext"        , (DL_FUNC) &do_splitext        , 2},
 
-{"windows.removeext", (DL_FUNC) &do_windows_removeext, 2},
-{"unix.removeext"   , (DL_FUNC) &do_unix_removeext   , 2},
+{"windows_removeext", (DL_FUNC) &do_windows_removeext, 2},
+{"unix_removeext"   , (DL_FUNC) &do_unix_removeext   , 2},
 {"removeext"        , (DL_FUNC) &do_removeext        , 2},
 
-{"windows.ext", (DL_FUNC) &do_windows_ext, 2},
-{"unix.ext"   , (DL_FUNC) &do_unix_ext   , 2},
+{"windows_ext", (DL_FUNC) &do_windows_ext, 2},
+{"unix_ext"   , (DL_FUNC) &do_unix_ext   , 2},
 {"ext"        , (DL_FUNC) &do_ext        , 2},
 
-{"windows.ext<-", (DL_FUNC) &do_windows_extgets, 3},
-{"unix.ext<-"   , (DL_FUNC) &do_unix_extgets   , 3},
+{"windows_ext<-", (DL_FUNC) &do_windows_extgets, 3},
+{"unix_ext<-"   , (DL_FUNC) &do_unix_extgets   , 3},
 {"ext<-"        , (DL_FUNC) &do_extgets        , 3},
 
 
 /* isabspath.c */
 
 
-{"windows.is.abs.path", (DL_FUNC) &do_windows_is_abs_path, 1},
-{"unix.is.abs.path"   , (DL_FUNC) &do_unix_is_abs_path   , 1},
-{"is.abs.path"        , (DL_FUNC) &do_is_abs_path        , 1},
+{"windows_is_abs_path", (DL_FUNC) &do_windows_is_abs_path, 1},
+{"unix_is_abs_path"   , (DL_FUNC) &do_unix_is_abs_path   , 1},
+{"is_abs_path"        , (DL_FUNC) &do_is_abs_path        , 1},
 
 
 /* ns-hooks.c */
@@ -118,25 +98,25 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* pathjoin.c */
 
 
-{"windows.path.join", (DL_FUNC) &do_windows_path_join, 0},
-{"unix.path.join"   , (DL_FUNC) &do_unix_path_join   , 0},
-{"path.join"        , (DL_FUNC) &do_path_join        , 0},
+{"windows_path_join", (DL_FUNC) &do_windows_path_join, 0},
+{"unix_path_join"   , (DL_FUNC) &do_unix_path_join   , 0},
+{"path_join"        , (DL_FUNC) &do_path_join        , 0},
 
 
 /* pathsplit.c */
 
 
-{"windows.path.split", (DL_FUNC) &do_windows_path_split, 1},
-{"unix.path.split"   , (DL_FUNC) &do_unix_path_split   , 1},
-{"path.split"        , (DL_FUNC) &do_path_split        , 1},
+{"windows_path_split", (DL_FUNC) &do_windows_path_split, 1},
+{"unix_path_split"   , (DL_FUNC) &do_unix_path_split   , 1},
+{"path_split"        , (DL_FUNC) &do_path_split        , 1},
 
-{"windows.path.split.1", (DL_FUNC) &do_windows_path_split_1, 1},
-{"unix.path.split.1"   , (DL_FUNC) &do_unix_path_split_1   , 1},
-{"path.split.1"        , (DL_FUNC) &do_path_split_1        , 1},
+{"windows_path_split_1", (DL_FUNC) &do_windows_path_split_1, 1},
+{"unix_path_split_1"   , (DL_FUNC) &do_unix_path_split_1   , 1},
+{"path_split_1"        , (DL_FUNC) &do_path_split_1        , 1},
 
-{"windows.path.unsplit", (DL_FUNC) &do_windows_path_unsplit, 0},
-{"unix.path.unsplit"   , (DL_FUNC) &do_unix_path_unsplit   , 0},
-{"path.unsplit"        , (DL_FUNC) &do_path_unsplit        , 0},
+{"windows_path_unsplit", (DL_FUNC) &do_windows_path_unsplit, 0},
+{"unix_path_unsplit"   , (DL_FUNC) &do_unix_path_unsplit   , 0},
+{"path_unsplit"        , (DL_FUNC) &do_path_unsplit        , 0},
 
 
 /* print.c */
@@ -155,9 +135,9 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* promises.c */
 
 
-{"is.unevaluated.promise", (DL_FUNC) &do_is_unevaluated_promise, -1},
-{"promise.is.unevaluated", (DL_FUNC) &do_promise_is_unevaluated, -1},
-{"forcePromise.no.warn"  , (DL_FUNC) &do_forcePromise_no_warn  , -1},
+{"is_unevaluated_promise", (DL_FUNC) &do_is_unevaluated_promise, -1},
+{"promise_is_unevaluated", (DL_FUNC) &do_promise_is_unevaluated, -1},
+{"forcePromise_no_warn"  , (DL_FUNC) &do_forcePromise_no_warn  , -1},
 {"PRINFO"                , (DL_FUNC) &do_PRINFO                , -1},
 {"mkPROMISE"             , (DL_FUNC) &do_mkPROMISE             ,  2},
 {"mkEVPROMISE"           , (DL_FUNC) &do_mkEVPROMISE           ,  2},
@@ -174,14 +154,14 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* rprojroot.c */
 
 
-{"reset.proj", (DL_FUNC) &do_reset_proj, 0},
+{"reset_proj", (DL_FUNC) &do_reset_proj, 0},
 
 
 /* shfile.c */
 
 
-{"site.file", (DL_FUNC) &do_site_file, 2},
-{"init.file", (DL_FUNC) &do_init_file, 2},
+{"site_file", (DL_FUNC) &do_site_file, 2},
+{"init_file", (DL_FUNC) &do_init_file, 2},
 {"shFILE"   , (DL_FUNC) &do_shFILE   , 2},
 {"shINFO"   , (DL_FUNC) &do_shINFO   , 0},
 
@@ -195,30 +175,29 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"thisPathNotExistsError"                  , (DL_FUNC) &do_thisPathNotExistsError                  , 2},
 {"thisPathInZipFileError"                  , (DL_FUNC) &do_thisPathInZipFileError                  , 2},
 {"thisPathInAQUAError"                     , (DL_FUNC) &do_thisPathInAQUAError                     , 1},
-{"thisPathInEmacsError"                    , (DL_FUNC) &do_thisPathInEmacsError                    , 1},
 
-{"is.clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
-{"init.tools.rstudio", (DL_FUNC) &do_init_tools_rstudio, -1},
-{"jupyter.path"      , (DL_FUNC) &do_jupyter_path      , -1},
-{"set.jupyter.path"  , (DL_FUNC) &do_set_jupyter_path  , -1},
-{"rgui.path"         , (DL_FUNC) &do_rgui_path         ,  6},
+{"is_clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
+{"init_tools_rstudio", (DL_FUNC) &do_init_tools_rstudio, -1},
+{"jupyter_path"      , (DL_FUNC) &do_jupyter_path      , -1},
+{"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1},
+{"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
 {"remove_trailing_blank_string", (DL_FUNC) &do_remove_trailing_blank_string, 1},
 {"fixNewlines"       , (DL_FUNC) &do_fixNewlines       ,  1},
-{"set.gui.path"      , (DL_FUNC) &do_set_gui_path      ,  0},
-{"sys.path"          , (DL_FUNC) &do_sys_path          , -1},
+{"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0},
+{"sys_path"          , (DL_FUNC) &do_sys_path          , -1},
 {"getframenumber"    , (DL_FUNC) &do_getframenumber    ,  0},
-{"env.path"          , (DL_FUNC) &do_env_path          , -1},
+{"env_path"          , (DL_FUNC) &do_env_path          , -1},
 {"sys.whiches"       , (DL_FUNC) &do_sys_whiches       ,  1},
 {"sys.srcref"        , (DL_FUNC) &do_sys_srcref        ,  1},
-{"src.path"          , (DL_FUNC) &do_src_path          , -1},
-{"src.LINENO"        , (DL_FUNC) &do_src_LINENO        , -1},
-{"this.path"         , (DL_FUNC) &do_this_path         , -1},
+{"src_path"          , (DL_FUNC) &do_src_path          , -1},
+{"src_LINENO"        , (DL_FUNC) &do_src_LINENO        , -1},
+{"this_path"         , (DL_FUNC) &do_this_path         , -1},
 
 
 /* trycatch.c */
 
 
-{"last.condition", (DL_FUNC) &do_last_condition, -1},
+{"last_condition", (DL_FUNC) &do_last_condition, -1},
 {"tryCatch2"     , (DL_FUNC) &do_tryCatch2     ,  0},
 {"tryCatch3"     , (DL_FUNC) &do_tryCatch3     ,  0},
 
@@ -228,24 +207,25 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 {"istrue"       , (DL_FUNC) &do_istrue       , 1},
 {"isfalse"      , (DL_FUNC) &do_isfalse      , 1},
+{"asLogical"    , (DL_FUNC) &do_asLogical    , 1},
 {"asInteger"    , (DL_FUNC) &do_asInteger    , 1},
 {"asIntegerGE0" , (DL_FUNC) &do_asIntegerGE0 , 1},
 {"IS_SCALAR_STR", (DL_FUNC) &do_IS_SCALAR_STR, 1},
 {"AS_SCALAR_STR", (DL_FUNC) &do_AS_SCALAR_STR, 1},
 {"scalar_streql", (DL_FUNC) &do_scalar_streql, 2},
-{"get.dyn"      , (DL_FUNC) &do_get_dyn      , 3},
+{"get_dyn"      , (DL_FUNC) &do_get_dyn      , 3},
 
 
 /* wrapsource.c */
 
 
 {"SET_PRSEEN_2"         , (DL_FUNC) &do_SET_PRSEEN_2         ,  1},
-{"wrap.source"          , (DL_FUNC) &do_wrap_source          , 20},
-{"set.sys.path"         , (DL_FUNC) &do_set_sys_path         , 21},
-{"unset.sys.path"       , (DL_FUNC) &do_unset_sys_path       ,  0},
-{"set.env.path"         , (DL_FUNC) &do_set_env_path         ,  2},
-{"set.src.path"         , (DL_FUNC) &do_set_src_path         ,  1},
-{"set.sys.path.function", (DL_FUNC) &do_set_sys_path_function,  1},
+{"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20},
+{"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 21},
+{"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0},
+{"set_env_path"         , (DL_FUNC) &do_set_env_path         ,  2},
+{"set_src_path"         , (DL_FUNC) &do_set_src_path         ,  1},
+{"set_sys_path_function", (DL_FUNC) &do_set_sys_path_function,  1},
 
 
 {NULL, NULL, 0}

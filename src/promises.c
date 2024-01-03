@@ -84,10 +84,10 @@ SEXP do_is_unevaluated_promise do_formals
      */
 
 
-    do_start_no_op("is.unevaluated.promise", -1);
+    do_start_no_op("is_unevaluated_promise", -1);
 
 
-    handles_nargs(rho, ".C_is.unevaluated.promise");
+    handles_nargs(rho, ".C_is_unevaluated_promise");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
@@ -105,10 +105,10 @@ SEXP do_promise_is_unevaluated do_formals
     /* similar to do_is_unevaluated_promise, but the binding MUST be a promise */
 
 
-    do_start_no_op("promise.is.unevaluated", -1);
+    do_start_no_op("promise_is_unevaluated", -1);
 
 
-    handles_nargs(ENCLOS(rho), ".C_promise.is.unevaluated");
+    handles_nargs(ENCLOS(rho), ".C_promise_is_unevaluated");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
@@ -133,10 +133,10 @@ SEXP do_forcePromise_no_warn do_formals
      */
 
 
-    do_start_no_op("forcePromise.no.warn", -1);
+    do_start_no_op("forcePromise_no_warn", -1);
 
 
-    handles_nargs(ENCLOS(rho), ".C_forcePromise.no.warn");
+    handles_nargs(ENCLOS(rho), ".C_forcePromise_no_warn");
 
 
     SEXP value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));

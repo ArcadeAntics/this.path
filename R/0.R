@@ -3,7 +3,12 @@
 # cat("\n> sys.frames()\n"); print(sys.frames())
 
 
-.pkgname <- Sys.getenv("R_PACKAGE_NAME")
+if (Sys.getenv("R_PACKAGE_NAME") != "this.path")
+    stop("invalid environment variable R_PACKAGE_NAME,\n has the package changed its name???")
+
+
+.IS_SCALAR_STR <- function (x)
+is.character(x) && length(unclass(x)) == 1L
 
 
 .removeSource <- function (fn)
@@ -49,7 +54,7 @@
 .R_FunctionSymbol <- as.symbol("function")
 
 
-.removeSourceFromSubFunctions <- function (fn)
+.removeSource_from_inner_functions <- function (fn)
 {
     ## allow a function/language object to keep its source references
     ## while removing source references from any sub functions

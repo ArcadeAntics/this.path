@@ -128,7 +128,6 @@ extern SEXP thisPathNotImplementedError             (const char *msg, SEXP call)
 extern SEXP thisPathNotExistsError                  (const char *msg, SEXP call);
 extern SEXP thisPathInZipFileError                  (SEXP call, SEXP description);
 extern SEXP thisPathInAQUAError                     (SEXP call);
-extern SEXP thisPathInEmacsError                    (SEXP call);
 
 
 extern void stop(SEXP cond);
@@ -140,10 +139,9 @@ extern SEXP DocumentContext(void);
 typedef enum {NA_DEFAULT, NA_NOT_DIR, NA_FIX_DIR} NA_TYPE;
 
 
-extern void assign_default(SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
-extern void assign_chdir(SEXP file, SEXP owd, SEXP documentcontext);
-extern void assign_file_uri(SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
-extern void assign_file_uri2(SEXP description, SEXP documentcontext, NA_TYPE normalize_action);
+extern void assign_default(SEXP srcfile_original, SEXP owd, SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
+extern void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
+extern void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP documentcontext, NA_TYPE normalize_action);
 extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
 extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
 
@@ -157,7 +155,7 @@ extern int _gui_rstudio;
 extern Rboolean has_tools_rstudio;
 extern Rboolean init_tools_rstudio(Rboolean skipCheck);
 #define gui_rstudio                                            \
-    ((_gui_rstudio != -1) ? (_gui_rstudio) : (_gui_rstudio = asLogical(getFromMyNS(_gui_rstudioSymbol))))
+    ((_gui_rstudio != -1) ? (_gui_rstudio) : (_gui_rstudio = asLogical(getFromMyNS(_GUI_RStudioSymbol))))
 #define get_debugSource                                        \
     ((has_tools_rstudio) ? getFromMyNS(_debugSourceSymbol) : R_UnboundValue)
 
@@ -258,7 +256,7 @@ typedef struct gzconn {
      * do_wrap_source()
      * set_path()
  */
-#define checkfile(call, sym, ofile, frame, as_binding,         \
+#define set_documentcontext(call, sym, ofile, assign_here, assign_as_binding,\
     normalize_action, forcepromise, assign_returnvalue,        \
     maybe_chdir, getowd, hasowd, ofilearg,                     \
     character_only, conv2utf8, allow_blank_string,             \
@@ -267,7 +265,7 @@ typedef struct gzconn {
     allow_textConnection, allow_rawConnection, allow_sockconn, \
     allow_servsockconn, allow_customConnection,                \
     ignore_blank_string, ignore_clipboard, ignore_stdin,       \
-    ignore_url, ignore_file_uri, source)                       \
+    ignore_url, ignore_file_uri, source, srcfile_original)     \
 do {                                                           \
     int nprotect = 0;                                          \
     PROTECT(documentcontext = DocumentContext()); nprotect++;  \
@@ -338,7 +336,20 @@ do {                                                           \
         }                                                      \
         else if (!ignore_file_uri && is_file_uri(url)) {       \
             if (allow_file_uri) {                              \
-                assign_file_uri(ofile, file, documentcontext, normalize_action);\
+                SEXP _srcfile_original = srcfile_original;     \
+                if (_srcfile_original) {                       \
+                    assign_file_uri(_srcfile_original, NULL, ofile, file, documentcontext, normalize_action);\
+                }                                              \
+                else if (maybe_chdir) {                        \
+                    SEXP owd = getowd;                         \
+                    if (hasowd) {                              \
+                        PROTECT(owd);                          \
+                        assign_file_uri(NULL, owd, ofile, file, documentcontext, normalize_action);\
+                        UNPROTECT(1);                          \
+                    }                                          \
+                    else assign_file_uri(NULL, NULL, ofile, file, documentcontext, normalize_action);\
+                }                                              \
+                else assign_file_uri(NULL, NULL, ofile, file, documentcontext, normalize_action);\
                 if (assign_returnvalue) {                      \
                     returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                     SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
@@ -352,16 +363,20 @@ do {                                                           \
                 errorcall(call, "invalid '%s', cannot be a file URI", EncodeChar(PRINTNAME(sym)));\
         }                                                      \
         else {                                                 \
-            if (maybe_chdir) {                                 \
+            SEXP _srcfile_original = srcfile_original;         \
+            if (_srcfile_original) {                           \
+                assign_default(_srcfile_original, NULL, ofile, documentcontext, normalize_action);\
+            }                                                  \
+            else if (maybe_chdir) {                            \
                 SEXP owd = getowd;                             \
                 if (hasowd) {                                  \
                     PROTECT(owd);                              \
-                    assign_chdir(ofile, owd, documentcontext); \
+                    assign_default(NULL, owd, ofile, documentcontext, normalize_action);\
                     UNPROTECT(1);                              \
                 }                                              \
-                else assign_default(ofile, documentcontext, normalize_action);\
+                else assign_default(NULL, NULL, ofile, documentcontext, normalize_action);\
             }                                                  \
-            else assign_default(ofile, documentcontext, normalize_action);\
+            else assign_default(NULL, NULL, ofile, documentcontext, normalize_action);\
             if (assign_returnvalue) {                          \
                 returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                 SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
@@ -391,7 +406,7 @@ do {                                                           \
                 streql(klass, "xzfile") ||                     \
                 streql(klass, "fifo"  ))                       \
             {                                                  \
-                assign_file_uri2(description, documentcontext, normalize_action);\
+                assign_file_uri2(NULL, NULL, description, documentcontext, normalize_action);\
                 if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
@@ -496,11 +511,13 @@ do {                                                           \
     if (documentcontext != R_EmptyEnv) {                       \
         INCREMENT_NAMED_defineVar(sourceSymbol, (source), documentcontext);\
     }                                                          \
-    if (as_binding) {                                          \
-        INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);\
-        R_LockBinding(documentcontextSymbol, frame);           \
-    } else {                                                   \
-        setAttrib(frame, documentcontextSymbol, documentcontext);\
+    if (assign_here) {                                         \
+        if (assign_as_binding) {                               \
+            INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, assign_here);\
+            R_LockBinding(documentcontextSymbol, assign_here); \
+        } else {                                               \
+            setAttrib(assign_here, documentcontextSymbol, documentcontext);\
+        }                                                      \
     }                                                          \
     set_R_Visible(TRUE);                                       \
     UNPROTECT(nprotect);                                       \

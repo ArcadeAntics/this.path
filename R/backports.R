@@ -14,9 +14,28 @@ delayedAssign(".C_mapply", { getNativeSymbolInfo("do_mapply", PACKAGE = "base") 
 .External2(.C_SET_PRSEEN_2, ptr)
 
 
+delayedAssign(".base_list.files", base::list.files)
+
+
+list.files <- function (path = ".", pattern = NULL, all.files = FALSE, full.names = FALSE,
+    recursive = FALSE, ignore.case = FALSE, include.dirs = FALSE,
+    no.. = FALSE)
+{
+    no.. <- .asLogical(no..)
+    if (is.na(no..))
+        stop(gettextf("invalid '%s' argument", "no..", domain = "R"), domain = NA)
+    value <- .base_list.files(path = path, pattern = pattern,
+        all.files = all.files, full.names = full.names, recursive = recursive,
+        ignore.case = ignore.case, include.dirs = include.dirs)
+    if (all.files && no..)
+        value[!(basename2(value) %in% c(".", ".."))]
+    else value
+}
+
+
 ## parse(keep.source = getOption("keep.source")) was added in R 3.0.0
-parse <- evalq(envir = .BaseNamespaceEnv,
-function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),
+parse <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+         function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOption("keep.source"),
     srcfile = NULL, encoding = "unknown")
 {
     if (missing(srcfile)) {
@@ -31,7 +50,7 @@ function (file = "", n = NULL, text = NULL, prompt = "?", keep.source = getOptio
     }
     else parse(file = file, n = n, text = text, prompt = prompt, srcfile = srcfile, encoding = encoding)
 }
-)
+))
 
 
 }
@@ -44,7 +63,7 @@ anyNA <- function (x, recursive = FALSE)
 .External2(.C_anyNA, x, recursive)
 
 
-.anyNA.dispatch <- function (x, recursive = FALSE)
+.anyNA_dispatch <- function (x, recursive = FALSE)
 UseMethod("anyNA")
 
 
@@ -87,41 +106,41 @@ lengths <- function (x, use.names = TRUE)
 
 
 ## file.info(extra_cols = TRUE) was added in R 3.2.0
-file.info <- evalq(envir = .BaseNamespaceEnv,
-function (..., extra_cols = TRUE)
+file.info <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+             function (..., extra_cols = TRUE)
 {
     if (extra_cols)
         file.info(...)
     else file.info(...)[1:6]
 }
-)
+))
 
 
-file.mtime <- evalq(envir = .BaseNamespaceEnv,
-function (...)
+file.mtime <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+              function (...)
 file.info(...)$mtime
-)
+))
 
 
-file.size <- evalq(envir = .BaseNamespaceEnv,
-function (...)
+file.size <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+             function (...)
 file.info(...)$size
-)
+))
 
 
-.isdir <- evalq(envir = .BaseNamespaceEnv,
-function (...)
+.isdir <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+          function (...)
 file.info(...)$isdir
-)
+))
 
 
 } else {  ## (getRversion() >= "3.2.0")
 
 
-.isdir <- evalq(envir = .BaseNamespaceEnv,
-function (...)
+.isdir <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+          function (...)
 file.info(..., extra_cols = FALSE)$isdir
-)
+))
 
 
 }
@@ -186,8 +205,8 @@ withAutoprint <- .withAutoprint
 } else {  ## (getRversion() >= "3.4.0")
 
 
-.withAutoprint <- evalq(envir = .BaseNamespaceEnv,
-function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
+.withAutoprint <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+                  function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
     echo = TRUE, max.deparse.length = Inf, width.cutoff = max(20, getOption("width")),
     deparseCtrl = c("keepInteger", "showAttributes", "keepNA"),
     skip.echo = 0, ...)
@@ -211,7 +230,7 @@ function (exprs, evaluated = FALSE, local = parent.frame(), print. = TRUE,
         width.cutoff = width.cutoff, deparseCtrl = deparseCtrl,
         skip.echo = skip.echo, ...)
 }
-)
+))
 
 
 }
@@ -227,16 +246,16 @@ if (getRversion() < "3.5.0") {
 ## isTRUE(x) was previously defined as:
 ## function (x)
 ## identical(TRUE, x)
-isTRUE <- evalq(envir = .BaseNamespaceEnv,
-function (x)
+isTRUE <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+          function (x)
 is.logical(x) && length(x) == 1L && !is.na(x) && x
-)
+))
 
 
-isFALSE <- evalq(envir = .BaseNamespaceEnv,
-function (x)
+isFALSE <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+           function (x)
 is.logical(x) && length(x) == 1L && !is.na(x) && !x
-)
+))
 
 
 }
@@ -245,11 +264,11 @@ is.logical(x) && length(x) == 1L && !is.na(x) && !x
 if (getRversion() < "3.6.0") {
 
 
-errorCondition <- evalq(envir = .BaseNamespaceEnv,
-function (message, ..., class = NULL, call = NULL)
+errorCondition <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+                  function (message, ..., class = NULL, call = NULL)
 structure(list(message = as.character(message), call = call, ...),
     class = c(class, "error", "condition"))
-)
+))
 
 
 str2expression <- function (text)
@@ -258,10 +277,6 @@ str2expression <- function (text)
         stop("argument must be character", domain = "R")
     parse(text = text, n = -1, keep.source = FALSE, srcfile = NULL)
 }
-
-
-.IS_SCALAR_STR <- function (x)
-is.character(x) && length(unclass(x)) == 1L
 
 
 str2lang <- function (s)
@@ -281,10 +296,10 @@ str2lang <- function (s)
 if (getRversion() < "4.0.0") {
 
 
-deparse1 <- evalq(envir = .BaseNamespaceEnv,
-function (expr, collapse = " ", width.cutoff = 500L, ...)
+deparse1 <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+            function (expr, collapse = " ", width.cutoff = 500L, ...)
 paste(deparse(expr, width.cutoff, ...), collapse = collapse)
-)
+))
 
 
 }
@@ -294,8 +309,8 @@ if (getRversion() < "4.1.0") {
 
 
 ## bquote(splice = TRUE) was added in R 4.1.0
-bquote <- evalq(envir = .BaseNamespaceEnv,
-function (expr, where = parent.frame(), splice = FALSE)
+bquote <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+          function (expr, where = parent.frame(), splice = FALSE)
 {
     if (!is.environment(where))
         where <- as.environment(where)
@@ -336,7 +351,7 @@ function (expr, where = parent.frame(), splice = FALSE)
     }
     unquote(substitute(expr))
 }
-)
+))
 
 
 }
@@ -346,19 +361,19 @@ if (getRversion() < "4.2.0") {
 
 
 ## gettext(trim = TRUE) was added in R 4.2.0
-gettext <- evalq(envir = .BaseNamespaceEnv,
-function (..., domain = NULL, trim = TRUE)
+gettext <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+           function (..., domain = NULL, trim = TRUE)
 {
     gettext(..., domain = domain)
 }
-)
+))
 
 
 ## gettextf(trim = TRUE) was added in R 4.2.0
-gettextf <- evalq(envir = .BaseNamespaceEnv,
-function (fmt, ..., domain = NULL, trim = TRUE)
+gettextf <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+            function (fmt, ..., domain = NULL, trim = TRUE)
 sprintf(gettext(fmt, domain = domain), ...)
-)
+))
 
 
 }
