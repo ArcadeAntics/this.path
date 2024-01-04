@@ -32,11 +32,10 @@
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
   function, \code{with_sys.path()} can only be used outside a function.
-  \code{with_site.file()} and \code{with_init.file()} provide two common use
-  cases of \code{with_sys.path()}; within the site-wide startup profile file or
-  a user profile. You could combine these with \code{\link{withAutoprint}()} to
-  auto-print expressions as if in a toplevel context, for example:
-  \preformatted{this.path::with_init.file(withAutoprint({
+  \code{with_init.file()} provides a common use-case of \code{with_sys.path()};
+  within a user profile. You could combine this with
+  \code{\link{withAutoprint}()} to auto-print expressions as if in a toplevel
+  context, for example: \preformatted{this.path::with_init.file(withAutoprint({
     this.path::this.path()
 }, echo = FALSE))}
 
@@ -112,9 +111,8 @@ wrap.source(expr,
     ignore.file.uri = ignore.all)
 }
 \arguments{
-  \item{expr}{for \code{with_sys.path()}, \code{with_site.file()}, and
-    \code{with_init.file()}, an expression to evaluate within the context of a
-    file.
+  \item{expr}{for \code{with_sys.path()} and \code{with_init.file()}, an
+    expression to evaluate within the context of a file.
 
     for \code{wrap.source()}, an (unevaluated) call to a \sourcenolink-like
     function.}

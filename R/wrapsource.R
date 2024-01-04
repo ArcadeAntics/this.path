@@ -79,8 +79,6 @@ with_site.file <- function (expr, n = 0L)
 {
     if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
         stop("'with_site.file' cannot be used within a function, use 'set.sys.path' instead")
-    set.sys.path(this.path(verbose = FALSE, n = n + 1L, default = site.file()),
-        Function = c("with_site.file", "this.path"))
     expr
 }
 

@@ -25,7 +25,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming.CRAN.version <- "2.3.1"
+    upcoming.CRAN.version <- "2.4.0"
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
 
@@ -172,7 +172,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("sources1stargisfile", x, value = TRUE)
+    x <- grep("site", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

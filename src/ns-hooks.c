@@ -210,6 +210,7 @@ SEXP do_onLoad do_formals
     LockCLOENV(install(".proj"), FALSE);
     /* startup.R */
     LockCLOENV(_site_fileSymbol, TRUE);
+    LockCLOENV(install(".in_site_file"), FALSE);
     LockCLOENV(_init_fileSymbol, TRUE);
     /* thispath.R */
     LockCLOENV(_shFILESymbol, TRUE);
@@ -260,6 +261,8 @@ SEXP do_onLoad do_formals
     convertclosure2activebinding(install(".utf8locale"));
     convertclosure2activebinding(install(".latin1locale"));
     convertclosure2activebinding(install(".R_MB_CUR_MAX"));
+    /* ./R/startup.R */
+    convertclosure2activebinding(install(".in_site_file"));
     /* ./R/trycatch.R */
     convertclosure2activebinding(install("last.condition"));
 

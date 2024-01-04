@@ -43,8 +43,8 @@ New additions include:
 *   `set.sys.path()` implements `this.path()` for any `source()`-like
     functions outside of the builtins.
 
-*   `with_site.file()` and `with_init.file()` allow `this.path()` to be
-    used in the site-wide startup profile file or a user profile.
+*   `with_init.file()` allows `this.path()` to be used in a user
+    profile.
 
 `package:this.path` also provides functions for constructing and
 manipulating file paths:

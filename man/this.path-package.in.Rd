@@ -42,9 +42,8 @@
     \item{\code{\link{set.sys.path}()} implements \code{\link{this.path}()} for
       any \sourcelink-like functions outside of the builtins.}
 
-    \item{\code{\link{with_site.file}()} and \code{\link{with_init.file}()}
-      allow \code{this.path()} and related to be used in the site-wide startup
-      profile file or a user profile.}
+    \item{\code{\link{with_init.file}()} allows \code{this.path()} and related
+      to be used in a user profile.}
   }
 
   \pkg{package:this.path} also provides functions for constructing and

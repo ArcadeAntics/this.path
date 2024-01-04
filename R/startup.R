@@ -61,6 +61,54 @@ site.file <- function (original = FALSE, for.msg = FALSE, default, else.)
 }
 
 
+.in_site_file <- evalq(envir = new.env(), {
+    x <- TRUE
+    if (getRversion() >= "4.2.0") {
+                 function ()
+{
+    if (x) {
+        sym <- ".Library.site"
+        if (exists(sym, envir = .GlobalEnv, inherits = FALSE) &&
+            bindingIsActive(sym, .GlobalEnv) &&
+            exists(sym, envir = .BaseNamespaceEnv, inherits = FALSE) &&
+            bindingIsActive(sym, .BaseNamespaceEnv) &&
+            identical(
+                activeBindingFunction(sym, .GlobalEnv),
+                activeBindingFunction(sym, .BaseNamespaceEnv)
+            ))
+        {
+            ## we are still in the site file, so do nothing
+        }
+        else {
+            ## we are no longer in the site file, permanently set to FALSE
+            x <<- FALSE
+            lockBinding("x", parent.env(environment()))
+        }
+    }
+    x
+}
+    } else {
+                 function ()
+{
+    if (x) {
+        if (sys.parents()[1L] == 1L) {
+            ## we are still in the site file, so do nothing
+        }
+        else {
+            ## we are no longer in the site file, permanently set to FALSE
+            x <<- FALSE
+            lockBinding("x", parent.env(environment()))
+        }
+    }
+    x
+}
+    }
+})
+
+
+
+
+
 # {
 #     p <- Sys.getenv("R_PROFILE_USER", NA_character_)
 #     if (!is.na(p)) {

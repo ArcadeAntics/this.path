@@ -270,8 +270,7 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
   called, regardless of how deep \code{this.path()} is called.
 }
 \note{
-  If you need to use \code{this.path()} inside the site-wide startup profile
-  file or a user profile, please use \code{\link{with_site.file}()} or
+  If you need to use \code{this.path()} inside a user profile, please use
   \code{\link{with_init.file}()}, something along the lines of:
   \preformatted{this.path::with_init.file({
     <expr 1>

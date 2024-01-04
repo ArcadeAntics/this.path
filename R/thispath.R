@@ -537,7 +537,20 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
 .gui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
-    if (.in_shell) {
+    if (.in_site_file) {
+        if (contents && .has_site_file)
+            for.msg <- FALSE
+        value <- site.file(original, for.msg, default = {
+            stop(.thisPathNotExistsError(
+                "site-wide startup profile file was not found",
+                call = sys.call()))
+        })
+        if (verbose) cat("Source: site-wide startup profile file\n")
+        value
+    }
+
+
+    else if (.in_shell) {
         if (contents && .has_shFILE)
             for.msg <- FALSE
         value <- shFILE(original, for.msg, default = {

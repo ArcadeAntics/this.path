@@ -5,15 +5,6 @@
     \itemize{
       \item{\code{this.path()} is now compatible with function
         \code{utils::Sweave()}.}
-
-      \item{Removed the restriction that \code{reset.proj()} could only be
-        called from a top level context.}
-
-      \item{\code{withArgs()} will now be found anywhere on the stack as long
-        as it and the \sourcenolink-like function are called in the same frame.
-
-        e.g. \code{withArgs(try(source("./example.R")), 1, 2, 3)} now works as
-        intended.}
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{
@@ -27,12 +18,27 @@
   }
   \subsection{BUG FIXES}{
     \itemize{
+      \item{\code{this.path()} now works correctly in the site-wide startup
+        profile file.}
+
       \item{\code{this.path()} now works correctly with source file aliases.}
 
       \item{Updated \code{shFILE()} to work better with older versions of \R.}
 
       \item{Improved \code{LINENO()}, specifically \code{sys.LINENO()}, when
         comparing paths to determine the appropriate source reference.}
+
+      \item{\code{this.proj()} now throws an error that it does not work for
+        URL pathnames.}
+
+      \item{Removed the restriction that \code{reset.proj()} could only be
+        called from a top level context.}
+
+      \item{\code{withArgs()} will now be found anywhere on the stack as long
+        as it and the \sourcenolink-like function are called in the same frame.
+
+        e.g. \code{withArgs(try(source("./example.R")), 1, 2, 3)} now works as
+        intended.}
 
       \item{Unified behaviour of \code{is.main()} across all GUIs.}
 
@@ -41,9 +47,6 @@
 
       \item{Namespaces loaded with \code{requireNamespace()} are now loaded
         quietly.}
-
-      \item{\code{this.proj()} now throws an error that it does not work for
-        URL pathnames.}
     }
   }
 }
