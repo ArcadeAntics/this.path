@@ -548,8 +548,6 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         if (verbose) cat("Source: site-wide startup profile file\n")
         value
     }
-
-
     else if (.in_shell) {
         if (contents && .has_shFILE)
             for.msg <- FALSE
@@ -561,9 +559,6 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         if (verbose) cat("Source: shell argument 'FILE'\n")
         value
     }
-
-
-    ## running from 'RStudio'
     else if (.GUI_RStudio) {
 
 
@@ -633,10 +628,9 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
                 if (active)
                     "active document in RStudio does not exist"
                 else "source document in RStudio does not exist"
-            } else "document in RStudio does not exist")
+            } else "document in RStudio does not exist"
+        )
     }
-
-
     else if (.GUI_vscode) {
 
 
@@ -681,35 +675,39 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
             gettext("Untitled", domain = "RGui", trim = FALSE)
         else stop("document in VSCode does not exist")
     }
-
-
-    ## running from 'jupyter'
     else if (.GUI_jupyter) {
         .jupyter_path(verbose, original, for.msg, contents)
+    }
+    else if (.GUI_emacs) {
+        .emacs_path(verbose, original, for.msg, contents)
+    }
+    else if (.GUI_powerbi) {
+        if (for.msg)
+            NA_character_
+        else stop(.thisPathNotImplementedError(
+            "R is running from Power BI which is currently unimplemented\n",
+            " you should not need to use this.path() in Power BI since you can import data directly"))
+    }
+    else if (.in_callr) {
+        if (for.msg)
+            NA_character_
+        else stop(.thisPathNotImplementedError(
+            "R is running from 'package:callr' which is currently unimplemented\n",
+            " 'package:callr' calls a function in a separate session,\n",
+            " you should not need the path of the script where it was written"))
     }
 
 
     ## running from 'Rgui' on Windows
     else if (.GUI_Rgui) {
-
-
         .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
     }
-
-
     else if (.GUI_AQUA) {
 
 
         if (for.msg)
             NA_character_
         else stop(.thisPathInAQUAError())
-    }
-
-
-    else if (.GUI_emacs) {
-
-
-        .emacs_path(verbose, original, for.msg, contents)
     }
 
 

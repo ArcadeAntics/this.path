@@ -301,9 +301,39 @@ delayedAssign(".GUI_emacs", {
 })
 
 
-delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs                            })
-delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && .External2(.C_RConsole) })
-delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs                            })
+delayedAssign(".GUI_powerbi", {
+    !interactive() &&
+
+    Sys.getenv("RPackagesLibrariesDirectory") != "" &&
+    Sys.getenv("RScriptWrapperWorkingDirectory") != "" &&
+
+    .maybe_unembedded_shell &&
+
+    .scalar_streql(.shINFO[["ENC"]], "UTF-8") &&
+    isTRUE(.shINFO[["has_input"]]) &&
+    !is.na(.shINFO[["FILE"]]) &&
+    is.na(.shINFO[["EXPR"]])
+})
+
+
+delayedAssign(".in_callr", {
+    !interactive() &&
+
+    .scalar_streql(Sys.getenv("CALLR_IS_RUNNING"), "true") &&
+
+    .maybe_unembedded_shell &&
+
+    isTRUE(.shINFO[["has_input"]]) &&
+    !is.na(.shINFO[["FILE"]]) &&
+    is.na(.shINFO[["EXPR"]]) &&
+
+    "tools:callr" %in% search()
+})
+
+
+delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
+delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
 
 
 `.tools:rstudio` <- emptyenv()
@@ -321,8 +351,8 @@ delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RSt
 .External2(.C_init_tools_rstudio)
 
 
-delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs })
-delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs })
+delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
+delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
 delayedAssign(".in_shell", { .OS_unix_in_shell || .OS_windows_in_shell })
 
 
@@ -332,6 +362,8 @@ delayedAssign(".unrecognized_manner", {
     !.GUI_vscode &&
     !.GUI_jupyter &&
     !.GUI_emacs &&
+    !.GUI_powerbi &&
+    !.in_callr &&
     !.GUI_Rgui &&
     !.GUI_AQUA &&
     !.GUI_Tk
@@ -346,6 +378,7 @@ delayedAssign(".GUI", {
     else if (.GUI_vscode) "vscode"
     else if (.GUI_jupyter) "jupyter"
     else if (.GUI_emacs) "emacs"
+    else if (.GUI_powerbi) "powerbi"
     # else if (.GUI_Rgui) "Rgui"
     # else if (.GUI_AQUA) "AQUA"
     # else if (.GUI_Tk) "Tk"
@@ -372,3 +405,10 @@ initwd
 
 .unlockEnvironment <- function (env, bindings = FALSE)
 .External2(.C_unlockEnvironment, env, bindings)
+
+
+.unset_these_envvars <- c(
+    "TERM_PROGRAM", "JPY_API_TOKEN", "JPY_PARENT_PID", "STATATERM",
+    "RPackagesLibrariesDirectory", "RScriptWrapperWorkingDirectory",
+    "CALLR_IS_RUNNING"
+)
