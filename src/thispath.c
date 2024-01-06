@@ -89,27 +89,6 @@ SEXP do_is_clipboard do_formals
 }
 
 
-SEXP do_init_tools_rstudio do_formals
-{
-    do_start_no_op_rho("init_tools_rstudio", -1);
-
-
-    Rboolean skipCheck = FALSE;
-    switch (length(args)) {
-    case 0:
-        break;
-    case 1:
-        skipCheck = asLogical(CAR(args));
-        if (skipCheck == NA_LOGICAL)
-            errorcall(call, _("invalid '%s' argument"), "skipCheck");
-        break;
-    default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_init_tools_rstudio", "0 or 1"));
-    }
-    return ScalarLogical(init_tools_rstudio(skipCheck));
-}
-
-
 #define one   "'%s' must be FALSE when '%s' is TRUE"
 #define two   "'%s' and '%s' must be FALSE when '%s' is TRUE"
 #define three "'%s', '%s', and '%s' must be FALSE when '%s' is TRUE"
@@ -584,10 +563,10 @@ typedef enum {
     GUIPATH_DEFAULT  ,
     GUIPATH_FUNCTION ,
     GUIPATH_CHARACTER
-} GUIPATHOP;
+} GUIPATH_ACTION;
 
 
-int gui_path = GUIPATH_DEFAULT;
+GUIPATH_ACTION gui_path = GUIPATH_DEFAULT;
 
 
 SEXP do_set_gui_path do_formals
@@ -696,6 +675,30 @@ SEXP do_set_gui_path do_formals
 }
 
 
+static R_INLINE
+SEXP make_path_call(SEXP sym, Rboolean verbose , Rboolean original,
+                              Rboolean for_msg , Rboolean contents)
+{
+    SEXP expr = R_NilValue;
+    if (contents) {
+        expr = CONS(ScalarLogical(verbose),
+                    CONS(ScalarLogical(original),
+                         CONS(ScalarLogical(for_msg),
+                              CONS(ScalarLogical(contents), expr))));
+    } else if (for_msg) {
+        expr = CONS(ScalarLogical(verbose),
+                    CONS(ScalarLogical(original),
+                         CONS(ScalarLogical(for_msg), expr)));
+    } else if (original) {
+        expr = CONS(ScalarLogical(verbose),
+                    CONS(ScalarLogical(original), expr));
+    } else if (verbose) {
+        expr = CONS(ScalarLogical(verbose), expr);
+    }
+    return LCONS(sym, expr);
+}
+
+
 SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                Rboolean for_msg         , Rboolean contents        ,
                Rboolean local           , Rboolean *gave_contents  ,
@@ -770,8 +773,19 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
 #define toplevel                                               \
-        if (get_frame_number) return ScalarInteger(0);         \
-        else return R_UnboundValue
+        if (in_site_file) {                                    \
+            if (get_frame_number) return ScalarInteger(-1);    \
+            SEXP expr = make_path_call(_site_pathSymbol,       \
+                verbose, original, for_msg, contents);         \
+            PROTECT(expr);                                     \
+            SEXP value = eval(expr, mynamespace);              \
+            UNPROTECT(1);                                      \
+            return value;                                      \
+        }                                                      \
+        else {                                                 \
+            if (get_frame_number) return ScalarInteger(0);     \
+            else return R_UnboundValue;                        \
+        }
 
 
         toplevel;
@@ -784,13 +798,11 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     int nprotect = 0;
 
 
-    init_tools_rstudio(/* skipCheck */ FALSE);
-
-
     SEXP source      = getFromBase(sourceSymbol     ),
          sys_source  = getFromBase(sys_sourceSymbol ),
          wrap_source = getFromMyNS(wrap_sourceSymbol),
-         debugSource = get_debugSource               ;
+         debugSource = get_debugSource()             ;
+    Rboolean rstudio_loaded = (debugSource != R_UnboundValue);
 
 
     SEXP ns;
@@ -1273,7 +1285,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         }
 
 
-        else if (has_tools_rstudio && identical(function, debugSource)) {
+        else if (rstudio_loaded && identical(function, debugSource)) {
 #undef source_char
 #define source_char "call to function 'debugSource' in 'RStudio'"
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
@@ -2117,23 +2129,8 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
     switch (gui_path) {
     case GUIPATH_DEFAULT:
     {
-        SEXP expr = R_NilValue;
-        if (contents) {
-            expr = CONS(ScalarLogical(verbose),
-                        CONS(ScalarLogical(original),
-                             CONS(ScalarLogical(for_msg),
-                                  CONS(ScalarLogical(contents), expr))));
-        } else if (for_msg) {
-            expr = CONS(ScalarLogical(verbose),
-                        CONS(ScalarLogical(original),
-                             CONS(ScalarLogical(for_msg), expr)));
-        } else if (original) {
-            expr = CONS(ScalarLogical(verbose),
-                        CONS(ScalarLogical(original), expr));
-        } else if (verbose) {
-            expr = CONS(ScalarLogical(verbose), expr);
-        }
-        expr = LCONS(_gui_pathSymbol, expr);
+        SEXP expr = make_path_call(_gui_pathSymbol, verbose , original,
+                                                    for_msg , contents);
         PROTECT(expr);
         SEXP value = eval(expr, mynamespace);
         UNPROTECT(1);
@@ -2525,10 +2522,10 @@ typedef enum {
     CALLSTACK_WHICHES,
     CALLSTACK_SRCREF ,
     CALLSTACK_SRCFILE
-} CALLSTACKOP;
+} CALLSTACK_ACTION;
 
 
-SEXP _callstack(int k, CALLSTACKOP op, SEXP rho)
+SEXP _callstack(int k, CALLSTACK_ACTION op, SEXP rho)
 {
     SEXP Rparents = eval(expr_sys_parents, rho);
     PROTECT(Rparents);

@@ -14,11 +14,11 @@ local({
     on.exit(unlink(abs.path.R), add = TRUE)
     this.path:::.writeCode({
         n <- this.path:::.getframenumber()
-        if (is.na(n)) stop("invalid traceback")
+        if (is.na(n) || n < 1L) stop("invalid traceback")
         sym <- ".this.path::document.context"
         frame <- sys.frame(n)
         if (!exists(sym, envir = frame, inherits = FALSE))
-            sym <- paste0(sym, "s")
+            sym <- ".this.path::document.contexts"
         stopifnot(bindingIsLocked(sym, frame))
         cat("\n> getwd()\n")
         print(getwd())

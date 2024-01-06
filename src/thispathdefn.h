@@ -152,17 +152,12 @@ extern int sys_parent(int n, SEXP rho);
 
 
 extern int _gui_rstudio;
-extern Rboolean has_tools_rstudio;
-extern Rboolean init_tools_rstudio(Rboolean skipCheck);
-#define gui_rstudio                                            \
-    ((_gui_rstudio != -1) ? (_gui_rstudio) : (_gui_rstudio = asLogical(getFromMyNS(_GUI_RStudioSymbol))))
-#define get_debugSource                                        \
-    ((has_tools_rstudio) ? getFromMyNS(_debugSourceSymbol) : R_UnboundValue)
-
-
 extern int _maybe_unembedded_shell;
-#define maybe_unembedded_shell                                 \
-    ((_maybe_unembedded_shell != -1) ? (_maybe_unembedded_shell) : (_maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
+extern Rboolean _in_site_file;
+extern SEXP get_debugSource(void);
+#define gui_rstudio            ((_gui_rstudio            != -1) ? (_gui_rstudio           ) : (_gui_rstudio            = asLogical(getFromMyNS(_GUI_RStudioSymbol           ))))
+#define maybe_unembedded_shell ((_maybe_unembedded_shell != -1) ? (_maybe_unembedded_shell) : (_maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
+#define in_site_file           ((!_in_site_file               ) ? (_in_site_file          ) : (_in_site_file           = asLogical(getFromMyNS(_in_site_fileSymbol          ))))
 
 
 #define streql(str1, str2) (strcmp((str1), (str2)) == 0)

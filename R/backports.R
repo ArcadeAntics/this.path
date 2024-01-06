@@ -240,6 +240,10 @@ if (getRversion() < "3.5.0") {
 .External2(.C_...length)
 
 
+...elt <- function (n)
+.External2(.C_...elt, n)
+
+
 ## isTRUE(x) was previously defined as:
 ## function (x)
 ## identical(TRUE, x)

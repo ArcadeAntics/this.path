@@ -88,6 +88,7 @@ extern SEXP do_endsWith   do_formals;
 
 #if R_version_less_than(3, 5, 0)
 extern SEXP do_dotslength do_formals;
+extern SEXP do_dotselt    do_formals;
 #endif
 
 
@@ -225,7 +226,6 @@ extern SEXP do_thisPathInZipFileError                   do_formals;
 extern SEXP do_thisPathInAQUAError                      do_formals;
 
 extern SEXP do_is_clipboard       do_formals;
-extern SEXP do_init_tools_rstudio do_formals;
 extern SEXP do_jupyter_path       do_formals;
 extern SEXP do_set_jupyter_path   do_formals;
 extern SEXP do_Rgui_path          do_formals;

@@ -56,6 +56,9 @@ progArgs <- function ()
         }
         value
     }
+    ## in the site-wide startup profile file or a user profile
+    else if (n < 1L)
+        character()
     else if (.in_shell)
         commandArgs(trailingOnly = TRUE)
     else character()

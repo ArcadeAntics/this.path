@@ -75,7 +75,7 @@ with_sys.path <- function (file, expr, ...)
 }
 
 
-with_site.file <- function (expr, n = 0L)
+with_site.file <- function (expr)
 {
     if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
         stop("'with_site.file' cannot be used within a function, use 'set.sys.path' instead")
@@ -83,12 +83,13 @@ with_site.file <- function (expr, n = 0L)
 }
 
 
-with_init.file <- function (expr, n = 0L)
+with_init.file <- function (expr)
 {
     if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
         stop("'with_init.file' cannot be used within a function, use 'set.sys.path' instead")
-    set.sys.path(this.path(verbose = FALSE, n = n + 1L, default = init.file()),
-        Function = c("with_init.file", "this.path"))
+    if (.getframenumber() == 0L)
+        set.sys.path(init.file(), ofile = init.file(original = TRUE),
+            Function = c("with_init.file", "this.path"))
     expr
 }
 

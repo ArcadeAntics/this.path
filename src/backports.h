@@ -22,6 +22,8 @@ extern int IS_ASCII(SEXP x);
 
 extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 
+extern SEXP ddfind(int i, SEXP rho);
+
 
 #if R_version_less_than(3, 0, 0)
 #define XLENGTH LENGTH

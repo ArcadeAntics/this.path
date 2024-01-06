@@ -211,9 +211,10 @@ main <- function ()
                         "              skip.echo = 0, spaced = FALSE, ...)"
                     ),
                     "3.5.0",
-                    c("...length", "isTRUE", "isFALSE"),
+                    c("...length", "...elt", "isTRUE", "isFALSE"),
                     c(
                         "...length()",
+                        "...elt(n)",
                         "isTRUE(x)",
                         "isFALSE(x)"
                     ),

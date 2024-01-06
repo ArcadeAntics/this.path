@@ -62,14 +62,14 @@
 sys.LINENO <- function ()
 {
     success <- tryCatch({
-        context.number <- .External2(.C_getframenumber)
-        if (is.na(context.number) || context.number == 0L)
+        n <- .External2(.C_getframenumber)
+        if (is.na(n) || n < 1L)
             return(NA_integer_)
         path <- .External2(.C_sys_path)
         TRUE
     }, error = function(e) FALSE)
     if (success)
-        .LINENO(path, context.number + 1L)
+        .LINENO(path, n + 1L)
     else NA_integer_
 }
 
@@ -136,14 +136,14 @@ LINENO <- function (n = 0L, envir = parent.frame(n + 1L), matchThisEnv = getOpti
         }
         if (is.na(value)) {
             success <- tryCatch({
-                context.number <- .External2(.C_getframenumber)
-                if (is.na(context.number) || context.number == 0L)
+                n <- .External2(.C_getframenumber)
+                if (is.na(n) || n < 1L)
                     return(NA_integer_)
                 path <- .External2(.C_sys_path)
                 TRUE
             }, error = function(e) FALSE)
             if (success)
-                .LINENO(path, context.number + 1L)
+                .LINENO(path, n + 1L)
             else NA_integer_
         }
         else value
@@ -174,14 +174,14 @@ LINE <- function ()
         }
         if (is.na(value)) {
             success <- tryCatch({
-                context.number <- .External2(.C_getframenumber)
-                if (is.na(context.number) || context.number == 0L)
+                n <- .External2(.C_getframenumber)
+                if (is.na(n) || n < 1L)
                     return(NA_integer_)
                 path <- .External2(.C_sys_path)
                 TRUE
             }, error = function(e) FALSE)
             if (success)
-                .LINENO(path, context.number + 1L)
+                .LINENO(path, n + 1L)
             else NA_integer_
         }
         else value

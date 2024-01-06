@@ -582,11 +582,12 @@ int sys_parent(int n, SEXP rho)
 }
 
 
-static Rboolean _init_tools_rstudio(void)
+int _gui_rstudio = -1;
+int _maybe_unembedded_shell = -1;
+Rboolean _in_site_file = TRUE;
+SEXP get_debugSource(void)
 {
-    SEXP _tools_rstudio = getFromMyNS(_tools_rstudioSymbol);
-    if (_tools_rstudio != R_EmptyEnv)
-        return TRUE;
+    if (!gui_rstudio) return R_UnboundValue;
 
 
     const char *what = "tools:rstudio";
@@ -599,77 +600,13 @@ static Rboolean _init_tools_rstudio(void)
             length(name) > 0 &&
             !strcmp(translateChar(STRING_ELT(name, 0)), what))
         {
-
-
-#define check4closure(var, sym)                                \
-            SEXP var = getInFrame((sym), t, FALSE);            \
-            PROTECT(var);                                      \
-            if (TYPEOF(var) != CLOSXP)                         \
-                error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME((sym))), "closure")
-
-
-            check4closure(_rs_api_getActiveDocumentContext, _rs_api_getActiveDocumentContextSymbol);
-            check4closure(_rs_api_getSourceEditorContext  , _rs_api_getSourceEditorContextSymbol  );
-            check4closure(debugSource                     , debugSourceSymbol                     );
-
-
-#undef check4closure
-
-
-#define assigninmynamespace(sym, val)                          \
-            do {                                               \
-                SEXP e = findVarInFrame(mynamespace, (sym));   \
-                if (TYPEOF(e) == PROMSXP) {                    \
-                    SET_PRCODE(e, (val));                      \
-                    SET_PRENV(e, R_NilValue);                  \
-                    SET_PRVALUE(e, (val));                     \
-                    SET_PRSEEN(e, 0);                          \
-                } else {                                       \
-                    if (R_BindingIsLocked((sym), mynamespace)) {\
-                        R_unLockBinding((sym), mynamespace);   \
-                        INCREMENT_NAMED_defineVar((sym), makeEVPROMISE((val), (val)), mynamespace);\
-                        R_LockBinding((sym), mynamespace);     \
-                    }                                          \
-                    else INCREMENT_NAMED_defineVar((sym), makeEVPROMISE((val), (val)), mynamespace);\
-                }                                              \
-            } while (0)
-
-
-            assigninmynamespace(_rs_api_getActiveDocumentContextSymbol, _rs_api_getActiveDocumentContext);
-            assigninmynamespace(_rs_api_getSourceEditorContextSymbol  , _rs_api_getSourceEditorContext  );
-            assigninmynamespace(_debugSourceSymbol                    , debugSource                     );
-            assigninmynamespace(_tools_rstudioSymbol                  , t                               );
-
-
-#undef assigninmynamespace
-
-
-            UNPROTECT(3);
-            return TRUE;
+            return getInFrame(debugSourceSymbol, t, TRUE);
         }
     }
 
 
-    return FALSE;
+    return R_UnboundValue;
 }
-
-
-int _gui_rstudio = -1;
-Rboolean has_tools_rstudio = FALSE;
-
-
-Rboolean init_tools_rstudio(Rboolean skipCheck)
-{
-    if (skipCheck || gui_rstudio) {
-        if (!has_tools_rstudio) {
-            has_tools_rstudio = _init_tools_rstudio();
-        }
-    }
-    return has_tools_rstudio;
-}
-
-
-int _maybe_unembedded_shell = -1;
 
 
 #ifdef _WIN32

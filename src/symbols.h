@@ -84,11 +84,7 @@ extern0 SEXP0
     sys_sourceSymbol                       INI_as(install("sys.source")),
 
     _GUI_RStudioSymbol                     INI_as(install(".GUI_RStudio")),
-    _tools_rstudioSymbol                   INI_as(install(".tools:rstudio")),
-    _rs_api_getActiveDocumentContextSymbol INI_as(install(".rs.api.getActiveDocumentContext")),
-    _rs_api_getSourceEditorContextSymbol   INI_as(install(".rs.api.getSourceEditorContext")),
     debugSourceSymbol                      INI_as(install("debugSource")),
-    _debugSourceSymbol                     INI_as(install(".debugSource")),
 
     testthatSymbol                         INI_as(install("testthat")),
     source_fileSymbol                      INI_as(install("source_file")),
@@ -153,6 +149,8 @@ extern0 SEXP0
     linesSymbol                            INI_as(install("lines")),
     inputSymbol                            INI_as(install("input")),
     missingSymbol                          INI_as(install("missing")),
+    _in_site_fileSymbol                    INI_as(install(".in_site_file")),
+    _site_pathSymbol                       INI_as(install(".site_path")),
     _gui_pathSymbol                        INI_as(install(".gui.path")),
     verboseSymbol                          INI_as(install("verbose")),
     originalSymbol                         INI_as(install("original")),

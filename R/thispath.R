@@ -535,20 +535,23 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
 
 
+.site_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (contents && .has_site_file)
+        for.msg <- FALSE
+    value <- site.file(original, for.msg, default = {
+        stop(.thisPathNotExistsError(
+            "site-wide startup profile file was not found",
+            call = sys.call()))
+    })
+    if (verbose) cat("Source: site-wide startup profile file\n")
+    value
+}
+
+
 .gui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
-    if (.in_site_file) {
-        if (contents && .has_site_file)
-            for.msg <- FALSE
-        value <- site.file(original, for.msg, default = {
-            stop(.thisPathNotExistsError(
-                "site-wide startup profile file was not found",
-                call = sys.call()))
-        })
-        if (verbose) cat("Source: site-wide startup profile file\n")
-        value
-    }
-    else if (.in_shell) {
+    if (.in_shell) {
         if (contents && .has_shFILE)
             for.msg <- FALSE
         value <- shFILE(original, for.msg, default = {
@@ -562,11 +565,13 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
     else if (.GUI_RStudio) {
 
 
-        if (!`.init_tools:rstudio`()) {
-            if (for.msg) {
+        indx <- match("tools:rstudio", search(), 0L)
+        if (!indx) {
+            if (for.msg)
                 return(NA_character_)
-            }
+            else stop(.thisPathNotExistsError("RStudio has not finished loading"))
         }
+        tools_rstudio <- as.environment(indx)
 
 
         ## ".rs.api.getActiveDocumentContext" from "tools:rstudio" returns a
@@ -580,11 +585,11 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
 
         if (verbose) {
-            context <- .rs.api.getActiveDocumentContext()
+            context <- get(".rs.api.getActiveDocumentContext", envir = tools_rstudio, inherits = FALSE)()
             active <- context[["id"]] != "#console"
             if (!active)
-                context <- .rs.api.getSourceEditorContext()
-        } else context <- .rs.api.getSourceEditorContext()
+                context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
+        } else context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
 
 
         if (is.null(context)) {

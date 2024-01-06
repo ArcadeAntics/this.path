@@ -172,7 +172,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("site", x, value = TRUE)
+    x <- grep("get_debugSource", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

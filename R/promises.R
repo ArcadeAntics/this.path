@@ -229,8 +229,8 @@ delayedAssign(".OS_windows", { .Platform$OS.type == "windows" })
 delayedAssign(".GUI_RStudio", {
     commandArgs()[[1L]] == "RStudio" &&
     isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")) &&
-    if (.Platform$GUI == "RStudio") { .External2(.C_init_tools_rstudio, skipCheck = TRUE); TRUE }
-    else (
+    (
+        .Platform$GUI == "RStudio" ||
         (.OS_unix    && .Platform$GUI %in% c("X11", "unknown", "none")) ||
         (.OS_windows && .Platform$GUI == "Rgui")
     )
@@ -334,21 +334,6 @@ delayedAssign(".in_callr", {
 delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
 delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
 delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
-
-
-`.tools:rstudio` <- emptyenv()
-.rs.api.getActiveDocumentContext <- function (...)
-{
-    if (.GUI_RStudio)
-        stop(.thisPathNotExistsError("RStudio has not finished loading"))
-    else stop("RStudio is not running")
-}
-.rs.api.getSourceEditorContext <- .rs.api.getActiveDocumentContext
-.debugSource <- .rs.api.getActiveDocumentContext
-
-
-`.init_tools:rstudio` <- function ()
-.External2(.C_init_tools_rstudio)
 
 
 delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })

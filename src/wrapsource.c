@@ -60,7 +60,7 @@ SEXP do_wrap_source do_formals
               EncodeChar(PRINTNAME(exprSymbol)));
 
 
-    /* determine context number for .External2(.C_getframenumber) */
+    /* determine context number for .getframenumber() */
     int context_number;
     int nframe = asInteger(eval(expr_sys_nframe, rho));
     // Rprintf("sys.nframe() = %d\n", nframe);

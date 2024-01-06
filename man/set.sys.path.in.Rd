@@ -82,8 +82,8 @@ unset.sys.path()
 set.sys.path.function(fun)
 
 with_sys.path(file, expr, ...)
-with_site.file(expr, n = 0)
-with_init.file(expr, n = 0)
+with_site.file(expr)
+with_init.file(expr)
 
 wrap.source(expr,
     path.only = FALSE,
@@ -180,8 +180,6 @@ wrap.source(expr,
   \item{fun}{function with a \code{srcref}.}
 
   \item{\dots}{further arguments passed to \code{set.sys.path()}.}
-
-  \item{n}{see \code{?\link{this.path}()}.}
 }
 \details{
   \code{set.sys.path()} should be added to the body of your \sourcenolink-like

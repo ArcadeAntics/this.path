@@ -700,6 +700,46 @@ SEXP do_dotslength do_formals
 }
 
 
+#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? length(_v_) : 0)
+
+
+SEXP ddfind(int i, SEXP rho)
+{
+    if (i <= 0)
+        error(_("indexing '...' with non-positive index %d"), i);
+    SEXP vl = findVar(R_DotsSymbol, rho);
+    if (vl != R_UnboundValue) {
+        if (length_DOTS(vl) >= i) {
+            vl = nthcdr(vl, i - 1);
+            return CAR(vl);
+        }
+        else
+            error(_((i == 1) ? "the ... list contains fewer than %d element" :
+                               "the ... list contains fewer than %d elements"),
+                  i);
+    }
+    else error(_("..%d used in an incorrect context, no ... to look in"), i);
+    return R_NilValue;
+}
+
+
+#undef length_DOTS
+
+
+SEXP do_dotselt do_formals
+{
+    do_start_no_op("...elt", 1);
+
+
+    SEXP env = eval(expr_parent_frame, rho);
+    SEXP si = CAR(args);
+    if (!isNumeric(si) || XLENGTH(si) != 1)
+            errorcall(call, _("indexing '...' with an invalid index"));
+    int i = asInteger(si);
+    return eval(ddfind(i, env), env);
+}
+
+
 #endif
 
 

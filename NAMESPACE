@@ -54,6 +54,7 @@ if (getRversion() < "3.4.0") {
 
 if (getRversion() < "3.5.0") {
     export(...length)
+    export(...elt)
     export(isTRUE)
     export(isFALSE)
 }

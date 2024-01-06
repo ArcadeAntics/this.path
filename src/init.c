@@ -40,6 +40,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 #if R_version_less_than(3, 5, 0)
 {"...length", (DL_FUNC) &do_dotslength, 0},
+{"...elt"   , (DL_FUNC) &do_dotselt   , 1},
 #endif
 
 
@@ -177,7 +178,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"thisPathInAQUAError"                     , (DL_FUNC) &do_thisPathInAQUAError                     , 1},
 
 {"is_clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
-{"init_tools_rstudio", (DL_FUNC) &do_init_tools_rstudio, -1},
 {"jupyter_path"      , (DL_FUNC) &do_jupyter_path      , -1},
 {"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1},
 {"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
