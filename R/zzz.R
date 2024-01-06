@@ -57,7 +57,7 @@ tmp(
     ## relpath.R  ----
 
 
-    NET.USE.command,
+    .net_USE_command,
 
 
     ## thispath.R ----

@@ -43,22 +43,23 @@ stop(.defunctError("progArgs", "this.path", old = "fileArgs"))
 progArgs <- function ()
 {
     n <- .External2(.C_getframenumber)
-    if (n && n > .toplevel.nframe()) {
-        value <- character()
-        whiches <- .External2(.C_sys.whiches, n)
-        if (n <- length(whiches))
-            whiches <- whiches[seq.int(to = 1L, by = -1L, length.out = n - 1L)]
-        for (which in whiches) {
-            if ((.identical)(sys.function(which), withArgs)) {
-                value <- get("args", envir = sys.frame(which), inherits = FALSE)
-                break
+    if (n) {
+        if (n > .toplevel.nframe()) {
+            value <- character()
+            whiches <- .External2(.C_sys.whiches, n)
+            if (n <- length(whiches))
+                whiches <- whiches[seq.int(to = 1L, by = -1L, length.out = n - 1L)]
+            for (which in whiches) {
+                if ((.identical)(sys.function(which), withArgs)) {
+                    value <- get("args", envir = sys.frame(which), inherits = FALSE)
+                    break
+                }
             }
+            value
         }
-        value
+        ## in the site-wide startup profile file or a user profile
+        else character()
     }
-    ## in the site-wide startup profile file or a user profile
-    else if (n < 1L)
-        character()
     else if (.in_shell)
         commandArgs(trailingOnly = TRUE)
     else character()
