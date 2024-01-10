@@ -32,12 +32,9 @@
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
   function, \code{with_sys.path()} can only be used outside a function.
-  \code{with_init.file()} provides a common use-case of \code{with_sys.path()};
-  within a user profile. You could combine this with
-  \code{\link{withAutoprint}()} to auto-print expressions as if in a toplevel
-  context, for example: \preformatted{this.path::with_init.file(withAutoprint({
-    this.path::this.path()
-}, echo = FALSE))}
+  \code{with_init.file()} is similar to \code{with_sys.path()}; it evaluates
+  its arguments within the context of the user profile, and auto-prints as if
+  in a toplevel context.
 
   See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
@@ -83,7 +80,7 @@ set.sys.path.function(fun)
 
 with_sys.path(file, expr, ...)
 with_site.file(expr)
-with_init.file(expr)
+with_init.file(...)
 
 wrap.source(expr,
     path.only = FALSE,
@@ -111,8 +108,8 @@ wrap.source(expr,
     ignore.file.uri = ignore.all)
 }
 \arguments{
-  \item{expr}{for \code{with_sys.path()} and \code{with_init.file()}, an
-    expression to evaluate within the context of a file.
+  \item{expr}{for \code{with_sys.path()}, an expression to evaluate within the
+    context of a file.
 
     for \code{wrap.source()}, an (unevaluated) call to a \sourcenolink-like
     function.}
@@ -179,7 +176,10 @@ wrap.source(expr,
 
   \item{fun}{function with a \code{srcref}.}
 
-  \item{\dots}{further arguments passed to \code{set.sys.path()}.}
+  \item{\dots}{for \code{with_sys.path()}, further arguments passed to
+    \code{set.sys.path()}.
+
+    for \code{with_init.file()}, expressions to evaluate and auto-print.}
 }
 \details{
   \code{set.sys.path()} should be added to the body of your \sourcenolink-like

@@ -211,10 +211,9 @@ main <- function ()
                         "              skip.echo = 0, spaced = FALSE, ...)"
                     ),
                     "3.5.0",
-                    c("...length", "...elt", "isTRUE", "isFALSE"),
+                    c("...length", "isTRUE", "isFALSE"),
                     c(
                         "...length()",
-                        "...elt(n)",
                         "isTRUE(x)",
                         "isFALSE(x)"
                     ),
@@ -229,8 +228,11 @@ main <- function ()
                     "deparse1",
                     "deparse1(expr, collapse = \" \", width.cutoff = 500L, ...)",
                     "4.1.0",
-                    "bquote",
-                    "bquote(expr, where = parent.frame(), splice = FALSE)",
+                    c("...elt", "bquote"),
+                    c(
+                        "...elt(n)",
+                        "bquote(expr, where = parent.frame(), splice = FALSE)"
+                    ),
                     "4.2.0",
                     c("gettext", "gettextf"),
                     c(

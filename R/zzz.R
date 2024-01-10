@@ -164,6 +164,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(endsWith)
 
     fix_External2(...length)
+
     fix_External2(...elt)
 
 
@@ -184,6 +185,13 @@ if (getRversion() < "3.0.0") {
     fix_External2(check.path)
     fix_External2(check.dir)
     fix_External2(check.proj)
+
+
+    ## enhances.R   ----
+
+
+    fix_External2(with_script_path)
+    fix_External2(make_fix_file)
 
 
     ## ext.R        ----
@@ -273,7 +281,6 @@ if (getRversion() < "3.0.0") {
     ## progargs.R   ----
 
 
-    fix_External2(fileArgs)
     fix_External2(progArgs)
     fix_External2(withArgs)
 
@@ -281,7 +288,6 @@ if (getRversion() < "3.0.0") {
     ## promises.R   ----
 
 
-    fix_External2(.GUI_RStudio)
     fix_External2(.OS_windows_maybe_unembedded_shell)
     fix_External2(.shINFO)
     fix_External2(.GUI_Rgui)
@@ -326,12 +332,13 @@ if (getRversion() < "3.0.0") {
 
     fix_External2(.shFILE)
     fix_External2(.is_abs_path)
-    fix_External2(.thisPathUnrecognizedConnectionClassError)
-    fix_External2(.thisPathUnrecognizedMannerError)
-    fix_External2(.thisPathNotImplementedError)
-    fix_External2(.thisPathNotExistsError)
-    fix_External2(.thisPathInZipFileError)
-    fix_External2(.thisPathInAQUAError)
+    fix_External2(.ThisPathInAQUAError)
+    fix_External2(.ThisPathInZipFileError)
+    fix_External2(.ThisPathNotExistsError)
+    fix_External2(.ThisPathNotFoundError)
+    fix_External2(.ThisPathNotImplementedError)
+    fix_External2(.ThisPathUnrecognizedConnectionClassError)
+    fix_External2(.ThisPathUnrecognizedMannerError)
     fix_External2(.is_clipboard)
     fix_External2(.fixNewlines)
     fix_External2(.jupyter_path)
@@ -396,6 +403,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(set.env.path)
     fix_External2(set.src.path)
     fix_External2(set.sys.path.function)
+    fix_External2(with_init.file)
 
 
     rm(fix_External2)

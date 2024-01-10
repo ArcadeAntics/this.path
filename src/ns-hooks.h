@@ -5,9 +5,16 @@
 #include <Rinternals.h>       /* need definition of SEXP */
 
 
-extern SEXP mynamespace         ,
+extern SEXP mynamespace,
             DocumentContextClass,
-            last_condition      ,
+            ThisPathInAQUAErrorClass                     ,
+            ThisPathInZipFileErrorClass                  ,
+            ThisPathNotExistsErrorClass                  ,
+            ThisPathNotFoundErrorClass                   ,
+            ThisPathNotImplementedErrorClass             ,
+            ThisPathUnrecognizedConnectionClassErrorClass,
+            ThisPathUnrecognizedMannerErrorClass         ,
+            last_condition,
             _custom_gui_path_character_environment,
             _custom_gui_path_function_environment ;
 

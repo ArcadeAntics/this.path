@@ -2,56 +2,16 @@
 #include "thispathdefn.h"
 
 
-SEXP do_thisPathUnrecognizedConnectionClassError do_formals
+SEXP do_ThisPathInAQUAError do_formals
 {
-    do_start_no_call_op_rho("thisPathUnrecognizedConnectionClassError", 2);
-#if defined(R_CONNECTIONS_VERSION_1)
-    /* as I said before, R_GetConnection() is not a part of the R API.
-       DO NOT USE IT unless you are certain of what you are doing and
-       accept the potential consequences and drawbacks */
-    return thisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), R_GetConnection(CADR(args)));
-#else
-    return thisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summaryconnection(CADR(args)));
-#endif
+    do_start_no_call_op_rho("ThisPathInAQUAError", 1);
+    return ThisPathInAQUAError(lazy_duplicate(CAR(args)));
 }
 
 
-SEXP do_thisPathUnrecognizedMannerError do_formals
+SEXP do_ThisPathInZipFileError do_formals
 {
-    do_start_no_call_op_rho("thisPathUnrecognizedMannerError", 1);
-    return thisPathUnrecognizedMannerError(lazy_duplicate(CAR(args)));
-}
-
-
-SEXP do_thisPathNotImplementedError do_formals
-{
-    do_start_no_op_rho("thisPathNotImplementedError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
-        STRING_ELT(CAR(args), 0) == NA_STRING)
-    {
-        errorcall(call, _("invalid first argument"));
-    }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return thisPathNotImplementedError(msg, lazy_duplicate(CADR(args)));
-}
-
-
-SEXP do_thisPathNotExistsError do_formals
-{
-    do_start_no_op_rho("thisPathNotExistsError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
-        STRING_ELT(CAR(args), 0) == NA_STRING)
-    {
-        errorcall(call, _("invalid first argument"));
-    }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return thisPathNotExistsError(msg, lazy_duplicate(CADR(args)));
-}
-
-
-SEXP do_thisPathInZipFileError do_formals
-{
-    do_start_no_op_rho("thisPathInZipFileError", 2);
+    do_start_no_op_rho("ThisPathInZipFileError", 2);
     SEXP call2 = lazy_duplicate(CAR(args)); args = CDR(args);
     if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
@@ -59,14 +19,67 @@ SEXP do_thisPathInZipFileError do_formals
         errorcall(call, _("invalid first argument"));
     }
     SEXP description = STRING_ELT(CAR(args), 0);
-    return thisPathInZipFileError(call2, description);
+    return ThisPathInZipFileError(call2, description);
 }
 
 
-SEXP do_thisPathInAQUAError do_formals
+SEXP do_ThisPathNotExistsError do_formals
 {
-    do_start_no_call_op_rho("thisPathInAQUAError", 1);
-    return thisPathInAQUAError(lazy_duplicate(CAR(args)));
+    do_start_no_op_rho("ThisPathNotExistsError", 2);
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
+        STRING_ELT(CAR(args), 0) == NA_STRING)
+    {
+        errorcall(call, _("invalid first argument"));
+    }
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
+    return ThisPathNotExistsError(msg, lazy_duplicate(CADR(args)));
+}
+
+
+SEXP do_ThisPathNotFoundError do_formals
+{
+    do_start_no_op_rho("ThisPathNotFoundError", 2);
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
+        STRING_ELT(CAR(args), 0) == NA_STRING)
+    {
+        errorcall(call, _("invalid first argument"));
+    }
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
+    return ThisPathNotFoundError(msg, lazy_duplicate(CADR(args)));
+}
+
+
+SEXP do_ThisPathNotImplementedError do_formals
+{
+    do_start_no_op_rho("ThisPathNotImplementedError", 2);
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
+        STRING_ELT(CAR(args), 0) == NA_STRING)
+    {
+        errorcall(call, _("invalid first argument"));
+    }
+    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
+    return ThisPathNotImplementedError(msg, lazy_duplicate(CADR(args)));
+}
+
+
+SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
+{
+    do_start_no_call_op_rho("ThisPathUnrecognizedConnectionClassError", 2);
+#if defined(R_CONNECTIONS_VERSION_1)
+    /* as I said before, R_GetConnection() is not a part of the R API.
+       DO NOT USE IT unless you are certain of what you are doing and
+       accept the potential consequences and drawbacks */
+    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), R_GetConnection(CADR(args)));
+#else
+    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summaryconnection(CADR(args)));
+#endif
+}
+
+
+SEXP do_ThisPathUnrecognizedMannerError do_formals
+{
+    do_start_no_call_op_rho("ThisPathUnrecognizedMannerError", 1);
+    return ThisPathUnrecognizedMannerError(lazy_duplicate(CAR(args)));
 }
 
 
@@ -439,7 +452,7 @@ SEXP error_no_associated_path(SEXP rho)
     const char *msg = "no associated path";
     SEXP call = getCurrentCall(rho);
     PROTECT(call);
-    SEXP cond = thisPathNotExistsError(msg, call);
+    SEXP cond = ThisPathNotExistsError(msg, call);
     PROTECT(cond);
     stop(cond);
     UNPROTECT(2);

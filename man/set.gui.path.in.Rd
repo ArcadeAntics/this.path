@@ -1,6 +1,7 @@
 \name{set.gui.path}
 \alias{set.gui.path}
 \alias{thisPathNotExistsError}
+\alias{thisPathNotFoundError}
 \title{Declare GUI's Active Document}
 \description{
   \code{set.gui.path()} can be used to implement \code{\link{this.path}()} for
@@ -13,13 +14,17 @@ set.gui.path(...)
 
 thisPathNotExistsError(..., call. = TRUE, domain = NULL,
                        call = .getCurrentCall())
+
+thisPathNotFoundError(..., call. = TRUE, domain = NULL,
+                      call = .getCurrentCall())
 }
 \arguments{
   \item{\dots, call., domain, call}{See details.}
 }
 \details{
-  \code{thisPathNotExistsError()} is provided for use inside
-  \code{set.gui.path()}, and should not be used elsewhere.
+  \code{thisPathNotExistsError()} and \code{thisPathNotFoundError()} are
+  provided for use inside \code{set.gui.path()}, and should not be used
+  elsewhere.
 
   If no arguments are passed to \code{set.gui.path()}, the default behaviour
   will be restored.
@@ -61,8 +66,8 @@ function(pkgname, pkgpath)
         if (is.null(doc)) {
             if (for.msg)
                 NA_character_
-            else stop(this.path::thisPathNotExistsError("R is running from ",
-                .guiname, " with no documents open\\n",
+            else stop(this.path::thisPathNotExistsError(
+                "R is running from ", .guiname, " with no documents open\\n",
                 " (or document has no path)"))
         }
         else if (contents) {
@@ -83,7 +88,9 @@ function(pkgname, pkgpath)
             else if (for.msg)
                 ## return "Untitled" possibly translated
                 gettext("Untitled", domain = "RGui", trim = FALSE)
-            else stop("document in ", .guiname, " does not exist")
+            else
+                stop(this.path::thisPathNotFoundError(
+                    "document in ", .guiname, " does not exist"))
         }
     }
     ## recommended to prevent tampering

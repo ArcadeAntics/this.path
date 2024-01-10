@@ -23,7 +23,7 @@
 .shFILE <- evalq(envir = new.env(), {
     delayedAssign("ofile", { if (.in_shell) .shINFO[["FILE"]] else NA_character_ })
     delayedAssign("file" , { .normalizePath(ofile) })
-function (original = TRUE, for.msg = FALSE)
+           function (original = TRUE, for.msg = FALSE)
 .External2(.C_shFILE, original, for.msg)
 })
 
@@ -161,31 +161,38 @@ delayedAssign(".untitled", {
 }
 
 
-.thisPathUnrecognizedConnectionClassError <- function (con, call = .getCurrentCall(), call. = TRUE)
-.External2(.C_thisPathUnrecognizedConnectionClassError, if (call.) call, con)
+.ThisPathInAQUAError <- function (call = .getCurrentCall(), call. = TRUE)
+.External2(.C_ThisPathInAQUAError, if (call.) call)
 
 
-.thisPathUnrecognizedMannerError <- function (call = .getCurrentCall(), call. = TRUE)
-.External2(.C_thisPathUnrecognizedMannerError, if (call.) call)
+.ThisPathInZipFileError <- function (description, call = .getCurrentCall(), call. = TRUE)
+.External2(.C_ThisPathInZipFileError, if (call.) call, description)
 
 
-.thisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
-.External2(.C_thisPathNotImplementedError, .makeMessage(..., domain = domain), call = if (call.) call)
+.ThisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
+.External2(.C_ThisPathNotExistsError, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-.thisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
-.External2(.C_thisPathNotExistsError, .makeMessage(..., domain = domain), call = if (call.) call)
+delayedAssign("thisPathNotExistsError", { .ThisPathNotExistsError })
 
 
-delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
+.ThisPathNotFoundError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
+.External2(.C_ThisPathNotFoundError, .makeMessage(..., domain = domain), call = if (call.) call)
 
 
-.thisPathInZipFileError <- function (description, call = .getCurrentCall(), call. = TRUE)
-.External2(.C_thisPathInZipFileError, if (call.) call, description)
+delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
 
 
-.thisPathInAQUAError <- function (call = .getCurrentCall(), call. = TRUE)
-.External2(.C_thisPathInAQUAError, if (call.) call)
+.ThisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
+.External2(.C_ThisPathNotImplementedError, .makeMessage(..., domain = domain), call = if (call.) call)
+
+
+.ThisPathUnrecognizedConnectionClassError <- function (con, call = .getCurrentCall(), call. = TRUE)
+.External2(.C_ThisPathUnrecognizedConnectionClassError, if (call.) call, con)
+
+
+.ThisPathUnrecognizedMannerError <- function (call = .getCurrentCall(), call. = TRUE)
+.External2(.C_ThisPathUnrecognizedMannerError, if (call.) call)
 
 
 ## helper functions for sys.path()     ----
@@ -310,7 +317,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
     if (is.null(initwd)) {
         if (for.msg)
             return(NA_character_)
-        else stop(.thisPathNotExistsError(
+        else stop(.ThisPathNotFoundError(
             "R is running from Jupyter but the initial working directory is unknown"))
     }
 
@@ -318,7 +325,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
     if (!.isJupyterLoaded()) {
         if (for.msg)
             return(NA_character_)
-        else stop("Jupyter has not finished loading")
+        else stop(.ThisPathNotExistsError("Jupyter has not finished loading"))
     }
 
 
@@ -355,7 +362,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
     if (for.msg)
         NA_character_
-    else stop(.thisPathNotExistsError(
+    else stop(.ThisPathNotFoundError(
         sprintf("R is running from Jupyter with initial working directory '%s'\n", encodeString(initwd)),
         " but could not find a file with contents matching:\n",
         {
@@ -508,23 +515,24 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
     else if (.scalar_streql(rval, "untitled-active")) {
         if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop("active document in Emacs does not exist")
+        else stop(.ThisPathNotFoundError("active document in Emacs does not exist"))
     }
     else if (.scalar_streql(rval, "untitled-source")) {
         if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop("source document in Emacs does not exist")
+        else stop(.ThisPathNotFoundError("source document in Emacs does not exist"))
     }
     else if (.scalar_streql(rval, "nil")) {
         if (for.msg)
             NA_character_
-        else stop("R is running from Emacs with no documents open")
+        else stop(.ThisPathNotFoundError("R is running from Emacs with no documents open"))
     }
     else if (.scalar_streql(rval, "no-matching-pid")) {
         if (for.msg)
             NA_character_
-        else stop(sprintf("R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions in Emacs, do not run multiple\n Emacs sessions, one R session each. instead run one Emacs session with\n multiple frames, one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
-            Sys.getpid()), domain = NA)
+        else stop(.ThisPathNotFoundError(sprintf(
+            "R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions in Emacs, do not run multiple\n Emacs sessions, one R session each. instead run one Emacs session with\n multiple frames, one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
+            Sys.getpid()), domain = NA))
     }
     else stop("invalid 'emacsclient' return value")
 }
@@ -540,7 +548,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
     if (contents && .has_site_file)
         for.msg <- FALSE
     value <- site.file(original, for.msg, default = {
-        stop(.thisPathNotExistsError(
+        stop(.ThisPathNotExistsError(
             "site-wide startup profile file was not found",
             call = sys.call()))
     })
@@ -555,7 +563,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         if (contents && .has_shFILE)
             for.msg <- FALSE
         value <- shFILE(original, for.msg, default = {
-            stop(.thisPathNotExistsError(
+            stop(.ThisPathNotExistsError(
                 "R is running from a shell and argument 'FILE' is missing",
                 call = sys.call()))
         })
@@ -569,7 +577,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         if (!indx) {
             if (for.msg)
                 return(NA_character_)
-            else stop(.thisPathNotExistsError("RStudio has not finished loading"))
+            else stop(.ThisPathNotExistsError("RStudio has not finished loading"))
         }
         tools_rstudio <- as.environment(indx)
 
@@ -595,7 +603,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         if (is.null(context)) {
             if (for.msg)
                 NA_character_
-            else stop(.thisPathNotExistsError(
+            else stop(.ThisPathNotExistsError(
                 "R is running from RStudio with no documents open\n",
                 " (or source document has no path)"))
         }
@@ -628,13 +636,13 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         }
         else if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop(
+        else stop(.ThisPathNotFoundError(
             if (verbose) {
                 if (active)
                     "active document in RStudio does not exist"
                 else "source document in RStudio does not exist"
             } else "document in RStudio does not exist"
-        )
+        ))
     }
     else if (.GUI_vscode) {
 
@@ -646,14 +654,19 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         tryCatch3({
             context <- rstudioapi::getSourceEditorContext()
         }, error = {
-            stop(simpleError("package:rstudioapi is not set up to work with VSCode; try adding:\n\n```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n  to the site-wide startup profile file or your user profile (see ?Startup),\n  then restart the R session and try again", sys.call()))
+            stop(.ThisPathNotFoundError(
+                "'package:rstudioapi' has not been set up to work with VSCode; try adding:\n\n",
+                "```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n",
+                " to the site-wide startup profile file or the user profile (see ?Startup),\n",
+                " then restart the R session and try again",
+                call = sys.call()))
         })
 
 
         if (is.null(context)) {
             if (for.msg)
                 NA_character_
-            else stop(.thisPathNotExistsError(
+            else stop(.ThisPathNotExistsError(
                 "R is running from VSCode with no documents open\n",
                 " (or document has no path)"
             ))
@@ -667,7 +680,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         else if (startsWith(context[["id"]], "untitled:")) {
             if (for.msg)
                 context[["path"]]
-            else stop("document in VSCode does not exist")
+            else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
         }
         else if (nzchar(path <- context[["path"]])) {
             Encoding(path) <- "UTF-8"
@@ -678,7 +691,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
         }
         else if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop("document in VSCode does not exist")
+        else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
     }
     else if (.GUI_jupyter) {
         .jupyter_path(verbose, original, for.msg, contents)
@@ -689,15 +702,15 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
     else if (.GUI_powerbi) {
         if (for.msg)
             NA_character_
-        else stop(.thisPathNotImplementedError(
-            "R is running from Power BI which is currently unimplemented\n",
+        else stop(.ThisPathNotFoundError(
+            "R is running from Power BI for which 'this.path' is unimplemented\n",
             " you should not need to use this.path() in Power BI since you can import data directly"))
     }
     else if (.in_callr) {
         if (for.msg)
             NA_character_
-        else stop(.thisPathNotImplementedError(
-            "R is running from 'package:callr' which is currently unimplemented\n",
+        else stop(.ThisPathNotFoundError(
+            "R is running from 'package:callr' for which 'this.path' is unimplemented\n",
             " 'package:callr' calls a function in a separate session,\n",
             " you should not need the path of the script where it was written"))
     }
@@ -712,7 +725,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
         if (for.msg)
             NA_character_
-        else stop(.thisPathInAQUAError())
+        else stop(.ThisPathInAQUAError())
     }
 
 
@@ -722,7 +735,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
         if (for.msg)
             NA_character_
-        else stop(.thisPathNotExistsError(
+        else stop(.ThisPathNotExistsError(
             "R is running from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
 
@@ -733,7 +746,7 @@ delayedAssign("thisPathNotExistsError", { .thisPathNotExistsError })
 
         if (for.msg)
             NA_character_
-        else stop(.thisPathUnrecognizedMannerError())
+        else stop(.ThisPathUnrecognizedMannerError())
     }
 }
 
@@ -775,7 +788,7 @@ delayedAssign(".identical", {
     if (getRversion() >= "4.2.0") {
 
 
-function (x, y)
+              function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE,
     extptr.as.ref = TRUE)
@@ -784,7 +797,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     } else if (getRversion() >= "3.4.0") {
 
 
-function (x, y)
+              function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE)
 
@@ -792,7 +805,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     } else if (getRversion() >= "3.0.0") {
 
 
-function (x, y)
+              function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE)
 
@@ -800,7 +813,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     } else if (getRversion() >= "2.14.0") {
 
 
-function (x, y)
+              function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE)
 
@@ -808,14 +821,14 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     } else if (getRversion() >= "2.10.0") {
 
 
-function (x, y)
+              function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE)
 
 
     } else {
 
 
-function (x, y)
+              function (x, y)
 identical(x, y)
 
 
@@ -938,14 +951,14 @@ normalizePath(path, winslash, mustWork)
 
 
 local({
-    tmp <- readLines("./src/thispathdefn.h")
-    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+thisPathNotExistsErrorClass[ \t]*\\\\[ \t]*$", tmp) + 1L]]
+    tmp <- readLines("./src/ns-hooks.c")
+    tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+ThisPathNotExistsErrorClass_string[ \t]*\\\\[ \t]*$", tmp) + 1L]]
     tmp <- str2lang(tmp)
     if (!is.character(tmp) || length(tmp) != 1L || is.na(tmp))
         stop("could not determine class name")
-    expected <- "this.path::thisPathNotExistsError"
+    expected <- "ThisPathNotExistsError"
     if (tmp != expected)
-        stop(sprintf("thisPathNotExistsErrorClass found in ./src/thispathdefn.h (%s)\n does not match expected value in this.path.R (%s)",
+        stop(sprintf("ThisPathNotExistsErrorClass found in ./src/ns-hooks.c (%s)\n does not match expected value in ./R/thispath.R (%s)",
             tmp, expected))
 })
 
@@ -968,11 +981,11 @@ sys.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg 
         if (missing(else.))
             tryCatch({
                 .External2(.C_sys_path, verbose, original, for.msg, contents, local)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_sys_path, verbose, original, for.msg, contents, local)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -996,12 +1009,12 @@ sys.dir <- function (verbose = getOption("verbose"), local = FALSE, default, els
             tryCatch({
                 value <- .External2(.C_sys_path, verbose, local)
                 .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_sys_path, verbose, local)
                 value <- .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -1029,11 +1042,11 @@ env.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg 
         if (missing(else.))
             tryCatch({
                 .External2(.C_env_path, verbose, original, for.msg, contents, envir, matchThisEnv)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_env_path, verbose, original, for.msg, contents, envir, matchThisEnv)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -1060,12 +1073,12 @@ env.dir <- function (verbose = getOption("verbose"), n = 0L, envir = parent.fram
             tryCatch({
                 value <- .External2(.C_env_path, verbose, envir, matchThisEnv)
                 .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_env_path, verbose, envir, matchThisEnv)
                 value <- .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -1091,11 +1104,11 @@ src.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg 
         if (missing(else.))
             tryCatch({
                 .External2(.C_src_path, verbose, original, for.msg, contents, srcfile)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_src_path, verbose, original, for.msg, contents, srcfile)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -1121,12 +1134,12 @@ src.dir <- function (verbose = getOption("verbose"), n = 0L, srcfile = if (n) sy
             tryCatch({
                 value <- .External2(.C_src_path, verbose, srcfile)
                 .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_src_path, verbose, srcfile)
                 value <- .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -1157,11 +1170,11 @@ this.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg
         if (missing(else.))
             tryCatch({
                 .External2(.C_this_path, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2({
                 value <- .External2(.C_this_path, verbose, original, for.msg, contents, local, envir, matchThisEnv, srcfile)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }
@@ -1191,12 +1204,12 @@ this.dir <- function (verbose = getOption("verbose"), local = FALSE, n = 0L, env
             tryCatch({
                 value <- .External2(.C_this_path, verbose, local, envir, matchThisEnv, srcfile)
                 .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default)
+            }, ThisPathNotExistsError = function(e) default)
         else {
             tryCatch2(value <- {
                 value <- .External2(.C_this_path, verbose, local, envir, matchThisEnv, srcfile)
                 .dir(value)
-            }, `this.path::thisPathNotExistsError` = function(e) default,
+            }, ThisPathNotExistsError = function(e) default,
                 else. = (else.)(value))
         }
     }

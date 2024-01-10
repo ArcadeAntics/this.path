@@ -87,7 +87,7 @@ tmp$find_file <- function (..., path = ".")
 
 
 tmp$make_fix_file <- .removeSource_from_inner_functions(
-function (path = getwd(), subdir = NULL)
+                     function (path = getwd(), subdir = NULL)
 {
     path <- normalizePath(path, winslash = "/", mustWork = TRUE)
     root <- .find_root(path = path, criterion = package_here_criterion_if_rprojroot_is_not_available)
@@ -125,7 +125,7 @@ function (path = getwd(), subdir = NULL)
     cat(format(x), sep = "\n")
     invisible(x)
 }
-function (path = getwd(), verbose = FALSE, criterion = package_here_criterion)
+              function (path = getwd(), verbose = FALSE, criterion = package_here_criterion)
 {
     # path <- "\\\\host\\share\\path\\to\\file\\"
     if (is.null(path))
@@ -168,7 +168,7 @@ rm(tmp)
 
 .proj <- evalq(envir = new.env(), {
     x <- structure(character(0), names = character(0))
-function (path, verbose = FALSE)
+         function (path, verbose = FALSE)
 {
     ## 'path' should be normalized
     if (indx <- match(path, names(x), 0L))

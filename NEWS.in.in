@@ -6,6 +6,15 @@ CHANGES IN this.path devel:
 
     * this.path() is now compatible with function utils::Sweave().
 
+    * Added with_script_path() which evaluates a box import statement
+      after setting the current script in 'package:box' to this.path().
+
+    * Added make_fix_file() which makes a function that constructs file
+      paths, starting with the project root of this.dir().
+
+    * with_init.file() now accepts unlimited arguments and auto-prints
+      them as if in a toplevel context.
+
   DEPRECATED AND DEFUNCT:
 
     * set.sys.path.jupyter() is defunct and should be replaced with

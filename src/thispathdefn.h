@@ -67,10 +67,14 @@ extern Rboolean R_Visible;
 
 
 
-extern Rboolean needQuote(SEXP x);
-
-
 extern R_xlen_t asXLength(SEXP x);
+
+
+extern int ddVal(SEXP symbol);
+extern SEXP ddfindVar(SEXP symbol, SEXP rho);
+
+
+extern Rboolean needQuote(SEXP x);
 
 
 extern void UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t);
@@ -101,33 +105,30 @@ extern SEXP findFunction(SEXP symbol, SEXP rho);
 extern SEXP as_environment_char(const char *what);
 
 
-extern SEXP errorCondition (const char *msg, SEXP call, const char **Class, int numFields);
-extern SEXP errorCondition1(const char *msg, SEXP call, const char *Class, int numFields);
+extern SEXP errorCondition        (const char *msg, SEXP call, int numFields, SEXP Class);
+extern SEXP errorCondition_strings(const char *msg, SEXP call, int numFields, const char **Class);
+extern SEXP errorCondition_string (const char *msg, SEXP call, int numFields, const char *Class);
 extern SEXP simpleError(const char *msg, SEXP call);
-
-
-/* this code is written this way on purpose, do not reformat it */
-#define thisPathNotExistsErrorClass                            \
-    "this.path::thisPathNotExistsError"
-
-
-/* this code is written this way on purpose, do not reformat it */
-#define thisPathNotFoundErrorClass                             \
-    "this.path::thisPathNotFoundError"
 
 
 #if defined(R_CONNECTIONS_VERSION_1)
 extern SEXP summaryconnection(Rconnection Rcon);
-extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
 #else
 extern SEXP summaryconnection(SEXP sConn);
-extern SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
 #endif
-extern SEXP thisPathUnrecognizedMannerError         (SEXP call);
-extern SEXP thisPathNotImplementedError             (const char *msg, SEXP call);
-extern SEXP thisPathNotExistsError                  (const char *msg, SEXP call);
-extern SEXP thisPathInZipFileError                  (SEXP call, SEXP description);
-extern SEXP thisPathInAQUAError                     (SEXP call);
+
+
+extern SEXP ThisPathInAQUAError                     (SEXP call);
+extern SEXP ThisPathInZipFileError                  (SEXP call, SEXP description);
+extern SEXP ThisPathNotExistsError                  (const char *msg, SEXP call);
+extern SEXP ThisPathNotFoundError                   (const char *msg, SEXP call);
+extern SEXP ThisPathNotImplementedError             (const char *msg, SEXP call);
+#if defined(R_CONNECTIONS_VERSION_1)
+extern SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
+#else
+extern SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
+#endif
+extern SEXP ThisPathUnrecognizedMannerError         (SEXP call);
 
 
 extern void stop(SEXP cond);
@@ -232,7 +233,15 @@ typedef struct gzconn {
             PROTECT(summary); nprotect++;                      \
             SEXP description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
             const char *klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
-            if (streql(klass, "gzcon")) error("'this.path' not implemented for a gzcon()")
+            if (streql(klass, "gzcon")) {                      \
+                const char *msg = "'this.path' cannot be used within a 'gzcon()'";\
+                SEXP call = getCurrentCall(rho);               \
+                PROTECT(call);                                 \
+                SEXP cond = ThisPathNotFoundError(msg, call);  \
+                PROTECT(cond);                                 \
+                stop(cond);                                    \
+                UNPROTECT(2);                                  \
+            }
 #define Rcon_or_summary summary
 #endif
 
@@ -431,7 +440,7 @@ do {                                                           \
                  represented by a single string)               \
                  */                                            \
                 if (allow_unz) {                               \
-                    INCREMENT_NAMED_defineVar(errcndSymbol              , thisPathInZipFileError(R_NilValue, description), documentcontext);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol              , ThisPathInZipFileError(R_NilValue, description), documentcontext);\
                     INCREMENT_NAMED_defineVar(for_msgSymbol             , ScalarString(description)                      , documentcontext);\
                                     defineVar(associated_with_fileSymbol, R_TrueValue                                    , documentcontext);\
                 }                                              \
@@ -491,7 +500,7 @@ do {                                                           \
                      know if this connection has an            \
                      associated file                           \
                      */                                        \
-                    INCREMENT_NAMED_defineVar(errcndSymbol , thisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary), documentcontext);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol , ThisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary), documentcontext);\
                     INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)                                            , documentcontext);\
                 }                                              \
                 else                                           \

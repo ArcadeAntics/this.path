@@ -240,10 +240,6 @@ if (getRversion() < "3.5.0") {
 .External2(.C_...length)
 
 
-...elt <- function (n)
-.External2(.C_...elt, n)
-
-
 ## isTRUE(x) was previously defined as:
 ## function (x)
 ## identical(TRUE, x)
@@ -307,6 +303,10 @@ paste(deparse(expr, width.cutoff, ...), collapse = collapse)
 
 
 if (getRversion() < "4.1.0") {
+
+
+...elt <- function (n)
+.External2(.C_...elt, n)
 
 
 ## bquote(splice = TRUE) was added in R 4.1.0

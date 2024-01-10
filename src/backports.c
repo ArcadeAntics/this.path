@@ -687,6 +687,9 @@ SEXP do_endsWith do_formals
 #if R_version_less_than(3, 5, 0)
 
 
+#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? length(_v_) : 0)
+
+
 SEXP do_dotslength do_formals
 {
     do_start_no_call_op("...length", 0);
@@ -696,11 +699,8 @@ SEXP do_dotslength do_formals
     SEXP vl = findVar(R_DotsSymbol, env);
     if (vl == R_UnboundValue)
         error(_("incorrect context: the current call has no '...' to look in"));
-    return ScalarInteger((TYPEOF(vl) == DOTSXP ? length(vl) : 0));
+    return ScalarInteger(length_DOTS(vl));
 }
-
-
-#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? length(_v_) : 0)
 
 
 SEXP ddfind(int i, SEXP rho)
@@ -724,20 +724,6 @@ SEXP ddfind(int i, SEXP rho)
 
 
 #undef length_DOTS
-
-
-SEXP do_dotselt do_formals
-{
-    do_start_no_op("...elt", 1);
-
-
-    SEXP env = eval(expr_parent_frame, rho);
-    SEXP si = CAR(args);
-    if (!isNumeric(si) || XLENGTH(si) != 1)
-            errorcall(call, _("indexing '...' with an invalid index"));
-    int i = asInteger(si);
-    return eval(ddfind(i, env), env);
-}
 
 
 #endif
@@ -788,6 +774,22 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
 
 
 #if R_version_less_than(4, 1, 0)
+
+
+// ...elt(n) was added in R 3.5.0
+// but did not propogate visibility until R 4.1.0
+SEXP do_dotselt do_formals
+{
+    do_start_no_op("...elt", 1);
+
+
+    SEXP env = eval(expr_parent_frame, rho);
+    SEXP si = CAR(args);
+    if (!isNumeric(si) || XLENGTH(si) != 1)
+        errorcall(call, _("indexing '...' with an invalid index"));
+    int i = asInteger(si);
+    return eval(ddfind(i, env), env);
+}
 
 
 SEXP R_NewEnv(SEXP enclos, int hash, int size)

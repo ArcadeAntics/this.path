@@ -40,7 +40,11 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 #if R_version_less_than(3, 5, 0)
 {"...length", (DL_FUNC) &do_dotslength, 0},
-{"...elt"   , (DL_FUNC) &do_dotselt   , 1},
+#endif
+
+
+#if R_version_less_than(4, 1, 0)
+{"...elt", (DL_FUNC) &do_dotselt, 1},
 #endif
 
 
@@ -143,6 +147,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"mkPROMISE"             , (DL_FUNC) &do_mkPROMISE             ,  2},
 {"mkEVPROMISE"           , (DL_FUNC) &do_mkEVPROMISE           ,  2},
 {"unlockEnvironment"     , (DL_FUNC) &do_unlockEnvironment     , -1},
+{"is_R_MissingArg"       , (DL_FUNC) &do_is_R_MissingArg       , -1},
 
 
 /* rgui_path.c */
@@ -170,12 +175,13 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* thispath.c */
 
 
-{"thisPathUnrecognizedConnectionClassError", (DL_FUNC) &do_thisPathUnrecognizedConnectionClassError, 2},
-{"thisPathUnrecognizedMannerError"         , (DL_FUNC) &do_thisPathUnrecognizedMannerError         , 1},
-{"thisPathNotImplementedError"             , (DL_FUNC) &do_thisPathNotImplementedError             , 2},
-{"thisPathNotExistsError"                  , (DL_FUNC) &do_thisPathNotExistsError                  , 2},
-{"thisPathInZipFileError"                  , (DL_FUNC) &do_thisPathInZipFileError                  , 2},
-{"thisPathInAQUAError"                     , (DL_FUNC) &do_thisPathInAQUAError                     , 1},
+{"ThisPathInAQUAError"                     , (DL_FUNC) &do_ThisPathInAQUAError                     , 1},
+{"ThisPathInZipFileError"                  , (DL_FUNC) &do_ThisPathInZipFileError                  , 2},
+{"ThisPathNotExistsError"                  , (DL_FUNC) &do_ThisPathNotExistsError                  , 2},
+{"ThisPathNotFoundError"                   , (DL_FUNC) &do_ThisPathNotFoundError                   , 2},
+{"ThisPathNotImplementedError"             , (DL_FUNC) &do_ThisPathNotImplementedError             , 2},
+{"ThisPathUnrecognizedConnectionClassError", (DL_FUNC) &do_ThisPathUnrecognizedConnectionClassError, 2},
+{"ThisPathUnrecognizedMannerError"         , (DL_FUNC) &do_ThisPathUnrecognizedMannerError         , 1},
 
 {"is_clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
 {"jupyter_path"      , (DL_FUNC) &do_jupyter_path      , -1},

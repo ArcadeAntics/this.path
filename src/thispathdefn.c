@@ -48,6 +48,29 @@ R_xlen_t asXLength(SEXP x)
 #endif
 
 
+int ddVal(SEXP symbol)
+{
+    const char *buf;
+    char *endp;
+    int rval;
+
+    buf = CHAR(PRINTNAME(symbol));
+    if (!strncmp(buf, "..", 2) && strlen(buf) > 2) {
+        buf += 2;
+        rval = (int) strtol(buf, &endp, 10);
+        return ((*endp != '\0') ? 0 : rval);
+    }
+    return 0;
+}
+
+
+SEXP ddfindVar(SEXP symbol, SEXP rho)
+{
+    int i = ddVal(symbol);
+    return ddfind(i, rho);
+}
+
+
 Rboolean needQuote(SEXP x)
 {
     switch (TYPEOF(x)) {
@@ -193,11 +216,8 @@ SEXP as_environment_char(const char *what)
 }
 
 
-SEXP errorCondition(const char *msg, SEXP call, const char **Class, int numFields)
+SEXP errorCondition(const char *msg, SEXP call, int numFields, SEXP Class)
 {
-    /* 'Class' is an array of strings */
-
-
     SEXP value = allocVector(VECSXP, 2 + numFields);
     PROTECT(value);
     SEXP names = allocVector(STRSXP, 2 + numFields);
@@ -208,6 +228,19 @@ SEXP errorCondition(const char *msg, SEXP call, const char **Class, int numField
     SET_VECTOR_ELT(value, 0, mkString(msg));
     SET_STRING_ELT(names, 1, mkChar("call"));
     SET_VECTOR_ELT(value, 1, call);
+
+
+    setAttrib(value, R_ClassSymbol, Class);
+
+
+    UNPROTECT(1);
+    return value;
+}
+
+
+SEXP errorCondition_strings(const char *msg, SEXP call, int numFields, const char **Class)
+{
+    /* 'Class' is an array of strings */
 
 
     /* count the number of strings in 'Class' */
@@ -216,11 +249,14 @@ SEXP errorCondition(const char *msg, SEXP call, const char **Class, int numField
 
 
     SEXP klass = allocVector(STRSXP, nClass + 2);
-    setAttrib(value, R_ClassSymbol, klass);
+    PROTECT(klass);
     for (int i = 0; i < nClass; i++)
         SET_STRING_ELT(klass, i         , mkChar(Class[i]));
     SET_STRING_ELT(    klass, nClass    , mkChar("error"));
     SET_STRING_ELT(    klass, nClass + 1, mkChar("condition"));
+
+
+    SEXP value = errorCondition(msg, call, numFields, klass);
 
 
     UNPROTECT(1);
@@ -228,28 +264,16 @@ SEXP errorCondition(const char *msg, SEXP call, const char **Class, int numField
 }
 
 
-SEXP errorCondition1(const char *msg, SEXP call, const char *Class, int numFields)
+SEXP errorCondition_string(const char *msg, SEXP call, int numFields, const char *Class)
 {
-    /* 'Class' is a string */
-
-
-    SEXP value = allocVector(VECSXP, 2 + numFields);
-    PROTECT(value);
-    SEXP names = allocVector(STRSXP, 2 + numFields);
-    setAttrib(value, R_NamesSymbol, names);
-
-
-    SET_STRING_ELT(names, 0, mkChar("message"));
-    SET_VECTOR_ELT(value, 0, mkString(msg));
-    SET_STRING_ELT(names, 1, mkChar("call"));
-    SET_VECTOR_ELT(value, 1, call);
-
-
     SEXP klass = allocVector(STRSXP, 3);
-    setAttrib(value, R_ClassSymbol, klass);
+    PROTECT(klass);
     SET_STRING_ELT(klass, 0, mkChar(Class));
     SET_STRING_ELT(klass, 1, mkChar("error"));
     SET_STRING_ELT(klass, 2, mkChar("condition"));
+
+
+    SEXP value = errorCondition(msg, call, numFields, klass);
 
 
     UNPROTECT(1);
@@ -259,24 +283,10 @@ SEXP errorCondition1(const char *msg, SEXP call, const char *Class, int numField
 
 SEXP simpleError(const char *msg, SEXP call)
 {
-    return errorCondition1(msg, call, "simpleError", 0);
+    return errorCondition_string(msg, call, 0, "simpleError");
 }
 
 
-#define funbody(class_as_CHARSXP, summConn)                    \
-    const char *klass = EncodeChar((class_as_CHARSXP));        \
-    const char *format = "'this.path' not implemented when source()-ing a connection of class '%s'";\
-    const int n = strlen(format) + strlen(klass) + 1;          \
-    char msg[n];                                               \
-    snprintf(msg, n, format, klass);                           \
-    SEXP cond = errorCondition1(msg, call, "this.path::thisPathUnrecognizedConnectionClassError", 1);\
-    PROTECT(cond);                                             \
-    SEXP names = getAttrib(cond, R_NamesSymbol);               \
-    PROTECT(names);                                            \
-    SET_STRING_ELT(names, 2, mkChar("summary"));               \
-    SET_VECTOR_ELT(cond , 2, (summConn));                      \
-    UNPROTECT(2);                                              \
-    return cond
 #if defined(R_CONNECTIONS_VERSION_1)
 SEXP summaryconnection(Rconnection Rcon)
 {
@@ -304,12 +314,6 @@ SEXP summaryconnection(Rconnection Rcon)
     UNPROTECT(1);
     return value;
 }
-
-
-SEXP thisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
-{
-    funbody(mkChar(Rcon->class), summaryconnection(Rcon));
-}
 #else
 SEXP summaryconnection(SEXP sConn)
 {
@@ -320,57 +324,21 @@ SEXP summaryconnection(SEXP sConn)
     UNPROTECT(1);
     return value;
 }
-
-
-SEXP thisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
-{
-    funbody(STRING_ELT(VECTOR_ELT(summary, 1), 0), summary);
-}
 #endif
-#undef funbody
 
 
-SEXP thisPathUnrecognizedMannerError(SEXP call)
+SEXP ThisPathInAQUAError(SEXP call)
 {
-    const char *msg = "R is running in an unrecognized manner";
-    const char *Class[] = {
-        "this.path::thisPathUnrecognizedMannerError",
-        thisPathNotFoundErrorClass,
-        NULL
-    };
-    return errorCondition(msg, call, Class, 0);
+    const char *msg = "R is running from AQUA for which 'this.path' is currently unimplemented\n"
+                      " consider using RStudio, VSCode, or Emacs until such a time when this is implemented";
+    return errorCondition(msg, call, 0, ThisPathInAQUAErrorClass);
 }
 
 
-SEXP thisPathNotImplementedError(const char *msg, SEXP call)
-{
-#define thisPathNotImplementedErrorClass                       \
-    "this.path::thisPathNotImplementedError",                  \
-    "this.path_this.path_unimplemented_error",                 \
-    "notImplementedError",                                     \
-    "NotImplementedError"
-    const char *Class[] = {thisPathNotImplementedErrorClass, NULL};
-    return errorCondition(msg, call, Class, 0);
-}
-
-
-SEXP thisPathNotExistsError(const char *msg, SEXP call)
-{
-    const char *Class[] = {
-        thisPathNotExistsErrorClass,
-        "this.path::thisPathNotExistError",
-        "this.path_this.path_not_exists_error",
-        thisPathNotFoundErrorClass,
-        NULL
-    };
-    return errorCondition(msg, call, Class, 0);
-}
-
-
-SEXP thisPathInZipFileError(SEXP call, SEXP description)
+SEXP ThisPathInZipFileError(SEXP call, SEXP description)
 {
     const char *msg = "'this.path' cannot be used within a zip file";
-    SEXP cond = errorCondition1(msg, call, "this.path::thisPathInZipFileError", 1);
+    SEXP cond = errorCondition(msg, call, 1, ThisPathInZipFileErrorClass);
     PROTECT(cond);
     SEXP names = getAttrib(cond, R_NamesSymbol);
     PROTECT(names);
@@ -381,17 +349,56 @@ SEXP thisPathInZipFileError(SEXP call, SEXP description)
 }
 
 
-SEXP thisPathInAQUAError(SEXP call)
+SEXP ThisPathNotExistsError(const char *msg, SEXP call)
 {
-    const char *msg = "R is running from AQUA which is currently unimplemented\n"
-                      " consider using RStudio / / VSCode until such a time when this is implemented";
-    const char *Class[] = {
-        "this.path::thisPathInAQUAError",
-        thisPathNotFoundErrorClass,
-        thisPathNotImplementedErrorClass,
-        NULL
-    };
-    return errorCondition(msg, call, Class, 0);
+    return errorCondition(msg, call, 0, ThisPathNotExistsErrorClass);
+}
+
+
+SEXP ThisPathNotFoundError(const char *msg, SEXP call)
+{
+    return errorCondition(msg, call, 0, ThisPathNotFoundErrorClass);
+}
+
+
+SEXP ThisPathNotImplementedError(const char *msg, SEXP call)
+{
+    return errorCondition(msg, call, 0, ThisPathNotImplementedErrorClass);
+}
+
+
+#define funbody(connection_class_as_CHARSXP, summConn)         \
+    const char *klass = EncodeChar((connection_class_as_CHARSXP));\
+    const char *format = "'this.path' not implemented when source()-ing a connection of class '%s'";\
+    const int n = strlen(format) + strlen(klass) + 1;          \
+    char msg[n];                                               \
+    snprintf(msg, n, format, klass);                           \
+    SEXP cond = errorCondition(msg, call, 1, ThisPathUnrecognizedConnectionClassErrorClass);\
+    PROTECT(cond);                                             \
+    SEXP names = getAttrib(cond, R_NamesSymbol);               \
+    PROTECT(names);                                            \
+    SET_STRING_ELT(names, 2, mkChar("summary"));               \
+    SET_VECTOR_ELT(cond , 2, (summConn));                      \
+    UNPROTECT(2);                                              \
+    return cond
+#if defined(R_CONNECTIONS_VERSION_1)
+SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
+{
+    funbody(mkChar(Rcon->class), summaryconnection(Rcon));
+}
+#else
+SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
+{
+    funbody(STRING_ELT(VECTOR_ELT(summary, 1), 0), summary);
+}
+#endif
+#undef funbody
+
+
+SEXP ThisPathUnrecognizedMannerError(SEXP call)
+{
+    const char *msg = "R is running in an unrecognized manner";
+    return errorCondition(msg, call, 0, ThisPathUnrecognizedMannerErrorClass);
 }
 
 

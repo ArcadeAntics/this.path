@@ -5,6 +5,16 @@
     \itemize{
       \item{\code{this.path()} is now compatible with function
         \code{utils::Sweave()}.}
+
+      \item{Added \code{with_script_path()} which evaluates a box import
+        statement after setting the current script in \pkg{package:box} to
+        \code{this.path()}.}
+
+      \item{Added \code{make_fix_file()} which makes a function that constructs
+        file paths, starting with the project root of \code{this.dir()}.}
+
+      \item{\code{with_init.file()} now accepts unlimited arguments and
+        auto-prints them as if in a toplevel context.}
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{

@@ -5,9 +5,16 @@
 #include "symbols.h"
 
 
-SEXP mynamespace          = NULL,
+SEXP mynamespace = NULL,
      DocumentContextClass = NULL,
-     last_condition       = NULL,
+     ThisPathInAQUAErrorClass                      = NULL,
+     ThisPathInZipFileErrorClass                   = NULL,
+     ThisPathNotExistsErrorClass                   = NULL,
+     ThisPathNotFoundErrorClass                    = NULL,
+     ThisPathNotImplementedErrorClass              = NULL,
+     ThisPathUnrecognizedConnectionClassErrorClass = NULL,
+     ThisPathUnrecognizedMannerErrorClass          = NULL,
+     last_condition = NULL,
      _custom_gui_path_character_environment = NULL,
      _custom_gui_path_function_environment  = NULL;
 
@@ -140,13 +147,137 @@ SEXP do_onLoad do_formals
     INCREMENT_NAMED_defineVar(install(".mynamespace"), mynamespace, mynamespace);
 
 
-    const char *Class[] = { "ThisPathDocumentContext", "environment", NULL };
-    int nClass = 0;
-    while (Class[nClass]) ++nClass;
-    DocumentContextClass = allocVector(STRSXP, nClass);
-    R_PreserveObject(DocumentContextClass);
-    for (int i = 0; i < nClass; i++)
-        SET_STRING_ELT(DocumentContextClass, i, mkChar(Class[i]));
+#define make_STRSXP_from_char_array(var, ...)                  \
+    do {                                                       \
+        const char *Class[] = __VA_ARGS__;                     \
+        int nClass = 0;                                        \
+        while (Class[nClass]) ++nClass;                        \
+        var = allocVector(STRSXP, nClass);                     \
+        R_PreserveObject(var);                                 \
+        for (int i = 0; i < nClass; i++)                       \
+            SET_STRING_ELT(var, i, mkChar(Class[i]));          \
+        MARK_NOT_MUTABLE(var);                                 \
+    } while (0)
+
+
+    make_STRSXP_from_char_array(
+        DocumentContextClass,
+        { "ThisPathDocumentContext", "environment", NULL }
+    );
+
+
+/* this code is written this way on purpose, do not reformat */
+#define NotImplementedErrorClass_string                        \
+    "NotImplementedError"
+#define ThisPathInAQUAErrorClass_string                        \
+    "ThisPathInAQUAError"
+#define ThisPathInZipFileErrorClass_string                     \
+    "ThisPathInZipFileError"
+#define ThisPathNotExistsErrorClass_string                     \
+    "ThisPathNotExistsError"
+#define ThisPathNotFoundErrorClass_string                      \
+    "ThisPathNotFoundError"
+#define ThisPathNotImplementedErrorClass_string                \
+    "ThisPathNotImplementedError"
+#define ThisPathUnrecognizedConnectionClassErrorClass_string   \
+    "ThisPathUnrecognizedConnectionClassError"
+#define ThisPathUnrecognizedMannerErrorClass_string            \
+    "ThisPathUnrecognizedMannerError"
+
+
+/* new names of the error classes along with the old names */
+#define NotImplementedErrorClass_strings                       \
+    NotImplementedErrorClass_string,                           \
+    "notImplementedError"
+#define ThisPathInAQUAErrorClass_strings                       \
+    ThisPathInAQUAErrorClass_string,                           \
+    "this.path::thisPathInAQUAError"
+#define ThisPathInZipFileErrorClass_strings                    \
+    ThisPathInZipFileErrorClass_string,                        \
+    "this.path::thisPathInZipFileError"
+#define ThisPathNotExistsErrorClass_strings                    \
+    ThisPathNotExistsErrorClass_string,                        \
+    "thisPathNotExistsError",                                  \
+    "this.path::thisPathNotExistsError",                       \
+    "this.path::thisPathNotExistError",                        \
+    "this.path_this.path_not_exists_error"
+#define ThisPathNotFoundErrorClass_strings                     \
+    ThisPathNotFoundErrorClass_string,                         \
+    "thisPathNotFoundError",                                   \
+    "this.path::thisPathNotFoundError"
+#define ThisPathNotImplementedErrorClass_strings               \
+    ThisPathNotImplementedErrorClass_string,                   \
+    "this.path::thisPathNotImplementedError",                  \
+    "this.path_this.path_unimplemented_error"
+#define ThisPathUnrecognizedConnectionClassErrorClass_strings  \
+    ThisPathUnrecognizedConnectionClassErrorClass_string,      \
+    "this.path::thisPathUnrecognizedConnectionClassError"
+#define ThisPathUnrecognizedMannerErrorClass_strings           \
+    ThisPathUnrecognizedMannerErrorClass_string,               \
+    "this.path::thisPathUnrecognizedMannerError"
+
+
+#define ErrorClass_strings                                     \
+    "error", "condition", NULL
+
+
+    make_STRSXP_from_char_array(
+        ThisPathInAQUAErrorClass,
+        {
+            ThisPathInAQUAErrorClass_strings,
+            ThisPathNotFoundErrorClass_strings,
+            ThisPathNotImplementedErrorClass_strings,
+            NotImplementedErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
+    make_STRSXP_from_char_array(
+        ThisPathInZipFileErrorClass,
+        {
+            ThisPathInZipFileErrorClass_strings,
+            ThisPathNotFoundErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
+    make_STRSXP_from_char_array(
+        ThisPathNotExistsErrorClass,
+        {
+            ThisPathNotExistsErrorClass_strings,
+            ThisPathNotFoundErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
+    make_STRSXP_from_char_array(
+        ThisPathNotFoundErrorClass,
+        {
+            ThisPathNotFoundErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
+    make_STRSXP_from_char_array(
+        ThisPathNotImplementedErrorClass,
+        {
+            ThisPathNotImplementedErrorClass_strings,
+            NotImplementedErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
+    make_STRSXP_from_char_array(
+        ThisPathUnrecognizedConnectionClassErrorClass,
+        {
+            ThisPathUnrecognizedConnectionClassErrorClass_strings,
+            ThisPathNotFoundErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
+    make_STRSXP_from_char_array(
+        ThisPathUnrecognizedMannerErrorClass,
+        {
+            ThisPathUnrecognizedMannerErrorClass_strings,
+            ThisPathNotFoundErrorClass_strings,
+            ErrorClass_strings
+        }
+    );
 
 
     /* it might seem more intuitive to say
@@ -650,6 +781,13 @@ SEXP do_onUnload do_formals
 
     maybe_release(mynamespace);
     maybe_release(DocumentContextClass);
+    maybe_release(ThisPathInAQUAErrorClass);
+    maybe_release(ThisPathInZipFileErrorClass);
+    maybe_release(ThisPathNotExistsErrorClass);
+    maybe_release(ThisPathNotFoundErrorClass);
+    maybe_release(ThisPathNotImplementedErrorClass);
+    maybe_release(ThisPathUnrecognizedConnectionClassErrorClass);
+    maybe_release(ThisPathUnrecognizedMannerErrorClass);
     maybe_release(last_condition);
     maybe_release(_custom_gui_path_character_environment);
     maybe_release(_custom_gui_path_function_environment);

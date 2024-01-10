@@ -88,7 +88,11 @@ extern SEXP do_endsWith   do_formals;
 
 #if R_version_less_than(3, 5, 0)
 extern SEXP do_dotslength do_formals;
-extern SEXP do_dotselt    do_formals;
+#endif
+
+
+#if R_version_less_than(4, 1, 0)
+extern SEXP do_dotselt do_formals;
 #endif
 
 
@@ -191,6 +195,7 @@ extern SEXP do_PRINFO                 do_formals;
 extern SEXP do_mkPROMISE              do_formals;
 extern SEXP do_mkEVPROMISE            do_formals;
 extern SEXP do_unlockEnvironment      do_formals;
+extern SEXP do_is_R_MissingArg        do_formals;
 
 
 /* rgui_path.c */
@@ -218,12 +223,13 @@ extern SEXP do_shINFO    do_formals;
 /* thispath.c */
 
 
-extern SEXP do_thisPathUnrecognizedConnectionClassError do_formals;
-extern SEXP do_thisPathUnrecognizedMannerError          do_formals;
-extern SEXP do_thisPathNotImplementedError              do_formals;
-extern SEXP do_thisPathNotExistsError                   do_formals;
-extern SEXP do_thisPathInZipFileError                   do_formals;
-extern SEXP do_thisPathInAQUAError                      do_formals;
+extern SEXP do_ThisPathInAQUAError                      do_formals;
+extern SEXP do_ThisPathInZipFileError                   do_formals;
+extern SEXP do_ThisPathNotExistsError                   do_formals;
+extern SEXP do_ThisPathNotFoundError                    do_formals;
+extern SEXP do_ThisPathNotImplementedError              do_formals;
+extern SEXP do_ThisPathUnrecognizedConnectionClassError do_formals;
+extern SEXP do_ThisPathUnrecognizedMannerError          do_formals;
 
 extern SEXP do_is_clipboard       do_formals;
 extern SEXP do_jupyter_path       do_formals;

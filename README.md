@@ -76,8 +76,7 @@ use `bug.report(package = "this.path")` to report your issue.
 ## Alternatives
 
 If you are unhappy with the performance of `package:this.path`, or
-would otherwise like to know some other solutions, here are 4
-alternatives:
+would like to know other solutions, here are some alternatives:
 
 ### Alternative 1: Other Packages That Determine Current **R** Script
 
@@ -197,22 +196,9 @@ working directory is set outside the context of the project. However,
 you can combine it with `package:this.path` to get the best results:
 
 ```R
-## substitute 'rprojroot::criteria$is_r_package' with your criterion
+## substitute 'rprojroot::is_r_package' with desired criterion
 
-fix_file <- this.path::path.functions(
-    rprojroot::criteria$is_r_package$find_file(
-        path = this.path::here()
-    )
-)$here
-
-## or
-
-fix_file <- this.path::path.functions(
-    rprojroot::find_root(
-        rprojroot::criteria$is_r_package,
-        this.path::here()
-    )
-)$here
+fix_file <- this.path::make_fix_file(rprojroot::is_r_package)
 ```
 
 If the default criteria are not sufficient for your needs, you can make
@@ -233,7 +219,36 @@ your own using:
 but as mentioned in section **Alternative 1**, `whereami::thisfile()`
 is seriously lacking compared to `this.path::this.path()`.
 
-### Alternative 3: Always Change Working Directory
+### Alternative 3: `package:box`
+
+[`package:box`](https://CRAN.R-project.org/package=box) provides two
+related functions:
+
+*   `box::file()` constructs file paths against the directory of the
+    executing script.
+
+*   `box::use()` imports an **R** script as a module.
+
+These both lack the same functionality as the packages listed in
+**Alternative 1**. `box::file()` should not be used in favour of
+`this.path::here()`. However, `box::use()` is still extremely useful,
+it just needs to be combined with `package:this.path` to get the best
+results:
+
+```R
+this.path::with_script_path(
+box::use(
+    <import 1>,
+    <import 2>,
+    <...>
+)
+)
+```
+
+This explicitly tells `package:box` the path of the current script so
+that relative imports will work correctly.
+
+### Alternative 4: Always Change Working Directory
 
 The working directory could always be changed to the directory of the
 executing script before running it. This would be:
@@ -255,20 +270,20 @@ set elsewhere. This means that **R** scripts cannot be made to act like
 executables. If a script needs to call other scripts in the same
 directory, it could not do so without the its own path.
 
-### Alternative 4: Source References
+### Alternative 5: Source References
 
 `utils::getSrcFilename()` provides the ability to retrieve the filename
-of a source reference. Everywhere `this.path()` would be used, write 
-`utils::getSrcFilename(function() NULL, full.names = TRUE)` instead
-(yes, it is quite lengthy), and everywhere `this.dir()` would be used,
-write `utils::getSrcDirectory(function() NULL)` instead (again, quite
-lengthy).
+of a source reference. Everywhere `this.path()` would be used, replace
+it with `utils::getSrcFilename(function() NULL, full.names = TRUE)`.
+This comes with some issues such as:
 
-This fails in interactive use since scripts must be run with
-`source()`. Also, it means option `keep.source` must be set to `TRUE`;
-this may not be a big deal, but something to be aware of. This means
-**R** scripts could not be run from a shell ever again, making it an
-incredibly inconvenient substitute.
+*   fails in interactive use since scripts must be run with `source()`
+
+*   fails when running **R** scripts from a shell
+
+*   option `keep.source` must be set to `TRUE`
+
+*   it returns the non-normalized source file's `filename`
 
 ## Closing
 

@@ -54,7 +54,6 @@ if (getRversion() < "3.4.0") {
 
 if (getRversion() < "3.5.0") {
     export(...length)
-    export(...elt)
     export(isTRUE)
     export(isFALSE)
 }
@@ -73,6 +72,7 @@ if (getRversion() < "4.0.0") {
 
 
 if (getRversion() < "4.1.0") {
+    export(...elt)
     export(bquote)
 }
 
@@ -93,6 +93,12 @@ export(basename2, dirname2 )
 
 
 export(check.path, check.dir , check.proj)
+
+
+## enhances.R   ----
+
+
+export(with_script_path, make_fix_file)
 
 
 ## ext.R        ----
@@ -187,11 +193,11 @@ export(site.file, init.file)
 export(shFILE               , set.jupyter.path     ,
        set.sys.path.jupyter , set.this.path.jupyter,
        set.gui.path         , thisPathNotExistsError,
-       sys.path             , sys.dir              ,
-       env.path             , env.dir              ,
-       src.path             , src.dir              ,
-       this.path            , this.dir             ,
-       sys.srcref           ,
+       thisPathNotFoundError, sys.path             ,
+       sys.dir              , env.path             ,
+       env.dir              , src.path             ,
+       src.dir              , this.path            ,
+       this.dir             , sys.srcref           ,
        sys.here             , env.here             ,
        src.here             , here                 ,
        ici                  , Sys.path             ,

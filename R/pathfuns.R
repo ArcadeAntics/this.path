@@ -1,5 +1,5 @@
 path.functions <- .removeSource_from_inner_functions(
-function (file, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
+                  function (file, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),
     srcfile = if (n) sys.parent(n) else 0L)
 {

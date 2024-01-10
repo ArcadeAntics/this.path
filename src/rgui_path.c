@@ -265,7 +265,7 @@ SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
     const char *msg = "R is running from Rgui with no documents open";
-    SEXP cond = thisPathNotExistsError(msg, PROTECT(getCurrentCall(rho)));
+    SEXP cond = ThisPathNotExistsError(msg, PROTECT(getCurrentCall(rho)));
     PROTECT(cond);
     stop(cond);
     UNPROTECT(2);
