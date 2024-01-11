@@ -180,7 +180,7 @@ wrap.source(expr,
   \item{\dots}{for \code{with_sys.path()}, further arguments passed to
     \code{set.sys.path()}.
 
-    for \code{with_init.file()}, a braced expressions, the sub-expressions of
+    for \code{with_init.file()}, a braced expression, the sub-expressions of
     which to evaluate and auto-print.}
 }
 \details{
