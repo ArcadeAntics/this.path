@@ -32,9 +32,9 @@
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
   function, \code{with_sys.path()} can only be used outside a function.
-  \code{with_init.file()} is similar to \code{with_sys.path()}; it evaluates
-  its arguments within the context of the user profile, and auto-prints as if
-  in a toplevel context.
+
+  \code{with_init.file()} declares that the current script is the user profile
+  then evaluates and auto-prints its argument as if in a toplevel context.
 
   See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
@@ -79,8 +79,9 @@ unset.sys.path()
 set.sys.path.function(fun)
 
 with_sys.path(file, expr, ...)
+
 with_site.file(expr)
-with_init.file(...)
+with_init.file(expr)
 
 wrap.source(expr,
     path.only = FALSE,
@@ -179,7 +180,8 @@ wrap.source(expr,
   \item{\dots}{for \code{with_sys.path()}, further arguments passed to
     \code{set.sys.path()}.
 
-    for \code{with_init.file()}, expressions to evaluate and auto-print.}
+    for \code{with_init.file()}, a braced expressions, the sub-expressions of
+    which to evaluate and auto-print.}
 }
 \details{
   \code{set.sys.path()} should be added to the body of your \sourcenolink-like

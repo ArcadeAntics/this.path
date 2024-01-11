@@ -181,6 +181,17 @@ export(sys.proj       , env.proj       , src.proj       ,
        this.proj      , reset.proj     , reset.this.proj)
 
 
+## setsyspath.R ----
+
+
+export(wrap.source          , set.sys.path         ,
+       unset.sys.path       , set.env.path         ,
+       set.src.path         , set.sys.path.function,
+       with_sys.path        , with_site.file       ,
+       with_init.file       , inside.source        ,
+       set.this.path        , unset.this.path      )
+
+
 ## startup.R    ----
 
 
@@ -190,35 +201,24 @@ export(site.file, init.file)
 ## thispath.R   ----
 
 
-export(shFILE               , set.jupyter.path     ,
-       set.sys.path.jupyter , set.this.path.jupyter,
-       set.gui.path         , thisPathNotExistsError,
-       thisPathNotFoundError, sys.path             ,
-       sys.dir              , env.path             ,
-       env.dir              , src.path             ,
-       src.dir              , this.path            ,
-       this.dir             , sys.srcref           ,
-       sys.here             , env.here             ,
-       src.here             , here                 ,
-       ici                  , Sys.path             ,
-       Sys.dir              , try.shFILE           ,
-       try.sys.path         , try.env.path         ,
-       try.src.path         , try.this.path        ,
-       FILE                 , local.path           )
+export(shFILE                , set.jupyter.path      ,
+       set.sys.path.jupyter  , set.this.path.jupyter ,
+       thisPathNotExistsError, thisPathNotFoundError ,
+       set.gui.path          , sys.path              ,
+       sys.dir               , env.path              ,
+       env.dir               , src.path              ,
+       src.dir               , this.path             ,
+       this.dir              , sys.srcref            ,
+       sys.here              , env.here              ,
+       src.here              , here                  ,
+       ici                   , Sys.path              ,
+       Sys.dir               , try.shFILE            ,
+       try.sys.path          , try.env.path          ,
+       try.src.path          , try.this.path         ,
+       FILE                  , local.path            )
 
 
 ## trycatch.R   ----
 
 
 export(tryCatch2, tryCatch3, last.condition)
-
-
-## wrapsource.R ----
-
-
-export(wrap.source          , set.sys.path         ,
-       unset.sys.path       , set.env.path         ,
-       set.src.path         , set.sys.path.function,
-       with_sys.path        , with_site.file       ,
-       with_init.file       , inside.source        ,
-       set.this.path        , unset.this.path      )

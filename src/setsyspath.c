@@ -25,8 +25,7 @@ SEXP do_SET_PRSEEN_2 do_formals
         return R_NilValue;
     if (TYPEOF(promises) != LISTSXP)
         errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist");
-    SEXP x;
-    for (x = promises; x != R_NilValue; x = CDR(x)) {
+    for (SEXP x = promises; x != R_NilValue; x = CDR(x)) {
         if (TYPEOF(CAR(x)) != PROMSXP)
             errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist of promises, not type '%s'", type2char(TYPEOF(CAR(x))));
         if (PRSEEN(CAR(x)) != 1)
@@ -36,9 +35,31 @@ SEXP do_SET_PRSEEN_2 do_formals
     }
     /* now that we know the list is safe to modify, change all the PRSEEN
        value to 2, the value used for interrupted promises */
-    for (x = promises; x != R_NilValue; x = CDR(x))
-        SET_PRSEEN(CAR(x), 2);
+    for (; promises != R_NilValue; promises = CDR(promises))
+        SET_PRSEEN(CAR(promises), 2);
     return R_NilValue;
+}
+
+
+SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
+{
+    SEXP ptr = R_MakeExternalPtr(NULL, R_NilValue, promises);
+    SEXP expr;
+    PROTECT_INDEX indx;
+    PROTECT_WITH_INDEX(expr = CONS(ptr, R_NilValue), &indx);
+#if R_version_at_least(3, 0, 0)
+    /* .External2(.C_SET_PRSEEN_2, ptr) */
+    REPROTECT(expr = CONS(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
+    REPROTECT(expr = LCONS(getFromBase(_External2Symbol), expr), indx);
+#else
+    /* .SET_PRSEEN_2(ptr) */
+    REPROTECT(expr = LCONS(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
+#endif
+    REPROTECT(expr = CONS(expr, R_NilValue), indx);
+    REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
+    eval(expr, rho);
+    UNPROTECT(1);
+    return ptr;
 }
 
 
@@ -52,12 +73,12 @@ SEXP do_wrap_source do_formals
 
     SEXP promise = findVarInFrame(rho, exprSymbol);
     if (promise == R_UnboundValue)
-        error(_("object '%s' not found"), EncodeChar(PRINTNAME(exprSymbol)));
+        error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
     if (promise == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), EncodeChar(PRINTNAME(exprSymbol)));
+        error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(promise) != PROMSXP)
         error("invalid '%s', must be a promise; should never happen, please report!",
-              EncodeChar(PRINTNAME(exprSymbol)));
+              CHAR(PRINTNAME(exprSymbol)));
 
 
     /* determine context number for .getframenumber() */
@@ -157,29 +178,13 @@ SEXP do_wrap_source do_formals
      * save the root promise, the original code of the promise,
      * and make an on.exit() call that will restore said promise
      */
-    {
-        SEXP expr;
-        PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(expr = CONS(ptr = R_MakeExternalPtr(NULL, R_NilValue, promises), R_NilValue), &indx);
-#if R_version_at_least(3, 0, 0)
-        /* .External2(.C_SET_PRSEEN_2, ptr) */
-        REPROTECT(expr = CONS(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
-        REPROTECT(expr = LCONS(getFromBase(_External2Symbol), expr), indx);
-#else
-        /* .SET_PRSEEN_2(ptr) */
-        REPROTECT(expr = LCONS(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
-#endif
-        REPROTECT(expr = CONS(expr, R_NilValue), indx);
-        REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
-        eval(expr, rho);
-        UNPROTECT(1);
-    }
+    ptr = on_exit_SET_PRSEEN_2(promises, rho);
 
 
 #define check_validity                                         \
     do {                                                       \
         if (PRVALUE(promise) != R_UnboundValue)                \
-            error("invalid '%s', must be a call", EncodeChar(PRINTNAME(exprSymbol)));\
+            error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));\
         R_SetExternalPtrProtected(ptr, promises = CONS(promise, promises));\
         if (PRSEEN(promise)) {                                 \
             if (PRSEEN(promise) == 1)                          \
@@ -208,9 +213,9 @@ SEXP do_wrap_source do_formals
 
 
     if (expr == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), EncodeChar(PRINTNAME(exprSymbol)));
+        error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(expr) != LANGSXP)
-        error("invalid '%s', must be a call", EncodeChar(PRINTNAME(exprSymbol)));
+        error("invalid '%s', must be a call", CHAR(PRINTNAME(exprSymbol)));
 
 
 #define set_prvalues_then_return(val)                          \
@@ -218,13 +223,13 @@ SEXP do_wrap_source do_formals
         SEXP tmp = (val);                                      \
         PROTECT(tmp); nprotect++;                              \
         ENSURE_NAMEDMAX(tmp);                                  \
-        for (SEXP x = promises; x != R_NilValue; x = CDR(x)) { \
-            SEXP p = CAR(x);                                   \
+        while (promises != R_NilValue) {                       \
+            SEXP p = CAR(promises);                            \
             SET_PRSEEN (p, 0);                                 \
             SET_PRVALUE(p, tmp);                               \
             SET_PRENV  (p, R_NilValue);                        \
+            R_SetExternalPtrProtected(ptr, promises = CDR(promises));\
         }                                                      \
-        R_SetExternalPtrProtected(ptr, R_NilValue);            \
         UNPROTECT(nprotect);                                   \
         return tmp;                                            \
     } while (0)
@@ -529,13 +534,13 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
     PROTECT(function);
     if (function == eval_op)
         error("%s cannot be used within '%s'",
-              name, EncodeChar(PRINTNAME(R_EvalSymbol)));
+              name, CHAR(PRINTNAME(R_EvalSymbol)));
     else if (TYPEOF(function) != CLOSXP)
         error("%s cannot be used within a '%s', possible errors with eval?",
               name, type2char(TYPEOF(function)));
     else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
         error("%s cannot be called within %s() from package %s",
-              name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
+              name, CHAR(PRINTNAME(wrap_sourceSymbol)), "this.path");
     UNPROTECT(1);
 
 
@@ -591,9 +596,9 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         R_LockBinding(documentcontextSymbol, frame);
         SEXP osource = findVarInFrame(documentcontext, sourceSymbol);
         if (osource == R_UnboundValue)
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME(sourceSymbol)));
+            error(_("object '%s' not found"), CHAR(PRINTNAME(sourceSymbol)));
         if (TYPEOF(osource) != CHARSXP)
-            error(_("invalid '%s' value"), EncodeChar(PRINTNAME(sourceSymbol)));
+            error(_("invalid '%s' value"), CHAR(PRINTNAME(sourceSymbol)));
         const char *ostr = CHAR(osource);
         const char *str = "call to function 'set.sys.path.function'";
         SEXP source;
@@ -618,7 +623,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         if (documentcontext == R_UnboundValue)
             error("%s cannot be called before set.sys.path()", name);
         if (TYPEOF(documentcontext) != ENVSXP)
-            error(_("invalid '%s' value"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+            error(_("invalid '%s' value"), CHAR(PRINTNAME(documentcontextSymbol)));
         if (documentcontext != R_EmptyEnv &&
             !R_existsVarInFrame(documentcontext, setsyspathwashereSymbol))
         {
@@ -644,7 +649,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
                 R_IsPackageEnv(env) || R_IsNamespaceEnv(env));
             else if (inherits(env, "box$ns"));
             else if (!ISNULL(getAttrib(env, documentcontextSymbol)))
-                error("cannot overwrite existing '%s' attribute", EncodeChar(PRINTNAME(documentcontextSymbol)));
+                error("cannot overwrite existing '%s' attribute", CHAR(PRINTNAME(documentcontextSymbol)));
             else setAttrib(env, documentcontextSymbol, documentcontext);
             break;
         }
@@ -664,7 +669,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
             }
             if (srcfile) {
                 if (R_existsVarInFrame(srcfile, documentcontextSymbol))
-                    error("cannot overwrite existing binding '%s'", EncodeChar(PRINTNAME(documentcontextSymbol)));
+                    error("cannot overwrite existing binding '%s'", CHAR(PRINTNAME(documentcontextSymbol)));
 
 
                 extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
@@ -702,13 +707,13 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         /* this is better because it preserves the original value */
         SEXP value = findVarInFrame(rho, fileSymbol);
         if (value == R_UnboundValue)
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
+            error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
         if (value == R_MissingArg)
             return R_MissingArg;
         if (TYPEOF(value) != PROMSXP)
-            error("invalid '%s' value, expected R_MissingArg or a promise", EncodeChar(PRINTNAME(fileSymbol)));
+            error("invalid '%s' value, expected R_MissingArg or a promise", CHAR(PRINTNAME(fileSymbol)));
         if (TYPEOF(PREXPR(value)) != SYMSXP)
-            error("invalid '%s' value, expected a symbol", EncodeChar(PRINTNAME(fileSymbol)));
+            error("invalid '%s' value, expected a symbol", CHAR(PRINTNAME(fileSymbol)));
         value = findVarInFrame(PRENV(value), PREXPR(value));
         if (value == R_UnboundValue)
             error(_("object '%s' not found"), EncodeChar(PRINTNAME(PREXPR(value))));
@@ -927,4 +932,103 @@ SEXP do_set_sys_path_function do_formals
 {
     do_start_no_call_op("set_sys_path_function", 1);
     return set_path(SETPATHOP_SETSYSPATHFUNCTION, args, rho);
+}
+
+
+
+
+
+#include "print.h"
+
+
+Rboolean already_been_true = FALSE;
+
+
+SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
+{
+    SEXP promise = findVarInFrame(rho, exprSymbol);
+    if (promise == R_UnboundValue)
+        error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
+    if (promise == R_MissingArg)
+        error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
+    if (TYPEOF(promise) != PROMSXP)
+        error("invalid '%s', is not a promise", CHAR(PRINTNAME(exprSymbol)));
+
+
+    SEXP code = PRCODE(promise);
+    if (TYPEOF(code) != LANGSXP || CAR(code) != R_BraceSymbol)
+        error("invalid '%s', expected a braced expression", CHAR(PRINTNAME(exprSymbol)));
+    if (PRVALUE(promise) != R_UnboundValue)
+        error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));
+
+
+    if (check_is_valid_init_file_expr) {
+        if (already_been_true) return R_FalseValue;
+        already_been_true = (ATTRIB(code) == R_NilValue &&
+                             PRENV(promise) == R_GlobalEnv &&
+                             PRSEEN(promise) == 0);
+        return ScalarLogical(already_been_true);
+    }
+
+
+    int nprotect = 0;
+
+
+    code = CDR(code);
+    SEXP env = PRENV(promise);
+    SEXP withVisible = getFromBase(withVisibleSymbol);
+    PROTECT(withVisible); nprotect++;
+
+
+    SEXP expr, value;
+    PROTECT_INDEX expr_indx, value_indx;
+    PROTECT_WITH_INDEX(expr = R_NilValue, &expr_indx); nprotect++;
+    PROTECT_WITH_INDEX(value = R_NilValue, &value_indx); nprotect++;
+
+
+    SEXP ptr = on_exit_SET_PRSEEN_2(R_NilValue, rho);
+    R_SetExternalPtrProtected(ptr, CONS(promise, R_NilValue));
+    if (PRSEEN(promise)) {
+        if (PRSEEN(promise) == 1)
+            error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
+        else {
+            SET_PRSEEN(promise, 1);
+            warning(_("restarting interrupted promise evaluation"));
+        }
+    }
+    else SET_PRSEEN(promise, 1);
+
+
+    for (; code != R_NilValue; code = CDR(code)) {
+        REPROTECT(expr = LCONS(withVisible, CONS(CAR(code), R_NilValue)), expr_indx);
+        REPROTECT(value = eval(expr, env), value_indx);
+        if (asLogical(VECTOR_ELT(value, 1)))
+            my_PrintValueEnv(VECTOR_ELT(value, 0), env);
+    }
+
+
+    SET_PRSEEN (promise, 0);
+    SET_PRVALUE(promise, value);
+    SET_PRENV  (promise, R_NilValue);
+    R_SetExternalPtrProtected(ptr, R_NilValue);
+
+
+    UNPROTECT(nprotect);
+
+
+    return R_NilValue;
+}
+
+
+SEXP do_is_valid_init_file_expr do_formals
+{
+    do_start_no_call_op("is_valid_init_file_expr", 0);
+    return startup_file(TRUE, rho);
+}
+
+
+SEXP do_with_startup_file do_formals
+{
+    do_start_no_call_op("with_startup_file", 0);
+    return startup_file(FALSE, rho);
 }

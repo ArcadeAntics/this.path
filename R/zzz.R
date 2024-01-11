@@ -320,6 +320,18 @@ if (getRversion() < "3.0.0") {
     fix_External2(reset.proj)
 
 
+    ## setsyspath.R ----
+
+
+    fix_External2(wrap.source)
+    fix_External2(set.sys.path)
+    fix_External2(unset.sys.path)
+    fix_External2(set.env.path)
+    fix_External2(set.src.path)
+    fix_External2(set.sys.path.function)
+    fix_External2(with_init.file)
+
+
     ## startup.R    ----
 
 
@@ -392,18 +404,6 @@ if (getRversion() < "3.0.0") {
     fix_External2(.scalar_streql)
     fix_External2(.get.dyn)
     fix_External2(.getframenumber)
-
-
-    ## wrapsource.R ----
-
-
-    fix_External2(wrap.source)
-    fix_External2(set.sys.path)
-    fix_External2(unset.sys.path)
-    fix_External2(set.env.path)
-    fix_External2(set.src.path)
-    fix_External2(set.sys.path.function)
-    fix_External2(with_init.file)
 
 
     rm(fix_External2)

@@ -163,6 +163,21 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"reset_proj", (DL_FUNC) &do_reset_proj, 0},
 
 
+/* setsyspath.c */
+
+
+{"SET_PRSEEN_2"         , (DL_FUNC) &do_SET_PRSEEN_2         ,  1},
+{"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20},
+{"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 21},
+{"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0},
+{"set_env_path"         , (DL_FUNC) &do_set_env_path         ,  2},
+{"set_src_path"         , (DL_FUNC) &do_set_src_path         ,  1},
+{"set_sys_path_function", (DL_FUNC) &do_set_sys_path_function,  1},
+
+{"is_valid_init_file_expr", (DL_FUNC) &do_is_valid_init_file_expr, 0},
+{"with_startup_file"      , (DL_FUNC) &do_with_startup_file      , 0},
+
+
 /* shfile.c */
 
 
@@ -220,18 +235,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"AS_SCALAR_STR", (DL_FUNC) &do_AS_SCALAR_STR, 1},
 {"scalar_streql", (DL_FUNC) &do_scalar_streql, 2},
 {"get_dyn"      , (DL_FUNC) &do_get_dyn      , 3},
-
-
-/* wrapsource.c */
-
-
-{"SET_PRSEEN_2"         , (DL_FUNC) &do_SET_PRSEEN_2         ,  1},
-{"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20},
-{"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 21},
-{"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0},
-{"set_env_path"         , (DL_FUNC) &do_set_env_path         ,  2},
-{"set_src_path"         , (DL_FUNC) &do_set_src_path         ,  1},
-{"set_sys_path_function", (DL_FUNC) &do_set_sys_path_function,  1},
 
 
 {NULL, NULL, 0}

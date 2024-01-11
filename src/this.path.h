@@ -211,6 +211,21 @@ extern SEXP do_RConsole      do_formals;
 extern SEXP do_reset_proj do_formals;
 
 
+/* setsyspath.c */
+
+
+extern SEXP do_SET_PRSEEN_2          do_formals;
+extern SEXP do_wrap_source           do_formals;
+extern SEXP do_set_sys_path          do_formals;
+extern SEXP do_unset_sys_path        do_formals;
+extern SEXP do_set_env_path          do_formals;
+extern SEXP do_set_src_path          do_formals;
+extern SEXP do_set_sys_path_function do_formals;
+
+extern SEXP do_is_valid_init_file_expr do_formals;
+extern SEXP do_with_startup_file       do_formals;
+
+
 /* shfile.c */
 
 
@@ -268,18 +283,6 @@ extern SEXP do_IS_SCALAR_STR do_formals;
 extern SEXP do_AS_SCALAR_STR do_formals;
 extern SEXP do_scalar_streql do_formals;
 extern SEXP do_get_dyn       do_formals;
-
-
-/* wrapsource.c */
-
-
-extern SEXP do_SET_PRSEEN_2          do_formals;
-extern SEXP do_wrap_source           do_formals;
-extern SEXP do_set_sys_path          do_formals;
-extern SEXP do_unset_sys_path        do_formals;
-extern SEXP do_set_env_path          do_formals;
-extern SEXP do_set_src_path          do_formals;
-extern SEXP do_set_sys_path_function do_formals;
 
 
 #endif  /* R_THISPATH_THISPATH_H */

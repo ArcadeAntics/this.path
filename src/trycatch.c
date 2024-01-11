@@ -30,7 +30,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
 
     SEXP finally = findVarInFrame(rho, finallySymbol);
     if (finally == R_UnboundValue)
-        error(_("object '%s' not found"), EncodeChar(PRINTNAME(finallySymbol)));
+        error(_("object '%s' not found"), CHAR(PRINTNAME(finallySymbol)));
     if (finally != R_MissingArg) {
         SEXP on_exit = LCONS(on_exitSymbol, CONS(finallySymbol, R_NilValue));
         PROTECT(on_exit);
@@ -41,13 +41,13 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
 
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
     if (dots == R_UnboundValue)
-        error(_("object '%s' not found"), EncodeChar(PRINTNAME(R_DotsSymbol)));
+        error(_("object '%s' not found"), CHAR(PRINTNAME(R_DotsSymbol)));
     int dots_length = (TYPEOF(dots) == DOTSXP ? length(dots) : 0);
 
 
     SEXP else_ = findVarInFrame(rho, else_Symbol);
     if (else_ == R_UnboundValue)
-        error(_("object '%s' not found"), EncodeChar(PRINTNAME(else_Symbol)));
+        error(_("object '%s' not found"), CHAR(PRINTNAME(else_Symbol)));
     if (else_ != R_MissingArg && dots_length <= 0)
         error("'tryCatch' with 'else.' but no condition handlers makes no sense");
 
@@ -155,9 +155,9 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         PROTECT(value); nprotect++;
         SEXP do_else = findVarInFrame(rho, do_elseSymbol);
         if (do_else == R_UnboundValue)
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME(do_elseSymbol)));
+            error(_("object '%s' not found"), CHAR(PRINTNAME(do_elseSymbol)));
         if (!IS_SCALAR(do_else, LGLSXP))
-            error(_("invalid '%s' value"), EncodeChar(PRINTNAME(do_elseSymbol)));
+            error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:
             value = eval(else_Symbol, rho);
@@ -165,7 +165,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         case FALSE:
             break;
         default:
-            error(_("invalid '%s' value"), EncodeChar(PRINTNAME(do_elseSymbol)));
+            error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         }
     }
 

@@ -330,7 +330,7 @@ SEXP do_set_jupyter_path do_formals
 
     SEXP sym, env = getFromMyNS(_jupyter_pathSymbol);
     if (TYPEOF(env) != CLOSXP)
-        errorcall(call, "'%s' is not a closure", EncodeChar(PRINTNAME(_jupyter_pathSymbol)));
+        errorcall(call, "'%s' is not a closure", CHAR(PRINTNAME(_jupyter_pathSymbol)));
     env = CLOENV(env);
 
 
@@ -435,10 +435,10 @@ void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
             else {
                 SEXP lines = findVarInFrame(srcfile, linesSymbol);
                 if (lines == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(linesSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(linesSymbol)));
                 if (TYPEOF(lines) != STRSXP)
                     error(_("object '%s' of mode '%s' was not found"),
-                        EncodeChar(PRINTNAME(linesSymbol)), "character");
+                        CHAR(PRINTNAME(linesSymbol)), "character");
                 INCREMENT_NAMED_defineVar(linesSymbol, lines, documentcontext);
             }
         }
@@ -725,7 +725,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
     SEXP returnvalue;  /* set_documentcontext() creates a variable 'returnvalue'
-                          that is used in setpath() (see ./src/wrapsource.c)
+                          that is used in setpath() (see ./src/setsyspath.c)
                           not used elsewhere but must be declared */
     SEXP documentcontext;
 
@@ -775,7 +775,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         SEXP function = eval(expr_sys_function_which, rho);
         if (function == eval_op)
             error("%s cannot be used within '%s'",
-                  name, EncodeChar(PRINTNAME(R_EvalSymbol)));
+                  name, CHAR(PRINTNAME(R_EvalSymbol)));
         else if (TYPEOF(function) != CLOSXP)
             error("%s cannot be used within a '%s', possible errors with eval?",
                   name, type2char(TYPEOF(function)));
@@ -950,14 +950,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 #define check_documentcontext_env                              \
                 if (TYPEOF(documentcontext) != ENVSXP)         \
                     error("invalid '%s' value; expected an object of class \"environment\", found \"%s\"",\
-                        EncodeChar(PRINTNAME(documentcontextSymbol)), type2char(TYPEOF(documentcontext)))
+                        CHAR(PRINTNAME(documentcontextSymbol)), type2char(TYPEOF(documentcontext)))
 
 
 /* not used here but used later */
 #define check_documentcontext_not_emptyenv                     \
                 if (documentcontext == R_EmptyEnv)             \
                     error("invalid '%s' value; expected non-empty document context",\
-                        EncodeChar(PRINTNAME(documentcontextSymbol)))
+                        CHAR(PRINTNAME(documentcontextSymbol)))
 
 
 #define define_no_lock_srcfile_documentcontext                 \
@@ -1006,7 +1006,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     else if (TYPEOF(tmp) != ENVSXP) {          \
                         errorcall(sys_call(which, rho),        \
                             "invalid '%s' value found in srcfile; expected an object of class \"environment\", found \"%s\"",\
-                            EncodeChar(PRINTNAME(documentcontextSymbol)), type2char(TYPEOF(tmp)));\
+                            CHAR(PRINTNAME(documentcontextSymbol)), type2char(TYPEOF(tmp)));\
                     }                                          \
                 }
 
@@ -1106,7 +1106,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     } else {                                   \
                         returnthis = findVarInFrame(documentcontext, for_msgSymbol);\
                         if (returnthis == R_UnboundValue)      \
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(for_msgSymbol)));\
+                            error(_("object '%s' not found"), CHAR(PRINTNAME(for_msgSymbol)));\
                     }                                          \
                 }                                              \
                 else if (get_frame_number) {                   \
@@ -1119,7 +1119,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     if (TYPEOF(errcnd) != VECSXP ||            \
                         LENGTH(errcnd) < 2)                    \
                     {                                          \
-                        error(_("invalid '%s' value"), EncodeChar(PRINTNAME(errcndSymbol)));\
+                        error(_("invalid '%s' value"), CHAR(PRINTNAME(errcndSymbol)));\
                     }                                          \
                     errcnd = duplicate(errcnd);                \
                     PROTECT(errcnd);                           \
@@ -1140,7 +1140,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     else lines = PRVALUE(lines);               \
                 }                                              \
                 if (TYPEOF(lines) != STRSXP)                   \
-                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(linesSymbol)));\
+                    error(_("invalid '%s' value"), CHAR(PRINTNAME(linesSymbol)));\
                 returnthis = lines;                            \
                 *gave_contents = TRUE;                         \
             }                                                  \
@@ -1150,20 +1150,20 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             else if (original == TRUE) {                       \
                 ofile = findVarInFrame(documentcontext, ofileSymbol);\
                 if (ofile == R_UnboundValue)                   \
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(ofileSymbol)));\
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(ofileSymbol)));\
                 returnthis = ofile;                            \
             }                                                  \
             else {                                             \
                 file = findVarInFrame(documentcontext, fileSymbol);\
                 if (file == R_UnboundValue)                    \
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));\
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));\
                 if (TYPEOF(file) != PROMSXP)                   \
-                    error("invalid '%s', is not a promise; should never happen, please report!", EncodeChar(PRINTNAME(fileSymbol)));\
+                    error("invalid '%s', is not a promise; should never happen, please report!", CHAR(PRINTNAME(fileSymbol)));\
                 if (PRVALUE(file) == R_UnboundValue) {         \
                     if (original || for_msg) {                 \
                         ofile = findVarInFrame(documentcontext, ofileSymbol);\
                         if (ofile == R_UnboundValue)           \
-                            error(_("object '%s' not found"), EncodeChar(PRINTNAME(ofileSymbol)));\
+                            error(_("object '%s' not found"), CHAR(PRINTNAME(ofileSymbol)));\
                         returnthis = ofile;                    \
                     }                                          \
                     else {                                     \
@@ -1179,9 +1179,9 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (verbose) {                                     \
                 SEXP osource = findVarInFrame(documentcontext, sourceSymbol);\
                 if (osource == R_UnboundValue)                 \
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(sourceSymbol)));\
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(sourceSymbol)));\
                 if (TYPEOF(osource) != CHARSXP)                \
-                    error(_("invalid '%s' value"), EncodeChar(PRINTNAME(sourceSymbol)));\
+                    error(_("invalid '%s' value"), CHAR(PRINTNAME(sourceSymbol)));\
                 if (streql(source, CHAR(osource)))             \
                     Rprintf("Source: %s\n", source);           \
                 else                                           \
@@ -1215,19 +1215,19 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 #define check_path_only do {                                   \
                 ofile = getInFrame(fileSymbol, frame, FALSE);  \
                 if (!IS_SCALAR(ofile, STRSXP))                 \
-                    error(_("'%s' must be a character string"), EncodeChar(PRINTNAME(fileSymbol)));\
+                    error(_("'%s' must be a character string"), CHAR(PRINTNAME(fileSymbol)));\
                 file = STRING_ELT(ofile, 0);                   \
                 const char *url = CHAR(file);                  \
                 if (!(LENGTH(file) > 0))                       \
-                    errorcall(sys_call(which, rho), "invalid '%s', must not be \"\""     , EncodeChar(PRINTNAME(fileSymbol)));\
+                    errorcall(sys_call(which, rho), "invalid '%s', must not be \"\""     , CHAR(PRINTNAME(fileSymbol)));\
                 else if (is_clipboard(url))                    \
-                    errorcall(sys_call(which, rho), "invalid '%s', %s"                   , EncodeChar(PRINTNAME(fileSymbol)), must_not_be_clipboard_message);\
+                    errorcall(sys_call(which, rho), "invalid '%s', %s"                   , CHAR(PRINTNAME(fileSymbol)), must_not_be_clipboard_message);\
                 else if (streql(url, "stdin"))                 \
-                    errorcall(sys_call(which, rho), "invalid '%s', must not be \"stdin\"", EncodeChar(PRINTNAME(fileSymbol)));\
+                    errorcall(sys_call(which, rho), "invalid '%s', must not be \"stdin\"", CHAR(PRINTNAME(fileSymbol)));\
                 else if (is_url(url))                          \
-                    errorcall(sys_call(which, rho), "invalid '%s', cannot be a URL"      , EncodeChar(PRINTNAME(fileSymbol)));\
+                    errorcall(sys_call(which, rho), "invalid '%s', cannot be a URL"      , CHAR(PRINTNAME(fileSymbol)));\
                 else if (is_file_uri(url))                     \
-                    errorcall(sys_call(which, rho), "invalid '%s', cannot be a file URI" , EncodeChar(PRINTNAME(fileSymbol)));\
+                    errorcall(sys_call(which, rho), "invalid '%s', cannot be a file URI" , CHAR(PRINTNAME(fileSymbol)));\
                         } while (0)
 
 
@@ -1239,7 +1239,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             else {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
                     /* if ofile is a promise already under evaluation */
                     if (PRSEEN(ofile) == 1) continue;
@@ -1284,16 +1284,16 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 #define source_char "call to function wrap.source from package this.path"
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      name, EncodeChar(PRINTNAME(wrap_sourceSymbol)), "this.path");
+                      name, CHAR(PRINTNAME(wrap_sourceSymbol)), "this.path");
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(documentcontextSymbol)));
+                error(_("object '%s' not found"), CHAR(PRINTNAME(documentcontextSymbol)));
             if (documentcontext == R_EmptyEnv) continue;
             check_documentcontext_env;
             SEXP n = findVarInFrame(documentcontext, nSymbol);
             if (!IS_SCALAR(n, INTSXP))
-                error(_("invalid '%s' value"), EncodeChar(PRINTNAME(nSymbol)));
+                error(_("invalid '%s' value"), CHAR(PRINTNAME(nSymbol)));
             returnfile(n, source_char);
         }
 
@@ -1309,7 +1309,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             else {
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileNameSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(fileNameSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
                     /* if ofile is a promise already under evaluation */
                     if (PRSEEN(ofile) == 1) continue;
@@ -1373,11 +1373,11 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             else {
                 if (TYPEOF(documentcontexts) != VECSXP)
                     error("invalid '%s' value; expected an object of class \"list\", found \"%s\"",
-                        EncodeChar(PRINTNAME(documentcontextsSymbol)), type2char(TYPEOF(documentcontexts)));
+                        CHAR(PRINTNAME(documentcontextsSymbol)), type2char(TYPEOF(documentcontexts)));
                 names = getAttrib(documentcontexts, R_NamesSymbol);
                 if (TYPEOF(names) != STRSXP)
                     error("invalid '%s' value; expected an object of class \"character\", found \"%s\"",
-                        EncodeChar(PRINTNAME(R_NamesSymbol)), type2char(TYPEOF(names)));
+                        CHAR(PRINTNAME(R_NamesSymbol)), type2char(TYPEOF(names)));
             }
             SEXP ofile = findVarInFrame(frame, fileSymbol);
             if (!IS_SCALAR(ofile, STRSXP)) continue;
@@ -1475,7 +1475,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             else {
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(fileSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
                     /* if ofile is a promise already under evaluation */
                     if (PRSEEN(ofile) == 1) continue;
@@ -1960,7 +1960,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             else {
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(pathSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(pathSymbol)));
                 if (TYPEOF(ofile) == PROMSXP) {
                     /* if ofile is a promise already under evaluation */
                     if (PRSEEN(ofile) == 1) continue;
@@ -2027,7 +2027,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 if (!private_env) continue;
                 ofile = findVarInFrame(private_env, filenameSymbol);
                 if (ofile == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(filenameSymbol)));
                 SEXP wd = findVarInFrame(frame, old_wdSymbol);
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
@@ -2064,9 +2064,9 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             {
                 SEXP tmp = findVarInFrame(documentcontext, setsyspathwashereSymbol);
                 if (tmp == R_UnboundValue)
-                    error(_("object '%s' not found"), EncodeChar(PRINTNAME(setsyspathwashereSymbol)));
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(setsyspathwashereSymbol)));
                 if (asLogical(tmp) == FALSE) {
-                    if (local) error("expected TRUE value for '%s'", EncodeChar(PRINTNAME(setsyspathwashereSymbol)));
+                    if (local) error("expected TRUE value for '%s'", CHAR(PRINTNAME(setsyspathwashereSymbol)));
                     continue;
                 }
             }
@@ -2077,14 +2077,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
             SEXP source = findVarInFrame(documentcontext, sourceSymbol);
             if (source == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(sourceSymbol)));
+                error(_("object '%s' not found"), CHAR(PRINTNAME(sourceSymbol)));
             if (TYPEOF(source) != CHARSXP)
-                error(_("invalid '%s' value"), EncodeChar(PRINTNAME(sourceSymbol)));
+                error(_("invalid '%s' value"), CHAR(PRINTNAME(sourceSymbol)));
 
 
             SEXP n = findVarInFrame(documentcontext, nSymbol);
             if (!IS_SCALAR(n, INTSXP))
-                error(_("invalid '%s' value"), EncodeChar(PRINTNAME(nSymbol)));
+                error(_("invalid '%s' value"), CHAR(PRINTNAME(nSymbol)));
             /* this could happen with eval() or similar */
             if (iwhich[0] != INTEGER(n)[0]) continue;
 
@@ -2204,8 +2204,8 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             SEXP guiname = findVarInFrame(env, guinameSymbol);
             if (TYPEOF(guiname) != CHARSXP)
                 error(_("object '%s' of mode '%s' was not found"),
-                    EncodeChar(PRINTNAME(guinameSymbol)), "char");
-            Rprintf("Source: document in %s\n", EncodeChar(guiname));
+                    CHAR(PRINTNAME(guinameSymbol)), "char");
+            Rprintf("Source: document in %s\n", CHAR(guiname));
         }
 
 
@@ -2219,7 +2219,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             if (_getContents != R_NilValue) {
                 if (TYPEOF(_getContents) != CLOSXP)
                     error(_("object '%s' of mode '%s' was not found"),
-                        EncodeChar(PRINTNAME(_getContentsSymbol)), "function");
+                        CHAR(PRINTNAME(_getContentsSymbol)), "function");
                 value = eval(expr, env);
                 if (TYPEOF(value) == STRSXP)
                     value = fixNewlines(value);
@@ -2808,7 +2808,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
         else {
             ofile = findVarInFrame(srcfile, filenameSymbol);
             if (ofile == R_UnboundValue)
-                error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
+                error(_("object '%s' not found"), CHAR(PRINTNAME(filenameSymbol)));
             SEXP srcfile_original = NULL;
             if (inherits(srcfile, "srcfilealias")) {
                 SEXP tmp = findVarInFrame(srcfile, originalSymbol);
@@ -2816,7 +2816,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                 SEXP srcfile = tmp;
                 if (TYPEOF(srcfile) != ENVSXP)
                     error(_("object '%s' of mode '%s' was not found"),
-                        EncodeChar(PRINTNAME(originalSymbol)), "environment");
+                        CHAR(PRINTNAME(originalSymbol)), "environment");
                 if (!inherits(srcfile, "srcfile"))
                     error("object '%s' is not a srcfile", CHAR(PRINTNAME(originalSymbol)));
                 // declare this as a new SEXP so as to not overwrite it in the previous context
@@ -2834,7 +2834,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                     // declare this as a new SEXP so as to not overwrite it in the previous context
                     SEXP ofile = findVarInFrame(srcfile, filenameSymbol);
                     if (ofile == R_UnboundValue)
-                        error(_("object '%s' not found"), EncodeChar(PRINTNAME(filenameSymbol)));
+                        error(_("object '%s' not found"), CHAR(PRINTNAME(filenameSymbol)));
                     set_documentcontext2(
                         /* call                   */ R_NilValue,
                         /* sym                    */ original_filenameSymbol,

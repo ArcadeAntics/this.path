@@ -77,57 +77,24 @@ with_sys.path <- function (file, expr, ...)
 
 with_site.file <- function (expr)
 {
-    if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
-        stop("'with_site.file' cannot be used within a function")
-    expr
+    .External2(.C_with_startup_file)
+    invisible()
 }
 
 
-with_init.file <- if (getRversion() >= "3.0.0") {
-                  function (...)
+with_init.file <- function (expr)
 {
-    if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
-        stop("'with_init.file' cannot be used within a function")
-    if (.getframenumber() == 0L)
+    if (!sys.parent() &&
+        is.null(attributes(sys.call(1L))) &&
+        !.in_site_file &&
+        .getframenumber() == 0L &&
+        .External2(.C_is_valid_init_file_expr))
+    {
         set.sys.path(init.file(), ofile = init.file(original = TRUE),
             Function = c("with_init.file", "this.path"))
-    envir <- parent.frame()
-    n <- ...length()
-    ## if the last argument is missing, skip it
-    if (n && .External2(.C_is_R_MissingArg, paste0("..", n)))
-        n <- n - 1L
-    for (i in seq_len(n)) {
-        x <- withVisible(...elt(i))
-        if (x$visible)
-            .PrintValueEnv(x$value, envir)
     }
+    .External2(.C_with_startup_file)
     invisible()
-}
-} else {
-                  function (...)
-{
-    if ((N <- sys.parent()) && typeof(sys.function(N)) == "closure")
-        stop("'with_init.file' cannot be used within a function")
-    if (.getframenumber() == 0L)
-        set.sys.path(init.file(), ofile = init.file(original = TRUE),
-            Function = c("with_init.file", "this.path"))
-    envir <- parent.frame()
-    n <- ...length()
-    ## if the last argument is missing, skip it
-    if (n && .External2(.C_is_R_MissingArg, paste0("..", n)))
-        n <- n - 1L
-    ## silences NOTE:
-    ## no visible binding for global variable 'sym'
-    sym <- NULL
-    for (i in seq_len(n)) {
-        ## ...elt(i) does not propagate visibility in R < 3.0.0
-        eval(call("delayedAssign", "sym", as.symbol(paste0("..", i))))
-        x <- withVisible(sym)
-        if (x$visible)
-            .PrintValueEnv(x$value, envir)
-    }
-    invisible()
-}
 }
 
 

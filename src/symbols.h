@@ -214,7 +214,9 @@ extern0 SEXP0
     tryCatchSymbol                         INI_as(install("tryCatch")),
     do_elseSymbol                          INI_as(install("do_else")),
     AssignSymbol                           INI_as(install("<-")),
-    ifnotfoundSymbol                       INI_as(install("ifnotfound"));
+    ifnotfoundSymbol                       INI_as(install("ifnotfound")),
+
+    withVisibleSymbol                      INI_as(install("withVisible"));
 
 
 #undef extern0

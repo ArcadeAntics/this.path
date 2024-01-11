@@ -249,16 +249,16 @@ typedef struct gzconn {
 /* it is undesirable to have this as a #define but we also cannot
    evaluate all the arguments. used in:
 
+   setsyspath.c
+
+     * do_wrap_source()
+     * set_path()
+
    thispath.c
 
      * _sys_path()
      * _env_path()
      * _src_path()
-
-   wrapsource.c
-
-     * do_wrap_source()
-     * set_path()
  */
 #define set_documentcontext(call, sym, ofile, assign_here, assign_as_binding,\
     normalize_action, forcepromise, assign_returnvalue,        \
