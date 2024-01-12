@@ -76,7 +76,6 @@ extern0 SEXP0
     _normalize_srcfilealiasSymbol          INI_as(install(".normalize_srcfilealias")),
     _isMethodsDispatchOnSymbol             INI_as(install(".isMethodsDispatchOn")),
     stopSymbol                             INI_as(install("stop")),
-    delayedAssignSymbol                    INI_as(install("delayedAssign")),
     _normalizeurl_1Symbol                  INI_as(install(".normalizeurl_1")),
 
     sourceSymbol                           INI_as(install("source")),

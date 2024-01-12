@@ -331,7 +331,7 @@ SEXP do_onLoad do_formals
         SEXP sym = (symbol);                                   \
         SEXP tmp = getFromMyNS(sym);                           \
         if (TYPEOF(tmp) != CLOSXP)                             \
-            error(_("object '%s' of mode '%s' was not found"), EncodeChar(sym), "function");\
+            error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME(sym)), "function");\
         R_LockEnvironment(CLOENV(tmp), (bindings));            \
     } while (0)
 
@@ -348,7 +348,17 @@ SEXP do_onLoad do_formals
     LockCLOENV(_jupyter_pathSymbol, TRUE);
     LockCLOENV(install(".emacs_path"), TRUE);
     /* zzz.R */
-    // LockCLOENV(install("eval.with.message"), FALSE);
+    // LockCLOENV(install(".eval_with_message"), FALSE);
+
+
+    {
+        SEXP sym = install(".startup_info");
+        Rboolean bindings = TRUE;
+        SEXP tmp = getFromMyNS(sym);
+        if (TYPEOF(tmp) != ENVSXP)
+            error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME(sym)), "environment");
+        R_LockEnvironment(tmp, bindings);
+    }
 
 
     /* force the promise 'initwd' */

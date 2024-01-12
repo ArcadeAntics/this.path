@@ -50,7 +50,7 @@ progArgs <- function ()
             if (n <- length(whiches))
                 whiches <- whiches[seq.int(to = 1L, by = -1L, length.out = n - 1L)]
             for (which in whiches) {
-                if ((.identical)(sys.function(which), withArgs)) {
+                if (.identical(sys.function(which), withArgs)) {
                     value <- get("args", envir = sys.frame(which), inherits = FALSE)
                     break
                 }

@@ -150,7 +150,7 @@ delayedAssign(".untitled", {
     skip.stop <- TRUE
     for (n in seq.int(to = 1L, by = -1L, length.out = n)) {
         if (typeof(fun <- sys.function(n)) == "closure") {
-            if (skip.stop && (.identical)(fun, stop)) {
+            if (skip.stop && .identical(fun, stop)) {
                 skip.stop <- FALSE
                 next
             }
@@ -273,7 +273,7 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
 
 
 .isJupyterLoaded <- function ()
-.GUI_jupyter && isNamespaceLoaded("IRkernel") && (.identical)(sys.function(1L), IRkernel::main)
+.GUI_jupyter && isNamespaceLoaded("IRkernel") && .identical(sys.function(1L), IRkernel::main)
 
 
 .getJupyterRNotebookContents <- function (path)
@@ -350,7 +350,7 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
                 error = identity)
             if (!inherits(exprs, "error")) {
                 for (expr in exprs) {
-                    if ((.identical)(expr, call)) {
+                    if (.identical(expr, call)) {
                         .External2(.C_set_jupyter_path, file, skipCheck = TRUE)
                         return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
                     }
@@ -483,8 +483,8 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
             stop(gettextf("'%s' could not be run", "emacsclient", domain = "R-base"), domain = NA)
         else stop(sprintf("'%s' execution failed with error code %d and message:\n\n", "emacsclient", status),
             paste(rval, collapse = "\n"),
-            "\n\nperhaps add (server-start) to your ~/.emacs file and restart the session\n",
-            "or type M-x server-start in your current session?", domain = NA)
+            "\n\n perhaps add (server-start) to your ~/.emacs file and restart the session\n",
+            " or type M-x server-start in your current session?", domain = NA)
     }
 
 
@@ -545,7 +545,7 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
 
 .site_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
-    if (contents && .has_site_file)
+    if (contents && .startup_info[["has_site_file"]])
         for.msg <- FALSE
     value <- site.file(original, for.msg, default = {
         stop(.ThisPathNotExistsError(
@@ -784,8 +784,7 @@ set.gui.path <- function (...)
 .External2(.C_set_gui_path)
 
 
-delayedAssign(".identical", {
-    if (getRversion() >= "4.2.0") {
+.identical <- if (getRversion() >= "4.2.0") {
 
 
               function (x, y)
@@ -794,7 +793,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     extptr.as.ref = TRUE)
 
 
-    } else if (getRversion() >= "3.4.0") {
+} else if (getRversion() >= "3.4.0") {
 
 
               function (x, y)
@@ -802,7 +801,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE)
 
 
-    } else if (getRversion() >= "3.0.0") {
+} else if (getRversion() >= "3.0.0") {
 
 
               function (x, y)
@@ -810,7 +809,7 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE, ignore.environment = FALSE)
 
 
-    } else if (getRversion() >= "2.14.0") {
+} else if (getRversion() >= "2.14.0") {
 
 
               function (x, y)
@@ -818,22 +817,21 @@ identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
     ignore.bytecode = FALSE)
 
 
-    } else if (getRversion() >= "2.10.0") {
+} else if (getRversion() >= "2.10.0") {
 
 
               function (x, y)
 identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE)
 
 
-    } else {
+} else {
 
 
               function (x, y)
 identical(x, y)
 
 
-    }
-})
+}
 
 
 

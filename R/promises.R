@@ -285,7 +285,7 @@ delayedAssign(".GUI_jupyter", {
             error = identity)
         !inherits(exprs, "error") &&
             length(exprs) &&
-            (.identical)(exprs[[length(exprs)]], .IRkernel_main_call)
+            .identical(exprs[[length(exprs)]], .IRkernel_main_call)
     })
 })
 

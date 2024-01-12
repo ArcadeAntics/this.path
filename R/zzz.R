@@ -64,8 +64,7 @@ tmp(
 
 
     .has_shFILE,
-    .r_editor, .untitled,
-    .identical
+    .r_editor, .untitled
 )
 
 

@@ -87,7 +87,7 @@ with_init.file <- function (expr)
     if (!sys.parent() &&
         is.null(attributes(sys.call(1L))) &&
         .getframenumber() == 0L &&
-        .has_init_file &&
+        .startup_info[["has_init_file"]] &&
         .External2(.C_is_valid_init_file_expr))
     {
         set.sys.path(init.file(), ofile = init.file(original = TRUE),

@@ -172,7 +172,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("(?i)wrapsource\\.(c|R)", x, value = TRUE)
+    x <- grep("\\.startup_info", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 
