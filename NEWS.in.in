@@ -2,6 +2,11 @@ this.path News
 
 CHANGES IN this.path devel:
 
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * with_init.file() now accepts a braced expression, the
+      sub-expressions of which are evaluated and auto-printed.
+
   NEW FEATURES:
 
     * this.path() is now compatible with function utils::Sweave().
@@ -11,9 +16,6 @@ CHANGES IN this.path devel:
 
     * Added make_fix_file() which makes a function that constructs file
       paths, starting with the project root of this.dir().
-
-    * with_init.file() now accepts unlimited arguments and auto-prints
-      them as if in a toplevel context.
 
   DEPRECATED AND DEFUNCT:
 

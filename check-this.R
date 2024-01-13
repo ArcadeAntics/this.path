@@ -172,7 +172,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\.startup_info", x, value = TRUE)
+    x <- grep("with_init\\.file", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{\pkg{this.path} News}
 \section{CHANGES IN VERSION devel}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item{\code{with_init.file()} now accepts a braced expression, the
+        sub-expressions of which are evaluated and auto-printed.}
+    }
+  }
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with function
@@ -12,9 +18,6 @@
 
       \item{Added \code{make_fix_file()} which makes a function that constructs
         file paths, starting with the project root of \code{this.dir()}.}
-
-      \item{\code{with_init.file()} now accepts unlimited arguments and
-        auto-prints them as if in a toplevel context.}
     }
   }
   \subsection{DEPRECATED AND DEFUNCT}{

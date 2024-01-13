@@ -273,9 +273,9 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
   If you need to use \code{this.path()} inside a user profile, please use
   \code{\link{with_init.file}()}, something along the lines of:
   \preformatted{this.path::with_init.file({
-    <expr 1>
-    <expr 2>
-    <...>
+<expr 1>
+<expr 2>
+<...>
 })}
 }
 \seealso{
