@@ -788,7 +788,22 @@ SEXP do_dotselt do_formals
     if (!isNumeric(si) || XLENGTH(si) != 1)
         errorcall(call, _("indexing '...' with an invalid index"));
     int i = asInteger(si);
+#if R_version_at_least(3, 0, 0)
     return eval(ddfind(i, env), env);
+#else
+    SEXP expr;
+    PROTECT_INDEX indx;
+    char buf[15];
+    snprintf(buf, 15, "..%d", i);
+    PROTECT_WITH_INDEX(expr = CONS(install(buf), R_NilValue), &indx);
+    REPROTECT(expr = LCONS(getFromBase(withVisibleSymbol), expr), indx);
+    SEXP value = eval(expr, env);
+    PROTECT(value);
+    set_this_path_value(VECTOR_ELT(value, 0));
+    set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));
+    UNPROTECT(2);
+    return R_NilValue;
+#endif
 }
 
 

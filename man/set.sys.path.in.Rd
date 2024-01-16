@@ -5,8 +5,6 @@
 \alias{unset.sys.path}
 \alias{set.sys.path.function}
 \alias{with_sys.path}
-\alias{with_site.file}
-\alias{with_init.file}
 \alias{wrap.source}
 \title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
@@ -32,9 +30,6 @@
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
   function, \code{with_sys.path()} can only be used outside a function.
-
-  \code{with_init.file()} declares that the current script is the user profile
-  then evaluates and auto-prints its argument as if in a toplevel context.
 
   See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
@@ -79,9 +74,6 @@ unset.sys.path()
 set.sys.path.function(fun)
 
 with_sys.path(file, expr, ...)
-
-with_site.file(expr)
-with_init.file(expr)
 
 wrap.source(expr,
     path.only = FALSE,
@@ -177,11 +169,7 @@ wrap.source(expr,
 
   \item{fun}{function with a \code{srcref}.}
 
-  \item{\dots}{for \code{with_sys.path()}, further arguments passed to
-    \code{set.sys.path()}.
-
-    for \code{with_init.file()}, a braced expression, the sub-expressions of
-    which to evaluate and auto-print.}
+  \item{\dots}{further arguments passed to \code{set.sys.path()}.}
 }
 \details{
   \code{set.sys.path()} should be added to the body of your \sourcenolink-like

@@ -271,8 +271,11 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
 }
 \note{
   If you need to use \code{this.path()} inside a user profile, please use
-  \code{\link{with_init.file}()}, something along the lines of:
-  \preformatted{this.path::with_init.file({
+  \code{\link{with_init.file}()}. i.e. instead of writing:
+  \preformatted{<expr 1>
+<expr 2>
+<...>}
+  write this: \preformatted{this.path::with_init.file({
 <expr 1>
 <expr 2>
 <...>

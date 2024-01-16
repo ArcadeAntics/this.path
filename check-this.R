@@ -8,7 +8,7 @@ local({
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
         # with.keep.source = TRUE,
 
-        check = FALSE, no.stop.on.test.error = TRUE,
+        check = TRUE, no.stop.on.test.error = TRUE,
         as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
@@ -110,7 +110,7 @@ local({
 
 
     x <- readLines("./src/init.c")
-    pattern <- "^\\{\"([^\"]+)\" *, \\(DL_FUNC\\) &do_.* *, *(-?[[:digit:]]+)\\},$"
+    pattern <- "^\\{\"([^\"]+)\" *, \\(DL_FUNC\\) &do_[^ ]+ *, +(-?[[:digit:]]+)\\},(?:| // R_Visible (?:updatable|off))$"
     m <- regexec(pattern, x)
     keep <- which(lengths(m) > 1L)
     x <- x[keep]
@@ -172,7 +172,7 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("with_init\\.file", x, value = TRUE)
+    x <- grep("\\.C_sys\\.whiches", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

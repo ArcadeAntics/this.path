@@ -36,10 +36,6 @@ asArgs <- function (...)
 .asArgs(list(...))
 
 
-fileArgs <- function ()
-stop(.defunctError("progArgs", "this.path", old = "fileArgs"))
-
-
 progArgs <- function ()
 {
     n <- .External2(.C_getframenumber)
@@ -47,6 +43,7 @@ progArgs <- function ()
         if (n > .toplevel.nframe()) {
             value <- character()
             whiches <- .External2(.C_sys.whiches, n)
+            ## remove the last element and reverse
             if (n <- length(whiches))
                 whiches <- whiches[seq.int(to = 1L, by = -1L, length.out = n - 1L)]
             for (which in whiches) {

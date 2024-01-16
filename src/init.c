@@ -44,7 +44,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
 #if R_version_less_than(4, 1, 0)
-{"...elt", (DL_FUNC) &do_dotselt, 1},
+{"...elt", (DL_FUNC) &do_dotselt, 1}, // R_Visible updatable
 #endif
 
 
@@ -58,6 +58,22 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"windows_dirname2", (DL_FUNC) &do_windows_dirname2, -1},
 {"unix_dirname2"   , (DL_FUNC) &do_unix_dirname2   , -1},
 {"dirname2"        , (DL_FUNC) &do_dirname2        , -1},
+
+
+/* error.c */
+
+
+{"ThisPathInAQUAError"                     , (DL_FUNC) &do_ThisPathInAQUAError                     , 1},
+{"ThisPathInZipFileError"                  , (DL_FUNC) &do_ThisPathInZipFileError                  , 2},
+{"ThisPathNotExistsError"                  , (DL_FUNC) &do_ThisPathNotExistsError                  , 2},
+{"ThisPathNotFoundError"                   , (DL_FUNC) &do_ThisPathNotFoundError                   , 2},
+{"ThisPathNotImplementedError"             , (DL_FUNC) &do_ThisPathNotImplementedError             , 2},
+{"ThisPathUnrecognizedConnectionClassError", (DL_FUNC) &do_ThisPathUnrecognizedConnectionClassError, 2},
+{"ThisPathUnrecognizedMannerError"         , (DL_FUNC) &do_ThisPathUnrecognizedMannerError         , 1},
+
+{"last_condition", (DL_FUNC) &do_last_condition, -1}, // R_Visible updatable
+{"tryCatch2"     , (DL_FUNC) &do_tryCatch2     ,  0}, // R_Visible updatable
+{"tryCatch3"     , (DL_FUNC) &do_tryCatch3     ,  0}, // R_Visible updatable
 
 
 /* ext.c */
@@ -127,8 +143,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* print.c */
 
 
-{"PrintValueEnv"                , (DL_FUNC) &do_PrintValueEnv                , 2},
-{"print.ThisPathDocumentContext", (DL_FUNC) &do_print_ThisPathDocumentContext, 2},
+{"PrintValueEnv"                , (DL_FUNC) &do_PrintValueEnv                , 2}, // R_Visible off
+{"print.ThisPathDocumentContext", (DL_FUNC) &do_print_ThisPathDocumentContext, 2}, // R_Visible off
 
 
 /* progargs.c */
@@ -146,7 +162,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"PRINFO"                , (DL_FUNC) &do_PRINFO                , -1},
 {"mkPROMISE"             , (DL_FUNC) &do_mkPROMISE             ,  2},
 {"mkEVPROMISE"           , (DL_FUNC) &do_mkEVPROMISE           ,  2},
-{"unlockEnvironment"     , (DL_FUNC) &do_unlockEnvironment     , -1},
+{"unlockEnvironment"     , (DL_FUNC) &do_unlockEnvironment     , -1}, // R_Visible off
 {"is_R_MissingArg"       , (DL_FUNC) &do_is_R_MissingArg       , -1},
 
 
@@ -160,22 +176,19 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* rprojroot.c */
 
 
-{"reset_proj", (DL_FUNC) &do_reset_proj, 0},
+{"reset_proj", (DL_FUNC) &do_reset_proj, 0}, // R_Visible off
 
 
 /* setsyspath.c */
 
 
 {"SET_PRSEEN_2"         , (DL_FUNC) &do_SET_PRSEEN_2         ,  1},
-{"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20},
+{"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20}, // R_Visible updatable
 {"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 21},
-{"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0},
-{"set_env_path"         , (DL_FUNC) &do_set_env_path         ,  2},
-{"set_src_path"         , (DL_FUNC) &do_set_src_path         ,  1},
-{"set_sys_path_function", (DL_FUNC) &do_set_sys_path_function,  1},
-
-{"is_valid_init_file_expr", (DL_FUNC) &do_is_valid_init_file_expr, 0},
-{"with_startup_file"      , (DL_FUNC) &do_with_startup_file      , 0},
+{"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0}, // R_Visible off
+{"set_env_path"         , (DL_FUNC) &do_set_env_path         ,  2}, // R_Visible off
+{"set_src_path"         , (DL_FUNC) &do_set_src_path         ,  1}, // R_Visible off
+{"set_sys_path_function", (DL_FUNC) &do_set_sys_path_function,  1}, // R_Visible off
 
 
 /* shfile.c */
@@ -187,40 +200,38 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"shINFO"   , (DL_FUNC) &do_shINFO   , 0},
 
 
+/* startup.c */
+
+
+{"with_startup_file"      , (DL_FUNC) &do_with_startup_file      , 0},
+{"is_valid_init_file_expr", (DL_FUNC) &do_is_valid_init_file_expr, 0},
+{"set_init_file"          , (DL_FUNC) &do_set_init_file          , 0},
+{"unset_init_file"        , (DL_FUNC) &do_unset_init_file        , 0},
+
+
+/* sys.c */
+
+
+{"sys.srcref" , (DL_FUNC) &do_sys_srcref , 1},
+{"sys.whiches", (DL_FUNC) &do_sys_whiches, 1},
+
+
 /* thispath.c */
 
 
-{"ThisPathInAQUAError"                     , (DL_FUNC) &do_ThisPathInAQUAError                     , 1},
-{"ThisPathInZipFileError"                  , (DL_FUNC) &do_ThisPathInZipFileError                  , 2},
-{"ThisPathNotExistsError"                  , (DL_FUNC) &do_ThisPathNotExistsError                  , 2},
-{"ThisPathNotFoundError"                   , (DL_FUNC) &do_ThisPathNotFoundError                   , 2},
-{"ThisPathNotImplementedError"             , (DL_FUNC) &do_ThisPathNotImplementedError             , 2},
-{"ThisPathUnrecognizedConnectionClassError", (DL_FUNC) &do_ThisPathUnrecognizedConnectionClassError, 2},
-{"ThisPathUnrecognizedMannerError"         , (DL_FUNC) &do_ThisPathUnrecognizedMannerError         , 1},
-
 {"is_clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
 {"jupyter_path"      , (DL_FUNC) &do_jupyter_path      , -1},
-{"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1},
+{"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1}, // R_Visible off
 {"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
 {"remove_trailing_blank_string", (DL_FUNC) &do_remove_trailing_blank_string, 1},
 {"fixNewlines"       , (DL_FUNC) &do_fixNewlines       ,  1},
-{"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0},
+{"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0}, // R_Visible off
 {"sys_path"          , (DL_FUNC) &do_sys_path          , -1},
 {"getframenumber"    , (DL_FUNC) &do_getframenumber    ,  0},
 {"env_path"          , (DL_FUNC) &do_env_path          , -1},
-{"sys.whiches"       , (DL_FUNC) &do_sys_whiches       ,  1},
-{"sys.srcref"        , (DL_FUNC) &do_sys_srcref        ,  1},
 {"src_path"          , (DL_FUNC) &do_src_path          , -1},
 {"src_LINENO"        , (DL_FUNC) &do_src_LINENO        , -1},
 {"this_path"         , (DL_FUNC) &do_this_path         , -1},
-
-
-/* trycatch.c */
-
-
-{"last_condition", (DL_FUNC) &do_last_condition, -1},
-{"tryCatch2"     , (DL_FUNC) &do_tryCatch2     ,  0},
-{"tryCatch3"     , (DL_FUNC) &do_tryCatch3     ,  0},
 
 
 /* utils.c */
@@ -234,7 +245,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"IS_SCALAR_STR", (DL_FUNC) &do_IS_SCALAR_STR, 1},
 {"AS_SCALAR_STR", (DL_FUNC) &do_AS_SCALAR_STR, 1},
 {"scalar_streql", (DL_FUNC) &do_scalar_streql, 2},
-{"get_dyn"      , (DL_FUNC) &do_get_dyn      , 3},
 
 
 {NULL, NULL, 0}

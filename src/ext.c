@@ -128,7 +128,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         }
 
 
-        drivewidth = get_drive_width(windows, ptr, nchar);
+        drivewidth = _get_drive_width(windows, ptr, nchar);
         if (nchar == drivewidth) {  /* pathspec is 0 bytes long */
             switch (op) {
             case EXTOP_REMOVEEXT:

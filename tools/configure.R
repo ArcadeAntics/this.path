@@ -31,6 +31,8 @@ main <- function ()
 
     ## "w" will use the native line end, "wb" will use Unix (LF)
     writeLines2 <- function(text, description, mode = "w", useBytes = TRUE) {
+        ## force the promise
+        text
         conn <- file(description, mode, encoding = "")
         on.exit(close(conn))
         writeLines(text, conn, useBytes = useBytes)
@@ -127,6 +129,11 @@ main <- function ()
         sprintf("./man/%s-defunct.in.in.Rd", desc["Package"]),
         "# Defunct in devel",
         sprintf("# Defunct in %s", desc["Version"])
+    )
+    replace.devel.with.current.version(
+        "./R/thispath-defunct.in.R",
+        "## Defunct in devel",
+        sprintf("## Defunct in %s (%s)", desc["Version"], desc["Date"])
     )
 
 
@@ -328,29 +335,30 @@ main <- function ()
 
         ## (possibly) enable development features
         if (file.exists("./tools/for-r-mac-builder")) {
-            R_THIS_PATH_DEFINES <- TRUE
+            R_THIS_PATH_DEVEL <- TRUE
         } else {
-            R_THIS_PATH_DEFINES <- as.logical(getOption("R_THIS_PATH_DEFINES", NA))
-            if (is.na(R_THIS_PATH_DEFINES))
-                R_THIS_PATH_DEFINES <- as.logical(Sys.getenv("R_THIS_PATH_DEFINES"))
-            if (is.na(R_THIS_PATH_DEFINES)) {
+            R_THIS_PATH_DEVEL <- as.logical(getOption("R_THIS_PATH_DEVEL", NA))
+            if (is.na(R_THIS_PATH_DEVEL))
+                R_THIS_PATH_DEVEL <- as.logical(Sys.getenv("R_THIS_PATH_DEVEL"))
+            if (is.na(R_THIS_PATH_DEVEL)) {
                 if (devel) {
                     libname <- Sys.getenv("R_LIBRARY_DIR")
-                    R_THIS_PATH_DEFINES <- !(
+                    R_THIS_PATH_DEVEL <- !(
                         is.na(libname) || !nzchar(libname) ||
                         grepl(sprintf("/%s\\.Rcheck$", regexQuote(desc["Package"])), libname)
                     )
-                } else R_THIS_PATH_DEFINES <- FALSE
+                } else R_THIS_PATH_DEVEL <- FALSE
             }
         }
-        if (R_THIS_PATH_DEFINES)
+        if (R_THIS_PATH_DEVEL)
             writeLines2(c(
-                "#ifndef R_THIS_PATH_DEFINES",
-                "#define R_THIS_PATH_DEFINES",
-                "#endif"
+                "#ifndef R_THIS_PATH_DEVEL",
+                "#define R_THIS_PATH_DEVEL",
+                "#endif",
+                readLines2("./src/devel.h")
             ),
             ## *.c and *.h must use Unix (LF) under Unix-alikes
-            "./src/defines.h", "wb")
+            "./src/devel.h", "wb")
     }
 }
 

@@ -222,7 +222,3 @@ this.proj <- function (..., local = FALSE, n = 0L, envir = parent.frame(n + 1L),
 
 reset.proj <- function ()
 .External2(.C_reset_proj)
-
-
-reset.this.proj <- function ()
-stop(.defunctError("reset.proj", "this.path", old = "reset.this.proj"))

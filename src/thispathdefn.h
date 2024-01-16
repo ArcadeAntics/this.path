@@ -2,15 +2,19 @@
 #define R_THISPATH_THISPATHDEFN_H
 
 
+#include "devel.h"
+
+
 #include <R.h>
 #include <Rinternals.h>
 #include "backports.h"
-#include "defines.h"
+#include "error.h"
 #include "ns-hooks.h"
 #include "print.h"
 #include "promises.h"
 #include "rversiondefines.h"
 #include "symbols.h"
+#include "sys.h"
 #include "translations.h"
 
 
@@ -32,39 +36,7 @@ extern SEXP topenv(SEXP target, SEXP envir);
 extern void R_LockBinding(SEXP sym, SEXP env);
 
 
-/* handle R_THIS_PATH_DEFINES */
-
-
-#if R_version_at_least(3, 3, 0)
-    #if defined(R_THIS_PATH_DEFINES)
-        #include <R_ext/Connections.h>
-        #if !defined(R_CONNECTIONS_VERSION)
-        #elif R_CONNECTIONS_VERSION == 1
-            #define R_CONNECTIONS_VERSION_1
-            /* R_GetConnection() is not part of the R API. it should not be
-               used unless you are fully aware of what you are doing. it is
-               subject to change without notice nor back-compatibility.
-               currently, this is only used in the development version of the
-               package; the release version on CRAN does not use this. */
-            extern Rconnection R_GetConnection(SEXP sConn);
-        #endif
-    #endif
-#endif
-
-
-#if defined(R_THIS_PATH_DEFINES) && R_version_at_least(3, 0, 0)
-/* R_Visible is not part of the R API. DO NOT USE OR MODIFY IT unless you are
-   absolutely certain it is what you wish to do. it is subject to change
-   without notice nor back-compatibility. only the development version of this
-   package uses this variable. */
-extern Rboolean R_Visible;
-#define set_R_Visible(v) (R_Visible = ((v) ? TRUE : FALSE))
-#else
-#define set_R_Visible(v) (eval((v) ? R_NilValue : expr_invisible, R_EmptyEnv))
-#endif
-
-
-
+/* my functions and defines */
 
 
 extern R_xlen_t asXLength(SEXP x);
@@ -105,12 +77,6 @@ extern SEXP findFunction(SEXP symbol, SEXP rho);
 extern SEXP as_environment_char(const char *what);
 
 
-extern SEXP errorCondition        (const char *msg, SEXP call, int numFields, SEXP Class);
-extern SEXP errorCondition_strings(const char *msg, SEXP call, int numFields, const char **Class);
-extern SEXP errorCondition_string (const char *msg, SEXP call, int numFields, const char *Class);
-extern SEXP simpleError(const char *msg, SEXP call);
-
-
 #if defined(R_CONNECTIONS_VERSION_1)
 extern SEXP summaryconnection(Rconnection Rcon);
 #else
@@ -118,47 +84,28 @@ extern SEXP summaryconnection(SEXP sConn);
 #endif
 
 
-extern SEXP ThisPathInAQUAError                     (SEXP call);
-extern SEXP ThisPathInZipFileError                  (SEXP call, SEXP description);
-extern SEXP ThisPathNotExistsError                  (const char *msg, SEXP call);
-extern SEXP ThisPathNotFoundError                   (const char *msg, SEXP call);
-extern SEXP ThisPathNotImplementedError             (const char *msg, SEXP call);
-#if defined(R_CONNECTIONS_VERSION_1)
-extern SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
-#else
-extern SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
-#endif
-extern SEXP ThisPathUnrecognizedMannerError         (SEXP call);
-
-
-extern void stop(SEXP cond);
-
-
 extern SEXP DocumentContext(void);
 
 
-typedef enum {NA_DEFAULT, NA_NOT_DIR, NA_FIX_DIR} NA_TYPE;
+typedef enum {NA_DEFAULT, NA_NOT_DIR, NA_FIX_DIR} NORMALIZE_ACTION;
 
 
-extern void assign_default(SEXP srcfile_original, SEXP owd, SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
-extern void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NA_TYPE normalize_action);
-extern void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP documentcontext, NA_TYPE normalize_action);
+extern void assign_default(SEXP srcfile_original, SEXP owd, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na);
+extern void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na);
+extern void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP documentcontext, NORMALIZE_ACTION na);
 extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
 extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
-
-
-extern SEXP sys_call(SEXP which, SEXP rho);
-#define getCurrentCall(rho) ( eval(expr_sys_call, (rho)) )
-extern int sys_parent(int n, SEXP rho);
 
 
 extern int _gui_rstudio;
 extern int _maybe_unembedded_shell;
 extern Rboolean _in_site_file;
+extern Rboolean _in_init_file;
 extern SEXP get_debugSource(void);
 #define gui_rstudio            ((_gui_rstudio            != -1) ? (_gui_rstudio           ) : (_gui_rstudio            = asLogical(getFromMyNS(_GUI_RStudioSymbol           ))))
 #define maybe_unembedded_shell ((_maybe_unembedded_shell != -1) ? (_maybe_unembedded_shell) : (_maybe_unembedded_shell = asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
 #define in_site_file           ((!_in_site_file               ) ? (_in_site_file          ) : (_in_site_file           = asLogical(getFromMyNS(_in_site_fileSymbol          ))))
+#define in_init_file           (_in_init_file)
 
 
 #define streql(str1, str2) (strcmp((str1), (str2)) == 0)
@@ -523,7 +470,7 @@ do {                                                           \
             setAttrib(assign_here, documentcontextSymbol, documentcontext);\
         }                                                      \
     }                                                          \
-    set_R_Visible(TRUE);                                       \
+    /* set_R_Visible(TRUE); */                                 \
     UNPROTECT(nprotect);                                       \
 } while (0)
 

@@ -2,87 +2,6 @@
 #include "thispathdefn.h"
 
 
-SEXP do_ThisPathInAQUAError do_formals
-{
-    do_start_no_call_op_rho("ThisPathInAQUAError", 1);
-    return ThisPathInAQUAError(lazy_duplicate(CAR(args)));
-}
-
-
-SEXP do_ThisPathInZipFileError do_formals
-{
-    do_start_no_op_rho("ThisPathInZipFileError", 2);
-    SEXP call2 = lazy_duplicate(CAR(args)); args = CDR(args);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
-        STRING_ELT(CAR(args), 0) == NA_STRING)
-    {
-        errorcall(call, _("invalid first argument"));
-    }
-    SEXP description = STRING_ELT(CAR(args), 0);
-    return ThisPathInZipFileError(call2, description);
-}
-
-
-SEXP do_ThisPathNotExistsError do_formals
-{
-    do_start_no_op_rho("ThisPathNotExistsError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
-        STRING_ELT(CAR(args), 0) == NA_STRING)
-    {
-        errorcall(call, _("invalid first argument"));
-    }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return ThisPathNotExistsError(msg, lazy_duplicate(CADR(args)));
-}
-
-
-SEXP do_ThisPathNotFoundError do_formals
-{
-    do_start_no_op_rho("ThisPathNotFoundError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
-        STRING_ELT(CAR(args), 0) == NA_STRING)
-    {
-        errorcall(call, _("invalid first argument"));
-    }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return ThisPathNotFoundError(msg, lazy_duplicate(CADR(args)));
-}
-
-
-SEXP do_ThisPathNotImplementedError do_formals
-{
-    do_start_no_op_rho("ThisPathNotImplementedError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
-        STRING_ELT(CAR(args), 0) == NA_STRING)
-    {
-        errorcall(call, _("invalid first argument"));
-    }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return ThisPathNotImplementedError(msg, lazy_duplicate(CADR(args)));
-}
-
-
-SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
-{
-    do_start_no_call_op_rho("ThisPathUnrecognizedConnectionClassError", 2);
-#if defined(R_CONNECTIONS_VERSION_1)
-    /* as I said before, R_GetConnection() is not a part of the R API.
-       DO NOT USE IT unless you are certain of what you are doing and
-       accept the potential consequences and drawbacks */
-    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), R_GetConnection(CADR(args)));
-#else
-    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summaryconnection(CADR(args)));
-#endif
-}
-
-
-SEXP do_ThisPathUnrecognizedMannerError do_formals
-{
-    do_start_no_call_op_rho("ThisPathUnrecognizedMannerError", 1);
-    return ThisPathUnrecognizedMannerError(lazy_duplicate(CAR(args)));
-}
-
-
 SEXP do_is_clipboard do_formals
 {
     do_start_no_call_op_rho("is_clipboard", 1);
@@ -316,11 +235,7 @@ SEXP do_set_jupyter_path do_formals
     if (!IS_SCALAR(path, STRSXP))
         errorcall(call, _("'%s' must be a character string"), "path");
     if (STRING_ELT(path, 0) == NA_STRING);
-#ifdef _WIN32
-    else if (is_abs_path_windows(CHAR(STRING_ELT(path, 0))));
-#else
-    else if (is_abs_path_unix(CHAR(STRING_ELT(path, 0))));
-#endif
+    else if (is_abs_path(CHAR(STRING_ELT(path, 0))));
     else errorcall(call, _("invalid '%s' argument"), "path");
 
 
@@ -629,11 +544,7 @@ SEXP do_set_gui_path do_formals
         SEXP path = eval(CADR(dots), R_EmptyEnv);
         if (!IS_SCALAR(path, STRSXP))
             error("invalid '%s' argument; expected a character string", "path");
-#ifdef _WIN32
-        if (!is_abs_path_windows(CHAR(STRING_ELT(path, 0))))
-#else
-        if (!is_abs_path_unix(CHAR(STRING_ELT(path, 0))))
-#endif
+        if (!is_abs_path(CHAR(STRING_ELT(path, 0))))
             error("invalid '%s' argument; expected an absolute path", "path");
         SEXP _getContents = CDDR(dots);
         if (_getContents == R_NilValue);
@@ -789,6 +700,15 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         if (in_site_file) {                                    \
             if (get_frame_number) return ScalarInteger(-1);    \
             SEXP expr = make_path_call(_site_pathSymbol,       \
+                verbose, original, for_msg, contents);         \
+            PROTECT(expr);                                     \
+            SEXP value = eval(expr, mynamespace);              \
+            UNPROTECT(1);                                      \
+            return value;                                      \
+        }                                                      \
+        else if (in_init_file) {                               \
+            if (get_frame_number) return ScalarInteger(-1);    \
+            SEXP expr = make_path_call(_init_pathSymbol,       \
                 verbose, original, for_msg, contents);         \
             PROTECT(expr);                                     \
             SEXP value = eval(expr, mynamespace);              \
@@ -2183,13 +2103,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             if (!IS_SCALAR(value, STRSXP))
                 errorcall(expr, "invalid return value; must be a character string");
             if (for_msg);
-            else if (
-#ifdef _WIN32
-                is_abs_path_windows(CHAR(STRING_ELT(value, 0)))
-#else
-                is_abs_path_unix(CHAR(STRING_ELT(value, 0)))
-#endif
-            );
+            else if (is_abs_path(CHAR(STRING_ELT(value, 0))));
             else errorcall(expr, "invalid return value; must be an absolute path");
         }
         UNPROTECT(2);
@@ -2371,12 +2285,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                             if (!strcmp(CHAR(STRING_ELT(names, i)), "source_path")) {
                                 path = VECTOR_ELT(spec, i);
                                 if (TYPEOF(path) == STRSXP && XLENGTH(path) > 0 &&
-#ifdef _WIN32
-                                    is_abs_path_windows(CHAR(STRING_ELT(path, 0)))
-#else
-                                    is_abs_path_unix(CHAR(STRING_ELT(path, 0)))
-#endif
-                                )
+                                    is_abs_path(CHAR(STRING_ELT(path, 0))))
                                 {
                                     PROTECT(documentcontext = DocumentContext());
                                     PROTECT(ofile = ScalarString(STRING_ELT(path, 0)));
@@ -2409,14 +2318,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     {
         PROTECT(ofile = ScalarString(STRING_ELT(path, 0))); nprotect++;
         const char *str = CHAR(STRING_ELT(ofile, 0));
-        if (
-#ifdef _WIN32
-             is_abs_path_windows(str) || is_url(str) || is_file_uri(str)
-#else
-             is_abs_path_unix(str)    || is_url(str) || is_file_uri(str)
-#endif
-        )
-        {
+        if (is_abs_path(str) || is_url(str) || is_file_uri(str)) {
             set_documentcontext2(
                 /* call                   */ R_CurrentExpression,
                 /* sym                    */ pathSymbol,
@@ -2528,123 +2430,6 @@ SEXP do_env_path do_formals
 
     check_arguments4(verbose, original, for_msg, contents);
     return env_path7(verbose, original, for_msg, contents, target, envir, rho);
-}
-
-
-typedef enum {
-    CALLSTACK_WHICHES,
-    CALLSTACK_SRCREF ,
-    CALLSTACK_SRCFILE
-} CALLSTACK_ACTION;
-
-
-SEXP _callstack(int k, CALLSTACK_ACTION op, SEXP rho)
-{
-    SEXP Rparents = eval(expr_sys_parents, rho);
-    PROTECT(Rparents);
-    int framedepth = LENGTH(Rparents);
-    int *parents = INTEGER(Rparents);
-    // make k negative; this speeds up call stack inspection
-    if (k > 0) k -= framedepth;
-    // this would normally be 0, but not in Jupyter
-    int toplevel_framedepth = asInteger(eval(expr__toplevel_nframe, R_EmptyEnv));
-    if (k <= toplevel_framedepth - framedepth) k = 0;
-    // -1 because R is index 1 and C is index 0
-    int indx = framedepth + k - 1;
-    int parent = parents[indx];
-    int *which = INTEGER(CADR(expr_sys_call_which));
-    which[0] = k;
-    int minimum_k = k;
-    for (int previous_equal = 1, current_equal = 1; indx >= parent && indx >= toplevel_framedepth; indx--, which[0]--) {
-        previous_equal = current_equal;
-        current_equal = (parents[indx] == parent);
-        if (current_equal)
-            minimum_k = which[0];
-        else if (previous_equal && (eval(expr_sys_function_which, rho) == eval_op))
-            break;
-    }
-    if (op == CALLSTACK_WHICHES) {
-        int len = 0;
-        k += framedepth - 1;
-        minimum_k += framedepth - 1;
-        for (indx = minimum_k; indx <= k; indx++)
-            len += (parents[indx] == parent);
-        SEXP value = allocVector(INTSXP, len);
-        int *ivalue = INTEGER(value);
-        int ivalueindx = -1;
-        for (indx = minimum_k; indx <= k; indx++)
-            if (parents[indx] == parent)
-                // +1 because R is index 1
-                ivalue[++ivalueindx] = indx + 1;
-        UNPROTECT(1);
-        return value;
-    }
-    which[0] = minimum_k;
-    SEXP expr = eval(expr_sys_call_which, rho);
-    PROTECT(expr);
-    SEXP srcref = getAttrib(expr, srcrefSymbol);
-    if (srcref == R_NilValue);
-    else if (op == CALLSTACK_SRCFILE) {
-        PROTECT(srcref);
-        srcref = getAttrib(srcref, srcfileSymbol);
-        UNPROTECT(1);
-    }
-    else if (op == CALLSTACK_SRCREF) {
-        PROTECT(srcref);
-        SEXP srcfile = getAttrib(srcref, srcfileSymbol);
-        if (TYPEOF(srcfile) == ENVSXP) {
-            PROTECT(srcfile);
-            indx = framedepth + k - 1;
-            which[0] = k;
-            for (int do_break = 0; which[0] > minimum_k && indx >= toplevel_framedepth; indx--, which[0]--) {
-                if (parents[indx] == parent) {
-                    SEXP current_expr = eval(expr_sys_call_which, rho);
-                    PROTECT(current_expr);
-                    SEXP current_srcref = getAttrib(current_expr, srcrefSymbol);
-                    if (current_srcref != R_NilValue) {
-                        PROTECT(current_srcref);
-                        if (srcfile == getAttrib(current_srcref, srcfileSymbol)) {
-                            srcref = current_srcref;
-                            do_break = 1;
-                        }
-                        UNPROTECT(1);
-                    }
-                    UNPROTECT(1);
-                }
-                if (do_break) break;
-            }
-            UNPROTECT(1);
-        }
-        UNPROTECT(1);
-    }
-    UNPROTECT(2);
-    return srcref;
-}
-
-
-SEXP sys_srcref(int k, SEXP rho)
-{
-    return _callstack(k, CALLSTACK_SRCREF, rho);
-}
-
-
-SEXP sys_srcfile(int k, SEXP rho)
-{
-    return _callstack(k, CALLSTACK_SRCFILE, rho);
-}
-
-
-SEXP do_sys_whiches do_formals
-{
-    do_start_no_call_op("sys.whiches", 1);
-    return _callstack(asInteger(CAR(args)), CALLSTACK_WHICHES, rho);
-}
-
-
-SEXP do_sys_srcref do_formals
-{
-    do_start_no_call_op("sys.srcref", 1);
-    return sys_srcref(asInteger(CAR(args)), rho);
 }
 
 

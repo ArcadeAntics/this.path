@@ -355,7 +355,6 @@ delayedAssign(".unrecognized_manner", {
 })
 
 
-delayedAssign("initwd", { getwd() })
 delayedAssign(".ucrt", { identical(R.version[["crt"]], "ucrt") })
 delayedAssign(".GUI", {
     if (.in_shell) .Platform$GUI
@@ -371,6 +370,7 @@ delayedAssign(".GUI", {
 })
 
 
+delayedAssign("initwd", { getwd() })
 getinitwd <- function ()
 initwd
 

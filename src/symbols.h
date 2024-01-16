@@ -150,6 +150,7 @@ extern0 SEXP0
     missingSymbol                          INI_as(install("missing")),
     _in_site_fileSymbol                    INI_as(install(".in_site_file")),
     _site_pathSymbol                       INI_as(install(".site_path")),
+    _init_pathSymbol                       INI_as(install(".init_path")),
     _gui_pathSymbol                        INI_as(install(".gui.path")),
     verboseSymbol                          INI_as(install("verbose")),
     originalSymbol                         INI_as(install("original")),
@@ -165,6 +166,7 @@ extern0 SEXP0
     na_encodeSymbol                        INI_as(install("na.encode")),
     exprSymbol                             INI_as(install("expr")),
     on_exitSymbol                          INI_as(install("on.exit")),
+    addSymbol                              INI_as(install("add")),
     parent_frameSymbol                     INI_as(install("parent.frame")),
     invisibleSymbol                        INI_as(install("invisible")),
     as_environmentSymbol                   INI_as(install("as.environment")),
@@ -215,6 +217,10 @@ extern0 SEXP0
     AssignSymbol                           INI_as(install("<-")),
     ifnotfoundSymbol                       INI_as(install("ifnotfound")),
 
+#if R_version_less_than(3, 0, 0)
+    _this_path_valueSymbol                 INI_as(install(".this_path_value")),
+    _this_path_visibleSymbol               INI_as(install(".this_path_visible")),
+#endif
     withVisibleSymbol                      INI_as(install("withVisible"));
 
 

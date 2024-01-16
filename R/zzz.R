@@ -48,10 +48,13 @@ tmp(
     .GUI_vscode,
     .GUI_jupyter,
     .GUI_emacs,
+    .GUI_powerbi,
+    .in_callr,
     .GUI_AQUA, .GUI_Rgui, .GUI_Tk,
     .OS_unix_in_shell, .OS_windows_in_shell, .in_shell,
     .unrecognized_manner,
-    initwd, .ucrt, .GUI,
+    .ucrt, .GUI,
+    initwd,
 
 
     ## relpath.R  ----
@@ -60,10 +63,15 @@ tmp(
     .net_USE_command,
 
 
-    ## thispath.R ----
+    ## shfile.R   ----
 
 
     .has_shFILE,
+
+
+    ## thispath.R ----
+
+
     .r_editor, .untitled
 )
 
@@ -74,7 +82,7 @@ tmp(package_here_criterion, envir = envir)
 rm(envir)
 
 
-## thispath.R  ----
+## shfile.R  ----
 envir <- environment(.shFILE)
 tmp(ofile, file, envir = envir)
 rm(envir)
@@ -87,6 +95,25 @@ rm(tmp)
 
 
 if (getRversion() < "3.0.0") {
+
+
+    R_Visible <- local({
+        pattern <- "^\\{\"([^\"]+)\" *, \\(DL_FUNC\\) &do_[^ ]+ *, +-?[[:digit:]]+\\},(?:| // R_Visible (updatable|off))$"
+        x <- readLines("./src/init.c")
+        m <- regexec(pattern, x)
+        keep <- which(vapply(m, length, 0L) > 1L)
+        x <- x[keep]
+        m <- m[keep]
+        y <- regmatches(x, m)
+        y <- structure(
+            vapply(y, `[`, 3L, FUN.VALUE = "", USE.NAMES = FALSE),
+            names = vapply(y, `[`, 2L, FUN.VALUE = "", USE.NAMES = FALSE)
+        )
+        y <- y[nzchar(y)]
+        if (length(y))
+            names(y) <- paste0(".C_", names(y))
+        y
+    })
 
 
     fix_External2 <- function(x, envir = parent.frame()) {
@@ -124,7 +151,21 @@ if (getRversion() < "3.0.0") {
                         call("environment")
                     ))
                     e <- as.call(e)
-                    # e[[1L]] <- quote(.External)
+                    m <- match(as.character(e[[2L]]), names(R_Visible), 0L)
+                    if (m) {
+                        if (R_Visible[[m]] == "off")
+                            e <- call("invisible", e)
+                        else if (R_Visible[[m]] == "updatable") {
+                            e <- call("{",
+                                quote(.this_path_value <- NULL),
+                                quote(.this_path_visible <- TRUE),
+                                e,
+                                quote(if (.this_path_visible)
+                                    .this_path_value
+                                else invisible(.this_path_value))
+                            )
+                        }
+                    }
                     e
                 }
                 else as.call(lapply(e, recurse))
@@ -167,17 +208,6 @@ if (getRversion() < "3.0.0") {
     fix_External2(...elt)
 
 
-    ## basename2.R  ----
-
-
-    fix_External2(.windows_basename2)
-    fix_External2(.unix_basename2)
-    fix_External2(basename2)
-    fix_External2(.windows_dirname2)
-    fix_External2(.unix_dirname2)
-    fix_External2(dirname2)
-
-
     ## checkpath.R  ----
 
 
@@ -193,9 +223,33 @@ if (getRversion() < "3.0.0") {
     fix_External2(make_fix_file)
 
 
-    ## ext.R        ----
+    ## error.R      ----
 
 
+    fix_External2(.ThisPathInAQUAError)
+    fix_External2(.ThisPathInZipFileError)
+    fix_External2(.ThisPathNotExistsError)
+    fix_External2(.ThisPathNotFoundError)
+    fix_External2(.ThisPathNotImplementedError)
+    fix_External2(.ThisPathUnrecognizedConnectionClassError)
+    fix_External2(.ThisPathUnrecognizedMannerError)
+
+
+    fix_External2(tryCatch2)
+    fix_External2(.last.condition)
+    fix_External2(last.condition)
+    fix_External2(tryCatch3)
+
+
+    ## files.R      ----
+
+
+    fix_External2(.windows_basename2)
+    fix_External2(.unix_basename2)
+    fix_External2(basename2)
+    fix_External2(.windows_dirname2)
+    fix_External2(.unix_dirname2)
+    fix_External2(dirname2)
     fix_External2(.windows_splitext)
     fix_External2(.unix_splitext)
     fix_External2(splitext)
@@ -208,13 +262,29 @@ if (getRversion() < "3.0.0") {
     fix_External2(`.windows_ext<-`)
     fix_External2(`.unix_ext<-`)
     fix_External2(`ext<-`)
+    fix_External2(.windows.path.join)
+    fix_External2(.unix.path.join)
+    fix_External2(path.join)
+    fix_External2(.windows.path.split)
+    fix_External2(.unix.path.split)
+    fix_External2(path.split)
+    fix_External2(.windows.path.split.1)
+    fix_External2(.unix.path.split.1)
+    fix_External2(path.split.1)
+    fix_External2(.windows.path.unsplit)
+    fix_External2(.unix.path.unsplit)
+    fix_External2(path.unsplit)
+    fix_External2(.is_abs_path)
+    fix_External2(.is_clipboard)
+    fix_External2(.normalize_srcfilealias)
+    fix_External2(.here)
 
 
-    ## fromshell.R  ----
+    ## ismain.R     ----
 
 
-    fix_External2(from.shell)
     fix_External2(is.main)
+    fix_External2(from.shell)
 
 
     ## lineno.R     ----
@@ -228,18 +298,10 @@ if (getRversion() < "3.0.0") {
     fix_External2(LINE)
 
 
-    ## makefuns.R   ----
-
-
-    fix_External2(path.functions)
-
-
     ## ns-hooks.R   ----
 
 
     fix_External2(.mbcslocale)
-    # fix_External2(.utf8locale)
-    # fix_External2(.latin1locale)
     fix_External2(.R_MB_CUR_MAX)
 
 
@@ -247,26 +309,10 @@ if (getRversion() < "3.0.0") {
     fix_External2(.onUnload)
 
 
-    ## pathjoin.R   ----
+    ## pathfuns.R   ----
 
 
-    fix_External2(.windows.path.join)
-    fix_External2(.unix.path.join)
-    fix_External2(path.join)
-
-
-    ## pathsplit.R  ----
-
-
-    fix_External2(.windows.path.split)
-    fix_External2(.unix.path.split)
-    fix_External2(path.split)
-    fix_External2(.windows.path.split.1)
-    fix_External2(.unix.path.split.1)
-    fix_External2(path.split.1)
-    fix_External2(.windows.path.unsplit)
-    fix_External2(.unix.path.unsplit)
-    fix_External2(path.unsplit)
+    fix_External2(path.functions)
 
 
     ## print.R      ----
@@ -328,7 +374,12 @@ if (getRversion() < "3.0.0") {
     fix_External2(set.env.path)
     fix_External2(set.src.path)
     fix_External2(set.sys.path.function)
-    fix_External2(with_init.file)
+
+
+    ## shfile.R     ----
+
+
+    fix_External2(.shFILE)
 
 
     ## startup.R    ----
@@ -336,31 +387,35 @@ if (getRversion() < "3.0.0") {
 
     fix_External2(.site_file)
     fix_External2(.init_file)
+    fix_External2(with_site.file)
+    fix_External2(with_init.file)
+
+
+    ## sys.R        ----
+
+
+    fix_External2(sys.srcref)
+    fix_External2(sys.whiches)
+
+
+    ## tests.R      ----
+
+
+    fix_External2(.faster_subsequent_times_test)
 
 
     ## thispath.R   ----
 
 
-    fix_External2(.shFILE)
-    fix_External2(.is_abs_path)
-    fix_External2(.ThisPathInAQUAError)
-    fix_External2(.ThisPathInZipFileError)
-    fix_External2(.ThisPathNotExistsError)
-    fix_External2(.ThisPathNotFoundError)
-    fix_External2(.ThisPathNotImplementedError)
-    fix_External2(.ThisPathUnrecognizedConnectionClassError)
-    fix_External2(.ThisPathUnrecognizedMannerError)
-    fix_External2(.is_clipboard)
     fix_External2(.fixNewlines)
+    fix_External2(.Rgui_path)
     fix_External2(.jupyter_path)
     fix_External2(.emacs_path)
-    fix_External2(.Rgui_path)
     fix_External2(.gui.path)
     fix_External2(set.jupyter.path)
     fix_External2(set.gui.path)
-    fix_External2(.normalize_srcfilealias)
-    fix_External2(.faster_subsequent_times_test)
     fix_External2(sys.path)
+    fix_External2(.getframenumber)
     fix_External2(sys.dir)
     fix_External2(env.path)
     fix_External2(env.dir)
@@ -368,8 +423,6 @@ if (getRversion() < "3.0.0") {
     fix_External2(src.dir)
     fix_External2(this.path)
     fix_External2(this.dir)
-    fix_External2(sys.srcref)
-    fix_External2(.here)
     fix_External2(sys.here)
     fix_External2(env.here)
     fix_External2(src.here)
@@ -379,15 +432,6 @@ if (getRversion() < "3.0.0") {
     fix_External2(try.src.path)
     fix_External2(try.this.path)
     fix_External2(FILE)
-
-
-    ## trycatch.R   ----
-
-
-    fix_External2(tryCatch2)
-    fix_External2(.last.condition)
-    fix_External2(last.condition)
-    fix_External2(tryCatch3)
 
 
     ## utils.R      ----
@@ -401,8 +445,6 @@ if (getRversion() < "3.0.0") {
     fix_External2(.IS_SCALAR_STR)
     fix_External2(.AS_SCALAR_STR)
     fix_External2(.scalar_streql)
-    fix_External2(.get.dyn)
-    fix_External2(.getframenumber)
 
 
     rm(fix_External2)

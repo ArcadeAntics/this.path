@@ -35,6 +35,7 @@ format.ThisPathDocumentContext <- function (x, ...)
 } else {
 
 
+## on.exit(after = TRUE) was added in R 3.5.0
 format.ThisPathDocumentContext <- function (x, ...)
 {
     value <- NULL

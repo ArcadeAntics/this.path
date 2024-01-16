@@ -1,205 +1,4 @@
-.defunctError <- function (new, package = NULL, msg, old = as.character(sys.call(sys.parent()))[1L])
-{
-    msg <- if (missing(msg)) {
-        msg <- gettextf("'%s' is defunct.\n", old, domain = "R-base")
-        if (!missing(new))
-            msg <- c(msg, gettextf("Use '%s' instead.\n", new, domain = "R-base"))
-        c(msg, if (!is.null(package))
-            gettextf("See help(\"Defunct\") and help(\"%s-defunct\").", package, domain = "R-base")
-        else gettext("See help(\"Defunct\")", domain = "R-base"))
-    }
-    else as.character(msg)
-    msg <- paste(msg, collapse = "")
-    if (missing(new))
-        new <- NULL
-    errorCondition(msg, old = old, new = new, package = package,
-        class = "defunctError")
-}
-
-
-
-
-
-.shFILE <- evalq(envir = new.env(), {
-    delayedAssign("ofile", { if (.in_shell) .shINFO[["FILE"]] else NA_character_ })
-    delayedAssign("file" , { .normalizePath(ofile) })
-           function (original = TRUE, for.msg = FALSE)
-.External2(.C_shFILE, original, for.msg)
-})
-
-
-delayedAssign(".has_shFILE", { !is.na(.shFILE()) })
-
-
-shFILE <- function (original = FALSE, for.msg = FALSE, default, else.)
-{
-    if (missing(default)) {
-        if (missing(else.))
-            .shFILE(original, for.msg)
-        else stop("'shFILE' with 'else.' but not 'default' makes no sense")
-    }
-    else {
-        if (missing(else.)) {
-            if (.has_shFILE)
-                .shFILE(original, for.msg)
-            else if (for.msg)
-                NA_character_
-            else default
-        }
-        else {
-            if (.has_shFILE) {
-                value <- .shFILE(original, for.msg)
-                (else.)(value)
-            }
-            else if (for.msg) {
-                value <- NA_character_
-                (else.)(value)
-            }
-            else default
-        }
-    }
-}
-
-
-
-
-
-.is_abs_path <- function (path)
-.External2(.C_is_abs_path, path)
-
-
-
-
-
-readLines2 <- function (path, default = character(0))
-{
-    conn <- tryCatch({
-        file(path, "rb", encoding = "")
-    }, error = function(e) NULL)
-    if (is.null(conn))
-        ## we do not throw a warning here because one should
-        ## have already been thrown, something like:
-        ##
-        ## Warning message:
-        ## In file(path, "rb", encoding = "") :
-        ## cannot open file '%s': No such file or directory
-        return(default)
-    on.exit(close(conn))
-    x <- readLines(conn)
-    if (!length(x) || length(x) %% 2L)
-        stop(sprintf("invalid '%s' contents", path))
-    encoding <- x[c(FALSE, TRUE)]
-    x        <- x[c(TRUE, FALSE)]
-    Encoding(x) <- encoding
-    x
-}
-
-
-.r_editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
-.r_editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
-
-
-.untitled_msvcrt <- readLines2("./inst/extdata/untitled_msvcrt.txt", "Untitled - R Editor")
-.untitled_ucrt   <- readLines2("./inst/extdata/untitled_ucrt.txt"  , "Untitled - R Editor")
-
-
-rm(readLines2)
-
-
-
-
-
-delayedAssign(".r_editor", {
-    if (.GUI_Rgui) {
-        if (.ucrt)
-            .r_editor_ucrt
-        else .r_editor_msvcrt
-    }
-})
-delayedAssign(".untitled", {
-    if (.GUI_Rgui) {
-        if (.ucrt)
-            .untitled_ucrt
-        else .untitled_msvcrt
-    }
-})
-
-
-
-
-
-.getCurrentCall <- function (n = 3L)
-{
-    ## find the call that stop() would have also found
-    ##
-    ## look down the calling stack, picking the
-    ## most recent closure besides `stop`
-    ##
-    ## this is intended to be used as such:
-    ## stop(errorMakingFunction())
-    ##
-    ## where errorMakingFunction calls .getCurrentCall()
-
-
-    n <- sys.nframe() - n
-    if (n <= 0L)
-        return(NULL)
-    n <- sys.parents()[[n]]
-    if (n <= 0L)
-        return(NULL)
-    skip.stop <- TRUE
-    for (n in seq.int(to = 1L, by = -1L, length.out = n)) {
-        if (typeof(fun <- sys.function(n)) == "closure") {
-            if (skip.stop && .identical(fun, stop)) {
-                skip.stop <- FALSE
-                next
-            }
-            return(sys.call(n))
-        }
-    }
-    NULL
-}
-
-
-.ThisPathInAQUAError <- function (call = .getCurrentCall(), call. = TRUE)
-.External2(.C_ThisPathInAQUAError, if (call.) call)
-
-
-.ThisPathInZipFileError <- function (description, call = .getCurrentCall(), call. = TRUE)
-.External2(.C_ThisPathInZipFileError, if (call.) call, description)
-
-
-.ThisPathNotExistsError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
-.External2(.C_ThisPathNotExistsError, .makeMessage(..., domain = domain), call = if (call.) call)
-
-
-delayedAssign("thisPathNotExistsError", { .ThisPathNotExistsError })
-
-
-.ThisPathNotFoundError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
-.External2(.C_ThisPathNotFoundError, .makeMessage(..., domain = domain), call = if (call.) call)
-
-
-delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
-
-
-.ThisPathNotImplementedError <- function (..., call. = TRUE, domain = NULL, call = .getCurrentCall())
-.External2(.C_ThisPathNotImplementedError, .makeMessage(..., domain = domain), call = if (call.) call)
-
-
-.ThisPathUnrecognizedConnectionClassError <- function (con, call = .getCurrentCall(), call. = TRUE)
-.External2(.C_ThisPathUnrecognizedConnectionClassError, if (call.) call, con)
-
-
-.ThisPathUnrecognizedMannerError <- function (call = .getCurrentCall(), call. = TRUE)
-.External2(.C_ThisPathUnrecognizedMannerError, if (call.) call)
-
-
-## helper functions for sys.path()     ----
-
-
-.is_clipboard <- function (file)
-.External2(.C_is_clipboard, file)
+## helper functions for this.path()    ----
 
 
 .getContents <- function (file, encoding = getOption("encoding"))
@@ -261,9 +60,6 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
 }
 
 
-## this.path(), this.dir(), and here() ----
-
-
 .fixNewlines <- function (srcfile)
 {
     srcfile$lines <- .External2(.C_fixNewlines, srcfile$lines)
@@ -302,6 +98,64 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
     }
     NULL
 }
+
+
+## path of active file in GUI          ----
+
+
+readLines2 <- function (path, default = character(0))
+{
+    conn <- tryCatch({
+        file(path, "rb", encoding = "")
+    }, error = function(e) NULL)
+    if (is.null(conn))
+        ## we do not throw a warning here because one should
+        ## have already been thrown, something like:
+        ##
+        ## Warning message:
+        ## In file(path, "rb", encoding = "") :
+        ## cannot open file '%s': No such file or directory
+        return(default)
+    on.exit(close(conn))
+    x <- readLines(conn)
+    if (!length(x) || length(x) %% 2L)
+        stop(sprintf("invalid '%s' contents", path))
+    encoding <- x[c(FALSE, TRUE)]
+    x        <- x[c(TRUE, FALSE)]
+    Encoding(x) <- encoding
+    x
+}
+
+
+.r_editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
+.r_editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
+
+
+.untitled_msvcrt <- readLines2("./inst/extdata/untitled_msvcrt.txt", "Untitled - R Editor")
+.untitled_ucrt   <- readLines2("./inst/extdata/untitled_ucrt.txt"  , "Untitled - R Editor")
+
+
+rm(readLines2)
+
+
+delayedAssign(".r_editor", {
+    if (.GUI_Rgui) {
+        if (.ucrt)
+            .r_editor_ucrt
+        else .r_editor_msvcrt
+    }
+})
+delayedAssign(".untitled", {
+    if (.GUI_Rgui) {
+        if (.ucrt)
+            .untitled_ucrt
+        else .untitled_msvcrt
+    }
+})
+
+
+.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
 
 
 .jupyter_path <- evalq(envir = new.env(), {
@@ -539,10 +393,6 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
 })
 
 
-.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
-
-
 .site_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (contents && .startup_info[["has_site_file"]])
@@ -553,6 +403,20 @@ delayedAssign("thisPathNotFoundError", { .ThisPathNotFoundError })
             call = sys.call()))
     })
     if (verbose) cat("Source: site-wide startup profile file\n")
+    value
+}
+
+
+.init_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (contents && .startup_info[["has_init_file"]])
+        for.msg <- FALSE
+    value <- init.file(original, for.msg, default = {
+        stop(.ThisPathNotExistsError(
+            "user profile was not found",
+            call = sys.call()))
+    })
+    if (verbose) cat("Source: user profile\n")
     value
 }
 
@@ -772,182 +636,14 @@ set.jupyter.path <- function (...)
 }
 
 
-set.sys.path.jupyter <- function (...)
-stop(.defunctError("set.jupyter.path", "this.path", old = "set.sys.path.jupyter"))
-
-
-set.this.path.jupyter <- function (...)
-stop(.defunctError("set.jupyter.path", "this.path", old = "set.this.path.jupyter"))
-
-
 set.gui.path <- function (...)
 .External2(.C_set_gui_path)
 
 
-.identical <- if (getRversion() >= "4.2.0") {
+## this.path(), this.dir(), and here() ----
 
 
-              function (x, y)
-identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
-    ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE,
-    extptr.as.ref = TRUE)
-
-
-} else if (getRversion() >= "3.4.0") {
-
-
-              function (x, y)
-identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
-    ignore.bytecode = FALSE, ignore.environment = FALSE, ignore.srcref = FALSE)
-
-
-} else if (getRversion() >= "3.0.0") {
-
-
-              function (x, y)
-identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
-    ignore.bytecode = FALSE, ignore.environment = FALSE)
-
-
-} else if (getRversion() >= "2.14.0") {
-
-
-              function (x, y)
-identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE,
-    ignore.bytecode = FALSE)
-
-
-} else if (getRversion() >= "2.10.0") {
-
-
-              function (x, y)
-identical(x, y, num.eq = FALSE, single.NA = FALSE, attrib.as.set = FALSE)
-
-
-} else {
-
-
-              function (x, y)
-identical(x, y)
-
-
-}
-
-
-
-
-
-.normalizePath <- function (path, winslash = "/", mustWork = TRUE)
-normalizePath(path, winslash, mustWork)
-
-
-.normalizeNotDirectory <- function (path, winslash = "/", mustWork = TRUE)
-{
-    x <- normalizePath(path, winslash, mustWork)
-    if (.isfalse(.isdir(x)))
-        x
-    else stop(sprintf("'%s' is not a regular file", path), domain = NA)
-}
-
-
-.normalizeFixDirectory <- function (path, winslash = "/", mustWork = TRUE)
-{
-    x <- normalizePath(path, winslash, mustWork)
-    if (.istrue(.isdir(x)))
-        path.join(x, ".")
-    else x
-}
-
-
-.normalizeAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
-{
-    owd <- getwd()
-    if (is.null(owd))
-        stop("cannot '.normalizeAgainst' as current directory is unknown")
-    on.exit(setwd(owd))
-    setwd(wd)
-    normalizePath(path, winslash, mustWork)
-}
-
-
-.normalizeNotDirectoryAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
-{
-    owd <- getwd()
-    if (is.null(owd))
-        stop("cannot '.normalizeAgainst' as current directory is unknown")
-    on.exit(setwd(owd))
-    setwd(wd)
-    x <- normalizePath(path, winslash, mustWork)
-    if (.isfalse(.isdir(x)))
-        x
-    else stop(sprintf("'%s' is not a regular file", path), domain = NA)
-}
-
-
-.normalizeFixDirectoryAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
-{
-    owd <- getwd()
-    if (is.null(owd))
-        stop("cannot '.normalizeAgainst' as current directory is unknown")
-    on.exit(setwd(owd))
-    setwd(wd)
-    x <- normalizePath(path, winslash, mustWork)
-    if (.istrue(.isdir(x)))
-        path.join(x, ".")
-    else x
-}
-
-
-.normalize_srcfilealias <- function (original, path, winslash = "/", mustWork = TRUE)
-{
-    value <- .External2(.C_src_path, original)
-    value <- .dir(value)
-    if (grepl("^(https|http|ftp|ftps)://", value)) {
-        ## do not use file.path(), will convert text to native encoding
-        .normalizeurl(paste(value, path, sep = "/"))
-    }
-    else {
-        owd <- getwd()
-        if (is.null(owd))
-            stop("cannot '.normalize_srcfilealias' as current directory is unknown")
-        on.exit(setwd(owd))
-        setwd(value)
-        normalizePath(path, winslash, mustWork)
-    }
-}
-
-
-.dir <- function (path)
-{
-    if (grepl("^(https|http|ftp|ftps)://", path)) {
-        # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
-        p <- path.split.1(path)
-        path.unsplit(if (length(p) >= 2L) p[-length(p)] else p)
-    }
-    else dirname2(path)
-}
-
-
-
-
-
-.faster_subsequent_times_test <- function ()
-{
-    first_time <- microbenchmark::microbenchmark(
-        `first time` = .External2(.C_sys_path),
-        times = 1
-    )
-    subsequent <- microbenchmark::microbenchmark(
-        subsequent = .External2(.C_sys_path),
-        times = 100
-    )
-    rbind(first_time, subsequent)
-}
-
-
-
-
-
+## check that class name is C files matches class name in R files
 local({
     tmp <- readLines("./src/ns-hooks.c")
     tmp <- tmp[[grep("^[ \t]*#[ \t]*define[ \t]+ThisPathNotExistsErrorClass_string[ \t]*\\\\[ \t]*$", tmp) + 1L]]
@@ -988,6 +684,11 @@ sys.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg 
         }
     }
 }
+
+
+## part of _sys_path in ./src/thispath.c
+.getframenumber <- function ()
+.External2(.C_getframenumber)
 
 
 sys.dir <- function (verbose = getOption("verbose"), local = FALSE, default, else.)
@@ -1214,36 +915,6 @@ this.dir <- function (verbose = getOption("verbose"), local = FALSE, n = 0L, env
 }
 
 
-sys.srcref <- function (n = 1L, which = if (n) sys.parent(n) else 0L)
-{
-    n <- .External2(.C_asIntegerGE0, n)
-    .External2(.C_sys.srcref, which)
-}
-
-
-
-
-
-.here <- function (path, .. = 0L)
-{
-    if (grepl("^(https|http|ftp|ftps)://", path)) {
-        # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
-        # .. <- "2"
-
-
-        p <- path.split.1(path)
-        n <- length(p) - length(seq_len(..)) - 1L
-        path.unsplit(if (n < 1L) p[1L] else p[seq_len(n)])
-    }
-
-
-    # path <- "//host/share/path/to/file"
-    # path <- "C:/Users/iris/Documents/this.path/man/this.path.Rd"
-    # .. <- "10"
-    else .External2(.C_dirname2, path, ..)
-}
-
-
 sys.here <- function (..., local = FALSE, .. = 0L)
 {
     base <- .External2(.C_sys_path, local)
@@ -1285,21 +956,6 @@ delayedAssign("ici", { here })
 
 
 
-
-
-Sys.path <- function ()
-stop(.defunctError("sys.path(verbose = FALSE)", "this.path", old = "Sys.path()"))
-
-
-Sys.dir <- function ()
-stop(.defunctError("sys.dir(verbose = FALSE)", "this.path", old = "Sys.dir()"))
-
-
-
-
-
-try.shFILE <- function ()
-tryCatch(.shFILE(FALSE), error = function(e) .shFILE())
 
 
 try.sys.path <- function (contents = FALSE, local = FALSE)
@@ -1396,11 +1052,3 @@ FILE <- function ()
         .External2(.C_this_path, FALSE, FALSE, TRUE, contents, local, envir, matchThisEnv, srcfile)
     }
 }
-
-
-
-
-
-local.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
-    contents = FALSE, default, else.)
-stop(.defunctError("sys.path(..., local = TRUE)", "this.path", old = "local.path(...)"))

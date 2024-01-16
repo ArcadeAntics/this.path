@@ -55,7 +55,8 @@ SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
     /* .SET_PRSEEN_2(ptr) */
     REPROTECT(expr = LCONS(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
 #endif
-    REPROTECT(expr = CONS(expr, R_NilValue), indx);
+    REPROTECT(expr = CONS(expr, CONS(R_TrueValue, R_NilValue)), indx);
+    SET_TAG(CDR(expr), addSymbol);
     REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
     eval(expr, rho);
     UNPROTECT(1);
@@ -218,10 +219,27 @@ SEXP do_wrap_source do_formals
         error("invalid '%s', must be a call", CHAR(PRINTNAME(exprSymbol)));
 
 
-#define set_prvalues_then_return(val)                          \
+#if R_version_at_least(3, 0, 0)
+#define eval_with_visible(expr, env)                           \
+    SEXP tmp = eval(expr, env);                                \
+    PROTECT(tmp); nprotect++
+#else
+#define eval_with_visible(expr, env)                           \
+    SEXP expr2 = CONS(expr, R_NilValue);                       \
+    PROTECT(expr2); nprotect++;                                \
+    expr2 = LCONS(getFromBase(withVisibleSymbol), expr2);      \
+    PROTECT(expr2); nprotect++;                                \
+    SEXP value = eval(expr2, env);                             \
+    PROTECT(value); nprotect++;                                \
+    set_this_path_value(VECTOR_ELT(value, 0));                 \
+    set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));    \
+    SEXP tmp = VECTOR_ELT(value, 0)
+#endif
+
+
+#define set_prvalues_then_return(expr, env)                    \
     do {                                                       \
-        SEXP tmp = (val);                                      \
-        PROTECT(tmp); nprotect++;                              \
+        eval_with_visible((expr), (env));                      \
         ENSURE_NAMEDMAX(tmp);                                  \
         while (promises != R_NilValue) {                       \
             SEXP p = CAR(promises);                            \
@@ -239,7 +257,7 @@ SEXP do_wrap_source do_formals
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        set_prvalues_then_return(eval(PRCODE(promise), env));
+        set_prvalues_then_return(PRCODE(promise), env);
     }
 
 
@@ -417,8 +435,7 @@ SEXP do_wrap_source do_formals
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        set_R_Visible(TRUE);
-        set_prvalues_then_return(eval(expr, env));
+        set_prvalues_then_return(expr, env);
     }
 
 
@@ -490,7 +507,7 @@ SEXP do_wrap_source do_formals
     if (documentcontext != R_EmptyEnv) {
         define_n(context_number, documentcontext);
     }
-    set_prvalues_then_return(eval(expr, env));
+    set_prvalues_then_return(expr, env);
 
 
 #undef set_prvalues_then_return
@@ -498,28 +515,28 @@ SEXP do_wrap_source do_formals
 
 
 typedef enum {
-    SETPATHOP_SETSYSPATH         = 0,
-    SETPATHOP_UNSETSYSPATH          ,
-    SETPATHOP_SETENVPATH            ,
-    SETPATHOP_SETSRCPATH            ,
-    SETPATHOP_SETSYSPATHFUNCTION
-} SETPATHOP;
+    SPA_SET_SYS_PATH           = 0,
+    SPA_UNSET_SYS_PATH            ,
+    SPA_SET_ENV_PATH              ,
+    SPA_SET_SRC_PATH              ,
+    SPA_SET_SYS_PATH_FUNCTION
+} SET_PATH_ACTION;
 
 
-SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
+SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 {
     int nprotect = 0;
 
 
     const char *name;
-    switch (op) {
-    case SETPATHOP_SETSYSPATH:   name = "'set.sys.path()'";   break;
-    case SETPATHOP_UNSETSYSPATH: name = "'unset.sys.path()'"; break;
-    case SETPATHOP_SETENVPATH:   name = "'set.env.path()'";   break;
-    case SETPATHOP_SETSRCPATH:   name = "'set.src.path()'";   break;
-    case SETPATHOP_SETSYSPATHFUNCTION: name = "'set.sys.path.function()'"; break;
+    switch (spa) {
+    case SPA_SET_SYS_PATH:   name = "'set.sys.path()'";   break;
+    case SPA_UNSET_SYS_PATH: name = "'unset.sys.path()'"; break;
+    case SPA_SET_ENV_PATH:   name = "'set.env.path()'";   break;
+    case SPA_SET_SRC_PATH:   name = "'set.src.path()'";   break;
+    case SPA_SET_SYS_PATH_FUNCTION: name = "'set.sys.path.function()'"; break;
     default:
-        error(_("invalid '%s' value"), "op");
+        error(_("invalid '%s' value"), "spa");
         return R_NilValue;
     }
 
@@ -529,19 +546,21 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         error("%s cannot be used within the global environment", name);
 
 
-    INTEGER(CADR(expr_sys_function_which))[0] = parent;
-    SEXP function = eval(expr_sys_function_which, rho);
-    PROTECT(function);
-    if (function == eval_op)
-        error("%s cannot be used within '%s'",
-              name, CHAR(PRINTNAME(R_EvalSymbol)));
-    else if (TYPEOF(function) != CLOSXP)
-        error("%s cannot be used within a '%s', possible errors with eval?",
-              name, type2char(TYPEOF(function)));
-    else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
-        error("%s cannot be called within %s() from package %s",
-              name, CHAR(PRINTNAME(wrap_sourceSymbol)), "this.path");
-    UNPROTECT(1);
+    {
+        INTEGER(CADR(expr_sys_function_which))[0] = parent;
+        SEXP function = eval(expr_sys_function_which, rho);
+        PROTECT(function);
+        if (function == eval_op)
+            error("%s cannot be used within '%s'",
+                name, CHAR(PRINTNAME(R_EvalSymbol)));
+        else if (TYPEOF(function) != CLOSXP)
+            error("%s cannot be used within a '%s', possible errors with eval?",
+                name, type2char(TYPEOF(function)));
+        else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
+            error("%s cannot be called within %s() from package %s",
+                name, CHAR(PRINTNAME(wrap_sourceSymbol)), "this.path");
+        UNPROTECT(1);
+    }
 
 
     SEXP ofile, frame, documentcontext;
@@ -570,7 +589,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         error("%s cannot be used within a locked environment", name);
 
 
-    if (op == SETPATHOP_SETSYSPATHFUNCTION) {
+    if (spa == SPA_SET_SYS_PATH_FUNCTION) {
 
 
         if (R_existsVarInFrame(frame, documentcontextSymbol))
@@ -618,7 +637,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         UNPROTECT(nprotect);
         return R_NilValue;
     }
-    else if (op) {
+    else if (spa) {
         documentcontext = findVarInFrame(frame, documentcontextSymbol);
         if (documentcontext == R_UnboundValue)
             error("%s cannot be called before set.sys.path()", name);
@@ -630,13 +649,13 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
             error("%s cannot be called before set.sys.path()", name);
         }
         SEXP returnthis = R_NilValue;
-        switch (op) {
-        case SETPATHOP_UNSETSYSPATH:
+        switch (spa) {
+        case SPA_UNSET_SYS_PATH:
         {
             R_removeVarFromFrame(documentcontextSymbol, frame);
             break;
         }
-        case SETPATHOP_SETENVPATH:
+        case SPA_SET_ENV_PATH:
         {
             SEXP envir = CAR(args); args = CDR(args);
             returnthis = envir;
@@ -653,7 +672,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
             else setAttrib(env, documentcontextSymbol, documentcontext);
             break;
         }
-        case SETPATHOP_SETSRCPATH:
+        case SPA_SET_SRC_PATH:
         {
             SEXP x = CAR(args); args = CDR(args);
             returnthis = x;
@@ -682,7 +701,7 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
             break;
         }
         default:
-            error(_("invalid '%s' value"), "op");
+            error(_("invalid '%s' value"), "spa");
             return R_NilValue;
         }
         set_R_Visible(FALSE);
@@ -701,7 +720,6 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        set_R_Visible(TRUE);
         UNPROTECT(nprotect);
         // return R_MissingArg;
         /* this is better because it preserves the original value */
@@ -903,132 +921,33 @@ SEXP set_path(SETPATHOP op, SEXP args, SEXP rho)
 SEXP do_set_sys_path do_formals
 {
     do_start_no_call_op("set_sys_path", 21);
-    return set_path(SETPATHOP_SETSYSPATH, args, rho);
+    return set_path(SPA_SET_SYS_PATH, args, rho);
 }
 
 
 SEXP do_unset_sys_path do_formals
 {
     do_start_no_call_op("unset_sys_path", 0);
-    return set_path(SETPATHOP_UNSETSYSPATH, args, rho);
+    return set_path(SPA_UNSET_SYS_PATH, args, rho);
 }
 
 
 SEXP do_set_env_path do_formals
 {
     do_start_no_call_op("set_env_path", 2);
-    return set_path(SETPATHOP_SETENVPATH, args, rho);
+    return set_path(SPA_SET_ENV_PATH, args, rho);
 }
 
 
 SEXP do_set_src_path do_formals
 {
     do_start_no_call_op("set_src_path", 1);
-    return set_path(SETPATHOP_SETSRCPATH, args, rho);
+    return set_path(SPA_SET_SRC_PATH, args, rho);
 }
 
 
 SEXP do_set_sys_path_function do_formals
 {
     do_start_no_call_op("set_sys_path_function", 1);
-    return set_path(SETPATHOP_SETSYSPATHFUNCTION, args, rho);
-}
-
-
-
-
-
-#include "print.h"
-
-
-Rboolean already_been_true = FALSE;
-
-
-SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
-{
-    SEXP promise = findVarInFrame(rho, exprSymbol);
-    if (promise == R_UnboundValue)
-        error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
-    if (promise == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
-    if (TYPEOF(promise) != PROMSXP)
-        error("invalid '%s', is not a promise", CHAR(PRINTNAME(exprSymbol)));
-
-
-    SEXP code = PRCODE(promise);
-    if (TYPEOF(code) != LANGSXP || CAR(code) != R_BraceSymbol)
-        error("invalid '%s', expected a braced expression", CHAR(PRINTNAME(exprSymbol)));
-    if (PRVALUE(promise) != R_UnboundValue)
-        error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));
-
-
-    if (check_is_valid_init_file_expr) {
-        if (already_been_true) return R_FalseValue;
-        already_been_true = (ATTRIB(code) == R_NilValue &&
-                             PRENV(promise) == R_GlobalEnv &&
-                             PRSEEN(promise) == 0);
-        return ScalarLogical(already_been_true);
-    }
-
-
-    int nprotect = 0;
-
-
-    code = CDR(code);
-    SEXP env = PRENV(promise);
-    SEXP withVisible = getFromBase(withVisibleSymbol);
-    PROTECT(withVisible); nprotect++;
-
-
-    SEXP expr, value;
-    PROTECT_INDEX expr_indx, value_indx;
-    PROTECT_WITH_INDEX(expr = R_NilValue, &expr_indx); nprotect++;
-    PROTECT_WITH_INDEX(value = R_NilValue, &value_indx); nprotect++;
-
-
-    SEXP ptr = on_exit_SET_PRSEEN_2(R_NilValue, rho);
-    R_SetExternalPtrProtected(ptr, CONS(promise, R_NilValue));
-    if (PRSEEN(promise)) {
-        if (PRSEEN(promise) == 1)
-            error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
-        else {
-            SET_PRSEEN(promise, 1);
-            warning(_("restarting interrupted promise evaluation"));
-        }
-    }
-    else SET_PRSEEN(promise, 1);
-
-
-    for (; code != R_NilValue; code = CDR(code)) {
-        REPROTECT(expr = LCONS(withVisible, CONS(CAR(code), R_NilValue)), expr_indx);
-        REPROTECT(value = eval(expr, env), value_indx);
-        if (asLogical(VECTOR_ELT(value, 1)))
-            my_PrintValueEnv(VECTOR_ELT(value, 0), env);
-    }
-
-
-    SET_PRSEEN (promise, 0);
-    SET_PRVALUE(promise, value);
-    SET_PRENV  (promise, R_NilValue);
-    R_SetExternalPtrProtected(ptr, R_NilValue);
-
-
-    UNPROTECT(nprotect);
-
-
-    return R_NilValue;
-}
-
-
-SEXP do_is_valid_init_file_expr do_formals
-{
-    do_start_no_call_op("is_valid_init_file_expr", 0);
-    return startup_file(TRUE, rho);
-}
-
-
-SEXP do_with_startup_file do_formals
-{
-    do_start_no_call_op("with_startup_file", 0);
-    return startup_file(FALSE, rho);
+    return set_path(SPA_SET_SYS_PATH_FUNCTION, args, rho);
 }

@@ -23,17 +23,6 @@ from.shell <- function ()
 }
 
 
-.toplevel.nframe <- function ()
-{
-    if (.GUI_jupyter) {
-        if (.isJupyterLoaded())
-            sys.frame(1L)$kernel$executor$nframe + 1L
-        else 0L
-    }
-    else 0L
-}
-
-
 # .pragma_once <- evalq(envir = new.env(), {
 #     x <- character(0)
 # function (path)

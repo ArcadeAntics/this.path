@@ -1,6 +1,4 @@
 \name{shFILE}
-\alias{site.file}
-\alias{init.file}
 \alias{shFILE}
 \title{Get 'FILE' Provided to R by a Shell}
 \description{
@@ -9,9 +7,6 @@
 }
 \usage{
 shFILE(original = FALSE, for.msg = FALSE, default, else.)
-
-site.file(original = FALSE, for.msg = FALSE, default, else.)
-init.file(original = FALSE, for.msg = FALSE, default, else.)
 }
 \arguments{
   \item{original}{\code{TRUE}, \code{FALSE}, or \code{NA}; should the original
@@ -50,11 +45,8 @@ this.path:::.writeCode({
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {
-            stop("since 'FILE.R' will be found, argument 'default'\\n",
-                " will not be evaluated, so this error will not be\\n",
-                " thrown! you can use this to your advantage in a\\n",
-                " similar manner, doing arbitrary things only if\\n",
-                " 'FILE.R' is not found")
+            stop("since 'FILE.R' will be found,\\n",
+                 "this error will not be thrown")
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE.R)

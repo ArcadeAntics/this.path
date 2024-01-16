@@ -108,6 +108,22 @@ extern SEXP do_unix_dirname2    do_formals;
 extern SEXP do_dirname2         do_formals;
 
 
+/* error.c */
+
+
+extern SEXP do_ThisPathInAQUAError                      do_formals;
+extern SEXP do_ThisPathInZipFileError                   do_formals;
+extern SEXP do_ThisPathNotExistsError                   do_formals;
+extern SEXP do_ThisPathNotFoundError                    do_formals;
+extern SEXP do_ThisPathNotImplementedError              do_formals;
+extern SEXP do_ThisPathUnrecognizedConnectionClassError do_formals;
+extern SEXP do_ThisPathUnrecognizedMannerError          do_formals;
+
+extern SEXP do_last_condition do_formals;
+extern SEXP do_tryCatch2      do_formals;
+extern SEXP do_tryCatch3      do_formals;
+
+
 /* ext.c */
 
 
@@ -222,9 +238,6 @@ extern SEXP do_set_env_path          do_formals;
 extern SEXP do_set_src_path          do_formals;
 extern SEXP do_set_sys_path_function do_formals;
 
-extern SEXP do_is_valid_init_file_expr do_formals;
-extern SEXP do_with_startup_file       do_formals;
-
 
 /* shfile.c */
 
@@ -235,16 +248,24 @@ extern SEXP do_shFILE    do_formals;
 extern SEXP do_shINFO    do_formals;
 
 
+/* startup.c */
+
+
+extern SEXP do_with_startup_file       do_formals;
+extern SEXP do_is_valid_init_file_expr do_formals;
+extern SEXP do_set_init_file           do_formals;
+extern SEXP do_unset_init_file         do_formals;
+
+
+/* sys.c */
+
+
+extern SEXP do_sys_srcref do_formals;
+extern SEXP do_sys_whiches do_formals;
+
+
 /* thispath.c */
 
-
-extern SEXP do_ThisPathInAQUAError                      do_formals;
-extern SEXP do_ThisPathInZipFileError                   do_formals;
-extern SEXP do_ThisPathNotExistsError                   do_formals;
-extern SEXP do_ThisPathNotFoundError                    do_formals;
-extern SEXP do_ThisPathNotImplementedError              do_formals;
-extern SEXP do_ThisPathUnrecognizedConnectionClassError do_formals;
-extern SEXP do_ThisPathUnrecognizedMannerError          do_formals;
 
 extern SEXP do_is_clipboard       do_formals;
 extern SEXP do_jupyter_path       do_formals;
@@ -256,19 +277,9 @@ extern SEXP do_set_gui_path       do_formals;
 extern SEXP do_sys_path           do_formals;
 extern SEXP do_getframenumber     do_formals;
 extern SEXP do_env_path           do_formals;
-extern SEXP do_sys_whiches        do_formals;
-extern SEXP do_sys_srcref         do_formals;
 extern SEXP do_src_path           do_formals;
 extern SEXP do_src_LINENO         do_formals;
 extern SEXP do_this_path          do_formals;
-
-
-/* trycatch.c */
-
-
-extern SEXP do_last_condition do_formals;
-extern SEXP do_tryCatch2      do_formals;
-extern SEXP do_tryCatch3      do_formals;
 
 
 /* utils.c */
@@ -282,7 +293,6 @@ extern SEXP do_asIntegerGE0  do_formals;
 extern SEXP do_IS_SCALAR_STR do_formals;
 extern SEXP do_AS_SCALAR_STR do_formals;
 extern SEXP do_scalar_streql do_formals;
-extern SEXP do_get_dyn       do_formals;
 
 
 #endif  /* R_THISPATH_THISPATH_H */
