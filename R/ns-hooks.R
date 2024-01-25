@@ -114,26 +114,22 @@ l10n_info()[[3L]]
 .maybe_setHook_packageEvent_utils_fix_utils <- function ()
 {
     hookName <- packageEvent("utils")
-    hooks <- getHook(hookName)
-    if (!length(hooks)) {
-        setHook(hookName, .fix_utils_RweaveLatexRuncode, "prepend")
-        setHook(hookName, .fix_utils_Sweave, "prepend")
-    }
-    else {
-        if (!(list(.fix_utils_RweaveLatexRuncode) %in% hooks))
-            setHook(hookName, .fix_utils_RweaveLatexRuncode, "prepend")
-        if (!(list(.fix_utils_Sweave) %in% hooks))
-            setHook(hookName, .fix_utils_Sweave, "prepend")
-    }
+    old <- getHook(hookName)
+    new <- list(.fix_utils_Sweave, .fix_utils_RweaveLatexRuncode)
+    if (!length(old))
+        setHook(hookName, new, "prepend")
+    else if (any(i <- !(new %in% old)))
+        setHook(hookName, new[i], "prepend")
 }
 
 
 .maybe_setHook_packageEvent_plumber_fix_plumber_parseUTF8 <- function ()
 {
     hookName <- packageEvent("plumber")
-    hooks <- getHook(hookName)
-    if (!length(hooks) || !(list(.fix_plumber_parseUTF8) %in% hooks))
-        setHook(hookName, .fix_plumber_parseUTF8, "prepend")
+    old <- getHook(hookName)
+    new <- list(.fix_plumber_parseUTF8)
+    if (!length(old) || !(new %in% old))
+        setHook(hookName, new, "prepend")
 }
 
 

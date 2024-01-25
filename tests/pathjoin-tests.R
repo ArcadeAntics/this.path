@@ -2,7 +2,7 @@
 stopifnot(identical(x, y))
 
 
-path.join <- this.path:::.windows.path.join
+path.join <- @R_PACKAGE_NAME@:::.windows_path_join
 
 
 ## zero input gives zero output
@@ -56,7 +56,7 @@ path.join("C:", "c:test") %check% "c:test"
 
 
 
-path.join <- this.path:::.unix.path.join
+path.join <- @R_PACKAGE_NAME@:::.unix_path_join
 
 
 ## zero input gives zero output

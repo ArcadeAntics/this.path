@@ -1,12 +1,22 @@
-## expressions that we need to evaluate for our code to work,
-## but which are NOT expected to change in a session,
+## these are expressions that are used in this package,
+## but which are not expected to change value in a session,
 ## so we can evaluate them exactly once when needed
 ##
 ## if you've never heard of an R promise before, it's a mechanism for handling
-## delayed argument evaluation and substitution. a promise consists of an
-## object to evaluate and an environment in which to evaluate it. it is called
-## a promise because "I promise to evaluate this code in this environment if /
-## / when requested"
+## delayed argument evaluation and substitution. a promise consists of four
+## things:
+##
+##   * an expression
+##
+##   * an environment in which the expression will be evaluated
+##
+##   * value of evaluating said expression in said environment, initially empty
+##
+##   * the number of attempts to evaluate the promise, used to detect recursive
+##     references and restarting interrupted promises
+##
+## it is called a promise because "I promise to evaluate this code in this
+## environment if / / when requested"
 ##
 ## an object like an integer, a boolean, and a string will evaluate to itself.
 ## other objects like a symbol, a bytecode expression, or a call will evaluate
@@ -44,8 +54,8 @@
 ## ```
 ##
 ## you'll see that the expression `writeLines("evaluating 'x'")` is only
-## evaluated once, as desired! also, you can use `this.path:::.PRINFO()` to
-## examine the state of the promise:
+## evaluated once, as desired! you can use `this.path:::.PRINFO()` to examine
+## the state of the promise:
 ##
 ## ```R
 ## delayedAssign("x", {
@@ -111,17 +121,19 @@
 ## >
 ## ```
 ##
-## "PRCODE" / / "PREXPR" is the object that may eventually be evaluated. here,
-## they are identical, but they may not be if the code is byte compiled.
+## "PRCODE", "PRENV", "PRVALUE", and "PRSEEN" were all mentioned earlier, but
+## "PREXPR" has not been mentioned yet. if "PRCODE" is a bytecode, then
+## "PREXPR" will be the uncompiled version of "PRCODE". in all other cases,
+## they are identical.
 ##
-## "PRENV" is the environment in which "PRCODE" will be evaluated. notice that
-## "PRENV" is set to `NULL` once the promise has been evaluated, it's not very
-## important right now to understand why, this has to do with garbage
-## collection. this allows the garbage collector to collect environments which
-## are no longer in use.
+## notice that "PRENV" is set to `NULL` once the promise has been evaluated,
+## it's not very important right now to understand why, this has to do with
+## garbage collection. this allows the garbage collector to collect
+## environments which are no longer in use.
 ##
-## "PRSEEN" is an integer used to determine if a promise leads to infinite
-## recursion or has been interrupted and is being restarted. for example:
+## "PRSEEN" was mentioned earlier, it is an integer used to determine if a
+## promise leads to infinite recursion or has been interrupted and is being
+## restarted. for example:
 ##
 ## ```R
 ## delayedAssign("x", withAutoprint({

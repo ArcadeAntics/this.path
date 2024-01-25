@@ -1,5 +1,5 @@
 ^\.Rproj\.user$
-^man/pragma_once\.in\.Rd$
+^man/pragma_once\.Rd$
 ^tests/sys-path-with-urls\.R$
 ^tests/this\.path_w_URLs\.R$
 ^tools/maintainers-copy$

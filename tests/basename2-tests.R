@@ -7,8 +7,8 @@ check <- function (path, dirname, basename)
 }
 
 
-dirname2  <- this.path:::.windows_dirname2
-basename2 <- this.path:::.windows_basename2
+dirname2  <- @R_PACKAGE_NAME@:::.windows_dirname2
+basename2 <- @R_PACKAGE_NAME@:::.windows_basename2
 
 
 check("", "", "")
@@ -40,12 +40,12 @@ check("/path/to/file/", "/path/to", "file")
 
 
 check(
-    this.path::path.join("/", "p1", "p2", "p3", c("file1", "file2")),
+    @R_PACKAGE_NAME@::path.join("/", "p1", "p2", "p3", c("file1", "file2")),
     rep("/p1/p2/p3", 2),
     c("file1", "file2")
 )
 check(
-    this.path::path.join("/", "p1", "p2", "p3", "filename"),
+    @R_PACKAGE_NAME@::path.join("/", "p1", "p2", "p3", "filename"),
     "/p1/p2/p3",
     "filename"
 )
@@ -58,8 +58,8 @@ check(
 )
 
 
-dirname2  <- this.path:::.unix_dirname2
-basename2 <- this.path:::.unix_basename2
+dirname2  <- @R_PACKAGE_NAME@:::.unix_dirname2
+basename2 <- @R_PACKAGE_NAME@:::.unix_basename2
 
 
 check("", "", "")
@@ -85,12 +85,12 @@ check("/path/to/file/", "/path/to", "file")
 
 
 check(
-    this.path::path.join("/", "p1", "p2", "p3", c("file1", "file2")),
+    @R_PACKAGE_NAME@::path.join("/", "p1", "p2", "p3", c("file1", "file2")),
     rep("/p1/p2/p3", 2),
     c("file1", "file2")
 )
 check(
-    this.path::path.join("/", "p1", "p2", "p3", "filename"),
+    @R_PACKAGE_NAME@::path.join("/", "p1", "p2", "p3", "filename"),
     "/p1/p2/p3",
     "filename"
 )

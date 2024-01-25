@@ -7,7 +7,7 @@
 SEXP do_asArgs do_formals
 {
     /*
-    do_asArgs {this.path}                                        C Documentation
+    do_asArgs                 package:this.path                  C Documentation
 
     Providing Arguments to a Script
 

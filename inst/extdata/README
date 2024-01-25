@@ -1,5 +1,5 @@
-In Rgui for Windows, sys.path() works by looking at the windows
-handles belonging to that R process.
+In Rgui for Windows, this.path() works by looking at the windows
+iohandles belonging to that R process.
 
 For an open script, the windows handle will end with " - R Editor" OR
 ANY SUPPORTED TRANSLATION INTO ANOTHER LANGUAGE. For a new script, the

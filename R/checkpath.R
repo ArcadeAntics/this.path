@@ -1,6 +1,6 @@
 
 
-# URL.pattern <- "^((?:ftp|ftps|http|https)://[^/]+)(?:/+(.*))?$"
+# URL_pattern <- "^((?:ftp|ftps|http|https)://[^/]+)(?:/+(.*))?$"
 # ##              ^                                            ^ start and end of the string
 # ##                   ^^^^^^^^^^^^^^^^^^^^^^^                   ftp:// or ftps:// or http:// or https://
 # ##                                          ^^^^^              series of non-slash characters
@@ -10,7 +10,7 @@
 # ##                 ^^                              ^^          non-capturing groups
 
 
-# UNC.pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
+# UNC_pattern <- "^(?:(//[^/]+)/+([^/]+))(?:/+(.*))?$"
 # ##              ^                                 ^ start and end of the string
 # ##                   ^^                             two slashes
 # ##                     ^^^^^    ^^^^^               series of non-slash characters, the host and share name
@@ -34,7 +34,7 @@ check.path <- function (...)
     if (!nzchar(expected))
         stop(gettextf("'%s' must not be \"\"", "expected"))
     expected <- path.split.1(expected)
-    if (check.wd <- expected[[1L]] == ".")
+    if (check_wd <- expected[[1L]] == ".")
         expected <- expected[-1L]
     thispath <- .External2(.C_this_path)
     thispath <- path.split.1(thispath)
@@ -50,7 +50,7 @@ check.path <- function (...)
                 encodeString(c(thispath, expected), quote = "\"")
             }, collapse = "\n"))
     }
-    if (check.wd) {
+    if (check_wd) {
         expected <- path.unsplit(thispath[!i])
         if (relpath(expected) != ".") {
             stop("'getwd()' and expected path do not match\n",
@@ -71,7 +71,7 @@ check.dir <- function (...)
     if (!nzchar(expected))
         stop(gettextf("'%s' must not be \"\"", "expected"))
     expected <- path.split.1(expected)
-    if (check.wd <- expected[[1L]] == ".")
+    if (check_wd <- expected[[1L]] == ".")
         expected <- expected[-1L]
     thisdir <- .External2(.C_this_path)
     thisdir <- .dir(thisdir)
@@ -88,7 +88,7 @@ check.dir <- function (...)
                 encodeString(c(thisdir, expected), quote = "\"")
             }, collapse = "\n"))
     }
-    if (check.wd) {
+    if (check_wd) {
         expected <- path.unsplit(thisdir[!i])
         if (relpath(expected) != ".") {
             stop("'getwd()' and expected path do not match\n",
@@ -109,7 +109,7 @@ check.proj <- function (...)
     if (!nzchar(expected))
         stop(gettextf("'%s' must not be \"\"", "expected"))
     expected <- path.split.1(expected)
-    if (check.wd <- expected[[1L]] == ".")
+    if (check_wd <- expected[[1L]] == ".")
         expected <- expected[-1L]
     thispath <- .External2(.C_this_path)
     thisproj <- .proj(.dir(thispath))
@@ -124,7 +124,7 @@ check.proj <- function (...)
                  encodeString(c(thispath, expected), quote = "\"")
              }, collapse = "\n"))
     }
-    if (check.wd) {
+    if (check_wd) {
         expected <- path.unsplit(thispath[!i])
         if (relpath(expected) != ".") {
             stop("'getwd()' and expected path do not match\n",

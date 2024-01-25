@@ -1,7 +1,7 @@
 \name{FILE}
 \alias{FILE}
 \alias{LINE}
-\title{Macros in Package 'this.path'}
+\title{Macros in Package '@R_PACKAGE_NAME@'}
 \description{
   \code{FILE()} and \code{LINE()} are intended to be used in a similar manner
   to the macros \code{__FILE__} and \code{__LINE__} in C. They are useful for

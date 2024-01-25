@@ -2,12 +2,10 @@
 #define R_THISPATH_THISPATHDEFN_H
 
 
-#include "devel.h"
-
-
 #include <R.h>
 #include <Rinternals.h>
 #include "backports.h"
+#include "devel.h"
 #include "error.h"
 #include "ns-hooks.h"
 #include "print.h"
@@ -90,7 +88,7 @@ extern SEXP DocumentContext(void);
 typedef enum {NA_DEFAULT, NA_NOT_DIR, NA_FIX_DIR} NORMALIZE_ACTION;
 
 
-extern void assign_default(SEXP srcfile_original, SEXP owd, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na);
+extern void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na);
 extern void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na);
 extern void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP documentcontext, NORMALIZE_ACTION na);
 extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
@@ -234,6 +232,7 @@ do {                                                           \
         }                                                      \
         const char *url;                                       \
         if (conv2utf8) {                                       \
+            /* https://github.com/wch/r-source/blob/trunk/src/main/util.c#L2257 */\
             if (IS_UTF8(file) || IS_ASCII(file) || IS_BYTES(file))\
                 url = CHAR(file);                              \
             else {                                             \
@@ -316,18 +315,18 @@ do {                                                           \
         else {                                                 \
             SEXP _srcfile_original = srcfile_original;         \
             if (_srcfile_original) {                           \
-                assign_default(_srcfile_original, NULL, ofile, documentcontext, normalize_action);\
+                assign_default(_srcfile_original, NULL, ofile, file, documentcontext, normalize_action);\
             }                                                  \
             else if (maybe_chdir) {                            \
                 SEXP owd = getowd;                             \
                 if (hasowd) {                                  \
                     PROTECT(owd);                              \
-                    assign_default(NULL, owd, ofile, documentcontext, normalize_action);\
+                    assign_default(NULL, owd, ofile, file, documentcontext, normalize_action);\
                     UNPROTECT(1);                              \
                 }                                              \
-                else assign_default(NULL, NULL, ofile, documentcontext, normalize_action);\
+                else assign_default(NULL, NULL, ofile, file, documentcontext, normalize_action);\
             }                                                  \
-            else assign_default(NULL, NULL, ofile, documentcontext, normalize_action);\
+            else assign_default(NULL, NULL, ofile, file, documentcontext, normalize_action);\
             if (assign_returnvalue) {                          \
                 returnvalue = PROTECT(shallow_duplicate(ofile)); nprotect++;\
                 SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
@@ -377,7 +376,7 @@ do {                                                           \
                  but rather an error that the executing        \
                  document has no path                          \
                                                                \
-                 we also assign for_msg as the object to       \
+                 we also assign for.msg as the object to       \
                  return for this.path(for.msg = TRUE)          \
                                                                \
                  we also assign associated_with_file so that   \
@@ -470,7 +469,6 @@ do {                                                           \
             setAttrib(assign_here, documentcontextSymbol, documentcontext);\
         }                                                      \
     }                                                          \
-    /* set_R_Visible(TRUE); */                                 \
     UNPROTECT(nprotect);                                       \
 } while (0)
 

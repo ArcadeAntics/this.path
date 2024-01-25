@@ -40,8 +40,8 @@ shFILE(original = FALSE, for.msg = FALSE, default, else.)
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.writeCode({
-    this.path:::.withAutoprint({
+@R_PACKAGE_NAME@:::.writeCode({
+    @R_PACKAGE_NAME@:::.withAutoprint({
         shFILE(original = TRUE)
         shFILE()
         shFILE(default = {
@@ -50,8 +50,8 @@ this.path:::.writeCode({
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE.R)
-this.path:::.Rscript(
-    c("--default-packages=this.path", "--vanilla", FILE.R)
+@R_PACKAGE_NAME@:::.Rscript(
+    c("--default-packages=@R_PACKAGE_NAME@", "--vanilla", FILE.R)
 )
 unlink(FILE.R)
 
@@ -62,8 +62,8 @@ for (expr in c("shFILE(original = TRUE)",
                "shFILE(default = NULL)"))
 {
     cat("\\n\\n")
-    this.path:::.Rscript(
-        c("--default-packages=this.path", "--vanilla", "-e", expr)
+    @R_PACKAGE_NAME@:::.Rscript(
+        c("--default-packages=@R_PACKAGE_NAME@", "--vanilla", "-e", expr)
     )
 }
 }

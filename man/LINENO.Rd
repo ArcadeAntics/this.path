@@ -66,7 +66,7 @@ if (getRversion() >= "4.3.0") {
     source(FILE.R, echo = TRUE, verbose = FALSE,
         max.deparse.length = Inf, keep.source = TRUE)
 } else {
-    this.path:::.source(FILE.R, echo = TRUE, verbose = FALSE,
+    @R_PACKAGE_NAME@:::.source(FILE.R, echo = TRUE, verbose = FALSE,
         max.deparse.length = Inf, keep.source = TRUE)
 }
 

@@ -70,11 +70,11 @@ ext <- function (path, compression = FALSE)
 .External2(`.C_ext<-`, path, compression, value)
 
 
-.windows.path.join <- function (...)
+.windows_path_join <- function (...)
 .External2(.C_windows_path_join)
 
 
-.unix.path.join <- function (...)
+.unix_path_join <- function (...)
 .External2(.C_unix_path_join)
 
 
@@ -82,11 +82,11 @@ path.join <- function (...)
 .External2(.C_path_join)
 
 
-.windows.path.split <- function (path)
+.windows_path_split <- function (path)
 .External2(.C_windows_path_split, path)
 
 
-.unix.path.split <- function (path)
+.unix_path_split <- function (path)
 .External2(.C_unix_path_split, path)
 
 
@@ -94,11 +94,11 @@ path.split <- function (path)
 .External2(.C_path_split, path)
 
 
-.windows.path.split.1 <- function (path)
+.windows_path_split_1 <- function (path)
 .External2(.C_windows_path_split_1, path)
 
 
-.unix.path.split.1 <- function (path)
+.unix_path_split_1 <- function (path)
 .External2(.C_unix_path_split_1, path)
 
 
@@ -106,11 +106,11 @@ path.split.1 <- function (path)
 .External2(.C_path_split_1, path)
 
 
-.windows.path.unsplit <- function (...)
+.windows_path_unsplit <- function (...)
 .External2(.C_windows_path_unsplit)
 
 
-.unix.path.unsplit <- function (...)
+.unix_path_unsplit <- function (...)
 .External2(.C_unix_path_unsplit)
 
 
@@ -129,29 +129,47 @@ path.unsplit <- function (...)
 .fixslash <- function (s)
 {
     if (.OS_windows) {
-        path <- chartr("\\", "/", path)
-        if (startsWith(path, "//"))
-            substr(path, 1L, 2L) <- "\\\\"
+        s <- chartr("\\", "/", s)
+        if (startsWith(s, "//"))
+            substr(s, 1L, 2L) <- "\\\\"
     }
-    path
+    s
 }
 
 
 .fixbackslash <- function (s)
 {
     if (.OS_windows)
-        path <- chartr("/", "\\", path)
-    path
+        s <- chartr("/", "\\", s)
+    s
 }
 
 
-.file_uri_path <- function (path)
+.as_file_URL <- function (path)
+{
+    if (.OS_windows) {
+        ## on Windows we have file:///C:/path/to/file or similar
+        path <- .fixslash(path)
+        i <- grepl("^.:", path, useBytes = TRUE)
+        if (all(i))
+            paste0("file:///", path)
+        else if (any(i)) {
+            path[ i] <- paste0("file:///", path[ i])
+            path[!i] <- paste0("file://" , path[!i])
+            path
+        }
+        else paste0("file://", path)
+    }
+    else paste0("file://", path)
+}
+
+
+.file_URL_path <- function (path)
 {
     ## remove the leading "file://" from a file URL
     ##
     ## but specifically on Windows, where file URLs may look like
-    ## "file:///c:" ...
-    ## remove the leading "file:///" from those file URLs
+    ## "file:///c:", remove the leading "file:///"
     if (.OS_windows && any(i <- grepl("^file:///.:", path, useBytes = TRUE))) {
         path[ i] <- substr(path[ i], 9L, 1000000L)
         path[!i] <- substr(path[!i], 8L, 1000000L)
@@ -161,19 +179,19 @@ path.unsplit <- function (...)
 }
 
 
-.file_uri_path_1 <- function (path)
+.file_URL_path_1 <- function (path)
 {
-    ## do .file_uri_path but a little bit faster when path is length 1
+    ## do .file_URL_path but a little bit faster when path is length 1
     if (.OS_windows && grepl("^file:///.:", path, useBytes = TRUE))
         substr(path, 9L, 1000000L)
     else substr(path, 8L, 1000000L)
 }
 
 
-.normalizeurl <- function (path)
+.normalizeURL <- function (path)
 {
     # x <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
-    # print(c(x, this.path:::.normalizeurl(x)))
+    # print(c(x, this.path:::.normalizeURL(x)))
     # source(x)
 
 
@@ -190,7 +208,7 @@ path.unsplit <- function (...)
 }
 
 
-.normalizeurl_1 <- function (path)
+.normalizeURL_1 <- function (path)
 {
     # path <- "https://raw.githubusercontent.com////////////ArcadeAntics///testing/.././this.path/./main/tests/this.path_w_URLs.R"
 
@@ -218,31 +236,31 @@ path.unsplit <- function (...)
 
 
 ## make a path absolute, then normalize it
-.normalizeabspath <- function (path, ...)
+.normalize_abspath <- function (path, ...)
 normalizePath(path = if (.OS_windows) path else .abspath(path), ...)
 
 
-.normalizeabspath_and_url <- function (path, ...)
+.normalize_abspath_and_URL <- function (path, ...)
 {
     ## a version of normalizePath that will also normalize URLs
-    if (any(i <- grepl("^file://", path)))
-        path[i] <- .file_uri_path(path[i])
+    if (any(i <- startsWith(path, "file://")))
+        path[i] <- .file_URL_path(path[i])
     if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
-        path[i] <- .normalizeurl(path[i])
-        path[!i] <- .normalizeabspath(path = path[!i], ...)
+        path[i] <- .normalizeURL(path[i])
+        path[!i] <- .normalize_abspath(path = path[!i], ...)
         path
     }
-    else .normalizeabspath(path = path, ...)
+    else .normalize_abspath(path = path, ...)
 }
 
 
-.normalizeabspath_and_url_1 <- function (path, ...)
+.normalize_abspath_and_URL_1 <- function (path, ...)
 {
-    if (grepl("^file://", path))
-        .normalizeabspath(path = .file_uri_path_1(path), ...)
+    if (startsWith(path, "file://"))
+        .normalize_abspath(path = .file_URL_path_1(path), ...)
     else if (grepl("^(ftp|ftps|http|https)://", path))
-        .normalizeurl_1(path)
-    else .normalizeabspath(path = path, ...)
+        .normalizeURL_1(path)
+    else .normalize_abspath(path = path, ...)
 }
 
 
@@ -250,7 +268,7 @@ normalizePath(path = if (.OS_windows) path else .abspath(path), ...)
 normalizePath(path, winslash, mustWork)
 
 
-.normalizeNotDirectory <- function (path, winslash = "/", mustWork = TRUE)
+.normalizePath_not_dir <- function (path, winslash = "/", mustWork = TRUE)
 {
     x <- normalizePath(path, winslash, mustWork)
     if (.isfalse(.isdir(x)))
@@ -259,7 +277,7 @@ normalizePath(path, winslash, mustWork)
 }
 
 
-.normalizeFixDirectory <- function (path, winslash = "/", mustWork = TRUE)
+.normalizePath_fix_dir <- function (path, winslash = "/", mustWork = TRUE)
 {
     x <- normalizePath(path, winslash, mustWork)
     if (.istrue(.isdir(x)))
@@ -268,22 +286,22 @@ normalizePath(path, winslash, mustWork)
 }
 
 
-.normalizeAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
+.normalizePath_against <- function (wd, path, winslash = "/", mustWork = TRUE)
 {
     owd <- getwd()
     if (is.null(owd))
-        stop("cannot '.normalizeAgainst' as current directory is unknown")
+        stop("cannot '.normalizePath_against' as current directory is unknown")
     on.exit(setwd(owd))
     setwd(wd)
     normalizePath(path, winslash, mustWork)
 }
 
 
-.normalizeNotDirectoryAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
+.normalizePath_not_dir_against <- function (wd, path, winslash = "/", mustWork = TRUE)
 {
     owd <- getwd()
     if (is.null(owd))
-        stop("cannot '.normalizeAgainst' as current directory is unknown")
+        stop("cannot '.normalizePath_against' as current directory is unknown")
     on.exit(setwd(owd))
     setwd(wd)
     x <- normalizePath(path, winslash, mustWork)
@@ -293,11 +311,11 @@ normalizePath(path, winslash, mustWork)
 }
 
 
-.normalizeFixDirectoryAgainst <- function (wd, path, winslash = "/", mustWork = TRUE)
+.normalizePath_fix_dir_against <- function (wd, path, winslash = "/", mustWork = TRUE)
 {
     owd <- getwd()
     if (is.null(owd))
-        stop("cannot '.normalizeAgainst' as current directory is unknown")
+        stop("cannot '.normalizePath_against' as current directory is unknown")
     on.exit(setwd(owd))
     setwd(wd)
     x <- normalizePath(path, winslash, mustWork)
@@ -307,18 +325,18 @@ normalizePath(path, winslash, mustWork)
 }
 
 
-.normalize_srcfilealias <- function (original, path, winslash = "/", mustWork = TRUE)
+.normalizePath_srcfilealias <- function (original, path, winslash = "/", mustWork = TRUE)
 {
     value <- .External2(.C_src_path, original)
     value <- .dir(value)
     if (grepl("^(https|http|ftp|ftps)://", value)) {
-        ## do not use file.path(), will convert text to native encoding
-        .normalizeurl(paste(value, path, sep = "/"))
+        ## do not use file.path(), on old versions of R it will convert text to native encoding
+        .normalizeURL(paste(value, path, sep = "/"))
     }
     else {
         owd <- getwd()
         if (is.null(owd))
-            stop("cannot '.normalize_srcfilealias' as current directory is unknown")
+            stop("cannot '.normalizePath_against' as current directory is unknown")
         on.exit(setwd(owd))
         setwd(value)
         normalizePath(path, winslash, mustWork)

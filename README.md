@@ -196,7 +196,7 @@ working directory is set outside the context of the project. However,
 you can combine it with `package:this.path` to get the best results:
 
 ```R
-## substitute 'rprojroot::is_r_package' with desired criterion
+## replace 'rprojroot::is_r_package' with desired criterion
 
 fix_file <- this.path::make_fix_file(rprojroot::is_r_package)
 ```
@@ -264,11 +264,11 @@ or:
 source("/path/to/file.R", chdir = TRUE)
 ```
 
-This fails when moving amongst files in different directories.
-Additionally, it is sometimes convenient to have the working directory
-set elsewhere. This means that **R** scripts cannot be made to act like
-executables. If a script needs to call other scripts in the same
-directory, it could not do so without the its own path.
+This fails when moving throughout files in different directories. It
+also fails for executable **R** scripts. Additionally, it is sometimes
+convenient to have the working directory set elsewhere.  If a script
+needs to call other scripts in the same directory, it could not do so
+without the its own path.
 
 ### Alternative 5: Source References
 

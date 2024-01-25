@@ -203,7 +203,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
                     REPROTECT(EnumResult = mkString(title), EnumIndex);\
                     return FALSE;                              \
                 }                                              \
-                SEXP expr = LCONS(_normalizeNotDirectorySymbol,\
+                SEXP expr = LCONS(_normalizePath_not_dirSymbol,\
                                   CONS(mkString(title), R_NilValue));\
                 PROTECT(expr);                                 \
                 REPROTECT(EnumResult = eval(expr, mynamespace), EnumIndex);\

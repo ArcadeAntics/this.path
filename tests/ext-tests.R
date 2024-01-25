@@ -8,9 +8,9 @@ check <- function (path, root, ext, compression = FALSE)
 }
 
 
-splitext  <- this.path:::.windows_splitext
-removeext <- this.path:::.windows_removeext
-ext       <- this.path:::.windows_ext
+splitext  <- @R_PACKAGE_NAME@:::.windows_splitext
+removeext <- @R_PACKAGE_NAME@:::.windows_removeext
+ext       <- @R_PACKAGE_NAME@:::.windows_ext
 
 
 check(character(), character(), character())
@@ -61,9 +61,9 @@ check(letters, letters, character(26))
 
 
 
-splitext  <- this.path:::.unix_splitext
-removeext <- this.path:::.unix_removeext
-ext       <- this.path:::.unix_ext
+splitext  <- @R_PACKAGE_NAME@:::.unix_splitext
+removeext <- @R_PACKAGE_NAME@:::.unix_removeext
+ext       <- @R_PACKAGE_NAME@:::.unix_ext
 
 
 check(character(), character(), character())
@@ -104,8 +104,8 @@ check(letters, letters, character(26))
 ## windows replacement tests ----
 
 
-ext     <- this.path:::.windows_ext
-`ext<-` <- this.path:::`.windows_ext<-`
+ext     <- @R_PACKAGE_NAME@:::.windows_ext
+`ext<-` <- @R_PACKAGE_NAME@:::`.windows_ext<-`
 
 
 x   <- c(NA, "", ""    , "C:"  , "//host/share", "C:/" , "/path/to/fi", "/path/to/.", "/path/to/..", "/"   )
@@ -115,10 +115,10 @@ ext(x) <- val
 stopifnot(identical(x, c(Z = NA_character_, Y = NA_character_, X = "", W = "C:", V = "//host/share", U = "C:/", T = "/path/to/fi.png", S = "/path/to/.", R = "/path/to/..", Q = "/")))
 
 
-x <- paste0("this.path_1.0.0.tar", c(".gz", ".bz2", ".xz"))
+x <- paste0("@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar", c(".gz", ".bz2", ".xz"))
 names(x) <- x
 ext(x, compression = TRUE) <- ".png"
-stopifnot(identical(x, c(this.path_1.0.0.tar.gz = "this.path_1.0.0.png", this.path_1.0.0.tar.bz2 = "this.path_1.0.0.png", this.path_1.0.0.tar.xz = "this.path_1.0.0.png")))
+stopifnot(identical(x, c(@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.gz = "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.png", @R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.bz2 = "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.png", @R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.xz = "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.png")))
 
 
 x   <- c("C:/path/to/file", "C:/path/to/.file", "C:/path/to/file.", "C:/path/to/.....", "C:/path/to/file.jpg", "C:/path/to/file.jpg")
@@ -136,8 +136,8 @@ stopifnot(identical(x, "a.5"))
 ## unix replacement tests ----
 
 
-ext     <- this.path:::.unix_ext
-`ext<-` <- this.path:::`.unix_ext<-`
+ext     <- @R_PACKAGE_NAME@:::.unix_ext
+`ext<-` <- @R_PACKAGE_NAME@:::`.unix_ext<-`
 
 
 x <- "C:.jpg"
@@ -152,10 +152,10 @@ ext(x) <- val
 stopifnot(identical(x, c(Z = NA_character_, Y = NA_character_, X = "", W = "C:.png", V = "//host/share", U = "C:.png", T = "/path/to/fi.png", S = "/path/to/.", R = "/path/to/..", Q = "/")))
 
 
-x <- paste0("this.path_1.0.0.tar", c(".gz", ".bz2", ".xz"))
+x <- paste0("@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar", c(".gz", ".bz2", ".xz"))
 names(x) <- x
 ext(x, compression = TRUE) <- ".png"
-stopifnot(identical(x, c(this.path_1.0.0.tar.gz = "this.path_1.0.0.png", this.path_1.0.0.tar.bz2 = "this.path_1.0.0.png", this.path_1.0.0.tar.xz = "this.path_1.0.0.png")))
+stopifnot(identical(x, c(@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.gz = "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.png", @R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.bz2 = "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.png", @R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.xz = "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.png")))
 
 
 x   <- c("/path/to/file", "/path/to/.file", "/path/to/file.", "/path/to/.....", "/path/to/file.jpg", "/path/to/file.jpg")

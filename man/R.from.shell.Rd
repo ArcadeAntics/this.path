@@ -2,6 +2,8 @@
 \alias{R.from.shell}
 \title{Using R From a Shell}
 \description{
+  \Sexpr[results=rd,stage=build]{}
+
   How to use \R from a shell (including the Windows command-line / / Unix
   terminal).
 }

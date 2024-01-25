@@ -28,9 +28,7 @@
 \alias{sys.LINENO}
 \alias{try.sys.path}
 
-\alias{this.path-miscellaneous}
-
-\title{Variants of Core Functions in Package 'this.path'}
+\title{Variants of Core Functions in Package '@R_PACKAGE_NAME@'}
 \description{
   \code{\link{this.path}()} is composed of three sections:
   \enumerate{
@@ -119,12 +117,12 @@ try.sys.path(contents = FALSE, local = FALSE)
 \examples{
 ## the important difference between 'this.path()' and 'sys.path()'
 FILE1.R <- tempfile("FILE1-", fileext = ".R")
-this.path:::.writeCode({
+@R_PACKAGE_NAME@:::.writeCode({
     fun <- function() {
         cat("\\n> this.path()\\n")
-        print(this.path::this.path(verbose = TRUE))
+        print(@R_PACKAGE_NAME@::this.path(verbose = TRUE))
         cat("\\n> sys.path()\\n")
-        print(this.path::sys.path(verbose = TRUE))
+        print(@R_PACKAGE_NAME@::sys.path(verbose = TRUE))
     }
     ## 'this.path()' and 'sys.path()' should be identical because the
     ## executing script is the same as the script of the source file
@@ -133,7 +131,7 @@ this.path:::.writeCode({
 source(FILE1.R, keep.source = TRUE)
 
 FILE2.R <- tempfile("FILE2-", fileext = ".R")
-this.path:::.writeCode({
+@R_PACKAGE_NAME@:::.writeCode({
     ## 'this.path()' and 'sys.path()' should no longer be identical
     ## since FILE2.R is now the executing script, and FILE1.R is not
     fun()

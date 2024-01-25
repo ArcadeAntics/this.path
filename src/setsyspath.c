@@ -495,7 +495,7 @@ SEXP do_wrap_source do_formals
         allow_rawConnection, allow_sockconn, allow_servsockconn,
         allow_customConnection, ignore_blank_string, ignore_clipboard,
         ignore_stdin, ignore_url, ignore_file_uri,
-        /* source                 */ mkChar("call to function wrap.source from package this.path"),
+        /* source                 */ mkChar("call to function wrap.source from package @R_PACKAGE_NAME@"),
         /* srcfile_original       */ NULL
     );
 
@@ -558,7 +558,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
                 name, type2char(TYPEOF(function)));
         else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
             error("%s cannot be called within %s() from package %s",
-                name, CHAR(PRINTNAME(wrap_sourceSymbol)), "this.path");
+                name, CHAR(PRINTNAME(wrap_sourceSymbol)), "@R_PACKAGE_NAME@");
         UNPROTECT(1);
     }
 
@@ -751,7 +751,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
     SEXP source = NULL;
     switch (TYPEOF(Function)) {
     case NILSXP:
-        source = mkChar("call to function set.sys.path from package this.path");
+        source = mkChar("call to function set.sys.path from package @R_PACKAGE_NAME@");
         PROTECT(source); nprotect++;
         break;
     case SYMSXP:

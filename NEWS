@@ -1,6 +1,6 @@
-this.path News
+@R_PACKAGE_NAME@ News
 
-CHANGES IN this.path devel:
+CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
   SIGNIFICANT USER-VISIBLE CHANGES:
 
@@ -11,8 +11,9 @@ CHANGES IN this.path devel:
 
     * this.path() is now compatible with function utils::Sweave().
 
-    * Added with_script_path() which evaluates a box import statement
-      after setting the current script in 'package:box' to this.path().
+    * Added with_script_path() which sets the current script in
+      'package:box' to this.path(), then evaluates its argument, most
+      commonly a 'package:box' import statement.
 
     * Added make_fix_file() which makes a function that constructs file
       paths, starting with the project root of this.dir().
@@ -223,5 +224,6 @@ CHANGES IN this.path 2.0.0 (2023-08-08):
     * Fixed relpath() on Windows when comparing paths with network
       shares.
 
-    * Fixed 'this.path' used in the site-wide startup profile file, a
-      user profile, or the function .First() on Windows in 'RStudio'.
+    * Fixed 'package:this.path' used in the site-wide startup profile
+      file, a user profile, or the function .First() on Windows in
+      'RStudio'.

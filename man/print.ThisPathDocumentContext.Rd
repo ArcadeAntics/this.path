@@ -42,7 +42,7 @@
 fun <- function (file)
 {
     set.sys.path(file, Function = "fun")
-    `.this.path::document.context`
+    `.@R_PACKAGE_NAME@::document.context`
 }
 
 

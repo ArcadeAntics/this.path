@@ -32,11 +32,11 @@ delayedAssign(".net_USE_command", {
         if (any(i <- !is.na(value) & nzchar(value))) {
             path <- value[i]
             if (normalize.path)
-                path <- .normalizeabspath_and_url(path, "/", FALSE)
+                path <- .normalize_abspath_and_URL(path, "/", FALSE)
             if (!.IS_SCALAR_STR(relative.to))
                 stop(gettextf("'%s' must be a character string", "relative.to", domain = "R"), domain = NA)
             if (normalize)
-                relative.to <- .normalizeabspath_and_url_1(relative.to, "/", TRUE)
+                relative.to <- .normalize_abspath_and_URL_1(relative.to, "/", TRUE)
             path <- c(relative.to, path)
             value[i] <- if (.OS_windows) {
                 ## replace //LOCALHOST/C$/
@@ -50,7 +50,7 @@ delayedAssign(".net_USE_command", {
                 ## get the first element of each path, the drive,
                 ## and then keep all the unique ones
                 u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
-                no.convert.local <- if (length(u) == 1L) {
+                no_convert_local <- if (length(u) == 1L) {
                     TRUE
                 } else if (!any(j <- u %in% .all_drives)) {
                     TRUE
@@ -60,8 +60,8 @@ delayedAssign(".net_USE_command", {
                     1L == length(u <- unique(.toupper_ASCII(u[j]))) &&
                         u == .toupper_ASCII(paste0(Sys.getenv("SystemDrive"), "/"))
                 }
-                if (no.convert.local) {
-                    fix.local <- identity
+                if (no_convert_local) {
+                    fix_local <- identity
                 } else {
                     x <- system(.net_USE_command, intern = TRUE)
                     m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Web Client Network|Microsoft Windows Network)?$", x)
@@ -77,25 +77,25 @@ delayedAssign(".net_USE_command", {
                         remote <- paste0(remote, "/")
                         remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
                             "\\1:/", remote)
-                        fix.local <- function(p) {
+                        fix_local <- function(p) {
                             if (indx <- match(.tolower_ASCII(p[[1L]]), local, 0L)) {
                                 c(remote[[indx]], p[-1L])
                             } else p
                         }
-                    } else fix.local <- identity
+                    } else fix_local <- identity
                 }
 
 
                 r <- p[[1L]]
                 p <- p[-1L]
-                r <- fix.local(r)
-                ignore.case <- !grepl("^(http|https)://", r[[1L]])
-                fix.case <- if (ignore.case) .tolower_ASCII else identity
-                r <- fix.case(r)
+                r <- fix_local(r)
+                ignore_case <- !grepl("^(http|https)://", r[[1L]])
+                fix_case <- if (ignore_case) .tolower_ASCII else identity
+                r <- fix_case(r)
                 len <- length(r)
                 path.unsplit(lapply(p, function(p) {
                     n <- min(len, length(p))
-                    q <- fix.case(fix.local(p))
+                    q <- fix_case(fix_local(p))
                     n <- match(FALSE, q[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
                     if (n == 0L) {
                         p

@@ -266,57 +266,75 @@ SEXP DocumentContext(void)
 }
 
 
-/* instead of doing:
+/* we used to do:
  * document.context$ofile <- NULL
- * to declare that a document context does not refer to a file, now we do:
+ * to indicate that a document context does not refer to a file, now we do:
  * document.context <- emptyenv()
  * this is much easier to test for, to read, and to debug
  */
 
 
-#define _assign(file, documentcontext)                         \
-    INCREMENT_NAMED_defineVar(ofileSymbol, (file), (documentcontext));\
+#define _assign(ofile, documentcontext)                        \
+    INCREMENT_NAMED_defineVar(ofileSymbol, (ofile), (documentcontext));\
     SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
     defineVar(fileSymbol, e, (documentcontext))
 
 
-#define _assign_default(srcfile_original, owd, file, documentcontext, na)\
+#define _assign_default(srcfile_original, owd, trans, documentcontext, na)\
     if (srcfile_original) {                                    \
-        SET_PRCODE(e, LCONS(_normalize_srcfilealiasSymbol,     \
+        SET_PRCODE(e, LCONS(_normalizePath_srcfilealiasSymbol, \
                             CONS(srcfile_original,             \
-                                 CONS(file, R_NilValue))));    \
+                                 CONS(trans, R_NilValue))));   \
     }                                                          \
     else if (owd) {                                            \
         INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);\
         SEXP sym;                                              \
         switch (na) {                                          \
-        case NA_DEFAULT: sym = _normalizeAgainstSymbol            ; break;\
-        case NA_NOT_DIR: sym = _normalizeNotDirectoryAgainstSymbol; break;\
-        case NA_FIX_DIR: sym = _normalizeFixDirectoryAgainstSymbol; break;\
+        case NA_DEFAULT: sym = _normalizePath_againstSymbol        ; break;\
+        case NA_NOT_DIR: sym = _normalizePath_not_dir_againstSymbol; break;\
+        case NA_FIX_DIR: sym = _normalizePath_fix_dir_againstSymbol; break;\
         default:                                               \
             errorcall(R_NilValue, _("invalid '%s' value"), "na");\
             sym = R_NilValue;                                  \
         }                                                      \
-        SET_PRCODE(e, LCONS(sym, CONS(wdSymbol, CONS(file, R_NilValue))));\
+        SET_PRCODE(e, LCONS(sym, CONS(wdSymbol, CONS(trans, R_NilValue))));\
     }                                                          \
     else {                                                     \
         SEXP sym;                                              \
         switch (na) {                                          \
         case NA_DEFAULT: sym = _normalizePathSymbol        ; break;\
-        case NA_NOT_DIR: sym = _normalizeNotDirectorySymbol; break;\
-        case NA_FIX_DIR: sym = _normalizeFixDirectorySymbol; break;\
+        case NA_NOT_DIR: sym = _normalizePath_not_dirSymbol; break;\
+        case NA_FIX_DIR: sym = _normalizePath_fix_dirSymbol; break;\
         default:                                               \
             errorcall(R_NilValue, _("invalid '%s' value"), "na");\
             sym = R_NilValue;                                  \
         }                                                      \
-        SET_PRCODE(e, LCONS(sym, CONS(file, R_NilValue)));     \
+        SET_PRCODE(e, LCONS(sym, CONS(trans, R_NilValue)));    \
     }
 
 
-void assign_default(SEXP srcfile_original, SEXP owd, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na)
+void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na)
 {
-    _assign(file, documentcontext);
-    _assign_default(srcfile_original, owd, file, documentcontext, na);
+    _assign(ofile, documentcontext);
+
+
+    const char *url;
+    cetype_t ienc = CE_NATIVE;
+// https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5531
+#ifdef _WIN32
+    if (!IS_ASCII(file)) {
+        ienc = CE_UTF8;
+        url = translateCharUTF8(file);
+    } else {
+        ienc = getCharCE(file);
+        url = CHAR(file);
+    }
+#else
+    url = translateCharFP(file);
+#endif
+
+
+    _assign_default(srcfile_original, owd, ScalarString(mkCharCE(url, ienc)), documentcontext, na);
     return;
 }
 
@@ -329,7 +347,8 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
     /* translate the string, then extract the string after file://
      * or file:/// on windows where path is file:///d:/path/to/file */
     const char *url;
-    cetype_t ienc;
+    cetype_t ienc = CE_NATIVE;
+// https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5531
 #ifdef _WIN32
     if (!IS_ASCII(file)) {
         ienc = CE_UTF8;
@@ -339,21 +358,18 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
         url = CHAR(file);
     }
 #else
-    ienc = getCharCE(file);
-    url = CHAR(file);
+    url = translateCharFP(file);
 #endif
 
 
+// https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5650
+    int nh = 7;
 #ifdef _WIN32
-    if (strlen(url) > 9 && url[7] == '/' && url[9] == ':')
-        url += 8;
-    else url += 7;
-#else
-    url += 7;
+    if (strlen(url) > 9 && url[7] == '/' && url[9] == ':') nh = 8;
 #endif
 
 
-    _assign_default(srcfile_original, owd, ScalarString(mkCharCE(url, ienc)), documentcontext, na);
+    _assign_default(srcfile_original, owd, ScalarString(mkCharCE(url + nh, ienc)), documentcontext, na);
 }
 
 
@@ -377,7 +393,7 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
 
 
 
-    SEXP ofile = ScalarString(mkCharCE(buf, getCharCE(description)));
+    SEXP ofile = ScalarString(mkCharCE(_buf, getCharCE(description)));
     _assign(ofile, documentcontext);
     _assign_default(srcfile_original, owd, ScalarString(description), documentcontext, na);
 }
@@ -388,13 +404,23 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
     _assign(ofile, documentcontext);
 
 
+    const char *url;
+    cetype_t ienc = CE_NATIVE;
+// https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5531
 #ifdef _WIN32
-    if (!IS_ASCII(file))
-        ofile = ScalarString(mkCharCE(translateCharUTF8(file), CE_UTF8));
+    if (!IS_ASCII(file)) {
+        ienc = CE_UTF8;
+        url = translateCharUTF8(file);
+    } else {
+        ienc = getCharCE(file);
+        url = CHAR(file);
+    }
+#else
+    url = translateCharFP(file);
 #endif
 
 
-    SET_PRCODE(e, LCONS(_normalizeurl_1Symbol, CONS(ofile, R_NilValue)));
+    SET_PRCODE(e, LCONS(_normalizeURL_1Symbol, CONS(ScalarString(mkCharCE(url, ienc)), R_NilValue)));
     eval(e, R_EmptyEnv);  /* force the promise */
 }
 

@@ -47,7 +47,7 @@ with_init.file(expr)
 ##
 ## write this:
 ##
-## this.path::with_init.file({
+## @R_PACKAGE_NAME@::with_init.file({
 ## <expr 1>
 ## <expr 2>
 ## <...>

@@ -71,35 +71,35 @@ withArgs(...)
   for \code{withArgs()}, the result of evaluating the first argument.
 }
 \examples{
-this.path::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
+@R_PACKAGE_NAME@::asArgs(NULL, c(TRUE, FALSE, NA), 1:5, pi, exp(6i),
     letters[1:5], as.raw(0:4), Sys.Date(), Sys.time(),
     list(list(list("lists are recursed"))))
 
 
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.writeCode({
-    this.path:::.withAutoprint({
-        this.path::sys.path()
-        this.path::progArgs()
+@R_PACKAGE_NAME@:::.writeCode({
+    @R_PACKAGE_NAME@:::.withAutoprint({
+        @R_PACKAGE_NAME@::sys.path()
+        @R_PACKAGE_NAME@::progArgs()
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE.R)
 
 
 ## wrap your source call with a call to withArgs()
-this.path::withArgs(
+@R_PACKAGE_NAME@::withArgs(
     source(FILE.R, local = TRUE, verbose = FALSE),
     letters[6:10], pi, exp(1)
 )
-this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE.R,
-    this.path::asArgs(letters[16:20], pi, Sys.time())))
-this.path:::.Rscript(c("--default-packages=NULL", "--vanilla",
+@R_PACKAGE_NAME@:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE.R,
+    @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())))
+@R_PACKAGE_NAME@:::.Rscript(c("--default-packages=NULL", "--vanilla",
     rbind("-e", readLines(FILE.R)[-2L]),
-    this.path::asArgs(letters[16:20], pi, Sys.time())))
+    @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())))
 
 
 # ## with R >= 4.1.0, use the forward pipe operator '|>' to
 # ## make calls to withArgs() more intuitive:
-# source(FILE.R, local = TRUE, verbose = FALSE) |> this.path::withArgs(
+# source(FILE.R, local = TRUE, verbose = FALSE) |> @R_PACKAGE_NAME@::withArgs(
 #     letters[6:10], pi, exp(1))
 
 
@@ -111,7 +111,7 @@ sourcelike <- function (file, envir = parent.frame())
     exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
 }
-this.path::withArgs(sourcelike(FILE.R), letters[21:26])
+@R_PACKAGE_NAME@::withArgs(sourcelike(FILE.R), letters[21:26])
 
 
 unlink(FILE.R)

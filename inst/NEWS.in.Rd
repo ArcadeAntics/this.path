@@ -1,6 +1,6 @@
 \name{NEWS}
-\title{\pkg{this.path} News}
-\section{CHANGES IN VERSION devel}{
+\title{\pkg{@R_PACKAGE_NAME@} News}
+\section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item{\code{with_init.file()} now accepts a braced expression, the
@@ -12,9 +12,9 @@
       \item{\code{this.path()} is now compatible with function
         \code{utils::Sweave()}.}
 
-      \item{Added \code{with_script_path()} which evaluates a box import
-        statement after setting the current script in \pkg{package:box} to
-        \code{this.path()}.}
+      \item{Added \code{with_script_path()} which sets the current script in
+        \pkgorsQuote{package:box} to \code{this.path()}, then evaluates its
+        argument, most commonly a \pkgorsQuote{package:box} import statement.}
 
       \item{Added \code{make_fix_file()} which makes a function that constructs
         file paths, starting with the project root of \code{this.dir()}.}
@@ -254,8 +254,8 @@
       \item{Fixed \code{relpath()} on Windows when comparing paths with network
         shares.}
 
-      \item{Fixed \pkg{this.path} used in the site-wide startup profile file, a
-        user profile, or the function \code{.First()} on Windows in
+      \item{Fixed \pkg{package:this.path} used in the site-wide startup profile
+        file, a user profile, or the function \code{.First()} on Windows in
         \sQuote{\RStudio}.}
     }
   }

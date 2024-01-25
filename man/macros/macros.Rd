@@ -8,9 +8,10 @@
 
 
 %% used in ./inst/NEWS.Rd
-\newcommand{\commandorsQuote}{\ifelse{text}{\sQuote{#1}}{\command{#1}}}
 \newcommand{\codeorsQuote}{\ifelse{text}{\sQuote{#1}}{\code{#1}}}
+\newcommand{\commandorsQuote}{\ifelse{text}{\sQuote{#1}}{\command{#1}}}
 \newcommand{\optionorsQuote}{\ifelse{text}{\sQuote{#1}}{\option{#1}}}
+\newcommand{\pkgorsQuote}{\ifelse{text}{\sQuote{#1}}{\pkg{#1}}}
 
 
 \newcommand{\Emacs}{\href{https://ess.r-project.org/}{Emacs}}
@@ -30,7 +31,7 @@
 \newcommand{\knitrknitlink}{\codelink3{knitr:knit}{knitr::knit}{()}}
 \newcommand{\plumberplumblink}{\codelink3{plumber:plumb}{plumber::plumb}{()}}
 \newcommand{\shinyrunApplink}{\codelink3{shiny:runApp}{shiny::runApp}{()}}
-\newcommand{\targetslink}{\ifelse{text}{\sQuote{package:targets}}{\CRANpkg{targets}}}
+\newcommand{\targetslink}{\ifelse{text}{\pkg{package:targets}}{\CRANpkg{targets}}}
 \newcommand{\testthatsourcefilelink}{\codelink3{testthat:source_file}{testthat::source_file}{()}}
 \newcommand{\Rscriptlink}{\codelink2{utils}{Rscript}}
 

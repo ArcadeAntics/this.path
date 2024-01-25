@@ -30,7 +30,7 @@
             .normalizePath(ofile)
         else if (is.null(file_info[["wd"]]))
             .normalizePath(ofile)
-        else .normalizeAgainst(file_info[["wd"]], ofile)
+        else .normalizePath_against(file_info[["wd"]], ofile)
     })
               function (original = TRUE, for.msg = FALSE)
 .External2(.C_site_file, original, for.msg)
@@ -85,7 +85,7 @@
             .normalizePath(ofile)
         else if (is.null(file_info[["wd"]]))
             .normalizePath(ofile)
-        else .normalizeAgainst(file_info[["wd"]], ofile)
+        else .normalizePath_against(file_info[["wd"]], ofile)
     })
               function (original = TRUE, for.msg = FALSE)
 .External2(.C_init_file, original, for.msg)
@@ -237,7 +237,7 @@ with_init.file <- function (expr)
         is.null(attributes(sys.call(1L))) &&
 
         ## check that there are no other files being run right now
-        .getframenumber() == 0L &&
+        .External2(.C_getframenumber) == 0L &&
 
         ## this condition must be last because it forces the promises in .init_file
         .startup_info[["has_init_file"]])

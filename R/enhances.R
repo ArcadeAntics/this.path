@@ -10,11 +10,10 @@ with_script_path <- function (expr, local = FALSE, n = 0L, envir = parent.frame(
     on.exit(box::set_script_path(oscript_path))
     box::set_script_path(tryCatch3({
         .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
-    }, thisPathNotExistsError = ,
-       thisPathNotFoundError  = {
-        if (!is.null(wd <- getwd()))
-            path.join(wd, ".")
-        else "."
+    }, thisPathNotFoundError = {
+        if (is.null(wd <- getwd()))
+            "."
+        else path.join(wd, ".")
     }))
     expr
 }

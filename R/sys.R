@@ -1,7 +1,7 @@
 .toplevel.nframe <- function ()
 {
     if (.GUI_jupyter) {
-        if (.isJupyterLoaded())
+        if (.is_jupyter_loaded())
             sys.frame(1L)$kernel$executor$nframe + 1L
         else 0L
     }

@@ -94,7 +94,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   level environment in two ways:
 
   \enumerate{
-    \item{from a \ifelse{text}{\sQuote{package:box}}{\CRANpkg{box}} module's
+    \item{from a \ifelse{text}{\pkg{package:box}}{\CRANpkg{box}} module's
       namespace.}
 
     \item{from an attribute \string{path}.}
@@ -210,7 +210,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   \code{srcref} of the call to \code{this.path()} and the environment in which
   \code{this.path()} was called. For example: \preformatted{{
 #line 1 "file1.R"
-fun <- function() this.path::this.path(original = TRUE)
+fun <- function() @R_PACKAGE_NAME@::this.path(original = TRUE)
 fun()
 }
 
@@ -228,7 +228,7 @@ fun()
   so; \code{this.path()} will inspect the call and the calling environment one
   generation up the stack: \preformatted{{
 #line 1 "file1.R"
-fun <- function() this.path::this.path(original = TRUE, n = 1)
+fun <- function() @R_PACKAGE_NAME@::this.path(original = TRUE, n = 1)
 fun()
 }
 
@@ -247,7 +247,7 @@ fun()
   and pass \code{n = n + 1} to each sub-function: \preformatted{{
 #line 1 "file1.R"
 fun <- function(n = 0) {
-    this.path::this.path(original = TRUE, n = n + 1)
+    @R_PACKAGE_NAME@::this.path(original = TRUE, n = n + 1)
 }
 fun()
 }
@@ -275,7 +275,7 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
   \preformatted{<expr 1>
 <expr 2>
 <...>}
-  write this: \preformatted{this.path::with_init.file({
+  write this: \preformatted{@R_PACKAGE_NAME@::with_init.file({
 <expr 1>
 <expr 2>
 <...>
@@ -288,7 +288,7 @@ list(fun = fun(), fun2 = fun2(), fun3 = fun3())
 }
 \examples{
 FILE1.R <- tempfile(fileext = ".R")
-writeLines("writeLines(sQuote(this.path::this.path()))", FILE1.R)
+writeLines("writeLines(sQuote(@R_PACKAGE_NAME@::this.path()))", FILE1.R)
 
 ## 'this.path()' works with 'source()'
 source(FILE1.R)
@@ -313,14 +313,14 @@ if (requireNamespace("compiler")) {
 }
 
 ## 'this.path()' works with 'Rscript'
-this.path:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
+@R_PACKAGE_NAME@:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
 
 ## 'this.path()' also works when 'source()'-ing a URL
 ## (included tryCatch in case an internet connection is not available)
 tryCatch({
     source(paste0("https://raw.githubusercontent.com/ArcadeAntics/",
                   "this.path/main/tests/sys-path-with-urls.R"))
-}, condition = this.path:::.cat_condition)
+}, condition = @R_PACKAGE_NAME@:::.cat_condition)
 
 unlink(FILE1.R)
 }

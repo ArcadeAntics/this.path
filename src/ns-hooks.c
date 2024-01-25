@@ -305,11 +305,11 @@ SEXP do_onLoad do_formals
         UNPROTECT(1);
     }
     defineVar(fileSymbol, makePROMISE(
-        LCONS(_normalizeNotDirectorySymbol, CONS(ofileSymbol, R_NilValue)),
+        LCONS(_normalizePath_not_dirSymbol, CONS(ofileSymbol, R_NilValue)),
         _custom_gui_path_character_environment
     ), _custom_gui_path_character_environment);
     R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
-    defineVar(_getContentsSymbol, R_NilValue, _custom_gui_path_character_environment);
+    defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
     R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
 
 

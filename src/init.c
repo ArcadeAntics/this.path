@@ -1,6 +1,6 @@
 #include <R_ext/Rdynload.h>    /* need definition of 'R_ExternalMethodDef' */
 #include <R_ext/Visibility.h>  /* need definition of 'attribute_visible' */
-#include "this.path.h"         /* need declarations of C functions */
+#include "@R_PACKAGE_NAME@.h"         /* need declarations of C functions */
 
 
 static const R_ExternalMethodDef externalRoutines[] = {

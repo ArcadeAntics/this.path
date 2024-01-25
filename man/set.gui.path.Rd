@@ -44,29 +44,29 @@ thisPathNotFoundError(..., call. = TRUE, domain = NULL,
   one document such as \Jupyter and shell.
 
   It is best to call this function as a user hook.
-  \preformatted{setHook(packageEvent("this.path"),
+  \preformatted{setHook(packageEvent("@R_PACKAGE_NAME@"),
 function(pkgname, pkgpath)
 {
-    this.path::set.gui.path(<...>)
+    @R_PACKAGE_NAME@::set.gui.path(<...>)
 }, action = "prepend")}
 
   An example for a GUI which can run code from multiple documents:
   \preformatted{evalq(envir = new.env(parent = .BaseNamespaceEnv), {
     .guiname <- "myGui"
-    .custom.gui.path <- function(verbose, original, for.msg, contents) {
+    .custom_gui_path <- function(verbose, original, for.msg, contents) {
         if (verbose)
             cat("Source: document in", .guiname, "\\n")
 
         ## your GUI needs to know which document is active
         ## and some way to retrieve that document from R
-        doc <- <.myGui.activeDocument()>
+        doc <- <.myGui_activeDocument()>
 
         ## if no documents are open, 'doc' should be NULL
         ## or some other object to represent no documents open
         if (is.null(doc)) {
             if (for.msg)
                 NA_character_
-            else stop(this.path::thisPathNotExistsError(
+            else stop(@R_PACKAGE_NAME@::thisPathNotExistsError(
                 "R is running from ", .guiname, " with no documents open\\n",
                 " (or document has no path)"))
         }
@@ -89,15 +89,15 @@ function(pkgname, pkgpath)
                 ## return "Untitled" possibly translated
                 gettext("Untitled", domain = "RGui", trim = FALSE)
             else
-                stop(this.path::thisPathNotFoundError(
+                stop(@R_PACKAGE_NAME@::thisPathNotFoundError(
                     "document in ", .guiname, " does not exist"))
         }
     }
     ## recommended to prevent tampering
     lockEnvironment(environment(), bindings = TRUE)
-    setHook(packageEvent("this.path"),
+    setHook(packageEvent("@R_PACKAGE_NAME@"),
     function(pkgname, pkgpath) {
-        this.path::set.gui.path(.custom.gui.path)
+        @R_PACKAGE_NAME@::set.gui.path(.custom_gui_path)
     }, action = "prepend")
 })}
 
@@ -105,19 +105,19 @@ function(pkgname, pkgpath)
   \preformatted{evalq(envir = new.env(parent = .BaseNamespaceEnv), {
     .guiname <- "myGui"
     .path <- "~/example.R"
-    .custom.readContents <- function(path) {
+    .custom_get_contents <- function(path) {
         ## get the contents of the document
         readLines(path, warn = FALSE)
     }
     ## recommended to prevent tampering
     lockEnvironment(environment(), bindings = TRUE)
-    setHook(packageEvent("this.path"), function(pkgname, pkgpath) {
-        this.path::set.gui.path(.guiname, .path, .custom.readContents)
+    setHook(packageEvent("@R_PACKAGE_NAME@"), function(pkgname, pkgpath) {
+        @R_PACKAGE_NAME@::set.gui.path(.guiname, .path, .custom_get_contents)
     }, action = "prepend")
-    # ## if your GUI does not have/need a .custom.readContents
+    # ## if your GUI does not have/need a .custom_get_contents
     # ## function, then this works just as well:
-    # setHook(packageEvent("this.path"), function(pkgname, pkgpath) {
-    #     this.path::set.gui.path(.guiname, .path)
+    # setHook(packageEvent("@R_PACKAGE_NAME@"), function(pkgname, pkgpath) {
+    #     @R_PACKAGE_NAME@::set.gui.path(.guiname, .path)
     # }, action = "prepend")
 })}
 }

@@ -11,8 +11,8 @@ getinitwd()
 initwd
 }
 \value{
-  \code{getinitwd()} returns a character string or \code{NULL} if the initial
-  working directory is not available.
+  character string, or \code{NULL} if the initial working directory is not
+  available.
 }
 \examples{
 cat("\\ninitial working directory:\\n"); getinitwd()

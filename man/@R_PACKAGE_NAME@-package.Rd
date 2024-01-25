@@ -1,5 +1,5 @@
-\name{this.path-package}
-\alias{this.path-package}
+\name{@R_PACKAGE_NAME@-package}
+\alias{@R_PACKAGE_NAME@-package}
 \docType{package}
 \title{Get Script's Path}
 \description{
@@ -11,7 +11,7 @@
   \sourcesandlistlinks.
 }
 \details{
-  The most important functions from \pkg{package:this.path} are
+  The most important functions from \pkg{package:@R_PACKAGE_NAME@} are
   \code{\link{this.path}()}, \code{\link{this.dir}()}, \code{\link{here}()},
   and \code{\link{this.proj}()}:
 
@@ -46,7 +46,7 @@
       to be used in a user profile.}
   }
 
-  \pkg{package:this.path} also provides functions for constructing and
+  \pkg{package:@R_PACKAGE_NAME@} also provides functions for constructing and
   manipulating file paths:
 
   \itemize{
@@ -75,12 +75,12 @@
 
   If you like this package, please consider upvoting my answer so that more
   people will see it! If you have an issue with this package, please use
-  \codelink3{utils:bug.report}{bug.report}{(package = "this.path")} to report
-  your issue.
+  \codelink3{utils:bug.report}{bug.report}{(package = "@R_PACKAGE_NAME@")} to
+  report your issue.
 }
 \author{
-  \packageAuthor{this.path}
+  @R_PACKAGE_AUTHOR@
 
-  Maintainer: \packageMaintainer{this.path}
+  Maintainer: @R_PACKAGE_MAINTAINER@
 }
 \keyword{package}

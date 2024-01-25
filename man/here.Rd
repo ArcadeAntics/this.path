@@ -47,8 +47,8 @@ ici(..., local = FALSE, n = 0,
   supports sub-projects and multiple projects in use at once. Additionally,
   \code{this.proj()} is independent of working directory, whereas
   \code{here::here()} relies on the working directory being set somewhere
-  within the project when \code{package:here} is loaded. Arguably, this makes
-  it better than \code{here::here()}.
+  within the project when \pkg{package:here} is loaded. Arguably, this makes it
+  better than \code{here::here()}.
 }
 \value{
   A character vector of the arguments concatenated term-by-term.
@@ -58,21 +58,21 @@ tmpdir <- tempfile(pattern = "dir")
 dir.create(tmpdir)
 
 writeLines("this file signifies that its directory is the project root",
-    this.path::path.join(tmpdir, ".here"))
+    @R_PACKAGE_NAME@::path.join(tmpdir, ".here"))
 
-FILE.R <- this.path::path.join(tmpdir, "src", "R", "script1.R")
-dir.create(this.path::dirname2(FILE.R), recursive = TRUE)
-this.path:::.writeCode({
-    this.path::this.path()
-    this.path::this.proj()
+FILE.R <- @R_PACKAGE_NAME@::path.join(tmpdir, "src", "R", "script1.R")
+dir.create(@R_PACKAGE_NAME@::dirname2(FILE.R), recursive = TRUE)
+@R_PACKAGE_NAME@:::.writeCode({
+    @R_PACKAGE_NAME@::this.path()
+    @R_PACKAGE_NAME@::this.proj()
     ## use 'here' to run another script located nearby
-    this.path::here("script2.R")
+    @R_PACKAGE_NAME@::here("script2.R")
     ## or maybe to read input from a file
-    this.path::here(.. = 2, "input", "data1.csv")
+    @R_PACKAGE_NAME@::here(.. = 2, "input", "data1.csv")
     ## but sometimes it is easier to use the project root
     ## this allows you to move the R script up or down
     ## a directory without changing the .. number
-    this.path::this.proj("input", "data1.csv")
+    @R_PACKAGE_NAME@::this.proj("input", "data1.csv")
 }, FILE.R)
 
 source(FILE.R, echo = TRUE)

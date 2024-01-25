@@ -1,5 +1,6 @@
-#include <Rinternals.h>
-#include "rversiondefines.h"
+#include <Rinternals.h>       /* need definition of SEXP */
+#include "rversiondefines.h"  /* need definition of R_version_less_than */
+#include "devel.h"
 
 
 #if defined(R_THIS_PATH_DEFINE_SYMBOLS)
@@ -61,22 +62,22 @@ extern0 SEXP0
 #if R_version_less_than(4, 2, 0)
     existsSymbol                           INI_as(install("exists")),
 #endif
-    documentcontextSymbol                  INI_as(install(".this.path::document.context")),
-    documentcontextsSymbol                 INI_as(install(".this.path::document.contexts")),
+    documentcontextSymbol                  INI_as(install(".@R_PACKAGE_NAME@::document.context")),
+    documentcontextsSymbol                 INI_as(install(".@R_PACKAGE_NAME@::document.contexts")),
     errcndSymbol                           INI_as(install("errcnd")),
     associated_with_fileSymbol             INI_as(install("associated.with.file")),
     setsyspathwashereSymbol                INI_as(install("set.sys.path.was.here")),
     nSymbol                                INI_as(install("n")),
     _normalizePathSymbol                   INI_as(install(".normalizePath")),
-    _normalizeNotDirectorySymbol           INI_as(install(".normalizeNotDirectory")),
-    _normalizeFixDirectorySymbol           INI_as(install(".normalizeFixDirectory")),
-    _normalizeAgainstSymbol                INI_as(install(".normalizeAgainst")),
-    _normalizeNotDirectoryAgainstSymbol    INI_as(install(".normalizeNotDirectoryAgainst")),
-    _normalizeFixDirectoryAgainstSymbol    INI_as(install(".normalizeFixDirectoryAgainst")),
-    _normalize_srcfilealiasSymbol          INI_as(install(".normalize_srcfilealias")),
+    _normalizePath_not_dirSymbol           INI_as(install(".normalizePath_not_dir")),
+    _normalizePath_fix_dirSymbol           INI_as(install(".normalizePath_fix_dir")),
+    _normalizePath_againstSymbol           INI_as(install(".normalizePath_against")),
+    _normalizePath_not_dir_againstSymbol   INI_as(install(".normalizePath_not_dir_against")),
+    _normalizePath_fix_dir_againstSymbol   INI_as(install(".normalizePath_fix_dir_against")),
+    _normalizePath_srcfilealiasSymbol      INI_as(install(".normalizePath_srcfilealias")),
     _isMethodsDispatchOnSymbol             INI_as(install(".isMethodsDispatchOn")),
     stopSymbol                             INI_as(install("stop")),
-    _normalizeurl_1Symbol                  INI_as(install(".normalizeurl_1")),
+    _normalizeURL_1Symbol                  INI_as(install(".normalizeURL_1")),
 
     sourceSymbol                           INI_as(install("source")),
     NeSymbol                               INI_as(install("Ne")),
@@ -149,14 +150,14 @@ extern0 SEXP0
     inputSymbol                            INI_as(install("input")),
     missingSymbol                          INI_as(install("missing")),
     _in_site_fileSymbol                    INI_as(install(".in_site_file")),
-    _site_pathSymbol                       INI_as(install(".site_path")),
-    _init_pathSymbol                       INI_as(install(".init_path")),
-    _gui_pathSymbol                        INI_as(install(".gui.path")),
+    _site_file_pathSymbol                  INI_as(install(".site_file_path")),
+    _init_file_pathSymbol                  INI_as(install(".init_file_path")),
+    _gui_pathSymbol                        INI_as(install(".gui_path")),
     verboseSymbol                          INI_as(install("verbose")),
     originalSymbol                         INI_as(install("original")),
     for_msgSymbol                          INI_as(install("for.msg")),
     contentsSymbol                         INI_as(install("contents")),
-    _custom_gui_path_functionSymbol        INI_as(install(".custom.gui.path.function")),
+    _custom_gui_path_functionSymbol        INI_as(install(".custom_gui_path.function")),
     guinameSymbol                          INI_as(install("guiname")),
     _jupyter_pathSymbol                    INI_as(install(".jupyter_path")),
     _site_fileSymbol                       INI_as(install(".site_file")),
@@ -182,7 +183,7 @@ extern0 SEXP0
     print_defaultSymbol                    INI_as(install("print.default")),
     _xDataSymbol                           INI_as(install(".xData")),
     _DataSymbol                            INI_as(install(".Data")),
-    _getJupyterRNotebookContentsSymbol     INI_as(install(".getJupyterRNotebookContents")),
+    _get_jupyter_R_notebook_contentsSymbol INI_as(install(".get_jupyter_R_notebook_contents")),
     R_LengthSymbol                         INI_as(install("length")),
     file_infoSymbol                        INI_as(install("file.info")),
     is_naSymbol                            INI_as(install("is.na")),
@@ -191,8 +192,8 @@ extern0 SEXP0
     listSymbol                             INI_as(install("list")),
     envirSymbol                            INI_as(install("envir")),
     inheritsSymbol                         INI_as(install("inherits")),
-    _getContentsSymbol                     INI_as(install(".getContents")),
-    _getJupyterNotebookContentsSymbol      INI_as(install(".getJupyterNotebookContents")),
+    _get_contentsSymbol                    INI_as(install(".get_contents")),
+    _get_jupyter_notebook_contentsSymbol   INI_as(install(".get_jupyter_notebook_contents")),
     _projSymbol                            INI_as(install(".proj")),
     xSymbol                                INI_as(install("x")),
     objectSymbol                           INI_as(install("object")),

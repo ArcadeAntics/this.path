@@ -1,7 +1,7 @@
 ## helper functions for this.path()    ----
 
 
-.getContents <- function (file, encoding = getOption("encoding"))
+.get_contents <- function (file, encoding = getOption("encoding"))
 {
     if (identical(encoding, "unknown")) {
         enc <- utils::localeToCharset()
@@ -34,11 +34,11 @@
 }
 
 
-.getJupyterNotebookContents <- function (..., do.unlist = FALSE, give.f = TRUE)
+.get_jupyter_notebook_contents <- function (..., do.unlist = FALSE, give.f = TRUE)
 {
-    lines <- .getContents(...)
+    lines <- .get_contents(...)
     source <- jsonlite::parse_json(lines, simplifyVector = TRUE)
-    source <- .getNamedElement(source, c("cells", "source"))
+    source <- .get_named_element(source, c("cells", "source"))
     if (do.unlist) {
         value <- unlist(source)
         if (give.f)
@@ -49,7 +49,7 @@
 }
 
 
-.getNamedElement <- function (x, names)
+.get_named_element <- function (x, names)
 {
     for (name in names) {
         if (i <- match(name, names(x), 0L, c("", NA_character_)))
@@ -68,24 +68,24 @@
 }
 
 
-.isJupyterLoaded <- function ()
+.is_jupyter_loaded <- function ()
 .GUI_jupyter && isNamespaceLoaded("IRkernel") && .identical(sys.function(1L), IRkernel::main)
 
 
-.getJupyterRNotebookContents <- function (path)
+.get_jupyter_R_notebook_contents <- function (path)
 {
-    ## similar to .getJupyterNotebookContents(), but does some error handling
-    ## and checks that the metadata is valid for a Jupyter R Notebook
+    ## similar to .get_jupyter_notebook_contents(), but does some error
+    ## handling and checks that the metadata is valid for a Jupyter R Notebook
     path
-    contents <- tryCatch(.getContents(path), error = identity)
+    contents <- tryCatch(.get_contents(path), error = identity)
     if (!inherits(contents, "error")) {
         contents <- tryCatch(jsonlite::parse_json(contents, simplifyVector = TRUE),
             error = identity)
         if (!inherits(contents, "error")) {
-            language <- .getNamedElement(contents, c("metadata", "kernelspec", "language"))
-            name     <- .getNamedElement(contents, c("metadata", "language_info", "name"))
-            version  <- .getNamedElement(contents, c("metadata", "language_info", "version"))
-            source   <- .getNamedElement(contents, c("cells", "source"))
+            language <- .get_named_element(contents, c("metadata", "kernelspec", "language"))
+            name     <- .get_named_element(contents, c("metadata", "language_info", "name"))
+            version  <- .get_named_element(contents, c("metadata", "language_info", "version"))
+            source   <- .get_named_element(contents, c("cells", "source"))
             # withAutoprint( { language; name; version; source } , spaced = TRUE, verbose = FALSE, width.cutoff = 60L); cat("\n\n\n\n\n")
             if (.scalar_streql(language, "R") &&
                 .scalar_streql(name    , "R") &&
@@ -176,7 +176,7 @@ delayedAssign(".untitled", {
     }
 
 
-    if (!.isJupyterLoaded()) {
+    if (!.is_jupyter_loaded()) {
         if (for.msg)
             return(NA_character_)
         else stop(.ThisPathNotExistsError("Jupyter has not finished loading"))
@@ -199,7 +199,7 @@ delayedAssign(".untitled", {
 
 
     for (file in c(ipynb, IPYNB, files)) {
-        for (lines in .getJupyterRNotebookContents(file)) {
+        for (lines in .get_jupyter_R_notebook_contents(file)) {
             exprs <- tryCatch(parse(text = lines, srcfile = NULL, keep.source = FALSE),
                 error = identity)
             if (!inherits(exprs, "error")) {
@@ -393,7 +393,7 @@ delayedAssign(".untitled", {
 })
 
 
-.site_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.site_file_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (contents && .startup_info[["has_site_file"]])
         for.msg <- FALSE
@@ -407,7 +407,7 @@ delayedAssign(".untitled", {
 }
 
 
-.init_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.init_file_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (contents && .startup_info[["has_init_file"]])
         for.msg <- FALSE
@@ -421,7 +421,7 @@ delayedAssign(".untitled", {
 }
 
 
-.gui.path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.gui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (.in_shell) {
         if (contents && .has_shFILE)
@@ -620,7 +620,7 @@ set.jupyter.path <- function (...)
     if (!.GUI_jupyter)
         stop(gettextf("'%s' can only be called in Jupyter",
             "set.jupyter.path"))
-    if (!.isJupyterLoaded())
+    if (!.is_jupyter_loaded())
         stop(gettextf("'%s' can only be called after Jupyter has finished loading",
             "set.jupyter.path"))
     n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L

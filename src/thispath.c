@@ -189,7 +189,7 @@ SEXP do_jupyter_path do_formals
         SEXP value = allocVector(VECSXP, 1);
         PROTECT(value);
         SEXP file = get_file_from_closure(original, for_msg, _jupyter_pathSymbol);
-        SEXP expr = LCONS(_getJupyterNotebookContentsSymbol, CONS(file, R_NilValue));
+        SEXP expr = LCONS(_get_jupyter_notebook_contentsSymbol, CONS(file, R_NilValue));
         PROTECT(expr);
         SET_VECTOR_ELT(value, 0, eval(expr, mynamespace));
         UNPROTECT(2);
@@ -201,7 +201,7 @@ SEXP do_jupyter_path do_formals
 
 Rboolean validJupyterRNotebook(SEXP path)
 {
-    SEXP expr = LCONS(_getJupyterRNotebookContentsSymbol, CONS(path, R_NilValue));
+    SEXP expr = LCONS(_get_jupyter_R_notebook_contentsSymbol, CONS(path, R_NilValue));
     PROTECT(expr);
     SEXP value = eval(expr, mynamespace);
     UNPROTECT(1);
@@ -584,7 +584,7 @@ SEXP do_set_gui_path do_formals
         SET_PRSEEN(file, 0);
 
 
-        defineVar(_getContentsSymbol, _getContents, _custom_gui_path_character_environment);
+        defineVar(_get_contentsSymbol, _getContents, _custom_gui_path_character_environment);
     }
         gui_path = GUIPATH_CHARACTER;
         break;
@@ -699,7 +699,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 #define toplevel                                               \
         if (in_site_file) {                                    \
             if (get_frame_number) return ScalarInteger(-1);    \
-            SEXP expr = make_path_call(_site_pathSymbol,       \
+            SEXP expr = make_path_call(_site_file_pathSymbol,  \
                 verbose, original, for_msg, contents);         \
             PROTECT(expr);                                     \
             SEXP value = eval(expr, mynamespace);              \
@@ -708,7 +708,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         }                                                      \
         else if (in_init_file) {                               \
             if (get_frame_number) return ScalarInteger(-1);    \
-            SEXP expr = make_path_call(_init_pathSymbol,       \
+            SEXP expr = make_path_call(_init_file_pathSymbol,  \
                 verbose, original, for_msg, contents);         \
             PROTECT(expr);                                     \
             SEXP value = eval(expr, mynamespace);              \
@@ -1201,10 +1201,10 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
         else if (identical(function, wrap_source)) {
 #undef source_char
-#define source_char "call to function wrap.source from package this.path"
+#define source_char "call to function wrap.source from package @R_PACKAGE_NAME@"
             if (local)
                 error("%s cannot be called within %s() from package %s",
-                      name, CHAR(PRINTNAME(wrap_sourceSymbol)), "this.path");
+                      name, CHAR(PRINTNAME(wrap_sourceSymbol)), "@R_PACKAGE_NAME@");
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext == R_UnboundValue)
@@ -2051,7 +2051,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             error("internal error; invalid '%s' value", "_sys_path()");
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
-        SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
+        SEXP expr = LCONS(_get_contentsSymbol, CONS(value, R_NilValue));
         PROTECT(expr);
         value = eval(expr, mynamespace);
         UNPROTECT(1);
@@ -2077,7 +2077,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             error("internal error; invalid '%s()' value", CHAR(PRINTNAME(_gui_pathSymbol)));
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
-        expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
+        expr = LCONS(_get_contentsSymbol, CONS(value, R_NilValue));
         PROTECT(expr);
         value = eval(expr, mynamespace);
         UNPROTECT(1);
@@ -2126,14 +2126,14 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
         if (contents) {
             for_msg = FALSE;
             SEXP file = get_file_from_closure(original, for_msg, env);
-            SEXP expr = LCONS(_getContentsSymbol, CONS(file, R_NilValue));
+            SEXP expr = LCONS(_get_contentsSymbol, CONS(file, R_NilValue));
             PROTECT(expr);
             SEXP value;
-            SEXP _getContents = findVarInFrame(env, _getContentsSymbol);
+            SEXP _getContents = findVarInFrame(env, _get_contentsSymbol);
             if (_getContents != R_NilValue) {
                 if (TYPEOF(_getContents) != CLOSXP)
                     error(_("object '%s' of mode '%s' was not found"),
-                        CHAR(PRINTNAME(_getContentsSymbol)), "function");
+                        CHAR(PRINTNAME(_get_contentsSymbol)), "function");
                 value = eval(expr, env);
                 if (TYPEOF(value) == STRSXP)
                     value = fixNewlines(value);
@@ -2289,7 +2289,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                                 {
                                     PROTECT(documentcontext = DocumentContext());
                                     PROTECT(ofile = ScalarString(STRING_ELT(path, 0)));
-                                    assign_default(NULL, NULL, ofile, documentcontext, NA_DEFAULT);
+                                    assign_default(NULL, NULL, ofile, ofile, documentcontext, NA_DEFAULT);
                                     INCREMENT_NAMED_defineVar(sourceSymbol, mkChar(source_char), documentcontext);
                                     setAttrib(env, documentcontextSymbol, documentcontext);
                                     UNPROTECT(2);
@@ -2373,7 +2373,7 @@ SEXP env_path8(Rboolean verbose, Rboolean original, Rboolean for_msg,
         error("internal error; invalid '%s' value", "_env_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
-    SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
+    SEXP expr = LCONS(_get_contentsSymbol, CONS(value, R_NilValue));
     PROTECT(expr);
     value = eval(expr, mynamespace);
     UNPROTECT(1);
@@ -2717,7 +2717,7 @@ SEXP src_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
         error("internal error; invalid '%s' value", "_src_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
-    SEXP expr = LCONS(_getContentsSymbol, CONS(value, R_NilValue));
+    SEXP expr = LCONS(_get_contentsSymbol, CONS(value, R_NilValue));
     PROTECT(expr);
     value = eval(expr, mynamespace);
     UNPROTECT(1);

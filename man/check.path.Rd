@@ -29,10 +29,8 @@ check.proj(...)
   checks the path up to the project root.
 }
 \value{
-  If the expected path / / directory matches \code{this.path()} / /
-  \code{this.dir()}, then \code{TRUE} invisibly.
-
-  Otherwise, an error is thrown.
+  if the expected path / / directory matches \code{this.path()} / /
+  \code{this.dir()}, then \code{TRUE} invisibly, otherwise an error is thrown.
 }
 \examples{
 # ## I have a project called 'EOAdjusted'
@@ -45,9 +43,9 @@ check.proj(...)
 # ## So, at the top of that R script, I could write:
 #
 #
-# this.path::check.path("EOAdjusted", "code", "provrun.R")
+# @R_PACKAGE_NAME@::check.path("EOAdjusted", "code", "provrun.R")
 #
 # ## or:
 #
-# this.path::check.path("EOAdjusted/code/provrun.R")
+# @R_PACKAGE_NAME@::check.path("EOAdjusted/code/provrun.R")
 }

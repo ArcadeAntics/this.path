@@ -58,11 +58,11 @@ path <- c("file.tar.gz", "file.tar.bz2", "file.tar.xz")
 splitext(path, compression = FALSE)
 splitext(path, compression = TRUE)
 
-path <- "this.path_1.0.0.tar.gz"
+path <- "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.gz"
 ext(path) <- ".png"
 path
 
-path <- "this.path_1.0.0.tar.gz"
+path <- "@R_PACKAGE_NAME@_@R_PACKAGE_VERSION@.tar.gz"
 ext(path, compression = TRUE) <- ".png"
 path
 }

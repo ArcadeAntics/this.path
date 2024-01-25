@@ -1,10 +1,9 @@
 \name{Enhances}
-\alias{Enhances}
 \alias{with_script_path}
 \alias{make_fix_file}
 \title{Functions That Enhance the Use of Other Packages}
 \description{
-  The functions here improve the user experience of other packages.
+  These functions improve the user experience of other packages.
 }
 \usage{
 ## enchances 'package:box'
@@ -28,22 +27,23 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
     \code{?\link{this.path}()}.}
 }
 \details{
-  \code{with_script_path()} improves the experience of \pkg{package:box} by
-  setting the current script to \code{\link{this.path}()} using
-  \codelink3{box:script_path}{box::set_script_path}{()} then evaluating a
-  provided expression, most commonly a box import statement.
+  \code{with_script_path()} improves the experience of \pkg{package:box}; it
+  sets the current script in \pkg{package:box} to \code{\link{this.path}()}
+  using \codelink3{box:script_path}{box::set_script_path}{()}, then evaluates
+  its argument, most commonly a \pkg{package:box} import statement.
 
-  \code{make_fix_file()} improves the experience of \pkg{package:rprojroot} by
-  looking for a project root starting with \code{\link{this.dir}()}.
+  \code{make_fix_file()} improves the experience of \pkg{package:rprojroot}; it
+  looks for a project root starting with \code{\link{this.dir}()}, then makes a
+  function that constructs file paths against said project root.
 }
 \value{
-  for \code{with_script_path()}, the result of evaluating \codeorsQuote{expr}.
+  for \code{with_script_path()}, the result of evaluating \code{expr}.
 
   for \code{make_fix_file()}, a function with formals \code{(..., .. = 0)} that
-  constructs file paths, starting with the project root.
+  returns a character vector.
 }
 \examples{
-# this.path::with_script_path(
+# @R_PACKAGE_NAME@::with_script_path(
 # box::use(
 #     <import 1>,
 #     <import 2>,
@@ -54,5 +54,5 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
 
 # ## substitute 'rprojroot::is_r_package' with desired criterion
 #
-# fix_file <- this.path::make_fix_file(rprojroot::is_r_package)
+# fix_file <- @R_PACKAGE_NAME@::make_fix_file(rprojroot::is_r_package)
 }

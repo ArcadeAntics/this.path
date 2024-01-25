@@ -8,7 +8,7 @@ local({
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
         # with.keep.source = TRUE,
 
-        check = TRUE, no.stop.on.test.error = TRUE,
+        check = FALSE, no.stop.on.test.error = TRUE,
         as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
@@ -158,12 +158,15 @@ local({  ## testing this.path() with source(gzcon())
 
 
 local({
-    files <- list.files(all.files = TRUE, full.names = TRUE, recursive = TRUE, include.dirs = FALSE, no.. = TRUE)
-    files <- files[!startsWith(files, "./.git/")]
-    files <- files[!startsWith(files, "./.Rproj.user/")]
-    files <- files[!startsWith(files, "./this.path.Rcheck/")]
-    files <- grep("^\\./this\\.path_([[:digit:]]+[.-]){1,}[[:digit:]]+(\\.tar\\.gz|\\.zip|\\.tgz)",
-        files, value = TRUE, invert = TRUE)
+    files <- list.files(all.files = TRUE, full.names = TRUE, no.. = TRUE)
+    files <- setdiff(files, c("./.git", "./.Rproj.user"))
+    files <- grep("\\.Rcheck$", files, value = TRUE, invert = TRUE)
+    files <- grep("(\\.tar\\.gz|\\.zip|\\.tgz)$", files, value = TRUE, invert = TRUE)
+    files <- unlist(lapply(files, function(file) {
+        if (dir.exists(file))
+            list.files(file, all.files = TRUE, full.names = TRUE, recursive = TRUE)
+        else file
+    }))
     Rfiles <- files[grepl("(?i)\\.R$", basename(files))]
     Rdfiles <- files[grepl("(?i)\\.Rd$", basename(files))]
     files
@@ -172,7 +175,9 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    x <- grep("\\.C_sys\\.whiches", x, value = TRUE)
+    Encoding(x)[endsWith(names(x), "_msvcrt.txt")] <- "latin1"
+    Encoding(x)[endsWith(names(x), "_ucrt.txt")] <- "UTF-8"
+    x <- grep("this\\.path", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 
@@ -187,7 +192,7 @@ local({
 
 
     x <- this.path:::.readFiles(Rdfiles)
-    x <- grep(r"(\\Emacs|\\Jupyter|\\Python|\\radian|\\RStudio|\\VSCode)", x, value = TRUE)
+    x <- grep("package:", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 })

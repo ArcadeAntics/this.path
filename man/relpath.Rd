@@ -4,7 +4,7 @@
 \alias{rel2proj}
 \title{Make a Path Relative to Another}
 \description{
-  When working with \pkg{this.path}, you will be dealing with a lot of absolute
+  When working with \pkg{@R_PACKAGE_NAME@}, you will be dealing with a lot of absolute
   paths. These paths are not portable for saving within files nor tables, so
   convert them to relative paths with \code{relpath()}.
 }

@@ -1,7 +1,7 @@
-\name{sys.srcref}
+\name{sys}
 \alias{sys.srcref}
 \alias{sys.whiches}
-\title{Get 'srcref' From Call Stack}
+\title{Call Stack Inspection}
 \description{
   \code{sys.srcref()} is the R-level version of the function that implements
   \code{\link{this.path}()}. It retrieves the
@@ -34,7 +34,7 @@ sys.whiches(n = 1, which = if (n) sys.parent(n) else 0)
 fun <- function ()
 {
     list(
-        `sys.srcref()` = this.path::sys.srcref(),
+        `sys.srcref()` = @R_PACKAGE_NAME@::sys.srcref(),
         ## while this might seem like a simpler alternative,
         ## you will see it does not work in a couple cases below
         `attr(sys.call(sys.parent()), "srcref")` =
@@ -61,7 +61,7 @@ fun2 <- function ()
         ## 1 is the frame number associated with 'try'
         ## 6                                     'force'
         ## 7                                     'fun2'
-        sys.whiches(),
+        @R_PACKAGE_NAME@::sys.whiches(),
 
 
         ## if copied directly into the R Console,
@@ -69,7 +69,8 @@ fun2 <- function ()
         ##  8 is the frame number associated with 'tryCatch'
         ## 12                                     'identity'
         ## 13                                     'sys.whiches'
-        tryCatch(identity(sys.whiches(0)), error = function(e) NULL)
+        tryCatch(identity(@R_PACKAGE_NAME@::sys.whiches(0)),
+            error = function(e) NULL)
     )
 }
 

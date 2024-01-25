@@ -24,23 +24,23 @@ from.shell()
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.writeCode({
-    this.path:::.withAutoprint({
+@R_PACKAGE_NAME@:::.writeCode({
+    @R_PACKAGE_NAME@:::.withAutoprint({
         from.shell()
         is.main()
     }, spaced = TRUE, verbose = FALSE,
        prompt.echo = "FILE.R> ", continue.echo = "FILE.R+ ")
 }, FILE.R)
 
-this.path:::.Rscript(c(
-    "--default-packages=this.path", "--vanilla",
+@R_PACKAGE_NAME@:::.Rscript(c(
+    "--default-packages=@R_PACKAGE_NAME@", "--vanilla",
     FILE.R
 ), show.command = FALSE, show.output.on.console = TRUE)
 
 source(FILE.R, verbose = FALSE)
 
-this.path:::.Rscript(c(
-    "--default-packages=this.path", "--vanilla",
+@R_PACKAGE_NAME@:::.Rscript(c(
+    "--default-packages=@R_PACKAGE_NAME@", "--vanilla",
     "-e", "cat(\\"\\n> from.shell()\\\\n\\")",
     "-e", "from.shell()",
     "-e", "cat(\\"\\n> is.main()\\\\n\\")",

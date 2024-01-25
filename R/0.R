@@ -3,10 +3,6 @@
 # cat("\n> sys.frames()\n"); print(sys.frames())
 
 
-if (Sys.getenv("R_PACKAGE_NAME") != "this.path")
-    stop("invalid environment variable R_PACKAGE_NAME,\n has the package changed its name???")
-
-
 .IS_SCALAR_STR <- function (x)
 is.character(x) && length(unclass(x)) == 1L
 

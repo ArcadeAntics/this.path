@@ -230,12 +230,12 @@ wrap.source(expr,
     }
     ## look for the file in the home directory
     ## if it exists, do nothing
-    else if (file.exists(file <- this.path::path.join("~", ofile))) {
+    else if (file.exists(file <- @R_PACKAGE_NAME@::path.join("~", ofile))) {
     }
     ## you could add other directories to look in,
     ## but this is good enough for an example
     else stop(gettextf("'\%s' is not an existing file", ofile))
-    file <- this.path::set.sys.path(file, ofile = ofile)
+    file <- @R_PACKAGE_NAME@::set.sys.path(file, ofile = ofile)
     exprs <- parse(n = -1, file = file)
     for (i in seq_along(exprs)) eval(exprs[i], envir)
     invisible()
@@ -243,11 +243,11 @@ wrap.source(expr,
 }
 \examples{
 FILE.R <- tempfile(fileext = ".R")
-this.path:::.writeCode({
-    this.path::sys.path(verbose = TRUE)
-    try(this.path::env.path(verbose = TRUE))
-    this.path::src.path(verbose = TRUE)
-    this.path::this.path(verbose = TRUE)
+@R_PACKAGE_NAME@:::.writeCode({
+    @R_PACKAGE_NAME@::sys.path(verbose = TRUE)
+    try(@R_PACKAGE_NAME@::env.path(verbose = TRUE))
+    @R_PACKAGE_NAME@::src.path(verbose = TRUE)
+    @R_PACKAGE_NAME@::this.path(verbose = TRUE)
 }, FILE.R)
 
 

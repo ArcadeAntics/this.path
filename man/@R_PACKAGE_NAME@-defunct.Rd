@@ -1,5 +1,5 @@
-\name{this.path-defunct}
-\alias{this.path-defunct}
+\name{@R_PACKAGE_NAME@-defunct}
+\alias{@R_PACKAGE_NAME@-defunct}
 \alias{this.path2}
 \alias{this.dir2}
 \alias{this.dir3}
@@ -16,10 +16,10 @@
 \alias{unset.this.path}
 \alias{set.sys.path.jupyter}
 \alias{fileArgs}
-\title{Defunct Functions in Package 'this.path'}
+\title{Defunct Functions in Package '@R_PACKAGE_NAME@'}
 \description{
-  The functions or variables listed here are no longer part of \pkg{this.path}
-  as they are no longer needed.
+  The functions or variables listed here are no longer part of
+  \pkg{@R_PACKAGE_NAME@} as they are no longer needed.
 }
 \usage{
 # Defunct in 1.1.0
@@ -63,7 +63,7 @@ set.this.path(file, path.only = FALSE, character.only = path.only,
     Function = NULL, ofile)
 unset.this.path()
 
-# Defunct in devel
+# Defunct in @R_PACKAGE_VERSION@
 set.sys.path.jupyter(...)
 fileArgs()
 }

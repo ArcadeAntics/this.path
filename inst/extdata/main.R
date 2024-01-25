@@ -73,7 +73,7 @@ Sys.putenv <- function (x)
 }
 
 
-if (sys.nframe() == 0L && !isNamespace(environment())) {
+if (sys.nframe() == 0L && !nzchar(Sys.getenv("R_PACKAGE_NAME"))) {
     stopifnot(.Platform$OS.type == "windows")
 
 
