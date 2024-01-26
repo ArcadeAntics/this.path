@@ -109,8 +109,8 @@ file.copy <- function (from, to, overwrite = recursive, recursive = FALSE,
                         recursive = TRUE, include.dirs = TRUE)
                     times <- lengths(n)
                     n <- unlist(n)
-                    from <- c(from, path.join(rep(from, times), n))
-                    to <- c(to, path.join(rep(to, times), n))
+                    from <- c(path.join(rep(from, times), n), from)
+                    to <- c(path.join(rep(to, times), n), to)
                 }
                 Sys.setFileTime(to, file.mtime(from))
             }

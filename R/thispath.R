@@ -511,15 +511,30 @@ delayedAssign(".untitled", {
     else if (.GUI_vscode) {
 
 
-        ## evaluate this BEFORE the tryCatch in case the package
-        ## is not installed or the object is not exported
-        rstudioapi::getSourceEditorContext
-        ## now do the tryCatch
+        failure <- tryCatch3({
+            getNamespace("rstudioapi")
+            FALSE
+        }, error = TRUE)
+        if (failure) {
+            if (inherits(last.condition, "packageNotFoundError") &&
+                last.condition$package == "rstudioapi")
+            {
+                stop(.ThisPathNotFoundError("this.path() requires 'package:rstudioapi' in VSCode but package was not found"))
+            }
+            else
+                stop(.ThisPathNotFoundError("this.path() requires 'package:rstudioapi' in VSCode but package could not be loaded"))
+        }
+        tryCatch3({
+            rstudioapi::getSourceEditorContext
+        }, error = {
+            stop(.ThisPathNotFoundError("this.path() requires 'rstudioapi::getSourceEditorContext' in VSCode but\n ",
+                 conditionMessage(last.condition), call = sys.call()))
+        })
         tryCatch3({
             context <- rstudioapi::getSourceEditorContext()
         }, error = {
             stop(.ThisPathNotFoundError(
-                "'package:rstudioapi' has not been set up to work with VSCode; try adding:\n\n",
+                "this.path() requires 'package:rstudioapi' in VSCode\n but has not been set up properly; try adding:\n\n",
                 "```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n",
                 " to the site-wide startup profile file or the user profile (see ?Startup),\n",
                 " then restart the R session and try again",
