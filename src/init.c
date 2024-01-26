@@ -252,7 +252,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
 attribute_visible
-void R_init_this_path(DllInfo *dll)
+void R_init_@R_PACKAGE_LIB@(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, NULL, NULL, externalRoutines);
     R_useDynamicSymbols(dll, FALSE);

@@ -18,7 +18,8 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
 }
 \arguments{
   \item{expr}{an expression to evaluate after setting the current script in
-    \CRANpkg{box}; most commonly a call to \codelink3{box:use}{box::use}{()}.}
+    \pkg{package:box}; most commonly a call to
+    \codelink3{box:use}{box::use}{()}.}
 
   \item{criterion}{argument passed to
     \codelink3{rprojroot:find_root}{rprojroot::find_root}{()}.}
@@ -27,12 +28,12 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
     \code{?\link{this.path}()}.}
 }
 \details{
-  \code{with_script_path()} improves the experience of \pkg{package:box}; it
+  \code{with_script_path()} improves the experience of \CRANpackage{box}; it
   sets the current script in \pkg{package:box} to \code{\link{this.path}()}
   using \codelink3{box:script_path}{box::set_script_path}{()}, then evaluates
   its argument, most commonly a \pkg{package:box} import statement.
 
-  \code{make_fix_file()} improves the experience of \pkg{package:rprojroot}; it
+  \code{make_fix_file()} improves the experience of \CRANpackage{rprojroot}; it
   looks for a project root starting with \code{\link{this.dir}()}, then makes a
   function that constructs file paths against said project root.
 }
@@ -52,7 +53,7 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
 # )
 
 
-# ## substitute 'rprojroot::is_r_package' with desired criterion
+# ## replace 'rprojroot::is_r_package' with desired criterion
 #
 # fix_file <- @R_PACKAGE_NAME@::make_fix_file(rprojroot::is_r_package)
 }

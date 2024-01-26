@@ -101,7 +101,7 @@
         references.}
 
       \item{\code{this.path()} is now compatible with package
-        \CRANpkg{targets}.}
+        \CRANpackage{targets}.}
 
       \item{Added \code{with_site.file()} and \code{with_init.file()} that
         allow \code{this.path()} to be used within the site-wide startup

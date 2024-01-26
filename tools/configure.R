@@ -1,5 +1,14 @@
 main <- function ()
 {
+    if (getRversion() < "3.2.0") {
+        dir.exists <- function(paths) {
+            isdir <- file.info(paths)$isdir
+            !is.na(isdir) & isdir
+        }
+        file.size <- function(...) file.info(...)$size
+    }
+
+
     info.dcf <- "./tools/info.dcf"
     info <- read.dcf(info.dcf)
     if (nrow(info) != 1L)
@@ -114,10 +123,12 @@ main <- function ()
                     "\\method{anyNA}{POSIXlt}(x, recursive = FALSE)"
                 ),
                 "3.2.0",
-                c("isNamespaceLoaded", "dir.exists", "lengths", "file.mtime", "file.size", "file.info"),
+                c("isNamespaceLoaded", "dir.exists", "file.copy", "lengths", "file.mtime", "file.size", "file.info"),
                 c(
                     "isNamespaceLoaded(name)",
                     "dir.exists(paths)",
+                    "file.copy(from, to, overwrite = recursive, recursive = FALSE,",
+                    "          copy.mode = TRUE, copy.date = FALSE)",
                     "lengths(x, use.names = TRUE)",
                     "file.mtime(...)",
                     "file.size(...)",
@@ -147,15 +158,19 @@ main <- function ()
                     "isFALSE(x)"
                 ),
                 "3.6.0",
-                c("errorCondition", "str2expression", "str2lang"),
+                c("errorCondition", "str2expression", "str2lang", "Sys.setFileTime"),
                 c(
                     "errorCondition(message, ..., class = NULL, call = NULL)",
                     "str2expression(text)",
-                    "str2lang(s)"
+                    "str2lang(s)",
+                    "Sys.setFileTime(path, time)"
                 ),
                 "4.0.0",
-                "deparse1",
-                "deparse1(expr, collapse = \" \", width.cutoff = 500L, ...)",
+                c("deparse1", "unlink"),
+                c(
+                    "deparse1(expr, collapse = \" \", width.cutoff = 500L, ...)",
+                    "unlink(x, recursive = FALSE, force = FALSE, expand = TRUE)"
+                ),
                 "4.1.0",
                 c("...elt", "bquote"),
                 c(
@@ -211,17 +226,26 @@ main <- function ()
 
 
     gsub_from_DESCRIPTION <- function(x) {
-        patterns <- c("@R_PACKAGE_NAME@", "@R_PACKAGE_VERSION@", "@R_PACKAGE_DATE@", "@R_PACKAGE_AUTHOR@", "@R_PACKAGE_MAINTAINER@")
-        replacements <- c(desc[c("Package", "Version", "Date")], RdQuote(desc[c("Author", "Maintainer")]))
+        # x <- c(a = "testing", b = "@R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)"); stop("comment out this later")
+        patterns <- c(
+            "@R_PACKAGE_NAME@", "@R_PACKAGE_VERSION@", "@R_PACKAGE_DATE@",
+            "@R_PACKAGE_AUTHOR@", "@R_PACKAGE_MAINTAINER@",
+            "@R_PACKAGE_LIB@"
+        )
+        replacements <- c(
+            desc[c("Package", "Version", "Date")],
+            RdQuote(desc[c("Author", "Maintainer")]),
+            Library = gsub(".", "_", desc[["Package"]], fixed = TRUE)
+        )
         Encoding(replacements) <- "bytes"
         pattern <- paste(regexQuote(patterns), collapse = "|")
-        m <- gregexec(pattern, x)
-        x[] <- vapply(regmatches(x, m, invert = NA), function(xx) {
+        m <- gregexpr(pattern, x)
+        regmatches(x, m) <- lapply(regmatches(x, m), function(xx) {
             Encoding(xx) <- "bytes"
             i <- match(xx, patterns, 0L)
             xx[i > 0L] <- replacements[i]
-            paste(xx, collapse = "")
-        }, "", USE.NAMES = FALSE)
+            xx
+        })
         x
     }
 
@@ -284,56 +308,41 @@ main <- function ()
         ## we need to add the common macros to the files which do not
         ## have access. for R < 3.2.0, this is ALL of the Rd files.
         ## otherwise, only the news files will need them
-        macros <- c(
-            unlist(lapply(
-                list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE),
-                function(file) {
-                    conn <- file(file, "rb", encoding = "")
-                    on.exit(close(conn))
-                    readLines(conn)
-                }
-            )),
-            if (getRversion() < "3.2.0") {
-                ## \packageAuthor{} and \packageMaintainer{} are not defined for
-                ## R < 3.2.0, we will define them here ourselves
-                RdQuote_and_conv2ASCII <- function(x) {
-                    conv2ASCII <- function(x, include_hash = TRUE) {
-                        paste0("rawToChar(as.raw(c(", paste0(as.integer(charToRaw(x)), "L", collapse = ", "), if (include_hash) ", as.null(\"#1\")", ")))")
-                    }
-                    value <- conv2ASCII(RdQuote(x))
-                    if (Encoding(x) != "unknown")
-                        value <- paste0("`Encoding<-`(", value, ", ", conv2ASCII(Encoding(x), include_hash = FALSE), ")")
-                    value
-                }
-                c(
-                    paste0("\\newcommand{\\packageAuthor",     "}{\\Sexpr[results=rd,stage=build]{", RdQuote_and_conv2ASCII(desc["Author"])    , "}}"),
-                    paste0("\\newcommand{\\packageMaintainer", "}{\\Sexpr[results=rd,stage=build]{", RdQuote_and_conv2ASCII(desc["Maintainer"]), "}}"),
-                    paste0("\\newcommand{\\CRANpkg"          , "}{\\href{https://CRAN.R-project.org/package=#1}{\\pkg{#1}}}")
-                )
+        macros <- unlist(lapply(
+            list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE),
+            function(file) {
+                conn <- file(file, "rb", encoding = "")
+                on.exit(close(conn))
+                readLines(conn)
             }
-        )
+        ))
         if (length(macros)) {
+            Encoding(macros) <- "bytes"
             pattern <- "^\\./inst/NEWS\\.in\\.Rd$"
             if (getRversion() < "3.2.0")
                 pattern <- paste(pattern, "^\\./man/[^/]+\\.Rd$", sep = "|")
             keep <- grep(pattern, names(text))
             Rdtext <- text[keep]
-            m <- gregexec("(?<=^|\r\n|[\r\n])\\\\title\\{", Rdtext, perl = TRUE)
+            # Rdtext <- readChar("./inst/NEWS.in.Rd", file.size("./inst/NEWS.in.Rd"), useBytes = TRUE); stop("comment out this later")
+            m <- gregexpr("(?<=^|\r\n|[\r\n])\\\\title\\{", Rdtext, perl = TRUE)
             if (any(i <- vapply(m, length, 0L, USE.NAMES = FALSE) > 1L))
                 stop(gettextf("in %s:\n multiple lines that start with \\title{",
                      paste(sQuote(names(Rdtext)[i]), collapse = ", ")))
             if (any(i <- as.integer(m) == -1L))
                 stop(gettextf("in %s:\n no lines that start with \\title{",
                      paste(sQuote(names(Rdtext)[i]), collapse = ", ")))
-            text[keep] <- vapply(regmatches(Rdtext, m, invert = NA), function(xx) {
-                line_end <- if (any(grepl("\r\n", xx))) "\r\n" else "\n"
-                xx <- c(
-                    xx[1L],
-                    paste0(macros, line_end, collapse = ""),
-                    xx[-1L]
-                )
-                paste(xx, collapse = "")
-            }, "", USE.NAMES = FALSE)
+            regmatches(Rdtext, m) <- mapply(
+                regmatches(Rdtext, m),
+                ifelse(grepl("\r\n", Rdtext), "\r\n", "\n"),
+                FUN = function(xx, line_end) {
+                    paste0(
+                        paste0(macros, line_end, collapse = ""),
+                        xx
+                    )
+                },
+                SIMPLIFY = FALSE, USE.NAMES = FALSE
+            )
+            text[keep] <- Rdtext
         }
         ## remove the macros folder so 'R CMD check' will not complain about it
         if (getRversion() < "3.2.0")

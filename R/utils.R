@@ -20,7 +20,8 @@
 }
 
 
-.build.this <- eval(call("function", as.pairlist(alist(chdir = FALSE, file = here(), which = "tar")), bquote({
+.build.this <- function (chdir = FALSE, file = here(), which = "tar")
+{
     ## .build.this               package:this.path               R Documentation
     ##
     ## Building Packages
@@ -217,8 +218,8 @@
                 ## starts with .#
                 "^\\.#",
 
-                ## starts or ends with #
-                "^#", "#$",
+                ## starts and ends with #
+                "^#.*#$",
 
                 ## ends with ~ or .bak or .swp
                 "~$", "\\.bak$", "\\.swp$"
@@ -241,13 +242,13 @@
         gsub(".", "\\.", pkgname, fixed = TRUE),
         "_",
         valid_package_version,
-        c("\\.tar\\.gz", "\\.zip"),
+        c("\\.tar\\.gz", "\\.tgz", "\\.zip"),
         "$"
     )
 
 
-    for (exclude.pattern in prev_build_patterns) {
-        if (any(i <- grepl(exclude.pattern, files))) {
+    for (exclude_pattern in prev_build_patterns) {
+        if (any(i <- grepl(exclude_pattern, files))) {
             exclude <- c(exclude, files[i])
             files <- files[!i]
         }
@@ -257,10 +258,10 @@
     ## look for a ".buildignore" file containing
     ## a list of Perl patterns (case insensitive)
     ## specifying files to ignore when archiving
-    ignore.file <- path.join(file, ".buildignore")
-    if (file.exists(ignore.file)) {
-        for (exclude.pattern in readLines(ignore.file, warn = FALSE, encoding = "UTF-8")) {
-            if (any(i <- grepl(exclude.pattern, files, ignore.case = TRUE, perl = TRUE))) {
+    ignore_file <- path.join(file, ".buildignore")
+    if (file.exists(ignore_file)) {
+        for (exclude_pattern in readLines(ignore_file, warn = FALSE, encoding = "UTF-8")) {
+            if (any(i <- grepl(exclude_pattern, files, ignore.case = TRUE, perl = TRUE))) {
                 exclude <- c(exclude, files[i])
                 files <- files[!i]
             }
@@ -270,9 +271,9 @@
 
     ## for directories in 'exclude', also
     ## exclude the files within said directories
-    exclude.dirs <- exclude[dir.exists(path.join(file, exclude))]
-    for (exclude.prefix in paste0(exclude.dirs, "/", recycle0 = TRUE)) {
-        if (any(i <- startsWith(files, exclude.prefix))) {
+    exclude_dirs <- exclude[dir.exists(path.join(file, exclude))]
+    for (exclude_prefix in paste0(exclude_dirs, "/", recycle0 = TRUE)) {
+        if (any(i <- startsWith(files, exclude_prefix))) {
             exclude <- c(exclude, files[i])
             files <- files[!i]
         }
@@ -280,17 +281,12 @@
 
 
     ## create a new directory to hold the temporary files and archives
-    dir.create(my.tmpdir <- tempfile("dir"))
-    on.exit(
-        if (getRversion() >= "4.0.0")
-            (unlink)(my.tmpdir, recursive = TRUE, force = TRUE, expand = FALSE)
-        else unlink(my.tmpdir, recursive = TRUE, force = TRUE),
-        add = TRUE
-    )
+    dir.create(my_tmpdir <- tempfile("dir"))
+    on.exit(unlink(my_tmpdir, recursive = TRUE, force = TRUE, expand = FALSE), add = TRUE)
 
 
     ## create another directory to hold the temporary files
-    dir.create(pkgdir <- path.join(my.tmpdir, pkgname))
+    dir.create(pkgdir <- path.join(my_tmpdir, pkgname))
 
 
     ## within said directory, make the appropriate sub-directories
@@ -303,27 +299,13 @@
     ## fill the directory and sub-directories with their files,
     ## while maintaining file modify time
     if (any(i <- !file.copy(
-        ..(
-            if (getRversion() < "3.1.0")
-                expression(
-                    from <- path.join(file  , files[!isdir]),
-                    to <- path.join(pkgdir, files[!isdir])
-                )
-            else
-                expression(
-                    path.join(file  , files[!isdir]),
-                    path.join(pkgdir, files[!isdir]),
-                    copy.date = TRUE
-                )
-        )
+        path.join(file  , files[!isdir]),
+        path.join(pkgdir, files[!isdir]),
+        copy.date = TRUE
     )))
-        stop(ngettext(sum(i), "unable to copy file: ", "unable to copy files:\n  "),
+        stop(ngettext(sum(i), "unable to copy file: ",
+                              "unable to copy files:\n  "),
              paste(encodeString(files[!isdir][i], quote = "\""), collapse = "\n  "))
-    else ..(
-        if (getRversion() < "3.1.0")
-            expression(Sys.setFileTime(to, file.info(from)$mtime))
-        else expression()
-    )
 
 
     ## set the modify time of the sub-directories to their original values
@@ -335,33 +317,33 @@
 
     for (apk in which) {
         switch(apk, tar = {
-            build.name <- paste0(pkgname, "_", version, ".tar.gz")
-            build.path <- path.join(my.tmpdir, build.name)
-            args <- c("tar", "-czf", shQuote(build.path), "-C", shQuote(my.tmpdir), shQuote(pkgname))
+            build_name <- paste0(pkgname, "_", version, ".tar.gz")
+            build_path <- path.join(my_tmpdir, build_name)
+            args <- c("tar", "-czf", shQuote(build_path), "-C", shQuote(my_tmpdir), shQuote(pkgname))
             command <- paste(args, collapse = " ")
-            cat("* building '", build.name, "'\n", sep = "")
+            cat("* building '", build_name, "'\n", sep = "")
             res <- system(command, ignore.stdout = TRUE)
             if (res == -1L) {
                 stop("'", command, "' could not be run")
             } else if (res) {
                 stop("'", command, "' execution failed with error code ", res)
             } else if (i <- !file.copy(
-                build.path,
-                path.join(file, build.name),
+                build_path,
+                path.join(file, build_name),
                 overwrite = TRUE
             )) {
                 stop("unable to move:\n  ",
-                     encodeString(build.path, quote = "\""),
+                     encodeString(build_path, quote = "\""),
                      "\nto:\n  ",
-                     encodeString(path.join(file, build.name), quote = "\""))
+                     encodeString(path.join(file, build_name), quote = "\""))
             }
         }, zip = {
-            build.name <- paste0(pkgname, "_", version, ".zip")
-            build.path <- path.join(my.tmpdir, build.name)
-            args <- c("zip", "-r", shQuote(build.path), shQuote(pkgname))
+            build_name <- paste0(pkgname, "_", version, ".zip")
+            build_path <- path.join(my_tmpdir, build_name)
+            args <- c("zip", "-r", shQuote(build_path), shQuote(pkgname))
             command <- paste(args, collapse = " ")
-            cat("* building '", build.name, "'\n", sep = "")
-            res <- .with_chdir(my.tmpdir, {
+            cat("* building '", build_name, "'\n", sep = "")
+            res <- .with_chdir(my_tmpdir, {
                 system(command, ignore.stdout = TRUE)
             })
             if (res == -1L) {
@@ -369,18 +351,18 @@
             } else if (res) {
                 stop("'", command, "' execution failed with error code ", res)
             } else if (i <- !file.copy(
-                build.path,
-                path.join(file, build.name),
+                build_path,
+                path.join(file, build_name),
                 overwrite = TRUE
             )) {
                 stop("unable to move:\n  ",
-                     encodeString(build.path, quote = "\""),
+                     encodeString(build_path, quote = "\""),
                      "\nto:\n  ",
-                     encodeString(path.join(file, build.name), quote = "\""))
+                     encodeString(path.join(file, build_name), quote = "\""))
             }
         }, stop("invalid 'which'; should not happen, please report!"))
     }
-}, splice = TRUE)))
+}
 
 
 .with_chdir <- function (wd, expr)

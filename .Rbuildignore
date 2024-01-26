@@ -1,9 +1,8 @@
 ^\.Rproj\.user$
-^man/pragma_once\.Rd$
 ^tests/sys-path-with-urls\.R$
 ^tests/this\.path_w_URLs\.R$
 ^tools/maintainers-copy$
 ^\.gitattributes$
 ^\.gitignore$
 ^check-this\.R$
-^this\.path\.Rproj$
+^[^/]+\.Rproj$

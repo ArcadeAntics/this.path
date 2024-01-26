@@ -1,6 +1,6 @@
-/.Rproj.user
-/this.path.Rcheck
+/.Rproj.user/
+/*.Rcheck/
 /tools/maintainers-copy
-/this.path_*.tar.gz
-/this.path_*.tgz
-/this.path_*.zip
+/*_*.tar.gz
+/*_*.tgz
+/*_*.zip

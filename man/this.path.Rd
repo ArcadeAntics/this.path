@@ -94,8 +94,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   level environment in two ways:
 
   \enumerate{
-    \item{from a \ifelse{text}{\pkg{package:box}}{\CRANpkg{box}} module's
-      namespace.}
+    \item{from a \CRANpackage{box} module's namespace.}
 
     \item{from an attribute \string{path}.}
   }

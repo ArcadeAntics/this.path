@@ -94,6 +94,33 @@ dir.exists <- function (paths)
 .External2(.C_dir.exists, paths)
 
 
+file.copy <- function (from, to, overwrite = recursive, recursive = FALSE,
+    copy.mode = TRUE, copy.date = FALSE)
+{
+    okay <- .BaseNamespaceEnv$file.copy(from, to, overwrite = overwrite,
+        recursive = recursive, copy.mode = copy.mode)
+    if (copy.date) {
+        if (any(okay)) {
+            if (length(to) == 1L && dir.exists(to)) {
+                from <- from[okay]
+                to <- path.join(to, basename2(from))
+                if (recursive) {
+                    n <- lapply(from, list.files, all.files = TRUE,
+                        recursive = TRUE, include.dirs = TRUE)
+                    times <- lengths(n)
+                    n <- unlist(n)
+                    from <- c(from, path.join(rep(from, times), n))
+                    to <- c(to, path.join(rep(to, times), n))
+                }
+                Sys.setFileTime(to, file.mtime(from))
+            }
+            else Sys.setFileTime(to[okay], file.mtime(from[okay]))
+        }
+    }
+    okay
+}
+
+
 lengths <- function (x, use.names = TRUE)
 .External2(.C_lengths, x, use.names)
 
@@ -287,6 +314,26 @@ str2lang <- function (s)
 }
 
 
+Sys.setFileTime <- function (path, time)
+{
+    if (!is.character(path))
+        stop("invalid 'path' argument")
+    time <- as.POSIXct(time)
+    if (any(is.na(time)))
+        stop("invalid 'time' argument")
+    n <- length(path)
+    if (!n)
+        return(logical())
+    m <- length(time)
+    if (!m)
+        stop(gettextf("'%s' must be of length at least one",
+            "time", domain = "R"), domain = NA)
+    if (m > n)
+        time <- time[seq_len(n)]
+    as.logical(.mapply(.BaseNamespaceEnv$Sys.setFileTime, list(path, time), NULL))
+}
+
+
 }
 
 
@@ -296,6 +343,12 @@ if (getRversion() < "4.0.0") {
 deparse1 <- .removeSource(evalq(envir = .BaseNamespaceEnv,
             function (expr, collapse = " ", width.cutoff = 500L, ...)
 paste(deparse(expr, width.cutoff, ...), collapse = collapse)
+))
+
+
+unlink <- .removeSource(evalq(envir = .BaseNamespaceEnv,
+          function (x, recursive = FALSE, force = FALSE, expand = TRUE)
+unlink(x, recursive = recursive, force = force)
 ))
 
 

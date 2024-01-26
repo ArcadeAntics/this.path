@@ -26,6 +26,7 @@ if (getRversion() < "3.1.0") {
 if (getRversion() < "3.2.0") {
     export(isNamespaceLoaded)
     export(dir.exists)
+    export(file.copy)
     export(lengths)
     S3method(lengths, default, .lengths.default)
     export(file.info)
@@ -57,11 +58,13 @@ if (getRversion() < "3.6.0") {
     export(errorCondition)
     export(str2expression)
     export(str2lang)
+    export(Sys.setFileTime)
 }
 
 
 if (getRversion() < "4.0.0") {
     export(deparse1)
+    export(unlink)
 }
 
 
