@@ -330,7 +330,7 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
         url = CHAR(file);
     }
 #else
-    url = translateCharFP(file);
+    url = translateChar(file);
 #endif
 
 
@@ -358,7 +358,7 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
         url = CHAR(file);
     }
 #else
-    url = translateCharFP(file);
+    url = translateChar(file);
 #endif
 
 
@@ -416,7 +416,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
         url = CHAR(file);
     }
 #else
-    url = translateCharFP(file);
+    url = translateChar(file);
 #endif
 
 
