@@ -612,6 +612,8 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
         /* evaluate each argument of 'dots' */
         xi = CAR(d);
+        if (xi == R_MissingArg)
+            errorcall(call, _("argument is missing, with no default"));
         xi = eval(xi, rho);
         if (commonLength) {
 

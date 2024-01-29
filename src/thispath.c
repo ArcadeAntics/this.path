@@ -499,7 +499,7 @@ GUIPATH_ACTION gui_path = GUIPATH_DEFAULT;
 
 SEXP do_set_gui_path do_formals
 {
-    do_start_no_call_op("set_gui_path", 0);
+    do_start_no_op("set_gui_path", 0);
 
 
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
@@ -507,16 +507,83 @@ SEXP do_set_gui_path do_formals
         error(_("object '%s' not found"), "...");
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
+    SEXP value;
+    switch (gui_path) {
+    case GUIPATH_DEFAULT:
+        value = allocVector(VECSXP, 0);
+        PROTECT(value);
+        break;
+    case GUIPATH_FUNCTION:
+        value = allocVector(VECSXP, 1);
+        PROTECT(value);
+        SET_VECTOR_ELT(value, 0, findVarInFrame(
+            _custom_gui_path_function_environment,
+            _custom_gui_path_functionSymbol
+        ));
+        break;
+    case GUIPATH_CHARACTER:
+    {
+        SEXP _getContents = findVarInFrame(
+            _custom_gui_path_character_environment,
+            _get_contentsSymbol
+        );
+        value = allocVector(VECSXP, (_getContents != R_NilValue) ? 3 : 2);
+        PROTECT(value);
+        if (_getContents != R_NilValue)
+            SET_VECTOR_ELT(value, 2, _getContents);
+        SET_VECTOR_ELT(value, 0, ScalarString(findVarInFrame(
+            _custom_gui_path_character_environment,
+            guinameSymbol
+        )));
+        SET_VECTOR_ELT(value, 1, PRVALUE(findVarInFrame(
+            _custom_gui_path_character_environment,
+            ofileSymbol
+        )));
+    }
+        break;
+    default:
+        errorcall(R_NilValue, "internal error; invalid 'gui_path' value");
+        value = R_NilValue;
+        PROTECT(value);
+    }
 
 
-    switch (dots_length) {
+    int n = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
+    if (n == 0) {
+        gui_path = GUIPATH_DEFAULT;
+        set_R_Visible(FALSE);
+        UNPROTECT(1);
+        return value;
+    }
+
+
+    SEXP dd1 = CAR(dots);
+    if (dd1 == R_MissingArg)
+        errorcall(call, _("argument is missing, with no default"));
+    dd1 = eval(dd1, R_EmptyEnv);
+
+
+    SEXPTYPE t = DOTSXP;
+    if (n == 1 && (isPairList(dd1) || isVectorList(dd1))
+        && TAG(dots) == R_NilValue) {
+        dots = dd1;
+        n = ((dots == R_NilValue) ? 0 : length(dots));
+        t = ((isPairList(dd1)) ? LISTSXP : VECSXP);
+    }
+
+
+    switch (n) {
     case 0:
         gui_path = GUIPATH_DEFAULT;
         break;
     case 1:
     {
-        SEXP fun = eval(CAR(dots), R_EmptyEnv);
+        SEXP fun = R_NilValue;  /* for -Wall */
+        switch (t) {
+        case DOTSXP: fun = dd1; break;
+        case LISTSXP: fun = CAR(dots); break;
+        case VECSXP: fun = VECTOR_ELT(dots, 0); break;
+        }
         ENSURE_NAMEDMAX(fun);
         if (TYPEOF(fun) != CLOSXP)
             error("expected a function; got a %s", type2char(TYPEOF(fun)));
@@ -526,8 +593,7 @@ SEXP do_set_gui_path do_formals
         if (TYPEOF(args) == LISTSXP   && TAG(args) == verboseSymbol  &&
             !ISNULL(args = CDR(args)) && TAG(args) == originalSymbol &&
             !ISNULL(args = CDR(args)) && TAG(args) == for_msgSymbol  &&
-            !ISNULL(args = CDR(args)) && TAG(args) == contentsSymbol &&
-            ISNULL(CDR(args)));
+            !ISNULL(args = CDR(args)) && TAG(args) == contentsSymbol);
         else error("invalid '%s' argument; must accept the following arguments:\n  (verbose, original, for.msg, contents)", "fun");
 
 
@@ -538,25 +604,51 @@ SEXP do_set_gui_path do_formals
     case 2:
     case 3:
     {
-        SEXP guiname = eval(CAR(dots), R_EmptyEnv);
+        SEXP guiname = R_NilValue;  /* for -Wall */
+        switch (t) {
+        case DOTSXP: guiname = dd1; break;
+        case LISTSXP: guiname = CAR(dots); break;
+        case VECSXP: guiname = VECTOR_ELT(dots, 0); break;
+        }
         if (!IS_SCALAR(guiname, STRSXP) || STRING_ELT(guiname, 0) == NA_STRING)
             error(_("invalid first argument"));
-        SEXP path = eval(CADR(dots), R_EmptyEnv);
+        SEXP path = R_NilValue;  /* for -Wall */
+        switch (t) {
+        case DOTSXP:
+            path = CADR(dots);
+            if (path == R_MissingArg)
+                errorcall(call, _("argument is missing, with no default"));
+            path = eval(path, R_EmptyEnv);
+            break;
+        case LISTSXP: path = CADR(dots); break;
+        case VECSXP: path = VECTOR_ELT(dots, 1); break;
+        }
         if (!IS_SCALAR(path, STRSXP))
             error("invalid '%s' argument; expected a character string", "path");
         if (!is_abs_path(CHAR(STRING_ELT(path, 0))))
             error("invalid '%s' argument; expected an absolute path", "path");
-        SEXP _getContents = CDDR(dots);
-        if (_getContents == R_NilValue);
-        else {
-            _getContents = eval(CAR(_getContents), R_EmptyEnv);
+        SEXP _getContents = R_NilValue;  /* for -Wall */
+        switch (t) {
+        case DOTSXP:
+            _getContents = CDDR(dots);
+            /* if there are only two arguments */
             if (_getContents == R_NilValue);
-            else if (TYPEOF(_getContents) == CLOSXP) {
-                if (FORMALS(_getContents) == R_NilValue)
-                    error("invalid '%s' argument; expected a function with at least one formal argument", "getContents");
-            }
-            else error("invalid '%s' argument; expected a function", "getContents");
+            /* if the third argument is missing */
+            else if (CAR(_getContents) == R_MissingArg)
+                _getContents = R_NilValue;
+            else _getContents = eval(CAR(_getContents), R_EmptyEnv);
+            break;
+        case LISTSXP: _getContents = CADDR(dots); break;
+        case VECSXP:
+            _getContents = ((n >= 3) ? VECTOR_ELT(dots, 2) : R_NilValue);
+            break;
         }
+        if (_getContents == R_NilValue);
+        else if (TYPEOF(_getContents) == CLOSXP) {
+            if (FORMALS(_getContents) == R_NilValue)
+                error("invalid '%s' argument; expected a function with at least one formal argument", "getContents");
+        }
+        else error("invalid '%s' argument; expected a function", "getContents");
 
 
         SEXP ofile = findVarInFrame(_custom_gui_path_character_environment, ofileSymbol);
@@ -578,7 +670,6 @@ SEXP do_set_gui_path do_formals
 
 
         /* restore the promise 'file' to its original state */
-        // SET_PRCODE(file, );
         SET_PRENV(file, _custom_gui_path_character_environment);
         SET_PRVALUE(file, R_UnboundValue);
         SET_PRSEEN(file, 0);
@@ -590,12 +681,13 @@ SEXP do_set_gui_path do_formals
         break;
     default:
         error("%d arguments passed to %s which requires %s",
-            dots_length, "set.gui.path()", "0, 1, 2, or 3");
+            n, "set.gui.path()", "0, 1, 2, or 3");
     }
 
 
     set_R_Visible(FALSE);
-    return R_NilValue;
+    UNPROTECT(1);
+    return value;
 }
 
 

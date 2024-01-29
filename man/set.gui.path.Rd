@@ -121,3 +121,7 @@ function(pkgname, pkgpath)
     # }, action = "prepend")
 })}
 }
+\value{
+  a list of the previous settings for \code{set.gui.path()}, similar to
+  \codelink3{base:options}{options}{()}.
+}

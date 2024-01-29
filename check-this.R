@@ -177,7 +177,7 @@ local({
     x <- this.path:::.readFiles(files)
     Encoding(x)[endsWith(names(x), "_msvcrt.txt")] <- "latin1"
     Encoding(x)[endsWith(names(x), "_ucrt.txt")] <- "UTF-8"
-    x <- grep("translateCharFP", x, value = TRUE)
+    x <- grep("ddfindVar", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 
