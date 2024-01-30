@@ -1,5 +1,5 @@
 Package: this.path
-Version: 2.3.1.24
+Version: 2.3.1.25
 Date: 2024-01-30
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
@@ -15,7 +15,7 @@ Author: Iris Simmons
 Maintainer: Iris Simmons <ikwsimmo@gmail.com>
 Suggests: utils, microbenchmark
 Enhances: compiler, box, IRkernel, jsonlite, knitr, plumber, rprojroot,
-        rstudioapi, shiny, targets, testthat
+        shiny, targets, testthat
 URL: https://github.com/ArcadeAntics/this.path
 BugReports: https://github.com/ArcadeAntics/this.path/issues
 ByteCompile: TRUE

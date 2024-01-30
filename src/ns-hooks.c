@@ -345,6 +345,7 @@ SEXP do_onLoad do_formals
     LockCLOENV(_init_fileSymbol, TRUE);
     /* thispath.R */
     LockCLOENV(_shFILESymbol, TRUE);
+    LockCLOENV(install(".vscode_path"), TRUE);
     LockCLOENV(_jupyter_pathSymbol, TRUE);
     LockCLOENV(install(".emacs_path"), TRUE);
     /* zzz.R */

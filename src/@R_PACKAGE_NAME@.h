@@ -273,6 +273,7 @@ extern SEXP do_set_jupyter_path   do_formals;
 extern SEXP do_Rgui_path          do_formals;
 extern SEXP do_remove_trailing_blank_string do_formals;
 extern SEXP do_fixNewlines        do_formals;
+extern SEXP do_splitlines         do_formals;
 extern SEXP do_set_gui_path       do_formals;
 extern SEXP do_sys_path           do_formals;
 extern SEXP do_getframenumber     do_formals;

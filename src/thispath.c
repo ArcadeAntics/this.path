@@ -473,18 +473,82 @@ SEXP do_fixNewlines do_formals
 }
 
 
-// SEXP do_splitlines do_formals
-// {
-//     do_start_no_op_rho("splitlines", 1);
-//     SEXP x = CAR(args);
-//     if (!IS_SCALAR(x, STRSXP))
-//         errorcall(call, _("argument must be a character string"));
-//     const char *str = CHAR(STRING_ELT(x, 0));
-//     const char *cr = strchr(str, '\r');
-//     // if there are no carriage returns, just split the lines by \n, much easier
-//     if (!cr) return fixNewlines(x);
-//     return R_NilValue;
-// }
+SEXP do_splitlines do_formals
+{
+    do_start_no_op_rho("splitlines", 1);
+    SEXP x = CAR(args);
+    if (!IS_SCALAR(x, STRSXP))
+        errorcall(call, _("argument must be a character string"));
+    SEXP x0 = STRING_ELT(x, 0);
+    const char *str = CHAR(x0);
+    if (!*str) return allocVector(STRSXP, 0);
+    const char *p = str;
+    R_xlen_t num_lines = 1;
+    int processing = 1;
+    while (processing) {
+        switch (*p) {
+        case '\r':
+            switch (*++p) {
+            case '\n':
+                if (*++p) num_lines++;
+                else processing = 0;
+                break;
+            case '\0':
+                processing = 0;
+                break;
+            default:
+                num_lines++;
+            }
+            break;
+        case '\n':
+            if (*++p) num_lines++;
+            else processing = 0;
+            break;
+        case '\0':
+            processing = 0;
+            break;
+        default:
+            p++;
+        }
+    }
+    SEXP y = allocVector(STRSXP, num_lines);
+    cetype_t enc = getCharCE(x0);
+    PROTECT(y);
+    p = str;
+    R_xlen_t i = 0;
+    processing = 1;
+    while (processing) {
+        switch (*p) {
+        case '\r':
+            SET_STRING_ELT(y, i++, mkCharLenCE(str, p - str, enc));
+            switch (*++p) {
+            case '\n':
+                if (*++p) str = p;
+                else processing = 0;
+                break;
+            case '\0':
+                processing = 0;
+                break;
+            default:
+                str = p;
+            }
+            break;
+        case '\n':
+            SET_STRING_ELT(y, i++, mkCharLenCE(str, p - str, enc));
+            if (*++p) str = p;
+            else processing = 0;
+            break;
+        case '\0':
+            SET_STRING_ELT(y, i++, mkCharLenCE(str, p - str, enc));
+            processing = 0;
+            break;
+        default:
+            p++;
+        }
+    }
+    UNPROTECT(1);
+    return y;
+}
 
 
 typedef enum {

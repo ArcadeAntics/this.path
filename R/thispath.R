@@ -1,6 +1,17 @@
 ## helper functions for this.path()    ----
 
 
+.get_named_element <- function (x, names)
+{
+    for (name in names) {
+        if (i <- match(name, names(x), 0L, c("", NA_character_)))
+            x <- x[[i]]
+        else return()
+    }
+    x
+}
+
+
 .get_contents <- function (file, encoding = getOption("encoding"))
 {
     if (identical(encoding, "unknown")) {
@@ -49,29 +60,6 @@
 }
 
 
-.get_named_element <- function (x, names)
-{
-    for (name in names) {
-        if (i <- match(name, names(x), 0L, c("", NA_character_)))
-            x <- x[[i]]
-        else return()
-    }
-    x
-}
-
-
-.fixNewlines <- function (srcfile)
-{
-    srcfile$lines <- .External2(.C_fixNewlines, srcfile$lines)
-    srcfile$fixedNewlines <- TRUE
-    srcfile$lines
-}
-
-
-.is_jupyter_loaded <- function ()
-.GUI_jupyter && isNamespaceLoaded("IRkernel") && .identical(sys.function(1L), IRkernel::main)
-
-
 .get_jupyter_R_notebook_contents <- function (path)
 {
     ## similar to .get_jupyter_notebook_contents(), but does some error
@@ -98,6 +86,18 @@
     }
     NULL
 }
+
+
+.fixNewlines <- function (srcfile)
+{
+    srcfile$lines <- .External2(.C_fixNewlines, srcfile$lines)
+    srcfile$fixedNewlines <- TRUE
+    srcfile$lines
+}
+
+
+.is_jupyter_loaded <- function ()
+.GUI_jupyter && isNamespaceLoaded("IRkernel") && .identical(sys.function(1L), IRkernel::main)
 
 
 ## path of active file in GUI          ----
@@ -156,6 +156,82 @@ delayedAssign(".untitled", {
 
 .Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
+
+
+.vscode_path <- evalq(envir = new.env(), {
+    delayedAssign("pid", { Sys.getpid() })
+    delayedAssign("wd", { getwd() })
+    delayedAssign("tempdir", { .BaseNamespaceEnv$tempdir() })
+    delayedAssign("homedir", { Sys.getenv(if (.Platform$OS.type == "windows") "USERPROFILE" else "HOME") })
+    delayedAssign("dir_watcher", { Sys.getenv("VSCODE_WATCHER_DIR", file.path(homedir, ".vscode-R")) })
+    delayedAssign("request_file", { file.path(dir_watcher, "request.log") })
+    delayedAssign("request_lock_file", { file.path(dir_watcher, "request.lock") })
+    delayedAssign("dir_session", { file.path(tempdir, "vscode-R") })
+    response_timeout <- 5
+    delayedAssign("response_lock_file", { file.path(dir_session, "response.lock") })
+    delayedAssign("response_file", { file.path(dir_session, "response.log") })
+    delayedAssign("create_files", {
+        dir.create(dir_session, showWarnings = FALSE, recursive = TRUE)
+        file.create(response_lock_file, showWarnings = FALSE)
+        file.create(response_file, showWarnings = FALSE)
+    })
+    response_time_stamp <- ""
+    not_received_response <- function() {
+        lock_time_stamp <- readLines(response_lock_file)
+        if (isTRUE(lock_time_stamp != response_time_stamp)) {
+            response_time_stamp <<- lock_time_stamp
+            FALSE
+        }
+        else TRUE
+    }
+                function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    create_files
+    obj <- list(time = Sys.time(), pid = pid, wd = wd, command = "rstudioapi",
+        action = "active_editor_context", args = list(), sd = dir_session)
+    jsonlite::write_json(obj, request_file,
+        auto_unbox = TRUE, null = "null", force = TRUE)
+    cat(sprintf("%.6f", Sys.time()), file = request_lock_file)
+    wait_start <- Sys.time()
+    while (not_received_response()) {
+        if ((Sys.time() - wait_start) > response_timeout) {
+            stop(.ThisPathNotFoundError(
+                "Did not receive a response from VSCode-R API within ",
+                response_timeout, " seconds."
+            ))
+        }
+        Sys.sleep(0.1)
+    }
+    context <- jsonlite::read_json(response_file)
+    if (is.null(context)) {
+        if (for.msg)
+            NA_character_
+        else stop(.ThisPathNotExistsError(
+            "R is running from VSCode with no documents open\n",
+            " (or document has no path)"
+        ))
+    }
+    else if (contents) {
+        if (verbose) cat("Source: document in VSCode\n")
+        list(.External2(.C_splitlines, context[["contents"]]))
+    }
+    else if (context[["id"]][["scheme"]] == "untitled") {
+        if (for.msg)
+            context[["path"]]
+        else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
+    }
+    else if (nzchar(path <- context[["path"]])) {
+        Encoding(path) <- "UTF-8"
+        if (verbose) cat("Source: document in VSCode\n")
+        if (.isfalse(original))
+            .normalizePath(path)
+        else path
+    }
+    else if (for.msg)
+        gettext("Untitled", domain = "RGui", trim = FALSE)
+    else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
+}
+})
 
 
 .jupyter_path <- evalq(envir = new.env(), {
@@ -350,8 +426,7 @@ delayedAssign(".untitled", {
         x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
         if (verbose) cat("Source: active document in Emacs\n")
         if (contents)
-            # list(.External2(.C_splitlines, x))
-            strsplit(x, "\r\n|[\r\n]", useBytes = TRUE)
+            list(.External2(.C_splitlines, x))
         else if (.isfalse(original))
             .normalizePath(x)
         else x
@@ -360,8 +435,7 @@ delayedAssign(".untitled", {
         x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
         if (verbose) cat("Source: source document in Emacs\n")
         if (contents)
-            # list(.External2(.C_splitlines, x))
-            strsplit(x, "\r\n|[\r\n]", useBytes = TRUE)
+            list(.External2(.C_splitlines, x))
         else if (.isfalse(original))
             .normalizePath(x)
         else x
@@ -509,68 +583,7 @@ delayedAssign(".untitled", {
         ))
     }
     else if (.GUI_vscode) {
-
-
-        failure <- tryCatch3({
-            getNamespace("rstudioapi")
-            FALSE
-        }, error = TRUE)
-        if (failure) {
-            if (inherits(last.condition, "packageNotFoundError") &&
-                last.condition$package == "rstudioapi")
-            {
-                stop(.ThisPathNotFoundError("this.path() requires 'package:rstudioapi' in VSCode but package was not found"))
-            }
-            else
-                stop(.ThisPathNotFoundError("this.path() requires 'package:rstudioapi' in VSCode but package could not be loaded"))
-        }
-        tryCatch3({
-            rstudioapi::getSourceEditorContext
-        }, error = {
-            stop(.ThisPathNotFoundError("this.path() requires 'rstudioapi::getSourceEditorContext' in VSCode but\n ",
-                 conditionMessage(last.condition), call = sys.call()))
-        })
-        tryCatch3({
-            context <- rstudioapi::getSourceEditorContext()
-        }, error = {
-            stop(.ThisPathNotFoundError(
-                "this.path() requires 'package:rstudioapi' in VSCode\n but has not been set up properly; try adding:\n\n",
-                "```R\noptions(vsc.rstudioapi = TRUE)\n```\n\n",
-                " to the site-wide startup profile file or the user profile (see ?Startup),\n",
-                " then restart the R session and try again",
-                call = sys.call()))
-        })
-
-
-        if (is.null(context)) {
-            if (for.msg)
-                NA_character_
-            else stop(.ThisPathNotExistsError(
-                "R is running from VSCode with no documents open\n",
-                " (or document has no path)"
-            ))
-        }
-        else if (contents) {
-            if (verbose) cat("Source: document in VSCode\n")
-            x <- context[["contents"]]
-            x <- .External2(.C_remove_trailing_blank_string, x)
-            list(x)
-        }
-        else if (startsWith(context[["id"]], "untitled:")) {
-            if (for.msg)
-                context[["path"]]
-            else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
-        }
-        else if (nzchar(path <- context[["path"]])) {
-            Encoding(path) <- "UTF-8"
-            if (verbose) cat("Source: document in VSCode\n")
-            if (.isfalse(original))
-                .normalizePath(path)
-            else path
-        }
-        else if (for.msg)
-            gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
+        .vscode_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_jupyter) {
         .jupyter_path(verbose, original, for.msg, contents)

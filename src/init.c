@@ -225,6 +225,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
 {"remove_trailing_blank_string", (DL_FUNC) &do_remove_trailing_blank_string, 1},
 {"fixNewlines"       , (DL_FUNC) &do_fixNewlines       ,  1},
+{"splitlines"        , (DL_FUNC) &do_splitlines        ,  1},
 {"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0}, // R_Visible off
 {"sys_path"          , (DL_FUNC) &do_sys_path          , -1},
 {"getframenumber"    , (DL_FUNC) &do_getframenumber    ,  0},

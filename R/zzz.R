@@ -409,6 +409,7 @@ if (getRversion() < "3.0.0") {
 
     fix_External2(.fixNewlines)
     fix_External2(.Rgui_path)
+    fix_External2(.vscode_path)
     fix_External2(.jupyter_path)
     fix_External2(.emacs_path)
     fix_External2(.gui_path)
