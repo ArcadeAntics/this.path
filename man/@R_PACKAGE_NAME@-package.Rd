@@ -3,12 +3,26 @@
 \docType{package}
 \title{Get Script's Path}
 \description{
-  Determine the path of the executing script. Compatible with a few
-  popular GUIs: \sQuote{Rgui}, \sQuote{\RStudio}, \sQuote{\VSCode},
-  \sQuote{\Jupyter}, \sQuote{\Emacs}, and
-  \ifelse{html}{\sQuote{\code{\link[utils]{Rscript}}}}{\ifelse{text}{\code{Rscript}}{\sQuote{\code{Rscript}}}}
-  (shell). Compatible with several functions and packages:
-  \sourcesandlistlinks.
+  Determine the path of the executing script.
+
+  Compatible with a few popular GUIs:
+
+  \itemize{
+    \item{\sQuote{Rgui}}
+
+    \item{\sQuote{\RStudio}}
+
+    \item{\sQuote{\VSCode}}
+
+    \item{\sQuote{\Jupyter}}
+
+    \item{\sQuote{\Emacs}}
+
+    \item{\sQuote{\ifelse{html}{\Rscriptlink}{\ifelse{text}{Rscript}{\code{Rscript}}}}
+      (shell)}
+  }
+
+  Compatible with several functions and packages: \syspathcompatiblelinks
 }
 \details{
   The most important functions from \pkg{package:@R_PACKAGE_NAME@} are

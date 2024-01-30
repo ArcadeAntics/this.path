@@ -93,7 +93,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   looks for an associated path. It will find a path associated with the top
   level environment in two ways:
 
-  \enumerate{
+  \itemize{
     \item{from a \CRANpackage{box} module's namespace.}
 
     \item{from an attribute \string{path}.}
@@ -101,11 +101,12 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
 
   If it does not find an associated path with \code{envir} and
   \code{matchThisEnv}, it will next examine the call stack looking for a source
-  call: a call to function \sourcesorlistlinks. If a source call is found, the
-  file argument is returned from the function's evaluation environment. If you
-  have your own \sourcenolink-like function that you would like to be
-  recognized by \code{this.path()}, please use \code{\link{set.sys.path}()} or
-  contact the package maintainer so that it can be implemented.
+  call; a call to one of these functions: \sourceslinks If a source call is
+  found, the file argument is returned from the function's evaluation
+  environment. If you have your own \sourcenolink-like function that you would
+  like to be recognized by \code{this.path()}, please use
+  \code{\link{set.sys.path}()} or contact the package maintainer so that it can
+  be implemented.
 
   If no source call is found up the calling stack, it will next examine the GUI
   in use. If \R is running from:

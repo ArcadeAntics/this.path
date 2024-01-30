@@ -8,16 +8,17 @@
 \alias{wrap.source}
 \title{Implement 'this.path()' For Arbitrary 'source()'-Like Functions}
 \description{
-  \code{\link{sys.path}()} is implemented to work with \sourcesandlistlinks.
+  \code{\link{sys.path}()} is implemented to work with these functions and
+  packages: \syspathcompatiblelinks
 
   \code{set.sys.path()} can be used to implement \code{sys.path()} for any
   other \sourcenolink-like functions.
 
-  \code{set.env.path()} and \code{set.src.path()} can be used along side
+  \code{set.env.path()} and \code{set.src.path()} can be used alongside
   \code{set.sys.path()} to implement \code{\link{env.path}()} and
-  \code{\link{src.path}()}, fully implementing \code{\link{this.path}()}. Note
-  that \code{set.env.path()} only makes sense if the code is being modularized,
-  see examples.
+  \code{\link{src.path}()}, thereby fully implementing
+  \code{\link{this.path}()}. Note that \code{set.env.path()} only makes sense
+  if the code is being modularized, see \strong{Examples}.
 
   \code{unset.sys.path()} will undo a call to \code{set.sys.path()}. You will
   need to use this if you wish to call \code{set.sys.path()} multiple times
@@ -178,9 +179,9 @@ wrap.source(expr,
   \code{wrap.source()}, unlike \code{set.sys.path()}, does not accept an
   argument \code{file}. Instead, an attempt is made to extract the file from
   \code{expr}, after which \code{expr} is evaluated. It is assumed that the
-  file is the first argument of the function, as is the case with
-  \sourcesfirstargisfileandlistnolinks. The function of the call is evaluated,
-  its \code{\link[base]{formals}()} are retrieved, and then the arguments of
+  file is the first argument of the function, as is the case with most
+  \sourcenolink-like functions. The function of the call is evaluated, its
+  \code{\link[base]{formals}()} are retrieved, and then the arguments of
   \code{expr} are searched for a name matching the name of the first formal
   argument. If a match cannot be found by name, the first unnamed argument is
   taken instead. If no such argument exists, the file is assumed missing.
