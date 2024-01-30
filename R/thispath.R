@@ -172,28 +172,21 @@ delayedAssign(".untitled", {
     delayedAssign("response_file", { file.path(dir_session, "response.log") })
     delayedAssign("create_files", {
         dir.create(dir_session, showWarnings = FALSE, recursive = TRUE)
-        file.create(response_lock_file, showWarnings = FALSE)
+        if (file.create(response_lock_file, showWarnings = FALSE))
+            cat("\n", file = response_lock_file)
         file.create(response_file, showWarnings = FALSE)
     })
-    response_time_stamp <- ""
-    not_received_response <- function() {
-        lock_time_stamp <- readLines(response_lock_file)
-        if (isTRUE(lock_time_stamp != response_time_stamp)) {
-            response_time_stamp <<- lock_time_stamp
-            FALSE
-        }
-        else TRUE
-    }
                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     create_files
+    response_time_stamp <- readLines(response_lock_file)
     obj <- list(time = Sys.time(), pid = pid, wd = wd, command = "rstudioapi",
         action = "active_editor_context", args = list(), sd = dir_session)
     jsonlite::write_json(obj, request_file,
         auto_unbox = TRUE, null = "null", force = TRUE)
     cat(sprintf("%.6f", Sys.time()), file = request_lock_file)
     wait_start <- Sys.time()
-    while (not_received_response()) {
+    while (!isTRUE(response_time_stamp != readLines(response_lock_file))) {
         if ((Sys.time() - wait_start) > response_timeout) {
             stop(.ThisPathNotFoundError(
                 "Did not receive a response from VSCode-R API within ",
