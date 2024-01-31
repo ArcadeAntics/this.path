@@ -267,7 +267,7 @@ delayedAssign(".GUI_vscode", {
     interactive() &&
     isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") &&
     (
-        (is.na(.shINFO[["ENC"]]) && isFALSE(.shINFO[["has_input"]])) ||
+        isFALSE(.shINFO[["has_input"]]) ||
         .console_radian
     )
 })

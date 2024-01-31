@@ -159,34 +159,52 @@ delayedAssign(".untitled", {
 
 
 .vscode_path <- evalq(envir = new.env(), {
+    ## https://github.com/REditorSupport/vscode-R/blob/master/R/session/vsc.R#L1
     delayedAssign("pid", { Sys.getpid() })
     delayedAssign("wd", { getwd() })
-    delayedAssign("tempdir", { .BaseNamespaceEnv$tempdir() })
     delayedAssign("homedir", { Sys.getenv(if (.Platform$OS.type == "windows") "USERPROFILE" else "HOME") })
     delayedAssign("dir_watcher", { Sys.getenv("VSCODE_WATCHER_DIR", file.path(homedir, ".vscode-R")) })
     delayedAssign("request_file", { file.path(dir_watcher, "request.log") })
     delayedAssign("request_lock_file", { file.path(dir_watcher, "request.lock") })
-    delayedAssign("dir_session", { file.path(tempdir, "vscode-R") })
+    ## https://github.com/REditorSupport/vscode-R/blob/master/R/session/vsc.R#L357
+    delayedAssign("dir_session", {
+        local({
+            dir_session <- tempfile("vscode-R")
+            dir.create(dir_session, showWarnings = FALSE, recursive = TRUE)
+            dir_session
+        })
+    })
+    ## https://github.com/REditorSupport/vscode-R/blob/master/R/session/vsc.R#L812
     response_timeout <- 5
-    delayedAssign("response_lock_file", { file.path(dir_session, "response.lock") })
-    delayedAssign("response_file", { file.path(dir_session, "response.log") })
-    delayedAssign("create_files", {
-        dir.create(dir_session, showWarnings = FALSE, recursive = TRUE)
-        if (file.create(response_lock_file, showWarnings = FALSE))
-            cat("\n", file = response_lock_file)
-        file.create(response_file, showWarnings = FALSE)
+    delayedAssign("response_lock_file", {
+        local({
+            ## force the other promise first
+            response_file
+            response_lock_file <- file.path(dir_session, "response.lock")
+            writeLines("", response_lock_file)
+            response_lock_file
+        })
+    })
+    delayedAssign("response_file", {
+        local({
+            response_file <- file.path(dir_session, "response.log")
+            file.create(response_file, showWarnings = FALSE)
+            response_file
+        })
     })
                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
-    create_files
+    ## read the previous request time stamp before making a new request
     response_time_stamp <- readLines(response_lock_file)
+    ## https://github.com/REditorSupport/vscode-R/blob/master/R/session/vsc.R#L204
     obj <- list(time = Sys.time(), pid = pid, wd = wd, command = "rstudioapi",
         action = "active_editor_context", args = list(), sd = dir_session)
     jsonlite::write_json(obj, request_file,
         auto_unbox = TRUE, null = "null", force = TRUE)
     cat(sprintf("%.6f", Sys.time()), file = request_lock_file)
+    ## https://github.com/REditorSupport/vscode-R/blob/master/R/session/vsc.R#L838
     wait_start <- Sys.time()
-    while (!isTRUE(response_time_stamp != readLines(response_lock_file))) {
+    while (isTRUE(response_time_stamp == readLines(response_lock_file))) {
         if ((Sys.time() - wait_start) > response_timeout) {
             stop(.ThisPathNotFoundError(
                 "Did not receive a response from VSCode-R API within ",
