@@ -85,9 +85,6 @@ SEXP do_R_MB_CUR_MAX do_formals
 }
 
 
-SEXP _packageName;
-
-
 SEXP do_onLoad do_formals
 {
     do_start_no_call_op_rho("onLoad", 2);
@@ -104,15 +101,8 @@ SEXP do_onLoad do_formals
 
 
     /* these arguments are passed from .onLoad() */
-    // SEXP libname = CAR(args);  // warning: unused variable 'libname'
-    SEXP pkgname = CADR(args);
-
-
-#if R_version_at_least(3, 2, 0)
-    _packageName = installChar(STRING_ELT(pkgname, 0));
-#else
-    _packageName = install(CHAR(STRING_ELT(pkgname, 0)));
-#endif
+    // SEXP libname = CAR(args);   // warning: unused variable 'libname'
+    // SEXP pkgname = CADR(args);  // warning: unused variable 'pkgname'
 
 
 #ifdef R_VERSION
@@ -129,7 +119,7 @@ SEXP do_onLoad do_formals
                     iv[1] == atoi(R_MINOR));
                 else warningcall_immediate(R_NilValue,
                     "package '%s' was built under R version %s.%s\n but is being loaded in R %d.%d.%d",
-                    CHAR(PRINTNAME(_packageName)), R_MAJOR, R_MINOR, iv[0], iv[1], iv[2]);
+                    "@R_PACKAGE_NAME@", R_MAJOR, R_MINOR, iv[0], iv[1], iv[2]);
             }
         }
         UNPROTECT(2);
@@ -138,7 +128,7 @@ SEXP do_onLoad do_formals
 
 
     /* get my namespace from the namespace registry */
-    mynamespace = findVarInFrame(R_NamespaceRegistry, _packageName);
+    mynamespace = findVarInFrame(R_NamespaceRegistry, install("@R_PACKAGE_NAME@"));
     if (TYPEOF(mynamespace) != ENVSXP)
         error(_("not an environment"));
     R_PreserveObject(mynamespace);
@@ -833,7 +823,7 @@ SEXP do_onUnload do_formals
         SEXP expr;
         PROTECT_INDEX indx;
         PROTECT_WITH_INDEX(expr = CONS(libpath, R_NilValue), &indx);
-        REPROTECT(expr = CONS(ScalarString(PRINTNAME(_packageName)), expr), indx);
+        REPROTECT(expr = CONS(mkString("@R_PACKAGE_NAME@"), expr), indx);
         REPROTECT(expr = LCONS(getFromBase(install("library.dynam.unload")), expr), indx);
         REPROTECT(expr = CONS(expr, R_NilValue), indx);
         REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);

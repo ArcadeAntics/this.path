@@ -273,7 +273,6 @@ delayedAssign(".GUI_vscode", {
 })
 
 
-.IRkernel_main_call <- quote(IRkernel::main())
 ## jupyter build a competent API challenge (impossible)
 delayedAssign(".GUI_jupyter", {
     !interactive() &&
@@ -297,7 +296,10 @@ delayedAssign(".GUI_jupyter", {
             error = identity)
         !inherits(exprs, "error") &&
             length(exprs) &&
-            .identical(exprs[[length(exprs)]], .IRkernel_main_call)
+            .identical(
+                exprs[[length(exprs)]],
+                as.call(list(call("::", as.symbol("IRkernel"), as.symbol("main"))))  # quote(IRkernel::main())
+            )
     })
 })
 

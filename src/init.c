@@ -96,12 +96,13 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"ext<-"        , (DL_FUNC) &do_extgets        , 3},
 
 
-/* isabspath.c */
+/* files.c */
 
 
 {"windows_is_abs_path", (DL_FUNC) &do_windows_is_abs_path, 1},
 {"unix_is_abs_path"   , (DL_FUNC) &do_unix_is_abs_path   , 1},
 {"is_abs_path"        , (DL_FUNC) &do_is_abs_path        , 1},
+{"is_clipboard"       , (DL_FUNC) &do_is_clipboard       , 1},
 
 
 /* ns-hooks.c */
@@ -219,13 +220,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* thispath.c */
 
 
-{"is_clipboard"      , (DL_FUNC) &do_is_clipboard      ,  1},
-{"jupyter_path"      , (DL_FUNC) &do_jupyter_path      , -1},
-{"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1}, // R_Visible off
-{"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
-{"remove_trailing_blank_string", (DL_FUNC) &do_remove_trailing_blank_string, 1},
 {"fixNewlines"       , (DL_FUNC) &do_fixNewlines       ,  1},
 {"splitlines"        , (DL_FUNC) &do_splitlines        ,  1},
+{"remove_trailing_blank_string", (DL_FUNC) &do_remove_trailing_blank_string, 1},
+{"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
+{"jupyter_path"      , (DL_FUNC) &do_jupyter_path      , -1},
+{"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1}, // R_Visible off
 {"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0}, // R_Visible off
 {"sys_path"          , (DL_FUNC) &do_sys_path          , -1},
 {"getframenumber"    , (DL_FUNC) &do_getframenumber    ,  0},

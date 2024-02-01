@@ -7,6 +7,7 @@
 #include "backports.h"
 #include "devel.h"
 #include "error.h"
+#include "files.h"
 #include "ns-hooks.h"
 #include "print.h"
 #include "promises.h"
@@ -112,12 +113,6 @@ extern SEXP get_debugSource(void);
 // extern int IS_BYTES(SEXP x);
 #define IS_BYTES(x) (getCharCE((x)) == CE_BYTES)
 // extern int IS_LATIN1(SEXP x);
-
-
-extern int is_clipboard(const char *url);
-extern const char *must_not_be_clipboard_message;
-extern int is_url(const char *url);
-extern int is_file_uri(const char *url);
 
 
 /* doesn't work in general, for example sys.function() duplicates its return value */

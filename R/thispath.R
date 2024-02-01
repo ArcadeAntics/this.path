@@ -96,10 +96,6 @@
 }
 
 
-.is_jupyter_loaded <- function ()
-.GUI_jupyter && isNamespaceLoaded("IRkernel") && .identical(sys.function(1L), IRkernel::main)
-
-
 ## path of active file in GUI          ----
 
 
@@ -245,6 +241,11 @@ delayedAssign(".untitled", {
 })
 
 
+.is_jupyter_loaded <- function ()
+# .GUI_jupyter && isNamespaceLoaded("IRkernel") && .identical(sys.function(1L), IRkernel::main)
+.GUI_jupyter && !is.null(ns <- .getNamespace("IRkernel")) && .identical(sys.function(1L), getExportedValue(ns, "main"))
+
+
 .jupyter_path <- evalq(envir = new.env(), {
     delayedAssign("ofile", { NA_character_ })
     ofile
@@ -312,6 +313,27 @@ delayedAssign(".untitled", {
         }))
 }
 })
+
+
+set.jupyter.path <- function (...)
+{
+    if (!.GUI_jupyter)
+        stop(gettextf("'%s' can only be called in Jupyter",
+            "set.jupyter.path"))
+    if (!.is_jupyter_loaded())
+        stop(gettextf("'%s' can only be called after Jupyter has finished loading",
+            "set.jupyter.path"))
+    n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
+    if (sys.nframe() != n)
+        stop(gettextf("'%s' can only be called from a top-level context",
+            "set.jupyter.path"))
+    path <- if (missing(...) || ...length() == 1L && (is.null(..1) || is.atomic(..1) && length(..1) == 1L && is.na(..1)))
+        NA_character_
+    else if (is.null(initwd))
+        path.join(...)
+    else path.join(initwd, ...)
+    .External2(.C_set_jupyter_path, path)
+}
 
 
 .emacs_path <- evalq(envir = new.env(), {
@@ -651,27 +673,6 @@ delayedAssign(".untitled", {
             NA_character_
         else stop(.ThisPathUnrecognizedMannerError())
     }
-}
-
-
-set.jupyter.path <- function (...)
-{
-    if (!.GUI_jupyter)
-        stop(gettextf("'%s' can only be called in Jupyter",
-            "set.jupyter.path"))
-    if (!.is_jupyter_loaded())
-        stop(gettextf("'%s' can only be called after Jupyter has finished loading",
-            "set.jupyter.path"))
-    n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
-    if (sys.nframe() != n)
-        stop(gettextf("'%s' can only be called from a top-level context",
-            "set.jupyter.path"))
-    path <- if (missing(...) || ...length() == 1L && (is.null(..1) || is.atomic(..1) && length(..1) == 1L && is.na(..1)))
-        NA_character_
-    else if (is.null(initwd))
-        path.join(...)
-    else path.join(initwd, ...)
-    .External2(.C_set_jupyter_path, path)
 }
 
 
