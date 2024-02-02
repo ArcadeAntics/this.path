@@ -282,7 +282,6 @@ delayedAssign(".GUI_jupyter", {
 
     .maybe_unembedded_shell &&
 
-    is.na(.shINFO[["ENC"]]) &&
     isTRUE(.shINFO[["has_input"]]) &&
     is.na(.shINFO[["FILE"]]) &&
     !is.na(.shINFO[["EXPR"]]) &&
@@ -298,7 +297,7 @@ delayedAssign(".GUI_jupyter", {
             length(exprs) &&
             .identical(
                 exprs[[length(exprs)]],
-                as.call(list(call("::", as.symbol("IRkernel"), as.symbol("main"))))  # quote(IRkernel::main())
+                as.call(list(call("::", quote(IRkernel), quote(main))))  # quote(IRkernel::main())
             )
     })
 })
@@ -308,10 +307,7 @@ delayedAssign(".GUI_emacs", {
     interactive() &&
     Sys.getenv("STATATERM") == "emacs" &&
     .maybe_unembedded_shell &&
-    (
-        (.OS_unix    && .shINFO[["no_readline"]]) ||
-        (.OS_windows && .shINFO[["ess"]])
-    )
+    (.OS_unix || (.OS_windows && .shINFO[["ess"]]))
 })
 
 
