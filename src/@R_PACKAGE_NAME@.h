@@ -147,10 +147,10 @@ extern SEXP do_extgets         do_formals;
 /* files.c */
 
 
+extern SEXP do_is_clipboard        do_formals;
 extern SEXP do_windows_is_abs_path do_formals;
 extern SEXP do_unix_is_abs_path    do_formals;
 extern SEXP do_is_abs_path         do_formals;
-extern SEXP do_is_clipboard        do_formals;
 
 
 /* ns-hooks.c */
@@ -268,12 +268,12 @@ extern SEXP do_sys_whiches do_formals;
 /* thispath.c */
 
 
-extern SEXP do_jupyter_path       do_formals;
-extern SEXP do_set_jupyter_path   do_formals;
-extern SEXP do_Rgui_path          do_formals;
-extern SEXP do_remove_trailing_blank_string do_formals;
 extern SEXP do_fixNewlines        do_formals;
 extern SEXP do_splitlines         do_formals;
+extern SEXP do_remove_trailing_blank_string do_formals;
+extern SEXP do_Rgui_path          do_formals;
+extern SEXP do_jupyter_path       do_formals;
+extern SEXP do_set_jupyter_path   do_formals;
 extern SEXP do_set_gui_path       do_formals;
 extern SEXP do_sys_path           do_formals;
 extern SEXP do_getframenumber     do_formals;

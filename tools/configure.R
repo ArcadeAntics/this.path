@@ -7,6 +7,8 @@ main <- function ()
         }
         file.size <- function(...) file.info(...)$size
     }
+    oopt <- options(encoding = "native.enc")
+    on.exit(options(oopt))
 
 
     info.dcf <- "./tools/info.dcf"
@@ -295,10 +297,11 @@ main <- function ()
     } else {
         local({
             if (!devel)
-                if (i <- match("./NEWS", names(text), 0L))
+                if (i <- match("./NEWS", names(text), 0L)) {
                     text[i] <<- gsub("(?<=^|\r\n|[\r\n])  (?! )", "", text[i], perl = TRUE)
+                    info[["dedented_NEWS_subsections"]] <<- "TRUE"
+                }
         })
-        info[["dedented_NEWS_subsections"]] <- "TRUE"
     }
 
 
@@ -311,7 +314,7 @@ main <- function ()
         macros <- unlist(lapply(
             list.files("./man/macros", "\\.Rd$", all.files = TRUE, full.names = TRUE, ignore.case = TRUE),
             function(file) {
-                conn <- file(file, "rb", encoding = "")
+                conn <- file(file, "rb")
                 on.exit(close(conn))
                 readLines(conn)
             }
@@ -380,7 +383,7 @@ main <- function ()
     if (any(i <- o != text)) {
         mapply(function(description, text) {
             ## "wb" does not convert line endings
-            conn <- file(description, "wb", encoding = "")
+            conn <- file(description, "wb")
             on.exit(close(conn))
             writeLines(text, conn, sep = "", useBytes = TRUE)
         }, names(text)[i], text[i], SIMPLIFY = FALSE, USE.NAMES = FALSE)

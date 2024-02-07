@@ -99,7 +99,7 @@ if (getRversion() < "3.0.0") {
 
     R_Visible <- local({
         pattern <- "^\\{\"([^\"]+)\" *, \\(DL_FUNC\\) &do_[^ ]+ *, +-?[[:digit:]]+\\},(?:| // R_Visible (updatable|off))$"
-        x <- readLines("./src/init.c")
+        x <- readLines("./src/0.c")
         m <- regexec(pattern, x)
         keep <- which(vapply(m, length, 0L) > 1L)
         x <- x[keep]

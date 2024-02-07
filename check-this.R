@@ -109,7 +109,7 @@ local({
     times <- as.integer(lengths(y)/2)
 
 
-    x <- readLines("./src/init.c")
+    x <- readLines("./src/0.c")
     pattern <- "^\\{\"([^\"]+)\" *, \\(DL_FUNC\\) &do_[^ ]+ *, +(-?[[:digit:]]+)\\},(?:| // R_Visible (?:updatable|off))$"
     m <- regexec(pattern, x)
     keep <- which(lengths(m) > 1L)
@@ -122,12 +122,12 @@ local({
     y <- matrix(unlist(y), nrow = 2L)
     z <- matrix(unlist(z), nrow = 2L)
     if (any(x <- !(y[1L, ] %in% z[1L, ]))) {
-        warning("names found in files but not in init.c:\n",
+        warning("names found in files but not in 0.c:\n",
             paste(utils::capture.output(split(y[1L, x], rep(filenames, times)[x])), collapse = "\n"))
         y <- y[, !x, drop = FALSE]
     }
     if (length(x <- setdiff(z[1L, ], y[1L, ]))) {
-        warning("names found in init.c but not in files:\n",
+        warning("names found in 0.c but not in files:\n",
             paste(utils::capture.output(x), collapse = "\n"))
         z <- z[, !(z[1L, ] %in% x), drop = FALSE]
     }
@@ -177,7 +177,7 @@ local({
     x <- this.path:::.readFiles(files)
     Encoding(x)[endsWith(names(x), "_msvcrt.txt")] <- "latin1"
     Encoding(x)[endsWith(names(x), "_ucrt.txt")] <- "UTF-8"
-    x <- grep("no_readline", x, value = TRUE)
+    x <- grep("isabspath", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

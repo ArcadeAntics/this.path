@@ -118,8 +118,8 @@ SEXP do_onLoad do_formals
                 if (iv[0] == atoi(R_MAJOR) &&
                     iv[1] == atoi(R_MINOR));
                 else warningcall_immediate(R_NilValue,
-                    "package '%s' was built under R version %s.%s\n but is being loaded in R %d.%d.%d",
-                    "@R_PACKAGE_NAME@", R_MAJOR, R_MINOR, iv[0], iv[1], iv[2]);
+                    "package '@R_PACKAGE_NAME@' was built under R version %s.%s\n but is being loaded in R %d.%d.%d",
+                                                                          R_MAJOR, R_MINOR,                iv[0], iv[1], iv[2]);
             }
         }
         UNPROTECT(2);

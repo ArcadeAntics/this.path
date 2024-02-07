@@ -1,6 +1,6 @@
 #include <R_ext/Rdynload.h>    /* need definition of 'R_ExternalMethodDef' */
 #include <R_ext/Visibility.h>  /* need definition of 'attribute_visible' */
-#include "@R_PACKAGE_NAME@.h"         /* need declarations of C functions */
+#include "@R_PACKAGE_NAME@.h"  /* need declarations of C functions */
 
 
 static const R_ExternalMethodDef externalRoutines[] = {
@@ -99,10 +99,10 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* files.c */
 
 
+{"is_clipboard"       , (DL_FUNC) &do_is_clipboard       , 1},
 {"windows_is_abs_path", (DL_FUNC) &do_windows_is_abs_path, 1},
 {"unix_is_abs_path"   , (DL_FUNC) &do_unix_is_abs_path   , 1},
 {"is_abs_path"        , (DL_FUNC) &do_is_abs_path        , 1},
-{"is_clipboard"       , (DL_FUNC) &do_is_clipboard       , 1},
 
 
 /* ns-hooks.c */

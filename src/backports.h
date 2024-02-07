@@ -139,6 +139,10 @@ extern int IS_SCALAR(SEXP x, int type);
 #if R_version_less_than(3, 2, 0)
 #define R_THIS_PATH_NEED_BLANKSCALARSTRING
 extern SEXP R_BlankScalarString;
+#endif
+
+
+#if R_version_less_than(3, 2, 0)
 #define installChar(x) install(CHAR((x)))
 #endif
 
