@@ -4,8 +4,9 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include "backports.h"
 #include "devel.h"
+
+#include "backports.h"
 #include "error.h"
 #include "files.h"
 #include "ns-hooks.h"
@@ -71,9 +72,6 @@ void MARK_NOT_MUTABLE_defineVar(SEXP symbol, SEXP value, SEXP rho);
 
 extern SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call);
 extern SEXP findFunction(SEXP symbol, SEXP rho);
-
-
-extern SEXP as_environment_char(const char *what);
 
 
 #if defined(R_CONNECTIONS_VERSION_1)

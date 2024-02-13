@@ -1,4 +1,3 @@
-#include "drivewidth.h"
 #include "thispathdefn.h"
 #include <ctype.h>  /* includes toupper() */
 
@@ -59,7 +58,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
             /* look for a drivespec in ptr */
-            drivewidth = get_drive_width_windows(ptr, nchar);
+            drivewidth = drive_width_windows(ptr, nchar);
 
 
             /* if we have no already found an absolute pathspec,
@@ -180,7 +179,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
                 /* look for a drivespec in ptr */
-                maybe_drivewidth = get_drive_width_windows(maybe_ptr, maybe_nchar);
+                maybe_drivewidth = drive_width_windows(maybe_ptr, maybe_nchar);
 
 
                 if (maybe_drivewidth) {
@@ -392,7 +391,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
                  * be sure to chop off the drive before pasting
                  */
                 if (i <= drive_indx) {
-                    drivewidth = get_drive_width_windows(ptr, nchar);
+                    drivewidth = drive_width_windows(ptr, nchar);
                     ptr += drivewidth;
                     nchar -= drivewidth;
 

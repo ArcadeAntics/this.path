@@ -1,4 +1,3 @@
-#include "drivewidth.h"
 #include "thispathdefn.h"
 
 
@@ -35,7 +34,7 @@ SEXP basename2(int windows, SEXP args)
             SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
-        drivewidth = _get_drive_width(windows, ptr, nchar);
+        drivewidth = _drive_width(windows, ptr, nchar);
         nchar -= drivewidth;  /* number of characters in the pathspec */
         if (nchar == 0) {
             /* don't bother assigning an empty string, should already be empty
@@ -206,7 +205,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         }
 
 
-        drivewidth = _get_drive_width(windows, ptr, nchar);
+        drivewidth = _drive_width(windows, ptr, nchar);
         if (drivewidth == nchar) {  /* pathspec is 0 bytes long */
             if ((windows) && drivewidth == 2) {
                 char _buf[4];

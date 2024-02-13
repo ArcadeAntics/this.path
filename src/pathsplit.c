@@ -1,4 +1,3 @@
-#include "drivewidth.h"
 #include "thispathdefn.h"
 
 
@@ -71,7 +70,7 @@ SEXP path_split(int windows, int length1, SEXP args)
             str = translateChar(path0);
             int nchar = (int) strlen(str);
             cetype_t enc = CE_NATIVE;
-            int drivewidth = _get_drive_width(windows, str, nchar);
+            int drivewidth = _drive_width(windows, str, nchar);
             const char *p = str + drivewidth;
             const char *end = str + nchar;
             int nstrings = 0;

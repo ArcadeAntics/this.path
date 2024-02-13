@@ -1,4 +1,3 @@
-#include "drivewidth.h"
 #include "thispathdefn.h"
 
 
@@ -2865,28 +2864,6 @@ SEXP src_path6(Rboolean verbose, Rboolean original, Rboolean for_msg,
 {
     return src_path7(verbose, original, for_msg, contents, srcfile,
                      /* unbound_ok */ FALSE, rho);
-}
-
-
-static R_INLINE
-SEXP src_path3(Rboolean verbose, SEXP srcfile, SEXP rho)
-{
-    return src_path6(verbose, /* original */ FALSE, /* for_msg */ FALSE,
-                     /* contents */ FALSE, srcfile, rho);
-}
-
-
-static R_INLINE
-SEXP src_path2(SEXP srcfile, SEXP rho)
-{
-    return src_path3(/* verbose */ FALSE, srcfile, rho);
-}
-
-
-static R_INLINE
-SEXP src_path1(SEXP rho)
-{
-    return src_path2(/* srcfile */ NULL, rho);
 }
 
 

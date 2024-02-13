@@ -1,6 +1,6 @@
 #include <Rinternals.h>       /* need definition of SEXP */
-#include "rversiondefines.h"  /* need definition of R_version_less_than */
 #include "devel.h"
+#include "rversiondefines.h"  /* need definition of R_version_less_than */
 
 
 #if defined(R_THIS_PATH_DEFINE_SYMBOLS)

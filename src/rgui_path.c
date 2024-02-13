@@ -4,7 +4,6 @@
 #ifdef _WIN32
 
 
-#include "drivewidth.h"
 #include "thispathdefn.h"
 
 

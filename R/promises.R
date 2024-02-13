@@ -240,12 +240,7 @@ delayedAssign(".OS_windows", { .Platform$OS.type == "windows" })
 ## as such, I've made my own ways of determining the type of GUI in use
 delayedAssign(".GUI_RStudio", {
     commandArgs()[[1L]] == "RStudio" &&
-    isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID")) &&
-    (
-        .Platform$GUI == "RStudio" ||
-        (.OS_unix    && .Platform$GUI %in% c("X11", "unknown", "none")) ||
-        (.OS_windows && .Platform$GUI == "Rgui")
-    )
+    isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID"))
 })
 
 

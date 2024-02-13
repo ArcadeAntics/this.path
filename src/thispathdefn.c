@@ -196,26 +196,6 @@ SEXP findFunction(SEXP symbol, SEXP rho)
 }
 
 
-SEXP as_environment_char(const char *what)
-{
-    SEXP name;
-    for (SEXP t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
-        name = getAttrib(t, R_NameSymbol);
-        if (isString(name) &&
-            length(name) > 0 &&
-            !strcmp(translateChar(STRING_ELT(name, 0)), what))
-        {
-            return t;
-        }
-    }
-    SEXP expr = LCONS(as_environmentSymbol, CONS(mkString(what), R_NilValue));
-    PROTECT(expr);
-    errorcall(expr, _("no item called \"%s\" on the search list"), what);
-    UNPROTECT(1);
-    return R_NilValue;
-}
-
-
 #if defined(R_CONNECTIONS_VERSION_1)
 SEXP summaryconnection(Rconnection Rcon)
 {

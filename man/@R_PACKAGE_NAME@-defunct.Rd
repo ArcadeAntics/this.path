@@ -73,7 +73,7 @@ fileArgs()
   argument \code{default}. Should be replaced by
   \code{\link{this.path}(default = NULL)},
   \code{\link{this.dir}(default = NULL)}, and
-  \ifelse{html}{\code{\link{this.dir}(default = \link[base]{getwd}())}}{\code{\link{this.dir}(default = getwd())}},
+  \ifelse{html}{\code{\link{this.dir}(default = \link[base]{getwd}())}}{\code{this.dir(default = getwd())}},
   respectively.
 
   \code{normalized.shFILE()} was used before \code{\link{shFILE}()} was given
