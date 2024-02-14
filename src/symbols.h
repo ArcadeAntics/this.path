@@ -85,6 +85,8 @@ extern0 SEXP0
 
     _GUI_RStudioSymbol                     INI_as(install(".GUI_RStudio")),
     debugSourceSymbol                      INI_as(install("debugSource")),
+    _rs_sourceWithProgressSymbol           INI_as(install(".rs.sourceWithProgress")),
+    statementsSymbol                       INI_as(install("statements")),
 
     testthatSymbol                         INI_as(install("testthat")),
     source_fileSymbol                      INI_as(install("source_file")),

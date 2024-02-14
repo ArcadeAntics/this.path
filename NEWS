@@ -11,6 +11,8 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
     * this.path() is now compatible with function utils::Sweave().
 
+    * this.path() is now compatible with background jobs in 'RStudio'.
+
     * Added with_script_path() which sets the current script in
       'package:box' to this.path(), then evaluates its argument, most
       commonly a 'package:box' import statement.

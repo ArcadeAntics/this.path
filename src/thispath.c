@@ -876,6 +876,23 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     Rboolean rstudio_loaded = (debugSource != R_UnboundValue);
 
 
+    SEXP _rs_sourceWithProgress = R_UnboundValue;
+    Rboolean rstudio_background_job_tools_loaded = FALSE;
+    if (getenv("RSTUDIOAPI_IPC_REQUESTS_FILE")) {
+        SEXP name;
+        for (SEXP t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
+            name = getAttrib(t, R_NameSymbol);
+            if (isString(name) &&
+                length(name) > 0 &&
+                !strcmp(translateChar(STRING_ELT(name, 0)), "tools:rstudio"))
+            {
+                rstudio_background_job_tools_loaded = TRUE;
+                _rs_sourceWithProgress = getInFrame(_rs_sourceWithProgressSymbol, t, TRUE);
+            }
+        }
+    }
+
+
     SEXP ns;
     Rboolean utils_loaded   ; SEXP Sweave;
     Rboolean compiler_loaded; SEXP loadcmp;
@@ -1329,9 +1346,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* ignore_all             */ FALSE,
                     /* srcfile_original       */ NULL
                 );
-                if (srcfile) {
-                    define_srcfile_documentcontext;
-                }
+                if_srcfile_then_define_documentcontext;
             }
             returnfile(which, source_char);
         }
@@ -1396,6 +1411,63 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* ignore_all             */ FALSE,
                     /* srcfile_original       */ NULL
                 );
+            }
+            returnfile(which, source_char);
+        }
+
+
+        else if (rstudio_background_job_tools_loaded && identical(function, _rs_sourceWithProgress)) {
+#undef source_char
+// #define source_char "call to function '.rs.sourceWithProgress' in 'RStudio'"
+#define source_char "background job in 'RStudio'"
+            documentcontext = findVarInFrame(frame, documentcontextSymbol);
+            srcfile = NULL;
+            if (R_existsVarInFrame(frame, statementsSymbol)) {
+                SEXP statements = getInFrame(statementsSymbol, frame, TRUE);
+                if (statements != R_UnboundValue && TYPEOF(statements) == EXPRSXP)
+                    srcfile = env_or_NULL(getAttrib(statements, srcfileSymbol));
+            }
+            if (documentcontext != R_UnboundValue) {
+                check_documentcontext_env;
+                ifndef_srcfile_documentcontext_then_define;
+            }
+            else if (srcfile && !ISUNBOUND(documentcontext = findVarInFrame(srcfile, documentcontextSymbol))) {
+                check_documentcontext_env;
+                define_frame_documentcontext;
+            }
+            else {
+                ofile = findVarInFrame(frame, scriptSymbol);
+                if (ofile == R_UnboundValue)
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(scriptSymbol)));
+                if (TYPEOF(ofile) == PROMSXP) {
+                    /* if ofile is a promise already under evaluation */
+                    if (PRSEEN(ofile) == 1) continue;
+                    if (PRVALUE(ofile) == R_UnboundValue)
+                        ofile = eval(ofile, R_EmptyEnv);
+                    else
+                        ofile = PRVALUE(ofile);
+                }
+                set_documentcontext2(
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ scriptSymbol,
+                    /* ofile                  */ ofile,
+                    /* assign_here            */ frame,
+                    /* assign_as_binding      */ TRUE,
+                    /* normalize_action       */ NA_DEFAULT,
+                    /* maybe_chdir            */ FALSE,
+                    /* getowd                 */ NULL,
+                    /* hasowd                 */ FALSE,
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ TRUE,
+                    /* allow_clipboard        */ TRUE,
+                    /* allow_stdin            */ TRUE,
+                    /* allow_url              */ TRUE,
+                    /* allow_file_uri         */ TRUE,
+                    /* ignore_all             */ FALSE,
+                    /* srcfile_original       */ NULL
+                );
+                if_srcfile_then_define_documentcontext;
             }
             returnfile(which, source_char);
         }

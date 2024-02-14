@@ -12,6 +12,9 @@
       \item{\code{this.path()} is now compatible with function
         \code{utils::Sweave()}.}
 
+      \item{\code{this.path()} is now compatible with background jobs in
+        \sQuote{\RStudio}.}
+
       \item{Added \code{with_script_path()} which sets the current script in
         \pkgorsQuote{package:box} to \code{this.path()}, then evaluates its
         argument, most commonly a \pkgorsQuote{package:box} import statement.}

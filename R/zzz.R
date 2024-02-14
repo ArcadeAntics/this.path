@@ -468,6 +468,11 @@ if (requireNamespace("compiler", quietly = TRUE)) {
         tmp$format.root_criterion <- compiler::cmpfun(tmp$format.root_criterion)
         tmp$print.root_criterion <- compiler::cmpfun(tmp$print.root_criterion)
         rm(tmp)
+
+
+        tmp <- environment(.emacs_path)
+        tmp$.emacsclient <- compiler::cmpfun(tmp$.emacsclient)
+        rm(tmp)
     }
     rm(ocompilePKGS)
 }
