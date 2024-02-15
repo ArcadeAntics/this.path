@@ -10,7 +10,7 @@
   \itemize{
     \item{\sQuote{Rgui}}
 
-    \item{\sQuote{\RStudio}}
+    \item{\sQuote{\RStudio} (including \href{https://docs.posit.co/ide/user/ide/guide/tools/jobs.html}{background jobs})}
 
     \item{\sQuote{\VSCode}}
 

@@ -1418,8 +1418,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
         else if (rstudio_background_job_tools_loaded && identical(function, _rs_sourceWithProgress)) {
 #undef source_char
-// #define source_char "call to function '.rs.sourceWithProgress' in 'RStudio'"
-#define source_char "background job in 'RStudio'"
+#define source_char ((iwhich[0] == 1) ? "background job in 'RStudio'" : "call to function '.rs.sourceWithProgress' in 'RStudio'")
             documentcontext = findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (R_existsVarInFrame(frame, statementsSymbol)) {
