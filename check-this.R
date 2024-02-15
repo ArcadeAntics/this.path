@@ -25,73 +25,59 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming.CRAN.version <- "2.4.0"
+    upcoming_CRAN_version <- "2.4.0"
+
+
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
 
 
+    oopt <- options(encoding = "native.enc")
+    on.exit(options(oopt))
 
 
-
-    DESCRIPTION.dcf <- this.path::here("DESCRIPTION")
-    DESCRIPTION <- read.dcf(DESCRIPTION.dcf)
-    if (nrow(DESCRIPTION) != 1L)
-        stop("contains a blank line", call. = FALSE)
-    DESCRIPTION <- DESCRIPTION[1L, ]
-
-
-    ## re-read the file, providing 'keep.white' this time
-    DESCRIPTION <- read.dcf(DESCRIPTION.dcf, keep.white = names(DESCRIPTION))
-    if (nrow(DESCRIPTION) != 1L)
-        stop("contains a blank line", call. = FALSE)
-    DESCRIPTION <- DESCRIPTION[1L, ]
-
-
-    DESCRIPTION[["Version"]] <- upcoming.CRAN.version
-    temp.DESCRIPTION.dcf <- tempfile(fileext = ".dcf")
-    if (!file.copy(DESCRIPTION.dcf, temp.DESCRIPTION.dcf, overwrite = TRUE, copy.date = TRUE))
-        stop(sprintf("unable to copy file '%s' to '%s'", DESCRIPTION.dcf, temp.DESCRIPTION.dcf))
+    desc_path <- this.path::here("DESCRIPTION")
+    desc <- readChar(desc_path, file.size(desc_path), useBytes = TRUE)
+    Encoding(desc) <- "bytes"
+    desc <- sub("(?<=^|\r\n|[\r\n])Version:[^\r\n]*", sprintf("Version: %s", upcoming_CRAN_version), desc, perl = TRUE)
+    tmp_desc_path <- tempfile(fileext = ".dcf")
+    if (!file.copy(desc_path, tmp_desc_path, overwrite = TRUE, copy.date = TRUE))
+        stop(sprintf("unable to copy file '%s' to '%s'", desc_path, tmp_desc_path))
     on.exit({
-        if (!file.copy(temp.DESCRIPTION.dcf, DESCRIPTION.dcf, overwrite = TRUE, copy.date = TRUE))
-            stop(sprintf("unable to copy file '%s' to '%s'", temp.DESCRIPTION.dcf, DESCRIPTION.dcf))
+        if (!file.copy(tmp_desc_path, desc_path, overwrite = TRUE, copy.date = TRUE))
+            stop(sprintf("unable to copy file '%s' to '%s'", tmp_desc_path, desc_path))
     }, add = TRUE, after = FALSE)
-    write.dcf(t(DESCRIPTION), DESCRIPTION.dcf, useBytes = !l10n_info()[["UTF-8"]],
-        keep.white = names(DESCRIPTION))
+    local({
+        conn <- file(desc_path, "wb")
+        on.exit(close(conn))
+        writeLines(desc, conn, sep = "", useBytes = TRUE)
+    })
 
 
-
-
-
-    info.dcf <- this.path::here("tools", "info.dcf")
-    info <- read.dcf(info.dcf)
+    info_path <- this.path::here("tools", "info.dcf")
+    info <- read.dcf(info_path)
     if (nrow(info) != 1L)
         stop("contains a blank line", call. = FALSE)
     info <- info[1L, ]
-
-
     ## re-read the file, providing 'keep.white' this time
-    info <- read.dcf(info.dcf, keep.white = names(info))
+    info <- read.dcf(info_path, keep.white = names(info))
     if (nrow(info) != 1L)
         stop("contains a blank line", call. = FALSE)
     info <- info[1L, ]
 
 
     info[["devel"]] <- "FALSE"
-    temp.info.dcf <- tempfile(fileext = ".dcf")
-    if (!file.copy(info.dcf, temp.info.dcf, overwrite = TRUE, copy.date = TRUE))
-        stop(sprintf("unable to copy file '%s' to '%s'", info.dcf, temp.info.dcf))
+    tmp_info_path <- tempfile(fileext = ".dcf")
+    if (!file.copy(info_path, tmp_info_path, overwrite = TRUE, copy.date = TRUE))
+        stop(sprintf("unable to copy file '%s' to '%s'", info_path, tmp_info_path))
     on.exit({
-        if (!file.copy(temp.info.dcf, info.dcf, overwrite = TRUE, copy.date = TRUE))
-            stop(sprintf("unable to copy file '%s' to '%s'", temp.info.dcf, info.dcf))
+        if (!file.copy(tmp_info_path, info_path, overwrite = TRUE, copy.date = TRUE))
+            stop(sprintf("unable to copy file '%s' to '%s'", tmp_info_path, info_path))
     }, add = TRUE, after = FALSE)
-    write.dcf(t(info), info.dcf, useBytes = !l10n_info()[["UTF-8"]],
-        keep.white = names(info))
+    write.dcf(t(info), info_path, keep.white = names(info))
 
 
-
-
-
-    essentials:::.update.DESCRIPTION.Date()
+    essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
 })
 
@@ -177,7 +163,7 @@ local({
     x <- this.path:::.readFiles(files)
     Encoding(x)[endsWith(names(x), "_msvcrt.txt")] <- "latin1"
     Encoding(x)[endsWith(names(x), "_ucrt.txt")] <- "UTF-8"
-    x <- grep("local", x, value = TRUE)
+    x <- grep("@R_PACKAGE_VERSION@", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

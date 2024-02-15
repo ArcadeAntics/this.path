@@ -97,21 +97,43 @@ to retrieve the path of the current **R** script:
 
 These are lacking in functionality compared to `package:this.path`:
 
-*   `this.path()` is compatible with GUIs 'Rgui',
-    '[RStudio](https://posit.co/download/rstudio-desktop/)',
-    '[VSCode](https://code.visualstudio.com/)',
-    '[Jupyter](https://jupyter.org/)', and
-    '[Emacs](https://www.gnu.org/software/emacs/)' +
-    '[ESS](https://ess.r-project.org/)', as well as functions and
-    packages `sys.source()`, `debugSource()` in 'RStudio',
-    `compiler::loadcmp()`, `utils::Sweave()`,
-    [`box::use()`](https://CRAN.R-project.org/package=box),
-    [`knitr::knit()`](https://CRAN.R-project.org/package=knitr),
-    [`plumber::plumb()`](https://CRAN.R-project.org/package=plumber),
-    [`shiny::runApp()`](https://CRAN.R-project.org/package=shiny),
-    [`package:targets`](https://CRAN.R-project.org/package=targets),
-    and
-    [`testthat::source_file()`](https://CRAN.R-project.org/package=testthat).
+*   `this.path()` is compatible with the following GUIs:
+
+    *   'Rgui'
+
+    *   '[RStudio](https://posit.co/download/rstudio-desktop/)'
+        (including
+        [background jobs](https://docs.posit.co/ide/user/ide/guide/tools/jobs.html))
+
+    *   '[VSCode](https://code.visualstudio.com/)'
+
+    *   '[Jupyter](https://jupyter.org/)'
+
+    *   '[Emacs](https://www.gnu.org/software/emacs/)' +
+        '[ESS](https://ess.r-project.org/)'
+
+*   `this.path()` is compatible with the following functions and
+    packages:
+
+    *   `sys.source()`
+
+    *   `debugSource()` in 'RStudio'
+
+    *   `compiler::loadcmp()`
+
+    *   `utils::Sweave()`
+
+    *   [`box::use()`](https://CRAN.R-project.org/package=box)
+
+    *   [`knitr::knit()`](https://CRAN.R-project.org/package=knitr)
+
+    *   [`plumber::plumb()`](https://CRAN.R-project.org/package=plumber)
+
+    *   [`shiny::runApp()`](https://CRAN.R-project.org/package=shiny)
+
+    *   [`package:targets`](https://CRAN.R-project.org/package=targets)
+
+    *   [`testthat::source_file()`](https://CRAN.R-project.org/package=testthat)
 
 *   Related to `source()`, `this.path()`:
 

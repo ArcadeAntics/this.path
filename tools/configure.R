@@ -11,12 +11,12 @@ main <- function ()
     on.exit(options(oopt))
 
 
-    info.dcf <- "./tools/info.dcf"
-    info <- read.dcf(info.dcf)
+    info_path <- "./tools/info.dcf"
+    info <- read.dcf(info_path)
     if (nrow(info) != 1L)
         stop("contains a blank line", call. = FALSE)
     ## re-read the file, keeping white space this time
-    info <- read.dcf(info.dcf, keep.white = colnames(info))
+    info <- read.dcf(info_path, keep.white = colnames(info))
     if (nrow(info) != 1L)
         stop("contains a blank line", call. = FALSE)
     info <- info[1L, ]
@@ -265,7 +265,7 @@ main <- function ()
                      paste(sQuote(old), collapse = ", ")))
         }
         info[["renamed_files"]] <- "TRUE"
-        write.dcf(t(info), info.dcf, keep.white = names(info))
+        write.dcf(t(info), info_path, keep.white = names(info))
     }
 
 
@@ -388,7 +388,7 @@ main <- function ()
             writeLines(text, conn, sep = "", useBytes = TRUE)
         }, names(text)[i], text[i], SIMPLIFY = FALSE, USE.NAMES = FALSE)
     }
-    write.dcf(t(info), info.dcf, keep.white = names(info))
+    write.dcf(t(info), info_path, keep.white = names(info))
 
 
     if (!building) {
