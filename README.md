@@ -16,6 +16,10 @@ Install the development version from GitHub:
 ```R
 install.packages("this.path",
     repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES")
+
+## or:
+
+remotes::install_github("ArcadeAntics/this.path")
 ```
 
 ## Details
