@@ -63,7 +63,7 @@ set.this.path(file, path.only = FALSE, character.only = path.only,
     Function = NULL, ofile)
 unset.this.path()
 
-# Defunct in @R_PACKAGE_VERSION@
+# Defunct in 2.4.0
 set.sys.path.jupyter(...)
 fileArgs()
 }

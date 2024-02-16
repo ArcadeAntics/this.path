@@ -66,7 +66,7 @@ unset.this.path <- function ()
 stop(.defunctError("unset.sys.path", "@R_PACKAGE_NAME@", old = "unset.this.path"))
 
 
-## Defunct in @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)
+## Defunct in 2.4.0 (2024-02-16)
 
 
 set.sys.path.jupyter <- function (...)
