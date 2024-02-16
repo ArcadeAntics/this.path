@@ -163,7 +163,7 @@ local({
     x <- this.path:::.readFiles(files)
     Encoding(x)[endsWith(names(x), "_msvcrt.txt")] <- "latin1"
     Encoding(x)[endsWith(names(x), "_ucrt.txt")] <- "UTF-8"
-    x <- grep("@R_PACKAGE_VERSION@", x, value = TRUE)
+    x <- grep("\\.make_numeric_version|numeric_version|package_version|R_system_version", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 
