@@ -124,15 +124,14 @@ SEXP ThisPathNotImplementedError(const char *msg, SEXP call)
     SET_VECTOR_ELT(cond , 2, (summConn));                      \
     UNPROTECT(2);                                              \
     return cond
-#if defined(R_CONNECTIONS_VERSION_1)
-SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon)
-{
-    funbody(mkChar(Rcon->class), summaryconnection(Rcon));
-}
-#else
 SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
 {
     funbody(STRING_ELT(VECTOR_ELT(summary, 1), 0), summary);
+}
+#if defined(R_CONNECTIONS_VERSION_1)
+SEXP ThisPathUnrecognizedConnectionClassError_Rcon_V1(SEXP call, Rconnection Rcon)
+{
+    funbody(mkChar(Rcon->class), summary_connection_Rcon_V1(Rcon));
 }
 #endif
 #undef funbody
@@ -222,13 +221,10 @@ SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
 {
     do_start_no_call_op_rho("ThisPathUnrecognizedConnectionClassError", 2);
 #if defined(R_CONNECTIONS_VERSION_1)
-    /* as I said before, R_GetConnection() is not a part of the R API.
-       DO NOT USE IT unless you are certain of what you are doing and
-       accept the potential consequences and drawbacks */
-    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), R_GetConnection(CADR(args)));
-#else
-    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summaryconnection(CADR(args)));
+    if (my_R_GetConnection)
+        return ThisPathUnrecognizedConnectionClassError_Rcon_V1(lazy_duplicate(CAR(args)), my_R_GetConnection(CADR(args)));
 #endif
+    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summary_connection(CADR(args)));
 }
 
 

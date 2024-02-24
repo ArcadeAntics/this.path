@@ -50,6 +50,7 @@ becomes:
 
 
 #include <Rinternals.h>         /* need definition of SEXP */
+#include "devel.h"
 #include "backports.h"          /* need definition of do_formals */
 #include "rversiondefines.h"    /* need definition of R_version_less_than */
 
@@ -160,6 +161,10 @@ extern SEXP do_mbcslocale   do_formals;
 // extern SEXP do_utf8locale   do_formals;
 // extern SEXP do_latin1locale do_formals;
 extern SEXP do_R_MB_CUR_MAX do_formals;
+
+#if !defined(R_THIS_PATH_DEVEL)
+extern SEXP do_get_ptrs do_formals;
+#endif
 
 extern SEXP do_onLoad         do_formals;
 extern SEXP do_onUnload       do_formals;

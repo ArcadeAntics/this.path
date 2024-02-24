@@ -2,7 +2,7 @@
 #define R_THISPATH_ERROR_H
 
 
-#include <Rinternals.h> /* need definition of SEXP */
+#include <Rinternals.h> /* need 'SEXP' */
 #include "devel.h"
 
 
@@ -17,10 +17,9 @@ extern SEXP ThisPathInZipFileError                  (SEXP call, SEXP description
 extern SEXP ThisPathNotExistsError                  (const char *msg, SEXP call);
 extern SEXP ThisPathNotFoundError                   (const char *msg, SEXP call);
 extern SEXP ThisPathNotImplementedError             (const char *msg, SEXP call);
-#if defined(R_CONNECTIONS_VERSION_1)
-extern SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, Rconnection Rcon);
-#else
 extern SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary);
+#if defined(R_CONNECTIONS_VERSION_1)
+extern SEXP ThisPathUnrecognizedConnectionClassError_Rcon_V1(SEXP call, Rconnection Rcon);
 #endif
 extern SEXP ThisPathUnrecognizedMannerError         (SEXP call);
 

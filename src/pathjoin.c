@@ -708,7 +708,7 @@ SEXP do_unix_path_join do_formals
 SEXP do_path_join do_formals
 {
     do_start_no_op("path_join", 0);
-#ifdef _WIN32
+#if defined(_WIN32)
     return path_join(call, TRUE, "path.join", args, rho);
 #else
     return path_join(call, FALSE, "path.join", args, rho);

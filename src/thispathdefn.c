@@ -196,8 +196,17 @@ SEXP findFunction(SEXP symbol, SEXP rho)
 }
 
 
+SEXP summary_connection(SEXP sConn)
+{
+    if (!inherits(sConn, "connection")) error(_("invalid connection"));
+    SEXP expr = LCONS(summary_connectionSymbol, CONS(sConn, R_NilValue));
+    PROTECT(expr);
+    SEXP value = eval(expr, R_BaseEnv);
+    UNPROTECT(1);
+    return value;
+}
 #if defined(R_CONNECTIONS_VERSION_1)
-SEXP summaryconnection(Rconnection Rcon)
+SEXP summary_connection_Rcon_V1(Rconnection Rcon)
 {
     SEXP value, names;
     value = allocVector(VECSXP, 7);
@@ -220,16 +229,6 @@ SEXP summaryconnection(Rconnection Rcon)
     SET_VECTOR_ELT(value, 5, mkString(Rcon->canread ? "yes" : "no"));
     SET_STRING_ELT(names, 6, mkChar("can write"));
     SET_VECTOR_ELT(value, 6, mkString(Rcon->canwrite ? "yes" : "no"));
-    UNPROTECT(1);
-    return value;
-}
-#else
-SEXP summaryconnection(SEXP sConn)
-{
-    if (!inherits(sConn, "connection")) error(_("invalid connection"));
-    SEXP expr = LCONS(summary_connectionSymbol, CONS(sConn, R_NilValue));
-    PROTECT(expr);
-    SEXP value = eval(expr, R_BaseEnv);
     UNPROTECT(1);
     return value;
 }
@@ -301,7 +300,7 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
     const char *url;
     cetype_t ienc = CE_NATIVE;
 // https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5531
-#ifdef _WIN32
+#if defined(_WIN32)
     if (!IS_ASCII(file)) {
         ienc = CE_UTF8;
         url = translateCharUTF8(file);
@@ -329,7 +328,7 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
     const char *url;
     cetype_t ienc = CE_NATIVE;
 // https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5531
-#ifdef _WIN32
+#if defined(_WIN32)
     if (!IS_ASCII(file)) {
         ienc = CE_UTF8;
         url = translateCharUTF8(file);
@@ -344,7 +343,7 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 
 // https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5650
     int nh = 7;
-#ifdef _WIN32
+#if defined(_WIN32)
     if (strlen(url) > 9 && url[7] == '/' && url[9] == ':') nh = 8;
 #endif
 
@@ -358,7 +357,7 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
     const char *url = CHAR(description);
     char _buf[8 + strlen(url) + 1];
     char *buf = _buf;
-#ifdef _WIN32
+#if defined(_WIN32)
     if (strlen(url) > 1 && url[1] == ':') {
         strcpy(buf, "file:///");
         strcpy(buf + 8, url);
@@ -387,7 +386,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
     const char *url;
     cetype_t ienc = CE_NATIVE;
 // https://github.com/wch/r-source/blob/trunk/src/main/connections.c#L5531
-#ifdef _WIN32
+#if defined(_WIN32)
     if (!IS_ASCII(file)) {
         ienc = CE_UTF8;
         url = translateCharUTF8(file);

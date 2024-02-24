@@ -74,10 +74,9 @@ extern SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call);
 extern SEXP findFunction(SEXP symbol, SEXP rho);
 
 
+extern SEXP summary_connection(SEXP sConn);
 #if defined(R_CONNECTIONS_VERSION_1)
-extern SEXP summaryconnection(Rconnection Rcon);
-#else
-extern SEXP summaryconnection(SEXP sConn);
+extern SEXP summary_connection_Rcon_V1(Rconnection Rcon);
 #endif
 
 
@@ -147,30 +146,15 @@ extern SEXP get_debugSource(void);
 #define identical(x, y) ( R_compute_identical((x), (y), 127) )
 
 
-#if defined(R_CONNECTIONS_VERSION_1)
-typedef struct gzconn {
-    Rconnection con;
-    /* there are other components to an Rgzconn, but only 'con' is needed */
-} *Rgzconn;
-#define get_description_and_class                              \
-            /* as I said before, R_GetConnection() is not a part of the R API.\
-               DO NOT USE IT unless you are certain of what you are doing and\
-               accept the potential consequences and drawbacks */\
-            Rconnection Rcon = R_GetConnection(ofile);         \
-            if (Rcon->isGzcon) {                               \
-                Rcon = (((Rgzconn)(Rcon->private))->con);      \
-                if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\
-            }                                                  \
-            SEXP description = mkCharCE(Rcon->description, (Rcon->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE);\
-            PROTECT(description); nprotect++;                  \
-            const char *klass = Rcon->class
-#define Rcon_or_summary Rcon
-#else
-#define get_description_and_class                              \
-            SEXP summary = summaryconnection(ofile);           \
+#define get_description_and_class_declarations                 \
+            SEXP summary = NULL;                               \
+            SEXP description;                                  \
+            const char *klass
+#define get_description_and_class_SEXP                         \
+            summary = summary_connection(ofile);               \
             PROTECT(summary); nprotect++;                      \
-            SEXP description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
-            const char *klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
+            description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
+            klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
             if (streql(klass, "gzcon")) {                      \
                 const char *msg = "'this.path' cannot be used within a 'gzcon()'";\
                 SEXP call = getCurrentCall(rho);               \
@@ -180,7 +164,29 @@ typedef struct gzconn {
                 stop(cond);                                    \
                 UNPROTECT(2);                                  \
             }
-#define Rcon_or_summary summary
+#define UnrecognizedConnectionClassError_SEXP ThisPathUnrecognizedConnectionClassError(R_NilValue, summary)
+#if defined(R_CONNECTIONS_VERSION_1)
+#define get_description_and_class                              \
+            Rconnection Rcon = NULL;                           \
+            get_description_and_class_declarations;            \
+            if (my_R_GetConnection) {                          \
+                Rcon = my_R_GetConnection(ofile);              \
+                if (Rcon->isGzcon) {                           \
+                    Rcon = (((Rgzconn)(Rcon->private))->con);  \
+                    if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\
+                }                                              \
+                description = mkCharCE(Rcon->description, (Rcon->enc == CE_UTF8) ? CE_UTF8 : CE_NATIVE);\
+                PROTECT(description); nprotect++;              \
+                klass = Rcon->class;                           \
+            } else {                                           \
+                get_description_and_class_SEXP;                \
+            }
+#define UnrecognizedConnectionClassError (Rcon ? ThisPathUnrecognizedConnectionClassError_Rcon_V1(R_NilValue, Rcon) : UnrecognizedConnectionClassError_SEXP)
+#else
+#define get_description_and_class                              \
+            get_description_and_class_declarations;            \
+            get_description_and_class_SEXP
+#define UnrecognizedConnectionClassError UnrecognizedConnectionClassError_SEXP
 #endif
 
 
@@ -343,13 +349,16 @@ do {                                                           \
                 }                                              \
             }                                                  \
             get_description_and_class;                         \
-            if (streql(klass, "file"  ) ||                     \
-                streql(klass, "gzfile") ||                     \
-                streql(klass, "bzfile") ||                     \
-                streql(klass, "xzfile") ||                     \
-                streql(klass, "fifo"  ))                       \
-            {                                                  \
+            if (streql(klass, "file")) {                       \
                 assign_file_uri2(NULL, NULL, description, documentcontext, normalize_action);\
+                if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
+            }                                                  \
+            else if (streql(klass, "gzfile") ||                \
+                     streql(klass, "bzfile") ||                \
+                     streql(klass, "xzfile") ||                \
+                     streql(klass, "fifo"  ))                  \
+            {                                                  \
+                assign_default(NULL, NULL, ScalarString(description), description, documentcontext, normalize_action);\
                 if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
@@ -439,8 +448,8 @@ do {                                                           \
                      know if this connection has an            \
                      associated file                           \
                      */                                        \
-                    INCREMENT_NAMED_defineVar(errcndSymbol , ThisPathUnrecognizedConnectionClassError(R_NilValue, Rcon_or_summary), documentcontext);\
-                    INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)                                            , documentcontext);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol , UnrecognizedConnectionClassError, documentcontext);\
+                    INCREMENT_NAMED_defineVar(for_msgSymbol, ScalarString(description)       , documentcontext);\
                 }                                              \
                 else                                           \
                     errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\

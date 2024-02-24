@@ -1,5 +1,6 @@
 #include <R_ext/Rdynload.h>    /* need definition of 'R_ExternalMethodDef' */
 #include <R_ext/Visibility.h>  /* need definition of 'attribute_visible' */
+#include "devel.h"
 #include "@R_PACKAGE_NAME@.h"  /* need declarations of C functions */
 
 
@@ -112,6 +113,10 @@ static const R_ExternalMethodDef externalRoutines[] = {
 // {"utf8locale"  , (DL_FUNC) &do_utf8locale  , 0},
 // {"latin1locale", (DL_FUNC) &do_latin1locale, 0},
 {"R_MB_CUR_MAX", (DL_FUNC) &do_R_MB_CUR_MAX, 0},
+
+#if !defined(R_THIS_PATH_DEVEL)
+{"get_ptrs", (DL_FUNC) &do_get_ptrs, 0},
+#endif
 
 {"onLoad"  , (DL_FUNC) &do_onLoad  , 2},
 {"onUnload", (DL_FUNC) &do_onUnload, 1},

@@ -19,7 +19,7 @@ SEXP mynamespace = NULL,
      _custom_gui_path_function_environment  = NULL;
 
 
-#ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
+#if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
 SEXP R_BlankScalarString = NULL;
 #endif
 
@@ -85,6 +85,32 @@ SEXP do_R_MB_CUR_MAX do_formals
 }
 
 
+#if defined(R_CONNECTIONS_VERSION_1)
+Rconnection (*my_R_GetConnection)(SEXP sConn);
+#endif
+#if defined(HAVE_MY_SET_R_VISIBLE)
+void (*my_set_R_Visible)(Rboolean x);
+#endif
+
+
+#if !defined(R_THIS_PATH_DEVEL)
+#include <R_ext/Rdynload.h>
+SEXP do_get_ptrs do_formals
+{
+    do_start_no_call_op_rho("get_ptrs", 0);
+#if defined(R_CONNECTIONS_VERSION_1)
+    my_R_GetConnection = (Rconnection(*)(SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "R_GetConnection");
+#endif
+#if defined(HAVE_MY_SET_R_VISIBLE)
+    my_set_R_Visible = (void(*)(Rboolean))
+        R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
+#endif
+    return R_NilValue;
+}
+#endif
+
+
 SEXP do_onLoad do_formals
 {
     do_start_no_call_op_rho("onLoad", 2);
@@ -105,7 +131,7 @@ SEXP do_onLoad do_formals
     // SEXP pkgname = CADR(args);  // warning: unused variable 'pkgname'
 
 
-#ifdef R_VERSION
+#if defined(R_VERSION)
     {
         SEXP expr = LCONS(install("getRversion"), R_NilValue);
         PROTECT(expr);
@@ -310,7 +336,7 @@ SEXP do_onLoad do_formals
     R_LockEnvironment(_custom_gui_path_function_environment, FALSE);
 
 
-#ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
+#if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
     R_BlankScalarString = ScalarString(R_BlankString);
     R_PreserveObject(R_BlankScalarString);
 #endif
@@ -765,6 +791,38 @@ SEXP do_onLoad do_formals
     }
 
 
+#if R_version_less_than(3, 4, 0)
+    {
+        SEXP sym = install("print.connection");
+        SEXP val = findVarInFrame(mynamespace, sym);
+        if (val != R_UnboundValue) {
+            R_unLockBinding(sym, R_BaseEnv);
+            defineVar(sym, val, R_BaseEnv);
+            R_LockBinding(sym, R_BaseEnv);
+        }
+    }
+#endif
+
+
+#if defined(R_THIS_PATH_DEVEL)
+    /* in the dev version, don't bother transferring pointers */
+#if defined(R_CONNECTIONS_VERSION_1)
+    extern Rconnection R_GetConnection(SEXP sConn);
+    my_R_GetConnection = R_GetConnection;
+#endif
+#else
+    {
+        SEXP expr = LCONS(install(".get_ptrs"), R_NilValue);
+        PROTECT(expr);
+        eval(expr, mynamespace);
+        UNPROTECT(1);
+        R_removeVarFromFrame(install(".get_ptrs"), mynamespace);
+        R_removeVarFromFrame(install(".C_get_ptrs"), mynamespace);
+        LockCLOENV(install(".maybe_dyn_unload"), TRUE);
+    }
+#endif
+
+
     return R_NilValue;
 }
 
@@ -794,7 +852,7 @@ SEXP do_onUnload do_formals
     maybe_release(_custom_gui_path_function_environment);
 
 
-#ifdef R_THIS_PATH_NEED_BLANKSCALARSTRING
+#if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
     maybe_release(R_BlankScalarString);
 #endif
 
@@ -817,6 +875,16 @@ SEXP do_onUnload do_formals
     maybe_release(expr__toplevel_nframe);
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
+
+
+#if !defined(R_THIS_PATH_DEVEL)
+    {
+        SEXP expr = LCONS(install(".maybe_dyn_unload"), R_NilValue);
+        PROTECT(expr);
+        eval(expr, mynamespace);
+        UNPROTECT(1);
+    }
+#endif
 
 
     {

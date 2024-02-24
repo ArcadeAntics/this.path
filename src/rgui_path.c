@@ -1,7 +1,7 @@
 /* keep all the static shit for RGui in this separate file */
 
 
-#ifdef _WIN32
+#if defined(_WIN32)
 
 
 #include "thispathdefn.h"

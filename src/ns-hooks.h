@@ -2,7 +2,7 @@
 #define R_THISPATH_NSHOOKS_H
 
 
-#include <Rinternals.h>       /* need definition of SEXP */
+#include <Rinternals.h>  /* need 'SEXP' */
 
 
 extern SEXP mynamespace,

@@ -61,7 +61,7 @@ local({
 
 
     ## for 'source' and 'debugSource' specifically,
-    ## try sourcing a file URL
+    ## try sourcing a 'file://' URL
     basename_R_URL <- @R_PACKAGE_NAME@:::.as_file_URL(basename_R)
     rel_path_R_URL <- @R_PACKAGE_NAME@:::.as_file_URL(rel_path_R)
     abs_path_R_URL <- @R_PACKAGE_NAME@:::.as_file_URL(abs_path_R)
@@ -90,23 +90,23 @@ local({
 
     ## try using source in all possible manners
     setwd(basename_dir)
-    fun(source(.(basename_R)                          , local = TRUE, chdir = FALSE))               ## from a  basename                 without changing directory
-    fun(source(.(basename_R)                          , local = TRUE, chdir = TRUE ))               ## from a  basename                 with    changing directory (shouldn't do anything)
-    fun(source(.(basename_R_URL)                      , local = TRUE))                              ## from a  basename file URL
-    fun(source(print(conn <- file(.(basename_R), "r")), local = TRUE))               ; close(conn)  ## from a  basename connection
+    fun(source(.(basename_R)                                 , local = TRUE, chdir = FALSE))               ## from a  basename                    without changing directory
+    fun(source(.(basename_R)                                 , local = TRUE, chdir = TRUE ))               ## from a  basename                    with    changing directory (shouldn't do anything)
+    fun(source(.(basename_R_URL)                             , local = TRUE))                              ## from a  basename      'file://' URL
+    fun(source(print(conn <- file(open = "r", .(basename_R))), local = TRUE))               ; close(conn)  ## from a  basename      connection
     setwd(rel_path_dir)
-    fun(source(.(rel_path_R)                          , local = TRUE, chdir = FALSE))               ## from a  relative path            without changing directory
-    fun(source(.(rel_path_R)                          , local = TRUE, chdir = TRUE ))               ## from a  relative path            with    changing directory
-    fun(source(.(rel_path_R_URL)                      , local = TRUE))                              ## from a  relative path file URL
-    fun(source(print(conn <- file(.(rel_path_R), "r")), local = TRUE))               ; close(conn)  ## from a  relative path connection
+    fun(source(.(rel_path_R)                                 , local = TRUE, chdir = FALSE))               ## from a  relative path               without changing directory
+    fun(source(.(rel_path_R)                                 , local = TRUE, chdir = TRUE ))               ## from a  relative path               with    changing directory
+    fun(source(.(rel_path_R_URL)                             , local = TRUE))                              ## from a  relative path 'file://' URL
+    fun(source(print(conn <- file(open = "r", .(rel_path_R))), local = TRUE))               ; close(conn)  ## from a  relative path connection
     setwd(abs_path_dir)
-    fun(source(.(abs_path_R)                          , local = TRUE, chdir = FALSE))               ## from an absolute path            without changing directory
-    fun(source(.(abs_path_R)                          , local = TRUE, chdir = TRUE ))               ## from an absolute path            with    changing directory
-    fun(source(.(abs_path_R_URL)                      , local = TRUE))                              ## from a  absolute path file URL
-    fun(source(print(conn <- file(.(abs_path_R), "r")), local = TRUE))               ; close(conn)  ## from an absolute path connection
+    fun(source(.(abs_path_R)                                 , local = TRUE, chdir = FALSE))               ## from an absolute path               without changing directory
+    fun(source(.(abs_path_R)                                 , local = TRUE, chdir = TRUE ))               ## from an absolute path               with    changing directory
+    fun(source(.(abs_path_R_URL)                             , local = TRUE))                              ## from an absolute path 'file://' URL
+    fun(source(print(conn <- file(open = "r", .(abs_path_R))), local = TRUE))               ; close(conn)  ## from an absolute path connection
 
 
-    ## 'sys.source' cannot handle file URLs nor connections
+    ## 'sys.source' cannot handle 'file://' URLs nor connections
     setwd(basename_dir)
     fun(sys.source(.(basename_R), envir = environment(), chdir = FALSE))
     fun(sys.source(.(basename_R), envir = environment(), chdir = TRUE ))
@@ -133,62 +133,7 @@ local({
     }
 
 
-    ## 'testthat::source_file' cannot handle file URLs nor connections
-    if (requireNamespace("testthat", quietly = TRUE)) {
-        setwd(basename_dir)
-        fun(testthat::source_file(.(basename_R), env = environment(), chdir = FALSE, wrap = FALSE))
-        fun(testthat::source_file(.(basename_R), env = environment(), chdir = FALSE, wrap = TRUE ))
-        fun(testthat::source_file(.(basename_R), env = environment(), chdir = TRUE , wrap = FALSE))
-        fun(testthat::source_file(.(basename_R), env = environment(), chdir = TRUE , wrap = TRUE ))
-        setwd(rel_path_dir)
-        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = FALSE, wrap = FALSE))
-        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = FALSE, wrap = TRUE ))
-        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = TRUE , wrap = FALSE))
-        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = TRUE , wrap = TRUE ))
-        setwd(abs_path_dir)
-        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = FALSE, wrap = FALSE))
-        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = FALSE, wrap = TRUE ))
-        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = TRUE , wrap = FALSE))
-        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = TRUE , wrap = TRUE ))
-    }
-
-
-    ## 'knitr::knit' cannot handle file URLs
-    if (requireNamespace("knitr", quietly = TRUE)) {
-        basename_Rmd <- basename_R; @R_PACKAGE_NAME@::ext(basename_Rmd) <- ".Rmd"
-        rel_path_Rmd <- rel_path_R; @R_PACKAGE_NAME@::ext(rel_path_Rmd) <- ".Rmd"
-        abs_path_Rmd <- abs_path_R; @R_PACKAGE_NAME@::ext(abs_path_Rmd) <- ".Rmd"
-
-
-        on.exit(unlink(abs_path_Rmd), add = TRUE)
-        writeLines(c(
-            "```{r}",
-            ## remove expressions starting with 'cat'
-            {
-                exprs <- parse(abs_path_R)
-                exprs <- exprs[!vapply(exprs, function(expr) {
-                    is.call(expr) && identical(expr[[1L]], as.symbol("cat"))
-                }, NA, USE.NAMES = FALSE)]
-                @R_PACKAGE_NAME@:::.writeCode(exprs, NULL)
-            },
-            "```"
-        ), abs_path_Rmd)
-
-
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_Rmd, "/", TRUE))
-        setwd(basename_dir)
-        fun(knitr::knit(.(basename_Rmd)                     , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(basename_Rmd))), output = stdout(), quiet = TRUE)); close(conn)
-        setwd(rel_path_dir)
-        fun(knitr::knit(.(rel_path_Rmd)                     , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(rel_path_Rmd))), output = stdout(), quiet = TRUE)); close(conn)
-        setwd(abs_path_dir)
-        fun(knitr::knit(.(abs_path_Rmd)                     , output = stdout(), quiet = TRUE))
-        fun(knitr::knit(print(conn <- file(.(abs_path_Rmd))), output = stdout(), quiet = TRUE)); close(conn)
-    }
-
-
-    ## 'compiler::loadcmp' cannot handle file URLs nor connections
+    ## 'compiler::loadcmp' cannot handle 'file://' URLs nor connections
     if (requireNamespace("compiler", quietly = TRUE)) {
         basename_Rc <- basename_R; @R_PACKAGE_NAME@::ext(basename_Rc) <- ".Rc"
         rel_path_Rc <- rel_path_R; @R_PACKAGE_NAME@::ext(rel_path_Rc) <- ".Rc"
@@ -199,7 +144,7 @@ local({
         compiler::cmpfile(abs_path_R, abs_path_Rc)
 
 
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_Rc, "/", TRUE))
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_Rc, "/", TRUE))
         setwd(basename_dir)
         fun(compiler::loadcmp(.(basename_Rc), envir = environment(), chdir = FALSE))
         fun(compiler::loadcmp(.(basename_Rc), envir = environment(), chdir = TRUE ))
@@ -209,92 +154,11 @@ local({
         setwd(abs_path_dir)
         fun(compiler::loadcmp(.(abs_path_Rc), envir = environment(), chdir = FALSE))
         fun(compiler::loadcmp(.(abs_path_Rc), envir = environment(), chdir = TRUE ))
+        options(opt2)
     }
 
 
-    ## 'box::use' cannot handle file URLs nor connections nor absolute paths
-    if (requireNamespace("box", quietly = TRUE)) {
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_R, "/", TRUE))
-        setwd(basename_dir); box::set_script_path(@R_PACKAGE_NAME@::path.join(basename_dir, "."))
-        fun(box::use(module = ./.(as.symbol(sub("\\.R$", "", basename_R))))); box::unload(module)
-        if (!@R_PACKAGE_NAME@:::.is_abs_path(rel_path_R)) {
-            tmp.fun <- function(x) {
-                n <- length(x)
-                if (n > 1L)
-                    call("/", tmp.fun(x[-n]), as.symbol(x[[n]]))
-                else as.symbol(x[[1L]])
-            }
-            tmp <- tmp.fun(c(".", @R_PACKAGE_NAME@::path.split.1(sub("\\.R$", "", rel_path_R))))
-            setwd(rel_path_dir); box::set_script_path(@R_PACKAGE_NAME@::path.join(rel_path_dir, "."))
-            fun(box::use(module = .(tmp))); box::unload(module)
-            rm(tmp, tmp.fun)
-        }
-    }
-
-
-    ## 'shiny::runApp'
-    if (requireNamespace("shiny", quietly = TRUE)) {
-        shinytmp <- tempfile("shinytmp", tmpdir = basename_dir)
-        on.exit(unlink(shinytmp, recursive = TRUE, force = TRUE), add = TRUE)
-        dir.create(shinytmp)
-        file <- @R_PACKAGE_NAME@::path.join(shinytmp, "app.R")
-        writeLines(c(
-            readLines(abs_path_R),
-            "stop(structure(list(message = \"\", call = NULL), class = c(\"this_path_tests_R_catch_this_error\", \"error\", \"condition\")))"
-        ), file)
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(file, "/", TRUE))
-        rm(file)
-        abs_path_app_R <- normalizePath(shinytmp, "/", TRUE)
-        abs_path_app_dir <- abs_path_dir
-        basename_app_R <- "."
-        basename_app_dir <- abs_path_app_R
-        tmp <- rel_path_and_dir(abs_path_app_R)
-        rel_path_app_dir <- tmp[[1L]]
-        rel_path_app_R <- tmp[[2L]]
-        rm(tmp)
-        setwd(basename_app_dir)
-        @R_PACKAGE_NAME@::tryCatch3({
-            fun(shiny::runApp(.(basename_app_R)))
-        }, this_path_tests_R_catch_this_error = )
-        setwd(rel_path_app_dir)
-        @R_PACKAGE_NAME@::tryCatch3({
-            fun(shiny::runApp(.(rel_path_app_R)))
-        }, this_path_tests_R_catch_this_error = )
-        setwd(abs_path_app_dir)
-        @R_PACKAGE_NAME@::tryCatch3({
-            fun(shiny::runApp(.(abs_path_app_R)))
-        }, this_path_tests_R_catch_this_error = )
-    }
-
-
-    ## 'plumber::plumb' cannot handle file URLs nor connections
-    if (requireNamespace("plumber", quietly = TRUE)) {
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_R, "/", TRUE))
-        setwd(basename_dir)
-        fun(plumber::plumb(.(basename_R)))
-        setwd(rel_path_dir)
-        fun(plumber::plumb(.(rel_path_R)))
-        setwd(abs_path_dir)
-        fun(plumber::plumb(.(abs_path_R)))
-
-
-        entrypoint_R <- @R_PACKAGE_NAME@::path.join(basename_dir, "entrypoint.R")
-        on.exit(unlink(entrypoint_R), add = TRUE)
-        writeLines(c(
-            readLines(abs_path_R),
-            "plumber::Plumber$new()"
-        ), entrypoint_R)
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(entrypoint_R, "/", TRUE))
-        setwd(basename_dir)
-        fun(plumber::plumb())
-        setwd(rel_path_dir)
-        fun(plumber::plumb(dir = .(dirname(rel_path_R))))
-        setwd(abs_path_dir)
-        fun(plumber::plumb(dir = .(dirname(abs_path_R))))
-    }
-
-
-    ## 'utils::Sweave' cannot handle file URLs nor connections
+    ## 'utils::Sweave' cannot handle 'file://' URLs nor connections
     if (requireNamespace("utils", quietly = TRUE)) {
         basename_Rnw <- basename_R; @R_PACKAGE_NAME@::ext(basename_Rnw) <- ".Rnw"
         abs_path_Rnw <- abs_path_R; @R_PACKAGE_NAME@::ext(abs_path_Rnw) <- ".Rnw"
@@ -321,7 +185,7 @@ local({
         ), abs_path_Rnw)
 
 
-        options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_Rnw, "/", TRUE))
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_Rnw, "/", TRUE))
         setwd(basename_dir)
         outputname <- fun(utils::Sweave(.(basename_Rnw)))
         writeLines(readLines(outputname))
@@ -329,10 +193,155 @@ local({
 
 
         tmpdir <- tempfile("dir")
-        on.exit(unlink(tmpdir, recursive = TRUE, force = TRUE))
+        on.exit(unlink(tmpdir, recursive = TRUE, force = TRUE), add = TRUE)
         dir.create(tmpdir)
         setwd(tmpdir)
         writeLines(readLines(fun(utils::Sweave(.(@R_PACKAGE_NAME@::path.join("..", basename_Rnw))))))
+        options(opt2)
+    }
+
+
+    ## 'box::use' cannot handle 'file://' URLs nor connections nor absolute paths
+    if (requireNamespace("box", quietly = TRUE)) {
+        tmp <- c(sub("\\.R$", ".r", abs_path_R), abs_path_R)
+        tmp <- tmp[[match(TRUE, file.exists(tmp))]]
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(tmp, "/", TRUE))
+        setwd(basename_dir); box::set_script_path(@R_PACKAGE_NAME@::path.join(basename_dir, "."))
+        fun(box::use(module = ./.(as.symbol(sub("\\.R$", "", basename_R))))); box::unload(module)
+        if (!@R_PACKAGE_NAME@:::.is_abs_path(rel_path_R)) {
+            tmp_fun <- function(x) {
+                n <- length(x)
+                if (n > 1L)
+                    call("/", tmp_fun(x[-n]), as.symbol(x[[n]]))
+                else as.symbol(x[[1L]])
+            }
+            tmp <- tmp_fun(c(".", @R_PACKAGE_NAME@::path.split.1(sub("\\.R$", "", rel_path_R))))
+            setwd(rel_path_dir); box::set_script_path(@R_PACKAGE_NAME@::path.join(rel_path_dir, "."))
+            fun(box::use(module = .(tmp))); box::unload(module)
+            rm(tmp, tmp_fun)
+        }
+        options(opt2)
+    }
+
+
+    ## 'knitr::knit' cannot handle 'file://' URLs
+    if (requireNamespace("knitr", quietly = TRUE)) {
+        basename_Rmd <- basename_R; @R_PACKAGE_NAME@::ext(basename_Rmd) <- ".Rmd"
+        rel_path_Rmd <- rel_path_R; @R_PACKAGE_NAME@::ext(rel_path_Rmd) <- ".Rmd"
+        abs_path_Rmd <- abs_path_R; @R_PACKAGE_NAME@::ext(abs_path_Rmd) <- ".Rmd"
+
+
+        on.exit(unlink(abs_path_Rmd), add = TRUE)
+        writeLines(c(
+            "```{r}",
+            ## remove expressions starting with 'cat'
+            {
+                exprs <- parse(abs_path_R)
+                exprs <- exprs[!vapply(exprs, function(expr) {
+                    is.call(expr) && identical(expr[[1L]], as.symbol("cat"))
+                }, NA, USE.NAMES = FALSE)]
+                @R_PACKAGE_NAME@:::.writeCode(exprs, NULL)
+            },
+            "```"
+        ), abs_path_Rmd)
+
+
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_Rmd, "/", TRUE))
+        setwd(basename_dir)
+        fun(knitr::knit(.(basename_Rmd)                     , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(basename_Rmd))), output = stdout(), quiet = TRUE)); close(conn)
+        setwd(rel_path_dir)
+        fun(knitr::knit(.(rel_path_Rmd)                     , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(rel_path_Rmd))), output = stdout(), quiet = TRUE)); close(conn)
+        setwd(abs_path_dir)
+        fun(knitr::knit(.(abs_path_Rmd)                     , output = stdout(), quiet = TRUE))
+        fun(knitr::knit(print(conn <- file(.(abs_path_Rmd))), output = stdout(), quiet = TRUE)); close(conn)
+        options(opt2)
+    }
+
+
+    ## 'plumber::plumb' cannot handle 'file://' URLs nor connections
+    if (requireNamespace("plumber", quietly = TRUE)) {
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(abs_path_R, "/", TRUE))
+        setwd(basename_dir)
+        fun(plumber::plumb(.(basename_R)))
+        setwd(rel_path_dir)
+        fun(plumber::plumb(.(rel_path_R)))
+        setwd(abs_path_dir)
+        fun(plumber::plumb(.(abs_path_R)))
+        options(opt2)
+
+
+        entrypoint_R <- @R_PACKAGE_NAME@::path.join(basename_dir, "entrypoint.R")
+        on.exit(unlink(entrypoint_R), add = TRUE)
+        writeLines(c(
+            readLines(abs_path_R),
+            "plumber::Plumber$new()"
+        ), entrypoint_R)
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(entrypoint_R, "/", TRUE))
+        setwd(basename_dir)
+        fun(plumber::plumb())
+        setwd(rel_path_dir)
+        fun(plumber::plumb(dir = .(dirname(rel_path_R))))
+        setwd(abs_path_dir)
+        fun(plumber::plumb(dir = .(dirname(abs_path_R))))
+        options(opt2)
+    }
+
+
+    ## 'shiny::runApp'
+    if (requireNamespace("shiny", quietly = TRUE)) {
+        shinytmp <- tempfile("shinytmp", tmpdir = basename_dir)
+        on.exit(unlink(shinytmp, recursive = TRUE, force = TRUE), add = TRUE)
+        dir.create(shinytmp)
+        file <- @R_PACKAGE_NAME@::path.join(shinytmp, "app.R")
+        writeLines(c(
+            readLines(abs_path_R),
+            "stop(structure(list(message = \"\", call = NULL), class = c(\"this_path_tests_R_catch_this_error\", \"error\", \"condition\")))"
+        ), file)
+        opt2 <- options(`@R_PACKAGE_NAME@::sys.path() expectation` = normalizePath(file, "/", TRUE))
+        rm(file)
+        abs_path_app_R <- normalizePath(shinytmp, "/", TRUE)
+        abs_path_app_dir <- abs_path_dir
+        basename_app_R <- "."
+        basename_app_dir <- abs_path_app_R
+        tmp <- rel_path_and_dir(abs_path_app_R)
+        rel_path_app_dir <- tmp[[1L]]
+        rel_path_app_R <- tmp[[2L]]
+        rm(tmp)
+        setwd(basename_app_dir)
+        @R_PACKAGE_NAME@::tryCatch3({
+            fun(shiny::runApp(.(basename_app_R)))
+        }, this_path_tests_R_catch_this_error = )
+        setwd(rel_path_app_dir)
+        @R_PACKAGE_NAME@::tryCatch3({
+            fun(shiny::runApp(.(rel_path_app_R)))
+        }, this_path_tests_R_catch_this_error = )
+        setwd(abs_path_app_dir)
+        @R_PACKAGE_NAME@::tryCatch3({
+            fun(shiny::runApp(.(abs_path_app_R)))
+        }, this_path_tests_R_catch_this_error = )
+        options(opt2)
+    }
+
+
+    ## 'testthat::source_file' cannot handle 'file://' URLs nor connections
+    if (requireNamespace("testthat", quietly = TRUE)) {
+        setwd(basename_dir)
+        fun(testthat::source_file(.(basename_R), env = environment(), chdir = FALSE, wrap = FALSE))
+        fun(testthat::source_file(.(basename_R), env = environment(), chdir = FALSE, wrap = TRUE ))
+        fun(testthat::source_file(.(basename_R), env = environment(), chdir = TRUE , wrap = FALSE))
+        fun(testthat::source_file(.(basename_R), env = environment(), chdir = TRUE , wrap = TRUE ))
+        setwd(rel_path_dir)
+        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = FALSE, wrap = FALSE))
+        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = FALSE, wrap = TRUE ))
+        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = TRUE , wrap = FALSE))
+        fun(testthat::source_file(.(rel_path_R), env = environment(), chdir = TRUE , wrap = TRUE ))
+        setwd(abs_path_dir)
+        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = FALSE, wrap = FALSE))
+        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = FALSE, wrap = TRUE ))
+        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = TRUE , wrap = FALSE))
+        fun(testthat::source_file(.(abs_path_R), env = environment(), chdir = TRUE , wrap = TRUE ))
     }
 
 

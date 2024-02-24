@@ -253,7 +253,7 @@ SEXP do_unix_path_split do_formals
 SEXP do_path_split do_formals
 {
     do_start_no_call_op_rho("path_split", 1);
-#ifdef _WIN32
+#if defined(_WIN32)
     return path_split(TRUE, FALSE, args);
 #else
     return path_split(FALSE, FALSE, args);
@@ -278,7 +278,7 @@ SEXP do_unix_path_split_1 do_formals
 SEXP do_path_split_1 do_formals
 {
     do_start_no_call_op_rho("path_split_1", 1);
-#ifdef _WIN32
+#if defined(_WIN32)
     return path_split(TRUE, TRUE, args);
 #else
     return path_split(FALSE, TRUE, args);
@@ -473,7 +473,7 @@ SEXP do_unix_path_unsplit do_formals
 SEXP do_path_unsplit do_formals
 {
     do_start_no_call_op("path_unsplit", 0);
-#ifdef _WIN32
+#if defined(_WIN32)
     return path_unsplit(TRUE, args, rho);
 #else
     return path_unsplit(FALSE, args, rho);

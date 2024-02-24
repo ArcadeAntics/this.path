@@ -536,7 +536,7 @@ SEXP do_unix_splitext do_formals
 SEXP do_splitext do_formals
 {
     do_start_no_op("splitext", 2);
-#ifdef _WIN32
+#if defined(_WIN32)
     return ext(call, EXTOP_SPLITEXT, TRUE, args, rho);
 #else
     return ext(call, EXTOP_SPLITEXT, FALSE, args, rho);
@@ -561,7 +561,7 @@ SEXP do_unix_removeext do_formals
 SEXP do_removeext do_formals
 {
     do_start_no_op("removeext", 2);
-#ifdef _WIN32
+#if defined(_WIN32)
     return ext(call, EXTOP_REMOVEEXT, TRUE, args, rho);
 #else
     return ext(call, EXTOP_REMOVEEXT, FALSE, args, rho);
@@ -586,7 +586,7 @@ SEXP do_unix_ext do_formals
 SEXP do_ext do_formals
 {
     do_start_no_op("ext", 2);
-#ifdef _WIN32
+#if defined(_WIN32)
     return ext(call, EXTOP_EXT, TRUE, args, rho);
 #else
     return ext(call, EXTOP_EXT, FALSE, args, rho);
@@ -611,7 +611,7 @@ SEXP do_unix_extgets do_formals
 SEXP do_extgets do_formals
 {
     do_start_no_op("ext<-", 3);
-#ifdef _WIN32
+#if defined(_WIN32)
     return ext(call, EXTOP_EXTGETS, TRUE, args, rho);
 #else
     return ext(call, EXTOP_EXTGETS, FALSE, args, rho);

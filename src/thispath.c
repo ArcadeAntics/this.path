@@ -894,8 +894,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
     SEXP ns;
-    Rboolean utils_loaded   ; SEXP Sweave;
     Rboolean compiler_loaded; SEXP loadcmp;
+    Rboolean utils_loaded   ; SEXP Sweave;
     Rboolean box_loaded     ; SEXP load_from_source;
     Rboolean knitr_loaded   ; SEXP knit;
     Rboolean plumber_loaded ; SEXP plumber_sourceUTF8, Plumber_public_methods_initialize;
@@ -904,14 +904,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     Rboolean testthat_loaded; SEXP source_file;
 
 
-    ns = findVarInFrame(R_NamespaceRegistry, utilsSymbol);
-    utils_loaded = (ns != R_UnboundValue);
-    Sweave = (utils_loaded ? getInFrame(SweaveSymbol, ns, FALSE) : R_UnboundValue);
-
-
     ns = findVarInFrame(R_NamespaceRegistry, compilerSymbol);
     compiler_loaded = (ns != R_UnboundValue);
     loadcmp = (compiler_loaded ? getInFrame(loadcmpSymbol, ns, FALSE) : R_UnboundValue);
+
+
+    ns = findVarInFrame(R_NamespaceRegistry, utilsSymbol);
+    utils_loaded = (ns != R_UnboundValue);
+    Sweave = (utils_loaded ? getInFrame(SweaveSymbol, ns, FALSE) : R_UnboundValue);
 
 
     ns = findVarInFrame(R_NamespaceRegistry, boxSymbol);
@@ -1146,7 +1146,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
-                    /* sym                    */ ofileSymbol,
+                    /* sym                    */ fileSymbol,
                     /* ofile                  */ ofile,
                     /* assign_here            */ frame,
                     /* assign_as_binding      */ TRUE,
@@ -1315,14 +1315,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 SEXP wd = findVarInFrame(frame, owdSymbol);
                 if (srcfile && wd == R_UnboundValue)
                     wd = findVarInFrame(srcfile, wdSymbol);
@@ -1383,14 +1376,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), CHAR(PRINTNAME(fileNameSymbol)));
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ fileNameSymbol,
@@ -1438,14 +1424,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = findVarInFrame(frame, scriptSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), CHAR(PRINTNAME(scriptSymbol)));
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -1467,6 +1446,46 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* srcfile_original       */ NULL
                 );
                 if_srcfile_then_define_documentcontext;
+            }
+            returnfile(which, source_char);
+        }
+
+
+        else if (compiler_loaded && identical(function, loadcmp)) {
+#undef source_char
+#define source_char "call to function 'loadcmp' from package 'compiler'"
+            /* much the same as sys.source() */
+            documentcontext = findVarInFrame(frame, documentcontextSymbol);
+            srcfile = NULL;
+            if (documentcontext != R_UnboundValue) {
+                check_documentcontext_env;
+                check_documentcontext_not_emptyenv;
+            }
+            else {
+                ofile = findVarInFrame(frame, fileSymbol);
+                if (ofile == R_UnboundValue)
+                    error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                set_documentcontext2(
+                    /* call                   */ sys_call(which, rho),
+                    /* sym                    */ fileSymbol,
+                    /* ofile                  */ ofile,
+                    /* assign_here            */ frame,
+                    /* assign_as_binding      */ TRUE,
+                    /* normalize_action       */ NA_DEFAULT,
+                    /* maybe_chdir            */ TRUE,
+                    /* getowd                 */ findVarInFrame(frame, owdSymbol),
+                    /* hasowd                 */ ((owd) != R_UnboundValue),
+                    /* character_only         */ TRUE,
+                    /* conv2utf8              */ FALSE,
+                    /* allow_blank_string     */ FALSE,
+                    /* allow_clipboard        */ FALSE,
+                    /* allow_stdin            */ FALSE,
+                    /* allow_url              */ FALSE,
+                    /* allow_file_uri         */ FALSE,
+                    /* ignore_all             */ FALSE,
+                    /* srcfile_original       */ NULL
+                );
             }
             returnfile(which, source_char);
         }
@@ -1586,53 +1605,6 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 documentcontext = VECTOR_ELT(documentcontexts, indx);
                 check_documentcontext_env;
                 check_documentcontext_not_emptyenv;
-            }
-            returnfile(which, source_char);
-        }
-
-
-        else if (compiler_loaded && identical(function, loadcmp)) {
-#undef source_char
-#define source_char "call to function 'loadcmp' from package 'compiler'"
-            /* much the same as sys.source() */
-            documentcontext = findVarInFrame(frame, documentcontextSymbol);
-            srcfile = NULL;
-            if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
-            }
-            else {
-                ofile = findVarInFrame(frame, fileSymbol);
-                if (ofile == R_UnboundValue)
-                    error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
-                set_documentcontext2(
-                    /* call                   */ sys_call(which, rho),
-                    /* sym                    */ fileSymbol,
-                    /* ofile                  */ ofile,
-                    /* assign_here            */ frame,
-                    /* assign_as_binding      */ TRUE,
-                    /* normalize_action       */ NA_DEFAULT,
-                    /* maybe_chdir            */ TRUE,
-                    /* getowd                 */ findVarInFrame(frame, owdSymbol),
-                    /* hasowd                 */ ((owd) != R_UnboundValue),
-                    /* character_only         */ TRUE,
-                    /* conv2utf8              */ FALSE,
-                    /* allow_blank_string     */ FALSE,
-                    /* allow_clipboard        */ FALSE,
-                    /* allow_stdin            */ FALSE,
-                    /* allow_url              */ FALSE,
-                    /* allow_file_uri         */ FALSE,
-                    /* ignore_all             */ FALSE,
-                    /* srcfile_original       */ NULL
-                );
             }
             returnfile(which, source_char);
         }
@@ -1774,14 +1746,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = findVarInFrame(frame, fileSymbol);
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 SEXP wd = srcfile ? findVarInFrame(srcfile, wdSymbol) : R_UnboundValue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
@@ -1871,14 +1836,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -1915,14 +1873,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -1974,14 +1925,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 SEXP wd = srcfile ? findVarInFrame(srcfile, wdSymbol) : findVarInFrame(frame, oldSymbol);
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
@@ -2036,14 +1980,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     if (asLogical(tmp) != TRUE) continue;
                 }
                 SEXP ofile = findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -2090,14 +2027,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
                     error(_("object '%s' not found"), CHAR(PRINTNAME(pathSymbol)));
-                if (TYPEOF(ofile) == PROMSXP) {
-                    /* if ofile is a promise already under evaluation */
-                    if (PRSEEN(ofile) == 1) continue;
-                    if (PRVALUE(ofile) == R_UnboundValue)
-                        ofile = eval(ofile, R_EmptyEnv);
-                    else
-                        ofile = PRVALUE(ofile);
-                }
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
                 int ignore_all = asLogical(eval(expr_testthat_source_file_uses_brio_read_lines, R_EmptyEnv));
                 SEXP wd = findVarInFrame(frame, old_dirSymbol);
                 if (srcfile && wd == R_UnboundValue)

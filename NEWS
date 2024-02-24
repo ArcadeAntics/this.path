@@ -1,5 +1,13 @@
 @R_PACKAGE_NAME@ News
 
+CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
+
+  BUG FIXES:
+
+    * this.path(original = TRUE) used inside a "gzfile", "bzfile",
+      "xzfile", or "fifo" connection will no longer return a "file://"
+      URL.
+
 CHANGES IN this.path 2.4.0 (2024-02-16):
 
   SIGNIFICANT USER-VISIBLE CHANGES:

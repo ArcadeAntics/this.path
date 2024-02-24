@@ -328,7 +328,7 @@ int is_abs_path_unix(const char *s)
 
 
 
-#ifdef _WIN32
+#if defined(_WIN32)
 int is_clipboard(const char *url)
 {
     return strcmp (url, "clipboard"     ) == 0 ||
@@ -434,7 +434,7 @@ SEXP do_unix_is_abs_path do_formals
 SEXP do_is_abs_path do_formals
 {
     do_start_no_call_op_rho("is_abs_path", 1);
-#ifdef _WIN32
+#if defined(_WIN32)
     return isabspath(TRUE, args);
 #else
     return isabspath(FALSE, args);

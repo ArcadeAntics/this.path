@@ -130,7 +130,7 @@ SEXP do_unix_basename2 do_formals
 SEXP do_basename2 do_formals
 {
     do_start_no_call_op_rho("basename2", 1);
-#ifdef _WIN32
+#if defined(_WIN32)
     return basename2(TRUE, args);
 #else
     return basename2(FALSE, args);
@@ -378,7 +378,7 @@ SEXP do_unix_dirname2 do_formals
 SEXP do_dirname2 do_formals
 {
     do_start_no_op_rho("dirname2", -1);
-#ifdef _WIN32
+#if defined(_WIN32)
     return dirname2(call, TRUE, ".C_dirname2", args);
 #else
     return dirname2(call, FALSE, ".C_dirname2", args);

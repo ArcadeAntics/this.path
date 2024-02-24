@@ -133,6 +133,37 @@ l10n_info()[[3L]]
 }
 
 
+
+
+
+if (!isTRUE(getOption("R_THIS_PATH_DEVEL"))) {
+tmp <- new.env()
+.get_ptrs <- evalq(envir = tmp, {
+    x <- NULL
+             function ()
+{
+    chname <- "this_path_reg_ptrs"
+    path <- getNamespaceInfo("@R_PACKAGE_NAME@", "path")
+    path <- paste0(path, "/dlls")
+    r_arch <- .Platform$r_arch
+    chname1 <- paste0(chname, .Platform$dynlib.ext)
+    DLLpath <- if (nzchar(r_arch)) paste0(path, "/", r_arch) else path
+    file <- paste0(DLLpath, "/", chname1)
+    if (file.exists(file)) {
+        dyn.load(file, DLLpath = DLLpath)
+        x <<- file
+        .External2(.C_get_ptrs)
+    }
+}
+})
+.maybe_dyn_unload <- evalq(envir = tmp, {
+                     function ()
+if (!is.null(x)) dyn.unload(x)
+})
+rm(tmp)
+}
+
+
 ## '.onLoad' and '.onUnload' ----
 
 

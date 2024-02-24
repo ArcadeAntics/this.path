@@ -304,6 +304,8 @@ if (getRversion() < "3.0.0") {
     fix_External2(.mbcslocale)
     fix_External2(.R_MB_CUR_MAX)
 
+    if (!isTRUE(getOption("R_THIS_PATH_DEVEL")))
+        fix_External2(.get_ptrs)
 
     fix_External2(.onLoad)
     fix_External2(.onUnload)

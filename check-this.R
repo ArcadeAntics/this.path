@@ -25,7 +25,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming_CRAN_version <- "2.4.0"
+    upcoming_CRAN_version <- "2.4.1"
 
 
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
@@ -128,18 +128,22 @@ local({
 
 local({  ## testing this.path() with source(gzcon())
     FILE <- tempfile(fileext = ".R")
-    on.exit(unlink(FILE), add = TRUE, after = FALSE)
+    on.exit(unlink(FILE))
     writeLines(c(
         "sys.frame(this.path:::.getframenumber())$ofile",
         "this.path::this.path(original = TRUE)",
         "this.path::this.path()"
     ), FILE)
-    conn1 <- file(this.path::relpath(FILE))
-    on.exit(close(conn1), add = TRUE, after = FALSE)
-    source(conn1, echo = TRUE)
-    conn2 <- gzcon(file(this.path::relpath(FILE), "rb"))
-    on.exit(close(conn2), add = TRUE, after = FALSE)
-    source(conn2, echo = TRUE)
+    local({
+        conn1 <- file(this.path::relpath(FILE))
+        on.exit(close(conn1))
+        source(conn1, echo = TRUE)
+    })
+    local({
+        conn2 <- gzcon(file(this.path::relpath(FILE), "rb"))
+        on.exit(close(conn2))
+        source(conn2, echo = TRUE)
+    })
 })
 
 
@@ -161,9 +165,8 @@ local({
 
 
     x <- this.path:::.readFiles(files)
-    Encoding(x)[endsWith(names(x), "_msvcrt.txt")] <- "latin1"
-    Encoding(x)[endsWith(names(x), "_ucrt.txt")] <- "UTF-8"
-    x <- grep("\\.make_numeric_version|numeric_version|package_version|R_system_version", x, value = TRUE)
+    Encoding(x) <- "bytes"
+    x <- grep("ifdef|ifndef", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

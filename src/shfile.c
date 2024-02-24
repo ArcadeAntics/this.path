@@ -2,7 +2,7 @@
 #include "get_file_from_closure.h"
 
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #define Win32 1  /* this will give us access to UImode in R_ext/RStartup.h */
 #include <R_ext/RStartup.h>  /* definition of UImode */
 #undef Win32
@@ -134,7 +134,7 @@ common_command_line(int *pac, const char **argv,
                     enc[30] = '\0';
                 }
             }
-#ifdef _WIN32
+#if defined(_WIN32)
             else if (!strcmp(*av, "--no-Rconsole"));
 #endif
             else if (!strcmp(*av, "-save") ||
@@ -329,7 +329,7 @@ SEXP do_shINFO do_formals
     cmdlines[0] = '\0';
     Rboolean has_input = FALSE;
     Rboolean ess, no_readline;
-#ifdef _WIN32
+#if defined(_WIN32)
     ess = FALSE, no_readline = NA_LOGICAL;
 #else
     ess = NA_LOGICAL, no_readline = FALSE;
@@ -537,7 +537,7 @@ SEXP do_shINFO do_formals
             } else if (!strcmp(*av, "--interactive")) {
                 break;
             } else {
-#ifdef HAVE_AQUA
+#if defined(HAVE_AQUA)
                 // r27492: in 2003 launching from 'Finder OSX' passed this
                 if (!strncmp(*av, "-psn", 4)) break;
 #endif

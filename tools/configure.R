@@ -20,7 +20,17 @@ main <- function ()
     if (nrow(info) != 1L)
         stop("contains a blank line", call. = FALSE)
     info <- info[1L, ]
-    devel <- if (info[["devel"]]) TRUE else FALSE
+    write_info <- function() write.dcf(t(info), info_path, keep.white = names(info))
+    if (file.exists("./tools/for-r-mac-builder")) {
+        devel <- TRUE
+    } else {
+        devel <- as.logical(getOption("R_THIS_PATH_DEVEL", NA))
+        if (is.na(devel))
+            devel <- as.logical(Sys.getenv("R_THIS_PATH_DEVEL"))
+        if (is.na(devel))
+            devel <- info[["devel"]]
+        devel <- if (devel) TRUE else FALSE
+    }
 
 
     regexQuote <- function(x) gsub("([.\\\\|()[{^$*+?])", "\\\\\\1", x)
@@ -144,8 +154,9 @@ main <- function ()
                     "endsWith(x, suffix)"
                 ),
                 "3.4.0",
-                "withAutoprint",
+                c("print.connection", "withAutoprint"),
                 c(
+                    "\\method{print}{connection}(x, ...)",
                     "withAutoprint(exprs, evaluated = FALSE, local = parent.frame(),",
                     "              print. = TRUE, echo = TRUE, max.deparse.length = Inf,",
                     "              width.cutoff = max(20, getOption(\"width\")),",
@@ -265,7 +276,7 @@ main <- function ()
                      paste(sQuote(old), collapse = ", ")))
         }
         info[["renamed_files"]] <- "TRUE"
-        write.dcf(t(info), info_path, keep.white = names(info))
+        write_info()
     }
 
 
@@ -277,6 +288,7 @@ main <- function ()
             "^\\./inst/NEWS\\.in\\.Rd$",
             if (getRversion() < "3.2.0")
                 "^\\./man/[^/]+\\.Rd$",
+            "^\\./R/0\\.R$",
             "^\\./src/devel\\.h$"
         ), collapse = "|")
         files <- grep(pattern, files, value = TRUE)
@@ -306,8 +318,6 @@ main <- function ()
 
 
     if (!building) {
-
-
         ## we need to add the common macros to the files which do not
         ## have access. for R < 3.2.0, this is ALL of the Rd files.
         ## otherwise, only the news files will need them
@@ -350,27 +360,18 @@ main <- function ()
         ## remove the macros folder so 'R CMD check' will not complain about it
         if (getRversion() < "3.2.0")
             unlink("./man/macros", recursive = TRUE, force = TRUE)
+    }
 
 
+    if (!building) {
         ## (possibly) enable development features
-        if (file.exists("./tools/for-r-mac-builder")) {
-            R_THIS_PATH_DEVEL <- TRUE
-        } else {
-            R_THIS_PATH_DEVEL <- as.logical(getOption("R_THIS_PATH_DEVEL", NA))
-            if (is.na(R_THIS_PATH_DEVEL))
-                R_THIS_PATH_DEVEL <- as.logical(Sys.getenv("R_THIS_PATH_DEVEL"))
-            if (is.na(R_THIS_PATH_DEVEL)) {
-                if (devel) {
-                    libname <- Sys.getenv("R_LIBRARY_DIR")
-                    R_THIS_PATH_DEVEL <- (
-                        !is.na(libname) &&
-                        nzchar(libname) &&
-                        !grepl(sprintf("/%s\\.Rcheck$", regexQuote(desc["Package"])), libname)
-                    )
-                } else R_THIS_PATH_DEVEL <- FALSE
-            }
-        }
-        if (R_THIS_PATH_DEVEL)
+        if (devel) {
+            text["./R/0.R"] <- paste(
+                "options(R_THIS_PATH_DEVEL = TRUE)",
+                ifelse(grepl("\r\n", text[["./R/0.R"]]), "\r\n", "\n"),
+                text[["./R/0.R"]],
+                sep = ""
+            )
             text["./src/devel.h"] <- paste(
                 "#ifndef R_THIS_PATH_DEVEL",
                 "#define R_THIS_PATH_DEVEL",
@@ -379,7 +380,10 @@ main <- function ()
                 ## *.c and *.h must use Unix (LF) under Unix-alikes
                 sep = "\n"
             )
+        }
     }
+
+
     if (any(i <- o != text)) {
         mapply(function(description, text) {
             ## "wb" does not convert line endings
@@ -388,7 +392,85 @@ main <- function ()
             writeLines(text, conn, sep = "", useBytes = TRUE)
         }, names(text)[i], text[i], SIMPLIFY = FALSE, USE.NAMES = FALSE)
     }
-    write.dcf(t(info), info_path, keep.white = names(info))
+    write_info()
+
+
+    if (info[["replaced_CRLF_with_LF"]]) {
+    } else {
+        ## change the line endings to \n
+        local({
+            file <- "./tools/this_path_reg_ptrs.c"
+            text <- readChar(file, file.size(file), useBytes = TRUE)
+            Encoding(text) <- "bytes"
+            text <- gsub("\r\n", "\n", text, fixed = TRUE, useBytes = TRUE)
+            conn <- file(file, "wb")
+            on.exit(close(conn))
+            writeLines(text, conn, sep = "", useBytes = TRUE)
+        })
+        info[["replaced_CRLF_with_LF"]] <- "TRUE"
+        write_info()
+    }
+
+
+    if (!building) {
+        if (!devel) {
+            make_this_path_reg_ptrs_lib <- function() {
+                run_shlib <- function(arch) {
+                    chname <- "this_path_reg_ptrs"
+                    chname1 <- paste0(chname, .Platform$dynlib.ext)
+                    DLLpath <- DLLpath_top <- "./dlls"
+                    if (nzchar(arch))
+                        DLLpath <- paste0(DLLpath, arch)
+                    dir.create(DLLpath, showWarnings = FALSE, recursive = TRUE)
+                    file <- paste0(DLLpath, "/", chname1)
+                    if (.Platform$OS.type == "windows") {
+                        args <- paste0(R.home(), "/bin", arch, "/Rcmd.exe")
+                    } else {
+                        args <- paste0(R.home(), "/bin/R")
+                        if (nzchar(arch))
+                            args <- c(args, paste0("--arch=", substr(arch, 2, 1000)))
+                        args <- c(args, "CMD")
+                    }
+                    args <- c(args, "SHLIB", paste0("--output=", file),
+                        "--clean", "--preclean", paste0("./tools/", chname, ".c"))
+                    command <- paste(shQuote(args), collapse = " ")
+                    # cat("$ ", command, "\n", sep = "")
+                    system(command, ignore.stdout = TRUE, ignore.stderr = TRUE)
+                    if (!length(dir(DLLpath))) {
+                        unlink(DLLpath, recursive = TRUE, force = TRUE)
+                        if (DLLpath_top != DLLpath && !length(dir(DLLpath_top)))
+                            unlink(DLLpath_top, recursive = TRUE, force = TRUE)
+                    }
+                }
+                if (.Platform$OS.type == "windows") {
+                    f <- dir(paste0(R.home(), "/bin"))
+                    archs <- f[f %in% c("i386", "x64")]
+                    for (arch in archs) {
+                        ra <- paste0("/", arch)
+                        run_shlib(ra)
+                    }
+                } else {
+                    # wd2 <- setwd(paste0(R.home(), "/bin/exec"))
+                    # archs <- Sys.glob("*")
+                    # setwd(wd2)
+                    archs <- dir(paste0(R.home(), "/bin/exec"))
+                    for (arch in archs) {
+                        if (arch == "R") {
+                            run_shlib("")
+                        } else {
+                            ra <- paste0("/", arch)
+                            run_shlib(ra)
+                        }
+                    }
+                }
+                if (file.exists("./dlls")) {
+                    file.copy("./dlls", Sys.getenv("R_PACKAGE_DIR"), recursive = TRUE)
+                    unlink("./dlls", recursive = TRUE, force = TRUE)
+                }
+            }
+            make_this_path_reg_ptrs_lib()
+        }
+    }
 
 
     if (!building) {

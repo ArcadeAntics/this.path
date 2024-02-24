@@ -389,7 +389,7 @@ SEXP lengths_default(SEXP args, SEXP rho)
     if (isList) {
         for (i = 0, ivalue = INTEGER(value); i < len; i++, ivalue++) {
             R_xlen_t x0_len = dispatch_subset2_xlength(x, i, rho);
-#ifdef LONG_VECTOR_SUPPORT
+#if defined(LONG_VECTOR_SUPPORT)
             if (x0_len > INT_MAX) {
                 SEXP oldvalue = value;
                 R_xlen_t oldi = i;

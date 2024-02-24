@@ -83,18 +83,18 @@ extern0 SEXP0
     NeSymbol                               INI_as(install("Ne")),
     sys_sourceSymbol                       INI_as(install("sys.source")),
 
+    wrap_sourceSymbol                      INI_as(install("wrap.source")),
+
     _GUI_RStudioSymbol                     INI_as(install(".GUI_RStudio")),
     debugSourceSymbol                      INI_as(install("debugSource")),
     _rs_sourceWithProgressSymbol           INI_as(install(".rs.sourceWithProgress")),
     statementsSymbol                       INI_as(install("statements")),
 
-    testthatSymbol                         INI_as(install("testthat")),
-    source_fileSymbol                      INI_as(install("source_file")),
+    compilerSymbol                         INI_as(install("compiler")),
+    loadcmpSymbol                          INI_as(install("loadcmp")),
 
-    knitrSymbol                            INI_as(install("knitr")),
-    knitSymbol                             INI_as(install("knit")),
-
-    wrap_sourceSymbol                      INI_as(install("wrap.source")),
+    utilsSymbol                            INI_as(install("utils")),
+    SweaveSymbol                           INI_as(install("Sweave")),
 
     boxSymbol                              INI_as(install("box")),
     load_from_sourceSymbol                 INI_as(install("load_from_source")),
@@ -104,11 +104,8 @@ extern0 SEXP0
     source_pathSymbol                      INI_as(install("source_path")),
     info_source_pathSymbol                 INI_as(install("info$source_path")),
 
-    utilsSymbol                            INI_as(install("utils")),
-    SweaveSymbol                           INI_as(install("Sweave")),
-
-    compilerSymbol                         INI_as(install("compiler")),
-    loadcmpSymbol                          INI_as(install("loadcmp")),
+    knitrSymbol                            INI_as(install("knitr")),
+    knitSymbol                             INI_as(install("knit")),
 
     plumberSymbol                          INI_as(install("plumber")),
     sourceUTF8Symbol                       INI_as(install("sourceUTF8")),
@@ -129,6 +126,9 @@ extern0 SEXP0
     scriptSymbol                           INI_as(install("script")),
     non_r_scriptsSymbol                    INI_as(install("non_r_scripts")),
     oldSymbol                              INI_as(install("old")),
+
+    testthatSymbol                         INI_as(install("testthat")),
+    source_fileSymbol                      INI_as(install("source_file")),
 
     methodsSymbol                          INI_as(install("methods")),
     showSymbol                             INI_as(install("show")),
@@ -175,9 +175,7 @@ extern0 SEXP0
     as_environmentSymbol                   INI_as(install("as.environment")),
     oenvirSymbol                           INI_as(install("oenvir")),
     withArgsSymbol                         INI_as(install("withArgs")),
-#if !defined(R_CONNECTIONS_VERSION_1)
     summary_connectionSymbol               INI_as(install("summary.connection")),
-#endif
     _asArgsSymbol                          INI_as(install(".asArgs")),
     commandArgsSymbol                      INI_as(install("commandArgs")),
     _maybe_unembedded_shellSymbol          INI_as(install(".maybe_unembedded_shell")),
