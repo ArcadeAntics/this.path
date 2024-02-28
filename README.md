@@ -296,11 +296,9 @@ or:
 source("/path/to/file.R", chdir = TRUE)
 ```
 
-This fails when moving throughout files in different directories. It
-also fails for executable **R** scripts. Additionally, it is sometimes
-convenient to have the working directory set elsewhere.  If a script
-needs to call other scripts in the same directory, it could not do so
-without the its own path.
+This fails when moving throughout files in different directories, it
+fails for executable **R** scripts, and it ignores the simple fact that
+it is sometimes convenient to have the working directory set elsewhere.
 
 ### Alternative 5: Source References
 
