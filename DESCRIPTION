@@ -1,6 +1,6 @@
 Package: this.path
-Version: 2.4.0.1
-Date: 2024-02-24
+Version: 2.4.0.2
+Date: 2024-02-28
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
 Description: Determine the path of the executing script. Compatible
@@ -13,7 +13,7 @@ Description: Determine the path of the executing script. Compatible
         'testthat::source_file()'.
 Author: Iris Simmons
 Maintainer: Iris Simmons <ikwsimmo@gmail.com>
-Depends: R (>= 2.15)
+Depends: R (>= 2.15.0)
 Suggests: utils, jsonlite, microbenchmark, rprojroot
 Enhances: compiler, box, knitr, plumber, shiny, targets, testthat
 URL: https://github.com/ArcadeAntics/this.path

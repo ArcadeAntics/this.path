@@ -175,13 +175,15 @@ local({
 
 
     x <- this.path:::.readFiles(Rfiles)
+    Encoding(x) <- "bytes"
     x <- grep("utils::", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 
 
     x <- this.path:::.readFiles(Rdfiles)
-    x <- grep("package:", x, value = TRUE)
+    Encoding(x) <- "bytes"
+    x <- grep("(file|ftp|ftps|http|https)://", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 })

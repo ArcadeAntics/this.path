@@ -26,7 +26,7 @@
 
   \code{set.sys.path.function()} is a special variant of \code{set.sys.path()}
   to be called within \code{callr::r()} on a function with an appropriate
-  \code{\link[base:srcfile]{srcref}}.
+  \ifelse{html}{\codelink2{base:srcfile}{srcref}}{\code{srcref}}.
 
   \code{with_sys.path()} is a convenient way to evaluate code within the
   context of a file. Whereas \code{set.sys.path()} can only be used within a
@@ -138,7 +138,7 @@ wrap.source(expr,
   \item{allow.url}{may \code{file} be a URL pathname or a connection of class
     \string{url-libcurl} / / \string{url-wininet}?}
 
-  \item{allow.file.uri}{may \code{file} be a \samp{file://} URI?}
+  \item{allow.file.uri}{may \code{file} be a \samp{file://} URL?}
 
   \item{allow.unz, allow.pipe, allow.terminal, allow.textConnection,
         allow.rawConnection, allow.sockconn, allow.servsockconn}{may
@@ -181,10 +181,11 @@ wrap.source(expr,
   \code{expr}, after which \code{expr} is evaluated. It is assumed that the
   file is the first argument of the function, as is the case with most
   \sourcenolink-like functions. The function of the call is evaluated, its
-  \code{\link[base]{formals}()} are retrieved, and then the arguments of
-  \code{expr} are searched for a name matching the name of the first formal
-  argument. If a match cannot be found by name, the first unnamed argument is
-  taken instead. If no such argument exists, the file is assumed missing.
+  \ifelse{html}{\codelink3{base}{formals}{()}}{\code{formals()}} are retrieved,
+  and then the arguments of \code{expr} are searched for a name matching the
+  name of the first formal argument. If a match cannot be found by name, the
+  first unnamed argument is taken instead. If no such argument exists, the file
+  is assumed missing.
 
   \code{wrap.source()} does non-standard evaluation and does some guess work to
   determine the file. As such, it is less desirable than \code{set.sys.path()}

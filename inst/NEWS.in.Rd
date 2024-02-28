@@ -5,7 +5,7 @@
     \itemize{
       \item{\code{this.path(original = TRUE)} used inside a \string{gzfile},
         \string{bzfile}, \string{xzfile}, or \string{fifo} connection will no
-        longer return a \string{file://} URL.}
+        longer return a \samp{file://} URL.}
     }
   }
 }

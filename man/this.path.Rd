@@ -41,11 +41,14 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
     \code{original = NA} instead.}
 
   \item{contents}{\code{TRUE} or \code{FALSE}; should the contents of the
-    script be returned instead? In \sQuote{Jupyter}, a list of character
-    vectors will be returned, the contents separated into cells. Otherwise, if
-    \code{for.msg} is \code{TRUE} and the executing script cannot be
-    determined, \code{NULL} will be returned. Otherwise, a character vector
-    will be returned. You could use
+    script be returned instead?
+
+    In \sQuote{Jupyter}, a list of character vectors will be returned, the
+    contents separated into cells. Otherwise, a character vector will be
+    returned. If the executing script cannot be determined and \code{for.msg}
+    is \code{TRUE}, \code{NULL} will be returned.
+
+    You could use
     \ifelse{html}{\code{\link[base:character]{as.character}(\link[base]{unlist}(this.path(contents = TRUE)))}}{\code{as.character(unlist(this.path(contents = TRUE)))}}
     if you require a character vector.
 
@@ -59,11 +62,11 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
 
   \item{n}{the number of additional generations to go back. By default,
     \code{this.path()} will look for a path based on the
-    \code{\link[base:srcfile]{srcref}} of the call to \code{this.path()} and
-    the environment in which \code{this.path()} was called. This can be changed
-    to be based on the \code{srcref} of the call and the calling environment
-    \code{n} generations up the stack. See section \strong{Argument 'n'} for
-    more details.}
+    \ifelse{html}{\codelink2{base:srcfile}{srcref}}{\code{srcref}} of the call
+    to \code{this.path()} and the environment in which \code{this.path()} was
+    called. This can be changed to be based on the \code{srcref} of the call
+    and the calling environment \code{n} generations up the stack. See section
+    \strong{Argument 'n'} for more details.}
 
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level
@@ -81,11 +84,11 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
 \details{
   \code{this.path()} starts by examining argument \code{srcfile}. It looks at
   the bindings \code{filename} and \code{wd} to determine the associated file
-  path. Filenames such as \blankstring, \string{clipboard}, and \string{stdin}
-  will be ignored since they do not refer to files. A source file of class
-  \string{srcfilecopy} in which binding \code{isFile} is \code{FALSE} will also
-  be ignored. A source file of class \string{srcfilealias} will use the aliased
-  \code{filename} in determining the associated path.
+  path. A source file of class \string{srcfilecopy} in which binding
+  \code{isFile} is \code{FALSE} will be ignored. A source file of class
+  \string{srcfilealias} will use the aliased \code{filename} in determining the
+  associated path. Filenames such as \blankstring, \string{clipboard}, and
+  \string{stdin} will be ignored since they do not refer to files.
 
   If it does not find a path associated with \code{srcfile}, it will next
   examine arguments \code{envir} and \code{matchThisEnv}. Specifically, it
@@ -94,9 +97,9 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   level environment in two ways:
 
   \itemize{
-    \item{from a \CRANpackage{box} module's namespace.}
+    \item{from a \CRANpackage{box} module's namespace}
 
-    \item{from an attribute \string{path}.}
+    \item{from an attribute \string{path}}
   }
 
   If it does not find an associated path with \code{envir} and
@@ -185,7 +188,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
 
       Additionally, never use \code{C-c C-b} to send the current buffer to the
       \R process. This copies the buffer contents to a new file which is then
-      \code{source()}-ed. The source references now point to the wrong file.
+      \sourcenolink-ed. The source references now point to the wrong file.
       Instead, use \code{C-x h} to select the entire buffer then \code{C-c C-r}
       to evaluate the selection.}
 
@@ -223,9 +226,9 @@ fun()
   Both of these will return \string{file1.R} because that is where the call to
   \code{this.path()} is written.
 
-  But suppose we do not care where \code{this.path()} is called, but instead
-  want to know where \code{fun()} is called. Pass argument \code{n = 1} to do
-  so; \code{this.path()} will inspect the call and the calling environment one
+  But suppose we do not care to know where \code{this.path()} is called, but
+  instead want to know where \code{fun()} is called. Pass argument \code{n = 1};
+  \code{this.path()} will inspect the call and the calling environment one
   generation up the stack: \preformatted{{
 #line 1 "file1.R"
 fun <- function() @R_PACKAGE_NAME@::this.path(original = TRUE, n = 1)
@@ -242,9 +245,9 @@ fun()
   because those are where the calls to \code{fun()} are written.
 
   But now suppose we wish to make a second function that uses \code{fun()}. We
-  do not care where \code{fun()} is called, but instead want to know where
-  \code{fun2()} is called. Add a formal argument \code{n = 0} to each function
-  and pass \code{n = n + 1} to each sub-function: \preformatted{{
+  do not care to know where \code{fun()} is called, but instead want to know
+  where \code{fun2()} is called. Add a formal argument \code{n = 0} to each
+  function and pass \code{n = n + 1} to each sub-function: \preformatted{{
 #line 1 "file1.R"
 fun <- function(n = 0) {
     @R_PACKAGE_NAME@::this.path(original = TRUE, n = n + 1)
