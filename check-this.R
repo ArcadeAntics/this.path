@@ -3,7 +3,7 @@ local({
         stop("unable to '.check_this()', not the maintainer's copy")
     essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(  ## this.path
-        special = TRUE,
+        # special = TRUE,
 
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
         # with.keep.source = TRUE,

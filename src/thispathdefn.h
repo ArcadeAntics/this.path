@@ -169,8 +169,8 @@ extern SEXP get_debugSource(void);
 #define get_description_and_class                              \
             Rconnection Rcon = NULL;                           \
             get_description_and_class_declarations;            \
-            if (my_R_GetConnection) {                          \
-                Rcon = my_R_GetConnection(ofile);              \
+            if (ptr_R_GetConnection) {                         \
+                Rcon = ptr_R_GetConnection(ofile);             \
                 if (Rcon->isGzcon) {                           \
                     Rcon = (((Rgzconn)(Rcon->private))->con);  \
                     if (Rcon->isGzcon) error("%s; should never happen, please report!", _("invalid connection"));\

@@ -86,10 +86,10 @@ SEXP do_R_MB_CUR_MAX do_formals
 
 
 #if defined(R_CONNECTIONS_VERSION_1)
-Rconnection (*my_R_GetConnection)(SEXP sConn);
+Rconnection (*ptr_R_GetConnection)(SEXP sConn);
 #endif
-#if defined(HAVE_MY_SET_R_VISIBLE)
-void (*my_set_R_Visible)(Rboolean x);
+#if defined(HAVE_SET_R_VISIBLE)
+void (*ptr_set_R_Visible)(Rboolean x);
 #endif
 
 
@@ -99,11 +99,11 @@ SEXP do_get_ptrs do_formals
 {
     do_start_no_call_op_rho("get_ptrs", 0);
 #if defined(R_CONNECTIONS_VERSION_1)
-    my_R_GetConnection = (Rconnection(*)(SEXP))
+    ptr_R_GetConnection = (Rconnection(*)(SEXP))
         R_GetCCallable("this_path_reg_ptrs", "R_GetConnection");
 #endif
-#if defined(HAVE_MY_SET_R_VISIBLE)
-    my_set_R_Visible = (void(*)(Rboolean))
+#if defined(HAVE_SET_R_VISIBLE)
+    ptr_set_R_Visible = (void(*)(Rboolean))
         R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
 #endif
     return R_NilValue;
@@ -808,7 +808,7 @@ SEXP do_onLoad do_formals
     /* in the dev version, don't bother transferring pointers */
 #if defined(R_CONNECTIONS_VERSION_1)
     extern Rconnection R_GetConnection(SEXP sConn);
-    my_R_GetConnection = R_GetConnection;
+    ptr_R_GetConnection = R_GetConnection;
 #endif
 #else
     {

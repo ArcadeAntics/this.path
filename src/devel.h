@@ -14,11 +14,11 @@
     #if !defined(R_CONNECTIONS_VERSION)
     #elif R_CONNECTIONS_VERSION == 1
         #define R_CONNECTIONS_VERSION_1
-        extern Rconnection (*my_R_GetConnection)(SEXP sConn);
         typedef struct gzconn {
             Rconnection con;
             /* there are other components to an 'Rgzconn', but only 'con' is needed */
         } *Rgzconn;
+        extern Rconnection (*ptr_R_GetConnection)(SEXP sConn);
     #endif
 #endif
 
@@ -35,13 +35,13 @@
     extern Rboolean R_Visible;
     #define set_R_Visible(v) { R_Visible = ((v) ? TRUE : FALSE); }
 #else
-    #define HAVE_MY_SET_R_VISIBLE
-    extern void (*my_set_R_Visible)(Rboolean);
+    #define HAVE_SET_R_VISIBLE
+    extern void (*ptr_set_R_Visible)(Rboolean);
     #include <Rinternals.h> /* need definition of eval, R_NilValue, R_EmptyEnv */
     #include "ns-hooks.h"   /* need definition of expr_invisible */
     #define set_R_Visible(v) {                                 \
-        (v) ? ((my_set_R_Visible) ? my_set_R_Visible(TRUE) : eval(R_NilValue, R_EmptyEnv)) :\
-              ((my_set_R_Visible) ? my_set_R_Visible(FALSE) : eval(expr_invisible, R_EmptyEnv));\
+        (v) ? ((ptr_set_R_Visible) ? ptr_set_R_Visible(TRUE) : eval(R_NilValue, R_EmptyEnv)) :\
+              ((ptr_set_R_Visible) ? ptr_set_R_Visible(FALSE) : eval(expr_invisible, R_EmptyEnv));\
     }
 #endif
 

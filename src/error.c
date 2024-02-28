@@ -221,8 +221,8 @@ SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
 {
     do_start_no_call_op_rho("ThisPathUnrecognizedConnectionClassError", 2);
 #if defined(R_CONNECTIONS_VERSION_1)
-    if (my_R_GetConnection)
-        return ThisPathUnrecognizedConnectionClassError_Rcon_V1(lazy_duplicate(CAR(args)), my_R_GetConnection(CADR(args)));
+    if (ptr_R_GetConnection)
+        return ThisPathUnrecognizedConnectionClassError_Rcon_V1(lazy_duplicate(CAR(args)), ptr_R_GetConnection(CADR(args)));
 #endif
     return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summary_connection(CADR(args)));
 }
