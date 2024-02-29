@@ -60,7 +60,7 @@ R_xlen_t dispatch_subset2_xlength(SEXP x, R_xlen_t i, SEXP rho)
 }
 
 
-#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3,1,0)
 
 
 SEXP lazy_duplicate(SEXP s)
@@ -280,7 +280,7 @@ SEXP do_anyNA_default do_formals
 #endif
 
 
-#if R_version_less_than(3, 2, 0)
+#if R_version_less_than(3,2,0)
 
 
 SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted)
@@ -488,7 +488,7 @@ SEXP do_isRegisteredNamespace do_formals
 #endif
 
 
-#if R_version_less_than(3, 3, 0)
+#if R_version_less_than(3,3,0)
 
 
 SEXP do_strrep do_formals
@@ -684,7 +684,7 @@ SEXP do_endsWith do_formals
 #endif
 
 
-#if R_version_less_than(3, 5, 0)
+#if R_version_less_than(3,5,0)
 
 
 #define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? length(_v_) : 0)
@@ -729,7 +729,7 @@ SEXP ddfind(int i, SEXP rho)
 #endif
 
 
-#if R_version_less_than(3, 6, 0)
+#if R_version_less_than(3,6,0)
 
 
 SEXP R_shallow_duplicate_attr(SEXP x) { return shallow_duplicate(x); }
@@ -744,7 +744,7 @@ SEXP installTrChar(SEXP x)
 #endif
 
 
-#if R_version_less_than(4, 0, 0)
+#if R_version_less_than(4,0,0)
 
 
 void R_removeVarFromFrame(SEXP name, SEXP env)
@@ -773,7 +773,7 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
 #endif
 
 
-#if R_version_less_than(4, 1, 0)
+#if R_version_less_than(4,1,0)
 
 
 // ...elt(n) was added in R 3.5.0
@@ -788,7 +788,7 @@ SEXP do_dotselt do_formals
     if (!isNumeric(si) || XLENGTH(si) != 1)
         errorcall(call, _("indexing '...' with an invalid index"));
     int i = asInteger(si);
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
     return eval(ddfind(i, env), env);
 #else
     SEXP expr;
@@ -834,7 +834,7 @@ int IS_ASCII(SEXP x)
 #endif
 
 
-#if R_version_less_than(4, 2, 0)
+#if R_version_less_than(4,2,0)
 
 
 Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)

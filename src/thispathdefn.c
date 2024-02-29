@@ -1,7 +1,7 @@
 #include "thispathdefn.h"
 
 
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
 R_xlen_t asXLength(SEXP x)
 {
     const R_xlen_t na = -999;
@@ -458,7 +458,7 @@ SEXP duplicateEnv(SEXP env)
     PROTECT(names);
     for (int i = LENGTH(names) - 1; i >= 0; i--) {
         SEXP sym = installTrChar(STRING_ELT(names, i));
-#if R_version_at_least(4, 0, 0)
+#if R_version_at_least(4,0,0)
         if (R_BindingIsActive(sym, env))
             R_MakeActiveBinding(sym, R_ActiveBindingFunction(sym, env), value);
         else

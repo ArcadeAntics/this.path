@@ -1504,7 +1504,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 setAttrib(documentcontexts, R_NamesSymbol, names);
 
 
-#if R_version_less_than(3, 4, 0)
+#if R_version_less_than(3,4,0)
 #define SET_GROWABLE_BIT(x)
 #endif
 

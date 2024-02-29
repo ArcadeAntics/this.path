@@ -47,7 +47,7 @@ SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
     SEXP expr;
     PROTECT_INDEX indx;
     PROTECT_WITH_INDEX(expr = CONS(ptr, R_NilValue), &indx);
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
     /* .External2(.C_SET_PRSEEN_2, ptr) */
     REPROTECT(expr = CONS(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
     REPROTECT(expr = LCONS(getFromBase(_External2Symbol), expr), indx);
@@ -219,7 +219,7 @@ SEXP do_wrap_source do_formals
         error("invalid '%s', must be a call", CHAR(PRINTNAME(exprSymbol)));
 
 
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
 #define eval_with_visible(expr, env)                           \
     SEXP tmp = eval(expr, env);                                \
     PROTECT(tmp); nprotect++

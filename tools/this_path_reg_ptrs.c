@@ -5,6 +5,32 @@
 #include <R_ext/Visibility.h>  /* need 'attribute_visible' */
 
 
+#if defined(ENABLE_NLS)
+#include <libintl.h>
+#define _(String) dgettext ("R", String)
+#else
+#define _(String) (String)
+#endif
+
+
+#if defined(R_VERSION) && R_VERSION >= R_Version(3,0,0)
+    #include <R_ext/Connections.h>
+    #if !defined(R_CONNECTIONS_VERSION)
+    #elif R_CONNECTIONS_VERSION == 1
+        #define R_CONNECTIONS_VERSION_1
+        #if defined(R_VERSION) && R_VERSION >= R_Version(3,3,0)
+            extern Rconnection R_GetConnection(SEXP sConn);
+        #else
+            extern Rconnection getConnection(int n);
+            Rconnection R_GetConnection(SEXP sConn) {
+                if (!inherits(sConn, "connection")) error(_("invalid connection"));
+                return getConnection(asInteger(sConn));
+            }
+        #endif
+    #endif
+#endif
+
+
 #if defined(R_VERSION) && R_VERSION >= R_Version(3,0,0)
 extern Rboolean R_Visible;
 #define HAVE_SET_R_VISIBLE
@@ -25,13 +51,8 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
 #endif
 
 
-#if defined(R_VERSION) && R_VERSION >= R_Version(3,3,0)
-    #include <R_ext/Connections.h>
-    #if !defined(R_CONNECTIONS_VERSION)
-    #elif R_CONNECTIONS_VERSION == 1
-        extern Rconnection R_GetConnection(SEXP sConn);
-        R_RegisterCCallable("this_path_reg_ptrs", "R_GetConnection", (DL_FUNC) R_GetConnection);
-    #endif
+#if defined(R_CONNECTIONS_VERSION_1)
+    R_RegisterCCallable("this_path_reg_ptrs", "R_GetConnection", (DL_FUNC) R_GetConnection);
 #endif
 
 

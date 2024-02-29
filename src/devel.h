@@ -8,7 +8,7 @@
 /* handle R_THIS_PATH_DEVEL */
 
 
-#if R_version_at_least(3, 3, 0)
+#if R_version_at_least(3,0,0)
     #include <Rinternals.h> /* need definition of SEXP */
     #include <R_ext/Connections.h>
     #if !defined(R_CONNECTIONS_VERSION)
@@ -19,11 +19,18 @@
             /* there are other components to an 'Rgzconn', but only 'con' is needed */
         } *Rgzconn;
         extern Rconnection (*ptr_R_GetConnection)(SEXP sConn);
+        #if defined(R_THIS_PATH_DEVEL)
+            #if R_version_at_least(3,3,0)
+                extern Rconnection R_GetConnection(SEXP sConn);
+            #else
+                extern Rconnection getConnection(int n);
+            #endif
+        #endif
     #endif
 #endif
 
 
-#if R_version_less_than(3, 0, 0)
+#if R_version_less_than(3,0,0)
     /* updating R_Visible has no effect since we are using .External */
     #define set_R_Visible(v) do {} while (0)
     #include <Rinternals.h> /* need definition of defineVar, ScalarLogical */

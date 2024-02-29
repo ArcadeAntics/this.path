@@ -25,7 +25,7 @@ extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 extern SEXP ddfind(int i, SEXP rho);
 
 
-#if R_version_less_than(3, 0, 0)
+#if R_version_less_than(3,0,0)
 #define XLENGTH LENGTH
 #define xlength length
 #define R_xlen_t R_len_t
@@ -34,7 +34,7 @@ extern SEXP ddfind(int i, SEXP rho);
 #endif
 
 
-#if R_version_less_than(3, 0, 0)
+#if R_version_less_than(3,0,0)
 #define NAMEDMAX 2
 #define NO_REFERENCES(x) (NAMED(x) == 0)
 #define MAYBE_REFERENCED(x) (! NO_REFERENCES(x))
@@ -42,7 +42,7 @@ extern SEXP ddfind(int i, SEXP rho);
 #endif
 
 
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
 #define do_formals (SEXP call, SEXP op, SEXP args, SEXP rho)
 #define do_start(name, numParameters) args = CDR(args)
 #define do_start_no_call(name, numParameters) do_start(name, numParameters)
@@ -109,7 +109,7 @@ extern SEXP ddfind(int i, SEXP rho);
 #endif
 
 
-#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3,1,0)
 #define INCREMENT_NAMED(x) do {                                \
     SEXP _x_ = (x);                                            \
     if (NAMED(_x_) != NAMEDMAX)                                \
@@ -118,7 +118,7 @@ extern SEXP ddfind(int i, SEXP rho);
 #endif
 
 
-#if R_version_at_least(3, 1, 0)
+#if R_version_at_least(3,1,0)
 LibExtern SEXP R_TrueValue;
 LibExtern SEXP R_FalseValue;
 LibExtern SEXP R_LogicalNAValue;
@@ -129,37 +129,37 @@ LibExtern SEXP R_LogicalNAValue;
 #endif
 
 
-#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3,1,0)
 extern SEXP lazy_duplicate(SEXP s);
 extern SEXP shallow_duplicate(SEXP s);
 extern int IS_SCALAR(SEXP x, int type);
 #endif
 
 
-#if R_version_less_than(3, 2, 0)
+#if R_version_less_than(3,2,0)
 #define R_THIS_PATH_NEED_BLANKSCALARSTRING
 extern SEXP R_BlankScalarString;
 #endif
 
 
-#if R_version_less_than(3, 2, 0)
+#if R_version_less_than(3,2,0)
 #define installChar(x) install(CHAR((x)))
 #endif
 
 
-#if R_version_less_than(3, 4, 0)
+#if R_version_less_than(3,4,0)
 #define R_CurrentExpression R_NilValue
 #endif
 
 
-#if R_version_less_than(3, 5, 0)
+#if R_version_less_than(3,5,0)
 #define ENSURE_NAMEDMAX(_x_) SET_NAMED((_x_), NAMEDMAX)
 #else
 extern void (ENSURE_NAMEDMAX)(SEXP x);
 #endif
 
 
-#if R_version_less_than(4, 1, 0)
+#if R_version_less_than(4,1,0)
 #define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
 #else
 extern int IS_UTF8(SEXP x);

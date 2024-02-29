@@ -166,7 +166,7 @@ local({
 
     x <- this.path:::.readFiles(files)
     Encoding(x) <- "bytes"
-    x <- grep("ifdef|ifndef", x, value = TRUE)
+    x <- grep("R_version_(at_least|less_than)", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

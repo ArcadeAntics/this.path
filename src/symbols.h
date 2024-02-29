@@ -31,16 +31,18 @@
 
 
 extern0 SEXP0
-#if R_version_less_than(3, 0, 0)
+#if R_version_less_than(3,0,0)
+    _this_path_valueSymbol                 INI_as(install(".this_path_value")),
+    _this_path_visibleSymbol               INI_as(install(".this_path_visible")),
     _SET_PRSEEN_2Symbol                    INI_as(install(".SET_PRSEEN_2")),
 #else
     _External2Symbol                       INI_as(install(".External2")),
     _C_SET_PRSEEN_2Symbol                  INI_as(install(".C_SET_PRSEEN_2")),
 #endif
-#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3,1,0)
     _anyNA_dispatchSymbol                  INI_as(install(".anyNA_dispatch")),
 #endif
-#if R_version_less_than(3, 2, 0)
+#if R_version_less_than(3,2,0)
     R_dot_packageName                      INI_as(install(".packageName")),
     R_DoubleColonSymbol                    INI_as(install("::")),
     R_TripleColonSymbol                    INI_as(install(":::")),
@@ -50,16 +52,16 @@ extern0 SEXP0
     topenvSymbol                           INI_as(install("topenv")),
     UseMethodSymbol                        INI_as(install("UseMethod")),
 #endif
-#if R_version_less_than(3, 4, 0)
+#if R_version_less_than(3,4,0)
     R_AsCharacterSymbol                    INI_as(install("as.character")),
 #endif
-#if R_version_less_than(4, 0, 0)
+#if R_version_less_than(4,0,0)
     R_EvalSymbol                           INI_as(install("eval")),
 #endif
-#if R_version_less_than(4, 1, 0)
+#if R_version_less_than(4,1,0)
     new_envSymbol                          INI_as(install("new.env")),
 #endif
-#if R_version_less_than(4, 2, 0)
+#if R_version_less_than(4,2,0)
     existsSymbol                           INI_as(install("exists")),
 #endif
     documentcontextSymbol                  INI_as(install(".@R_PACKAGE_NAME@::document.context")),
@@ -218,10 +220,6 @@ extern0 SEXP0
     AssignSymbol                           INI_as(install("<-")),
     ifnotfoundSymbol                       INI_as(install("ifnotfound")),
 
-#if R_version_less_than(3, 0, 0)
-    _this_path_valueSymbol                 INI_as(install(".this_path_value")),
-    _this_path_visibleSymbol               INI_as(install(".this_path_visible")),
-#endif
     withVisibleSymbol                      INI_as(install("withVisible"));
 
 

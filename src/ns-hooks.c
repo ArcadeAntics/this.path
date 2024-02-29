@@ -71,13 +71,13 @@ SEXP do_mbcslocale do_formals
 // }
 
 
-#if R_version_at_least(4, 2, 0)
+#if R_version_at_least(4,2,0)
 LibExtern int R_MB_CUR_MAX;
 #endif
 SEXP do_R_MB_CUR_MAX do_formals
 {
     do_start_no_call_op_rho("R_MB_CUR_MAX", 0);
-#if R_version_at_least(4, 2, 0)
+#if R_version_at_least(4,2,0)
     return ScalarInteger(R_MB_CUR_MAX);
 #else
     return ScalarInteger(MB_CUR_MAX);
@@ -90,6 +90,21 @@ Rconnection (*ptr_R_GetConnection)(SEXP sConn);
 #endif
 #if defined(HAVE_SET_R_VISIBLE)
 void (*ptr_set_R_Visible)(Rboolean x);
+#endif
+
+
+#if R_version_at_least(3,0,0)
+    #if defined(R_CONNECTIONS_VERSION_1)
+        #if defined(R_THIS_PATH_DEVEL)
+            #if R_version_less_than(3,3,0)
+Rconnection R_GetConnection(SEXP sConn)
+{
+    if (!inherits(sConn, "connection")) error(_("invalid connection"));
+    return getConnection(asInteger(sConn));
+}
+            #endif
+        #endif
+    #endif
 #endif
 
 
@@ -394,7 +409,7 @@ SEXP do_onLoad do_formals
     UNPROTECT(1);
 
 
-#if R_version_less_than(3, 0, 0)
+#if R_version_less_than(3,0,0)
     INCREMENT_NAMED_defineVar(install(".NAMEDMAX"), PROTECT(ScalarInteger(NA_INTEGER)), mynamespace);
     UNPROTECT(1);
 #else
@@ -749,7 +764,7 @@ SEXP do_onLoad do_formals
             CHAR(PRINTNAME(_isMethodsDispatchOnSymbol)), "function");
 
 
-#if R_version_less_than(3, 2, 0)
+#if R_version_less_than(3,2,0)
     expr_UseMethod_lengths = LCONS(UseMethodSymbol, CONS(mkString("lengths"), R_NilValue));
     R_PreserveObject(expr_UseMethod_lengths);
 #endif
@@ -791,7 +806,7 @@ SEXP do_onLoad do_formals
     }
 
 
-#if R_version_less_than(3, 4, 0)
+#if R_version_less_than(3,4,0)
     {
         SEXP sym = install("print.connection");
         SEXP val = findVarInFrame(mynamespace, sym);
@@ -805,11 +820,10 @@ SEXP do_onLoad do_formals
 
 
 #if defined(R_THIS_PATH_DEVEL)
-    /* in the dev version, don't bother transferring pointers */
-#if defined(R_CONNECTIONS_VERSION_1)
-    extern Rconnection R_GetConnection(SEXP sConn);
+    #if defined(R_CONNECTIONS_VERSION_1)
+
     ptr_R_GetConnection = R_GetConnection;
-#endif
+    #endif
 #else
     {
         SEXP expr = LCONS(install(".get_ptrs"), R_NilValue);

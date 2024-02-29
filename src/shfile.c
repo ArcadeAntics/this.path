@@ -105,7 +105,7 @@ common_command_line(int *pac, const char **argv,
             }
             else if (!strcmp(*av, "--no-environ"));
             else if (!strcmp(*av, "--verbose"));
-#if R_version_at_least(4, 0, 0)
+#if R_version_at_least(4,0,0)
             else if (!strcmp(*av, "--no-echo") ||
                      !strcmp(*av, "--slave") ||
                      !strcmp(*av, "-s"))
@@ -162,7 +162,7 @@ common_command_line(int *pac, const char **argv,
                     if (ac > 1) { ac--; av++; }
                 }
             }
-#if R_version_at_least(4, 4, 0)
+#if R_version_at_least(4,4,0)
             else if (strncmp(*av, "--max-connections", 17) == 0) {
                 if (strlen(*av) < 19) {
                     if (ac > 1) { ac--; av++; }
@@ -194,12 +194,12 @@ static char *unescape_arg(char *p, const char *avp)
         if (*q == '~' && *(q+1) == '+' && *(q+2) == '~') {
             q += 2;
             *p++ = ' ';
-#if R_version_at_least(3, 6, 0)
+#if R_version_at_least(3,6,0)
         } else if (*q == '~' && *(q+1) == 'n' && *(q+2) == '~') {
             q += 2;
             *p++ = '\n';
 #endif
-#if R_version_at_least(4, 1, 0)
+#if R_version_at_least(4,1,0)
         } else if (*q == '~' && *(q+1) == 't' && *(q+2) == '~') {
             q += 2;
             *p++ = '\t';
@@ -410,7 +410,7 @@ SEXP do_shINFO do_formals
             else if (!strcmp(*av, "--internet2"));
             else if (!strcmp(*av, "--mdi"));
             else if (!strcmp(*av, "--sdi") || !strcmp(*av, "--no-mdi")); */
-#if R_version_less_than(4, 2, 0)
+#if R_version_less_than(4,2,0)
             else if (!strncmp(*av, "--max-mem-size", 14)) {
                 if (strlen(*av) < 16) {
                     ac--; av++;
@@ -465,7 +465,7 @@ SEXP do_shINFO do_formals
        If run from the shell script, only Tk|tk|X11|x11 are allowed.
      */
     for (i = 0, avv = av; i < ac; i++, avv++) {
-#if R_version_at_least(3, 5, 0)
+#if R_version_at_least(3,5,0)
         if (!strcmp(*avv, "--args"))
             break;
 #endif

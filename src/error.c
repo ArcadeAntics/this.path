@@ -242,7 +242,7 @@ SEXP do_last_condition do_formals
 {
     do_start_no_op("last_condition", -1);
     switch (length(args)) {
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
     case 0:
         return CAR(last_condition);
     case 1:
@@ -385,7 +385,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
 
     SEXP value;
     if (else_ == R_MissingArg) {
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
         value = eval(expr, rho);
 #else
         REPROTECT(expr = LCONS(withVisibleSymbol, CONS(expr, R_NilValue)), indx);
@@ -406,7 +406,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
                                                  CONS(R_TrueValue,
                                                       R_NilValue))),
                                       R_NilValue))));
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
         value = eval(expr, rho);
 #else
         REPROTECT(expr = LCONS(withVisibleSymbol, CONS(expr, R_NilValue)), indx);
@@ -420,7 +420,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
             error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:
-#if R_version_at_least(3, 0, 0)
+#if R_version_at_least(3,0,0)
             value = eval(else_Symbol, rho);
 #else
             expr = LCONS(withVisibleSymbol, CONS(else_Symbol, R_NilValue));
@@ -435,7 +435,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         default:
             error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         }
-#if R_version_less_than(3, 0, 0)
+#if R_version_less_than(3,0,0)
         set_this_path_value(VECTOR_ELT(value, 0));
         set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));
         value = R_NilValue;

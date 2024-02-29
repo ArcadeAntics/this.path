@@ -64,7 +64,7 @@ extern SEXP do_aquarootscript do_formals;
 /* backports.c */
 
 
-#if R_version_less_than(3, 1, 0)
+#if R_version_less_than(3,1,0)
 extern SEXP do_anyNA                 do_formals;
 extern SEXP do_anyNA_data_frame      do_formals;
 extern SEXP do_anyNA_numeric_version do_formals;
@@ -72,7 +72,7 @@ extern SEXP do_anyNA_default         do_formals;
 #endif
 
 
-#if R_version_less_than(3, 2, 0)
+#if R_version_less_than(3,2,0)
 extern SEXP do_dir_exists            do_formals;
 extern SEXP do_lengths               do_formals;
 extern SEXP do_lengths_default       do_formals;
@@ -80,19 +80,19 @@ extern SEXP do_isRegisteredNamespace do_formals;
 #endif
 
 
-#if R_version_less_than(3, 3, 0)
+#if R_version_less_than(3,3,0)
 extern SEXP do_strrep     do_formals;
 extern SEXP do_startsWith do_formals;
 extern SEXP do_endsWith   do_formals;
 #endif
 
 
-#if R_version_less_than(3, 5, 0)
+#if R_version_less_than(3,5,0)
 extern SEXP do_dotslength do_formals;
 #endif
 
 
-#if R_version_less_than(4, 1, 0)
+#if R_version_less_than(4,1,0)
 extern SEXP do_dotselt do_formals;
 #endif
 
