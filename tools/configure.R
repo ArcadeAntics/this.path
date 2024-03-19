@@ -368,7 +368,7 @@ main <- function ()
         if (devel) {
             text["./R/0.R"] <- paste(
                 "options(R_THIS_PATH_DEVEL = TRUE)",
-                ifelse(grepl("\r\n", text[["./R/0.R"]]), "\r\n", "\n"),
+                if (grepl("\r\n", text[["./R/0.R"]])) "\r\n" else "\n",
                 text[["./R/0.R"]],
                 sep = ""
             )

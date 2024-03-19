@@ -1,30 +1,3 @@
-## Defunct in 1.3.0 (2023-04-08)
-
-
-as.rel.path <- function (path)
-stop(.defunctError("rel2here", "@R_PACKAGE_NAME@", old = "as.rel.path"))
-
-
-as.relative.path <- function (path)
-stop(.defunctError("rel2here", "@R_PACKAGE_NAME@", old = "as.relative.path"))
-
-
-## Defunct in 1.4.0 (2023-04-18)
-
-
-local.path <- function (verbose = getOption("verbose"), original = FALSE, for.msg = FALSE,
-    contents = FALSE, default, else.)
-stop(.defunctError("sys.path(..., local = TRUE)", "@R_PACKAGE_NAME@", old = "local.path(...)"))
-
-
-Sys.path <- function ()
-stop(.defunctError("sys.path(verbose = FALSE)", "@R_PACKAGE_NAME@", old = "Sys.path()"))
-
-
-Sys.dir <- function ()
-stop(.defunctError("sys.dir(verbose = FALSE)", "@R_PACKAGE_NAME@", old = "Sys.dir()"))
-
-
 ## Defunct in 2.0.0 (2023-08-08)
 
 

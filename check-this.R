@@ -8,7 +8,7 @@ local({
         # INSTALL = FALSE, # html = TRUE, latex = TRUE,
         # with.keep.source = TRUE,
 
-        check = FALSE, no.stop.on.test.error = TRUE,
+        check = TRUE, no.stop.on.test.error = TRUE,
         as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
@@ -148,13 +148,13 @@ local({  ## testing this.path() with source(gzcon())
 
 
 local({
-    files <- list.files(all.files = TRUE, full.names = TRUE, no.. = TRUE)
+    files <- dir(all.files = TRUE, full.names = TRUE, no.. = TRUE)
     files <- setdiff(files, c("./.git", "./.Rproj.user"))
     files <- grep("\\.Rcheck$", files, value = TRUE, invert = TRUE)
     files <- grep("(\\.tar\\.gz|\\.zip|\\.tgz)$", files, value = TRUE, invert = TRUE)
     files <- unlist(lapply(files, function(file) {
         if (dir.exists(file))
-            list.files(file, all.files = TRUE, full.names = TRUE, recursive = TRUE)
+            dir(file, all.files = TRUE, full.names = TRUE, recursive = TRUE)
         else file
     }))
     Rfiles <- files[grepl("(?i)\\.R$", basename(files))]
@@ -166,7 +166,7 @@ local({
 
     x <- this.path:::.readFiles(files)
     Encoding(x) <- "bytes"
-    x <- grep("R_version_(at_least|less_than)", x, value = TRUE)
+    x <- grep("local\\.path|Sys\\.path|Sys\\.dir", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
 

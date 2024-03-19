@@ -214,10 +214,9 @@ export(set.jupyter.path, set.gui.path    , sys.path        ,
 ## thispath-defunct.R ----
 
 
-export(as.rel.path          , as.relative.path     , local.path           ,
-       Sys.path             , Sys.dir              , reset.this.proj      ,
-       set.this.path.jupyter, inside.source        , set.this.path        ,
-       unset.this.path      , set.sys.path.jupyter , fileArgs             )
+export(reset.this.proj      , set.this.path.jupyter, inside.source        ,
+       set.this.path        , unset.this.path      , set.sys.path.jupyter ,
+       fileArgs             )
 
 
 ## utils.R      ----
