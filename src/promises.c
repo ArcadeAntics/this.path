@@ -350,11 +350,12 @@ void unLockEnvironment(SEXP env, Rboolean bindings)
     if (TYPEOF(env) != ENVSXP)
 	    error(_("not an environment"));
     if (bindings) {
+        PROTECT(env);
         SEXP names = R_lsInternal3(env, /* all */ TRUE, /* sorted */ FALSE);
         PROTECT(names);
         for (int i = 0, n = LENGTH(names); i < n; i++)
             R_unLockBinding(installTrChar(STRING_ELT(names, i)), env);
-        UNPROTECT(1);
+        UNPROTECT(2);
     }
     UNLOCK_FRAME(env);
 }

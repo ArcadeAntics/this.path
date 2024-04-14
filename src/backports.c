@@ -35,8 +35,8 @@ SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
         SET_TYPEOF(expr, LANGSXP);
         SETCAR(expr, getFromBase(R_Bracket2Symbol));
         if (needQuote(x)) {
-            SEXP expr2;
-            SETCADR(expr, expr2 = allocList(2)); SET_TYPEOF(expr2, LANGSXP);
+            SEXP expr2 = SETCADR(expr, allocList(2));
+            SET_TYPEOF(expr2, LANGSXP);
             SETCAR (expr2, getFromBase(R_QuoteSymbol));
             SETCADR(expr2, x);
         }

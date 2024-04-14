@@ -224,7 +224,11 @@ SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
     if (ptr_R_GetConnection)
         return ThisPathUnrecognizedConnectionClassError_Rcon_V1(lazy_duplicate(CAR(args)), ptr_R_GetConnection(CADR(args)));
 #endif
-    return ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summary_connection(CADR(args)));
+    SEXP summary = summary_connection(CADR(args));
+    PROTECT(summary);
+    SEXP value = ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summary);
+    UNPROTECT(1);
+    return value;
 }
 
 
@@ -284,12 +288,14 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
 
 
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
+    PROTECT(dots); nprotect++;
     if (dots == R_UnboundValue)
         error(_("object '%s' not found"), CHAR(PRINTNAME(R_DotsSymbol)));
     int dots_length = (TYPEOF(dots) == DOTSXP ? length(dots) : 0);
 
 
     SEXP else_ = findVarInFrame(rho, else_Symbol);
+    PROTECT(else_); nprotect++;
     if (else_ == R_UnboundValue)
         error(_("object '%s' not found"), CHAR(PRINTNAME(else_Symbol)));
     if (else_ != R_MissingArg && dots_length <= 0)
@@ -306,11 +312,13 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         case TRYCATCHOP_2:
         {
             SEXP fun = allocSExp(CLOSXP), formals;
+            PROTECT(fun);
             MARK_NOT_MUTABLE_defineVar(funSymbol, fun, rho);
             SET_FORMALS(fun, formals = CONS(R_MissingArg, R_NilValue));
             SET_TAG(formals, cSymbol);
             SET_BODY(fun, LCONS(invisibleSymbol, R_NilValue));
             SET_CLOENV(fun, rho);
+            UNPROTECT(1);
             SEXP expr0 = funSymbol;
             for (int i = dots_length - 1; i >= 0; i--) {
                 SEXP dot = nthcdr(dots, i);
@@ -330,8 +338,9 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         {
             SEXP fun0 = allocSExp(CLOSXP), formals, body, assign_last_condition;
             MARK_NOT_MUTABLE(fun0);
-            PROTECT(fun0); nprotect++;
+            PROTECT(fun0);
             SET_FORMALS(fun0, formals = CONS(R_MissingArg, R_NilValue));
+            PROTECT(formals);
             SET_TAG(formals, cSymbol);
             SET_BODY(fun0, body = LCONS(R_BraceSymbol,
                                         CONS(R_NilValue,
@@ -341,8 +350,10 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
             SETCADR(body, assign_last_condition = LCONS(_last_conditionSymbol,
                                                         CONS(cSymbol,
                                                              R_NilValue)));
+            PROTECT(assign_last_condition);
             SET_CLOENV(fun0, rho);
             SEXP funs = allocVector(VECSXP, dots_length);
+            PROTECT(funs);
             MARK_NOT_MUTABLE_defineVar(funsSymbol, funs, rho);
             for (int i = dots_length - 1; i >= 0; i--) {
                 SEXP dot = nthcdr(dots, i);
@@ -368,6 +379,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
                 if (TAG(dot) == R_NilValue)
                     error("condition handlers must be specified with a condition class");
             }
+            UNPROTECT(4);
             break;
         }
         default:

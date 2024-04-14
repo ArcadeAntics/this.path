@@ -7,8 +7,6 @@
 \alias{as.rel.path}
 \alias{as.relative.path}
 \alias{local.path}
-\alias{Sys.path}
-\alias{Sys.dir}
 \alias{reset.this.proj}
 \alias{set.this.path.jupyter}
 \alias{inside.source}
@@ -35,8 +33,6 @@ as.relative.path(path)
 # Defunct in 1.4.0
 local.path(verbose = getOption("verbose"), original = FALSE,
     for.msg = FALSE, contents = FALSE, default, else.)
-Sys.path()
-Sys.dir()
 
 # Defunct in 2.0.0
 reset.this.proj()
@@ -85,12 +81,6 @@ fileArgs()
   \code{local.path()} was used when it called a different C function than
   \code{\link{this.path}()}. Should be replaced by
   \code{\link{this.path}(local = TRUE)}.
-
-  \code{Sys.path()} and \code{Sys.dir()} are worse names for
-  \code{\link{sys.path}()} and \code{\link{sys.dir}()}. Functions that start
-  with \string{Sys} are related to the operating system, while functions that
-  start with \string{sys} are related to the \R system; the call stack. These
-  new names are much better.
 
   \code{reset.this.proj()} was used when \code{\link{this.proj}()} was the only
   project related function. Now that \code{\link{src.proj}()},

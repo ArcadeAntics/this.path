@@ -34,6 +34,9 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
     int nprotect = 0;
 
 
+    PROTECT(promise); nprotect++;
+
+
     code = CDR(code);
     SEXP env = PRENV(promise);
     SEXP withVisible = getFromBase(withVisibleSymbol);
@@ -50,6 +53,7 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
 
 
     SEXP ptr = on_exit_SET_PRSEEN_2(R_NilValue, rho);
+    PROTECT(ptr); nprotect++;
     R_SetExternalPtrProtected(ptr, CONS(promise, R_NilValue));
     if (PRSEEN(promise)) {
         if (PRSEEN(promise) == 1)

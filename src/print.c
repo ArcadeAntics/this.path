@@ -16,6 +16,7 @@ void my_PrintObjectS4(SEXP s, SEXP env)
 
 
     SEXP methods = findVarInFrame(R_NamespaceRegistry, methodsSymbol);
+    PROTECT(methods); nprotect++;
     if (methods == R_UnboundValue)
         error("missing methods namespace: this should not happen");
 
@@ -213,6 +214,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
     SEXP errcnd = findVarInFrame(x, sym = errcndSymbol);
+    PROTECT(errcnd);
     if (errcnd != R_UnboundValue) {
         if (errcnd == R_NilValue)
             print_invalid_null;
@@ -227,6 +229,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
         SEXP for_msg = findVarInFrame(x, sym = for_msgSymbol);
+        PROTECT(for_msg);
         if (for_msg == R_UnboundValue)
             print_invalid_unbound;
         else if (for_msg == R_NilValue)
@@ -235,9 +238,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_encoded_str(for_msg);
         else
             print_invalid_type(for_msg);
+        UNPROTECT(1);
 
 
         SEXP associated_with_file = findVarInFrame(x, sym = associated_with_fileSymbol);
+        PROTECT(associated_with_file);
         if (associated_with_file == R_UnboundValue);
         else if (associated_with_file == R_NilValue)
             print_null;
@@ -247,9 +252,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
                 (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
         }
         else print_invalid_type(associated_with_file);
+        UNPROTECT(1);
     }
     else {
         SEXP ofile = findVarInFrame(x, sym = ofileSymbol);
+        PROTECT(ofile);
         if (ofile == R_UnboundValue)
             print_invalid_unbound;
         else if (ofile == R_NilValue)
@@ -258,9 +265,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_encoded_str(ofile);
         else
             print_invalid_type(ofile);
+        UNPROTECT(1);
 
 
         SEXP wd = findVarInFrame(x, sym = wdSymbol);
+        PROTECT(wd);
         if (wd == R_UnboundValue);
         else if (wd == R_NilValue)
             print_null;
@@ -268,9 +277,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_encoded_str(wd);
         else
             print_invalid_type(wd);
+        UNPROTECT(1);
 
 
         SEXP file = findVarInFrame(x, sym = fileSymbol);
+        PROTECT(file);
         if (file == R_UnboundValue)
             print_invalid_unbound;
         else if (file == R_NilValue)
@@ -290,9 +301,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             else print_invalid_type(val);
         }
         else print_invalid_type(file);
+        UNPROTECT(1);
 
 
         SEXP lines = findVarInFrame(x, sym = linesSymbol);
+        PROTECT(lines);
         if (lines == R_UnboundValue);
         else if (lines == R_NilValue)
             print_invalid_null;
@@ -313,10 +326,13 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else if (TYPEOF(lines) == STRSXP)
             print_type(lines);
         else print_invalid_type(lines);
+        UNPROTECT(1);
     }
+    UNPROTECT(1);  /* errcnd */
 
 
     SEXP source = findVarInFrame(x, sym = sourceSymbol);
+    PROTECT(source);
     if (source == R_UnboundValue)
         print_invalid_unbound;
     else if (source == R_NilValue)
@@ -324,9 +340,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
     else if (TYPEOF(source) == CHARSXP)
         _print_encoded_str("%s: <CHARSXP: %s>\n", ScalarString(source));
     else print_invalid_type(source);
+    UNPROTECT(1);
 
 
     SEXP setsyspathwashere = findVarInFrame(x, sym = setsyspathwashereSymbol);
+    PROTECT(setsyspathwashere);
     if (setsyspathwashere != R_UnboundValue) {
         if (setsyspathwashere == R_NilValue)
             print_null;
@@ -340,6 +358,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
     SEXP n = findVarInFrame(x, sym = nSymbol);
+    PROTECT(n);
     if (n == R_UnboundValue) {
         if (setsyspathwashere != R_UnboundValue)
             print_invalid_unbound;
@@ -349,6 +368,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
     else if (IS_SCALAR(n, INTSXP))
         Rprintf("%s: %d\n", CHAR(PRINTNAME(sym)), INTEGER(n)[0]);
     else print_invalid_type(n);
+
+
+    UNPROTECT(2);
 
 
     set_R_Visible(FALSE);

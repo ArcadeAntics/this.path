@@ -49,6 +49,7 @@ SEXP do_asArgs do_formals
 
 
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
+    PROTECT(dots); nprotect++;
     if (dots == R_UnboundValue)
         error("could not find the ... list; should never happen, please report!");
 

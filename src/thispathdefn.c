@@ -166,10 +166,12 @@ SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call)
         vl = findVarInFrame(rho, symbol);
         if (vl != R_UnboundValue) {
             if (TYPEOF(vl) == PROMSXP) {
-                if (PRVALUE(vl) == R_UnboundValue)
+                if (PRVALUE(vl) == R_UnboundValue) {
+                    PROTECT(vl);
                     vl = eval(vl, R_EmptyEnv);
-                else
-                    vl = PRVALUE(vl);
+                    UNPROTECT(1);
+                }
+                else vl = PRVALUE(vl);
             }
             if (TYPEOF(vl) == CLOSXP ||
                 TYPEOF(vl) == BUILTINSXP ||
@@ -256,6 +258,7 @@ SEXP DocumentContext(void)
 #define _assign(ofile, documentcontext)                        \
     INCREMENT_NAMED_defineVar(ofileSymbol, (ofile), (documentcontext));\
     SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
+    PROTECT(e);                                                \
     defineVar(fileSymbol, e, (documentcontext))
 
 
@@ -314,7 +317,7 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
 
 
     _assign_default(srcfile_original, owd, ScalarString(mkCharCE(url, ienc)), documentcontext, na);
-    return;
+    UNPROTECT(1);
 }
 
 
@@ -349,6 +352,7 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 
 
     _assign_default(srcfile_original, owd, ScalarString(mkCharCE(url + nh, ienc)), documentcontext, na);
+    UNPROTECT(1);
 }
 
 
@@ -375,6 +379,7 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
     SEXP ofile = ScalarString(mkCharCE(_buf, getCharCE(description)));
     _assign(ofile, documentcontext);
     _assign_default(srcfile_original, owd, ScalarString(description), documentcontext, na);
+    UNPROTECT(1);
 }
 
 
@@ -401,6 +406,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 
     SET_PRCODE(e, LCONS(_normalizeURL_1Symbol, CONS(ScalarString(mkCharCE(url, ienc)), R_NilValue)));
     eval(e, R_EmptyEnv);  /* force the promise */
+    UNPROTECT(1);
 }
 
 

@@ -585,6 +585,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
        avoid an accidental argument name match to PACKAGE
      */
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
+    PROTECT(dots); nprotect++;
     if (dots == R_UnboundValue)
         error(_("object '%s' not found"), "...");
 
@@ -605,7 +606,8 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     /* the common length of a set of arguments is 0 if one has a length of 0 */
     /* or the maximal length when all are non-zero                           */
     int commonLength = 1;
-    /* for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) { *//* slightly slower */
+    /* slightly slower
+    for (i = 0, d = dots; d != R_NilValue; i++, d = CDR(d)) { */
     for (i = 0, d = dots; i < x_length; i++, d = CDR(d)) {
 
 

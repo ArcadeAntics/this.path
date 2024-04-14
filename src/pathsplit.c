@@ -290,6 +290,7 @@ static R_INLINE
 SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 {
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
+    PROTECT(dots);
     if (dots == R_UnboundValue)
         error(_("'...' used in an incorrect context"));
 
@@ -451,7 +452,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     }
 
 
-    UNPROTECT(2);
+    UNPROTECT(3);
     return value;
 }
 

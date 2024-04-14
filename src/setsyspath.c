@@ -44,6 +44,8 @@ SEXP do_SET_PRSEEN_2 do_formals
 SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
 {
     SEXP ptr = R_MakeExternalPtr(NULL, R_NilValue, promises);
+    /* ptr does not need to be protected, but rchk complains if it is not */
+    PROTECT(ptr);
     SEXP expr;
     PROTECT_INDEX indx;
     PROTECT_WITH_INDEX(expr = CONS(ptr, R_NilValue), &indx);
@@ -59,7 +61,7 @@ SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
     SET_TAG(CDR(expr), addSymbol);
     REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
     eval(expr, rho);
-    UNPROTECT(1);
+    UNPROTECT(2);
     return ptr;
 }
 

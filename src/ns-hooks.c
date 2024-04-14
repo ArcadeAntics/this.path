@@ -335,11 +335,17 @@ SEXP do_onLoad do_formals
         R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
         UNPROTECT(1);
     }
-    defineVar(fileSymbol, makePROMISE(
-        LCONS(_normalizePath_not_dirSymbol, CONS(ofileSymbol, R_NilValue)),
-        _custom_gui_path_character_environment
-    ), _custom_gui_path_character_environment);
-    R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
+    {
+        SEXP expr = LCONS(_normalizePath_not_dirSymbol, CONS(ofileSymbol, R_NilValue));
+        PROTECT(expr);
+        defineVar(
+            fileSymbol,
+            makePROMISE(expr, _custom_gui_path_character_environment),
+            _custom_gui_path_character_environment
+        );
+        R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
+        UNPROTECT(1);
+    }
     defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
     R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
 
@@ -422,10 +428,12 @@ SEXP do_onLoad do_formals
     do {                                                       \
         SEXP sym = (symbol);                                   \
         SEXP fun = getFromMyNS(sym);                           \
+        PROTECT(fun);                                          \
         if (TYPEOF(fun) != CLOSXP)                             \
             error(_("object '%s' of mode '%s' was not found"), EncodeChar(sym), "function");\
         R_removeVarFromFrame(sym, mynamespace);                \
         R_MakeActiveBinding(sym, fun, mynamespace);            \
+        UNPROTECT(1);                                          \
     } while (0)
 
 
@@ -441,6 +449,7 @@ SEXP do_onLoad do_formals
 
 
     SEXP value = allocVector(VECSXP, 13);
+    PROTECT(value);
     MARK_NOT_MUTABLE_defineVar(install("OS.type"), value, mynamespace);
     SEXP names = allocVector(STRSXP, 13);
     setAttrib(value, R_NamesSymbol, names);
@@ -591,6 +600,9 @@ SEXP do_onLoad do_formals
 #endif
 
 
+    UNPROTECT(1);
+
+
     expr_commandArgs = LCONS(getFromBase(commandArgsSymbol), R_NilValue);
     R_PreserveObject(expr_commandArgs);
     if (!isFunction(CAR(expr_commandArgs)))
@@ -703,13 +715,13 @@ SEXP do_onLoad do_formals
     R_PreserveObject(expr_knitr_output_dir);
     SET_TYPEOF(expr_knitr_output_dir, LANGSXP);
     {
-        SEXP tmp;
-        SETCAR (expr_knitr_output_dir, tmp = allocList(3)); SET_TYPEOF(tmp, LANGSXP);
+        SEXP tmp = SETCAR(expr_knitr_output_dir, allocList(3));
+        SET_TYPEOF(tmp, LANGSXP);
         SETCADR(expr_knitr_output_dir, mkString("output.dir"));
         {
-            SEXP tmp2;
-            SETCAR  (tmp, getFromBase(R_Bracket2Symbol));
-            SETCADR (tmp, tmp2 = allocList(3)); SET_TYPEOF(tmp2, LANGSXP);
+            SETCAR(tmp, getFromBase(R_Bracket2Symbol));
+            SEXP tmp2 = SETCADR(tmp, allocList(3));
+            SET_TYPEOF(tmp2, LANGSXP);
             SETCADDR(tmp, mkString("get"));
             {
                 SETCAR  (tmp2, getFromBase(R_DoubleColonSymbol));
@@ -724,14 +736,14 @@ SEXP do_onLoad do_formals
     R_PreserveObject(expr_testthat_source_file_uses_brio_read_lines);
     SET_TYPEOF(expr_testthat_source_file_uses_brio_read_lines, LANGSXP);
     {
-        SEXP tmp;
-        SETCAR  (expr_testthat_source_file_uses_brio_read_lines, getFromBase(install(">=")));
-        SETCADR (expr_testthat_source_file_uses_brio_read_lines, tmp = allocList(2)); SET_TYPEOF(tmp, LANGSXP);
+        SETCAR(expr_testthat_source_file_uses_brio_read_lines, getFromBase(install(">=")));
+        SEXP tmp = SETCADR(expr_testthat_source_file_uses_brio_read_lines, allocList(2));
+        SET_TYPEOF(tmp, LANGSXP);
         SETCADDR(expr_testthat_source_file_uses_brio_read_lines, mkString("3.1.2"));
         {
-            SEXP tmp2;
-            SETCAR (tmp, getFromBase(install("as.numeric_version")));
-            SETCADR(tmp, tmp2 = allocList(2)); SET_TYPEOF(tmp2, LANGSXP);
+            SETCAR(tmp, getFromBase(install("as.numeric_version")));
+            SEXP tmp2 = SETCADR(tmp, allocList(2));
+            SET_TYPEOF(tmp2, LANGSXP);
             {
                 SETCAR (tmp2, getFromBase(install("getNamespaceVersion")));
                 SETCADR(tmp2, ScalarString(PRINTNAME(testthatSymbol)));

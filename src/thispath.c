@@ -445,6 +445,7 @@ SEXP do_set_jupyter_path do_formals
     /* get the promises */
     sym = ofileSymbol;
     SEXP ofile = findVarInFrame(env, sym);
+    PROTECT(ofile);
     if (ofile == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(ofile) != PROMSXP)
@@ -453,6 +454,7 @@ SEXP do_set_jupyter_path do_formals
 
     sym = fileSymbol;
     SEXP file = findVarInFrame(env, sym);
+    PROTECT(file);
     if (file == R_UnboundValue)
         errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(file) != PROMSXP)
@@ -474,6 +476,7 @@ SEXP do_set_jupyter_path do_formals
 
 
     set_R_Visible(FALSE);
+    UNPROTECT(2);
     return path;
 }
 
@@ -493,7 +496,11 @@ SEXP do_set_gui_path do_formals
     do_start_no_op("set_gui_path", 0);
 
 
+    int nprotect = 0;
+
+
     SEXP dots = findVarInFrame(rho, R_DotsSymbol);
+    PROTECT(dots); nprotect++;
     if (dots == R_UnboundValue)
         error(_("object '%s' not found"), "...");
 
@@ -502,11 +509,11 @@ SEXP do_set_gui_path do_formals
     switch (gui_path) {
     case GUIPATH_DEFAULT:
         value = allocVector(VECSXP, 0);
-        PROTECT(value);
+        PROTECT(value); nprotect++;
         break;
     case GUIPATH_FUNCTION:
         value = allocVector(VECSXP, 1);
-        PROTECT(value);
+        PROTECT(value); nprotect++;
         SET_VECTOR_ELT(value, 0, findVarInFrame(
             _custom_gui_path_function_environment,
             _custom_gui_path_functionSymbol
@@ -518,10 +525,9 @@ SEXP do_set_gui_path do_formals
             _custom_gui_path_character_environment,
             _get_contentsSymbol
         );
+        PROTECT(_getContents);
         value = allocVector(VECSXP, (_getContents != R_NilValue) ? 3 : 2);
-        PROTECT(value);
-        if (_getContents != R_NilValue)
-            SET_VECTOR_ELT(value, 2, _getContents);
+        PROTECT(value); nprotect++;
         SET_VECTOR_ELT(value, 0, ScalarString(findVarInFrame(
             _custom_gui_path_character_environment,
             guinameSymbol
@@ -530,12 +536,15 @@ SEXP do_set_gui_path do_formals
             _custom_gui_path_character_environment,
             ofileSymbol
         )));
+        if (_getContents != R_NilValue)
+            SET_VECTOR_ELT(value, 2, _getContents);
+        UNPROTECT(1);
     }
         break;
     default:
         errorcall(R_NilValue, "internal error; invalid 'gui_path' value");
         value = R_NilValue;
-        PROTECT(value);
+        PROTECT(value); nprotect++;
     }
 
 
@@ -543,7 +552,7 @@ SEXP do_set_gui_path do_formals
     if (n == 0) {
         gui_path = GUIPATH_DEFAULT;
         set_R_Visible(FALSE);
-        UNPROTECT(1);
+        UNPROTECT(nprotect);
         return value;
     }
 
@@ -610,6 +619,7 @@ SEXP do_set_gui_path do_formals
             if (path == R_MissingArg)
                 errorcall(call, _("argument is missing, with no default"));
             path = eval(path, R_EmptyEnv);
+            PROTECT(path); nprotect++;
             break;
         case LISTSXP: path = CADR(dots); break;
         case VECSXP: path = VECTOR_ELT(dots, 1); break;
@@ -627,7 +637,10 @@ SEXP do_set_gui_path do_formals
             /* if the third argument is missing */
             else if (CAR(_getContents) == R_MissingArg)
                 _getContents = R_NilValue;
-            else _getContents = eval(CAR(_getContents), R_EmptyEnv);
+            else {
+                _getContents = eval(CAR(_getContents), R_EmptyEnv);
+                PROTECT(_getContents); nprotect++;
+            }
             break;
         case LISTSXP: _getContents = CADDR(dots); break;
         case VECSXP:
@@ -643,9 +656,11 @@ SEXP do_set_gui_path do_formals
 
 
         SEXP ofile = findVarInFrame(_custom_gui_path_character_environment, ofileSymbol);
+        PROTECT(ofile); nprotect++;
         if (TYPEOF(ofile) != PROMSXP)
             error(_("'%s' is not a promise"), "ofile");
         SEXP file = findVarInFrame(_custom_gui_path_character_environment, fileSymbol);
+        PROTECT(file); nprotect++;
         if (TYPEOF(file) != PROMSXP)
             error(_("'%s' is not a promise"), "file");
 
@@ -677,7 +692,7 @@ SEXP do_set_gui_path do_formals
 
 
     set_R_Visible(FALSE);
-    UNPROTECT(1);
+    UNPROTECT(nprotect);
     return value;
 }
 

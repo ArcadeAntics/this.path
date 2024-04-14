@@ -68,7 +68,10 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
                 if (PRSEEN(var) == 1);                         \
                 else SET_PRSEEN(var, 0);                       \
             }                                                  \
-            return eval(var, R_EmptyEnv);                      \
+            PROTECT(var);                                      \
+            var = eval(var, R_EmptyEnv);                       \
+            UNPROTECT(1);                                      \
+            return var;                                        \
         }                                                      \
         else                                                   \
             return PRVALUE(var)
