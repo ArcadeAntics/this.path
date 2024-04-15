@@ -2,12 +2,13 @@
 #define R_THISPATH_SYS_H
 
 
+#define R_NO_REMAP
 #include <Rinternals.h>
 #include "ns-hooks.h"
 
 
 extern SEXP sys_call(SEXP which, SEXP rho);
-#define getCurrentCall(rho) ( eval(expr_sys_call, (rho)) )
+#define getCurrentCall(rho) ( Rf_eval(expr_sys_call, (rho)) )
 extern int sys_parent(int n, SEXP rho);
 
 

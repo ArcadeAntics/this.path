@@ -61,7 +61,7 @@ static void HWND_lines(HWND handle, const char *title)
     else return;
 
 
-    REPROTECT(EnumResult = allocVector(VECSXP, 1), EnumIndex);
+    R_Reprotect(EnumResult = Rf_allocVector(VECSXP, 1), EnumIndex);
     LRESULT len = SendMessage(EnumHandle, WM_GETTEXTLENGTH, 0, (LPARAM) 0);
     /* if there is no text to get, then return list("") */
     if (!len) {
@@ -70,13 +70,13 @@ static void HWND_lines(HWND handle, const char *title)
     }
     char buf[len + 1];
     if (!SendMessage(EnumHandle, WM_GETTEXT, len + 1, (LPARAM) buf))
-        error("unable to WM_GETTEXT from <pointer: %p>,\n  child of <pointer: %p> with title '%s'",
+        Rf_error("unable to WM_GETTEXT from <pointer: %p>,\n  child of <pointer: %p> with title '%s'",
               (void *) EnumHandle, (void *) handle, title);
     const char *str = buf;
     const char *p = strstr(str, "\r\n");
     /* if there are no newlines in the text, just return as is */
     if (!p) {
-        SET_VECTOR_ELT(EnumResult, 0, mkString(buf));
+        SET_VECTOR_ELT(EnumResult, 0, Rf_mkString(buf));
         return;
     }
     /* count how many strings need to be allocated, then allocate them */
@@ -89,21 +89,21 @@ static void HWND_lines(HWND handle, const char *title)
         }
         else break;
     } while (p);
-    SEXP x = allocVector(STRSXP, n_strings);
+    SEXP x = Rf_allocVector(STRSXP, n_strings);
     SET_VECTOR_ELT(EnumResult, 0, x);
     /* set the strings in the string vector */
     R_xlen_t i = 0;
     str = buf;
     p = strstr(str, "\r\n");
     do {
-        SET_STRING_ELT(x, i++, mkCharLen(str, p - str));
+        SET_STRING_ELT(x, i++, Rf_mkCharLen(str, p - str));
         str = p + 2;
         if (*str) {
             p = strstr(str, "\r\n");
         }
         else break;
     } while (p);
-    if (*str) SET_STRING_ELT(x, i++, mkChar(str));
+    if (*str) SET_STRING_ELT(x, i++, Rf_mkChar(str));
 }
 
 
@@ -140,7 +140,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
     char title[len + 1];
     int nchar_title = SendMessage(handle, WM_GETTEXT, len + 1, (LPARAM) title);
     if (!nchar_title)
-        error("unable to WM_GETTEXT from <pointer: %p>", (void *) handle);
+        Rf_error("unable to WM_GETTEXT from <pointer: %p>", (void *) handle);
 
 
     /* if the title and untitled strings are equal (byte-wise, do
@@ -163,15 +163,15 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
             }
             if (EnumForMsg) {
                 if (EnumContents)
-                    EnumResult = ScalarString(NA_STRING);
+                    EnumResult = Rf_ScalarString(NA_STRING);
                 else
-                    EnumResult = mkString(dgettext_RGui("Untitled"));
-                REPROTECT(EnumResult, EnumIndex);
+                    EnumResult = Rf_mkString(dgettext_RGui("Untitled"));
+                R_Reprotect(EnumResult, EnumIndex);
                 RprintRguiMessage;
                 return FALSE;
             }
-            error(EnumActive ? "active document in Rgui does not exist" :
-                               "source document in Rgui does not exist");
+            Rf_error(EnumActive ? "active document in Rgui does not exist" :
+                                  "source document in Rgui does not exist");
         }
     }
 
@@ -189,7 +189,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
             if (memcmp(title + off, suffix, nchar_suffix) == 0) {
                 title[off] = '\0';
                 if (!is_abs_path_windows(title))
-                    error("invalid title, path preceding '%s' must be absolute", suffix);
+                    Rf_error("invalid title, path preceding '%s' must be absolute", suffix);
 
 
 #define return_abs_path                                        \
@@ -199,14 +199,16 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
                     if (EnumResult) return FALSE;              \
                 }                                              \
                 if (EnumOriginal) {                            \
-                    REPROTECT(EnumResult = mkString(title), EnumIndex);\
+                    R_Reprotect(EnumResult = Rf_mkString(title), EnumIndex);\
                     return FALSE;                              \
                 }                                              \
-                SEXP expr = LCONS(_normalizePath_not_dirSymbol,\
-                                  CONS(mkString(title), R_NilValue));\
-                PROTECT(expr);                                 \
-                REPROTECT(EnumResult = eval(expr, mynamespace), EnumIndex);\
-                UNPROTECT(1);                                  \
+                SEXP expr = Rf_lcons(                          \
+                    _normalizePath_not_dirSymbol,              \
+                    Rf_cons(Rf_mkString(title), R_NilValue)    \
+                );                                             \
+                Rf_protect(expr);                              \
+                R_Reprotect(EnumResult = Rf_eval(expr, mynamespace), EnumIndex);\
+                Rf_unprotect(1);                               \
                 return FALSE
 
 
@@ -230,10 +232,10 @@ SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
 {
     if (!RConsole)
-        error("attempt to use 'Rgui_path' while not in RGui");
+        Rf_error("attempt to use 'Rgui_path' while not in RGui");
 
 
-    PROTECT_WITH_INDEX(EnumResult = NULL, &EnumIndex);
+    R_ProtectWithIndex(EnumResult = NULL, &EnumIndex);
     EnumProcessId = GetCurrentProcessId();
 
 
@@ -255,19 +257,19 @@ SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
         EnumWindows(EnumRGuiPathProc, 0);
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     if (EnumResult) return EnumResult;
 
 
-    if (EnumForMsg) return ScalarString(NA_STRING);
-    if (EnumActive) error("no windows in Rgui; should never happen, please report!");
+    if (EnumForMsg) return Rf_ScalarString(NA_STRING);
+    if (EnumActive) Rf_error("no windows in Rgui; should never happen, please report!");
 
 
     const char *msg = "R is running from Rgui with no documents open";
-    SEXP cond = ThisPathNotExistsError(msg, PROTECT(getCurrentCall(rho)));
-    PROTECT(cond);
+    SEXP cond = ThisPathNotExistsError(msg, Rf_protect(getCurrentCall(rho)));
+    Rf_protect(cond);
     stop(cond);
-    UNPROTECT(2);
+    Rf_unprotect(2);
     return R_NilValue;  /* should not be reached */
 }
 
@@ -276,11 +278,11 @@ SEXP do_CharacterMode do_formals
 {
     do_start_no_call_op_rho("CharacterMode", 0);
     switch (CharacterMode) {
-    case RGui:    return mkString("RGui");
-    case RTerm:   return mkString("RTerm");
-    case LinkDLL: return mkString("LinkDLL");
+    case RGui:    return Rf_mkString("RGui");
+    case RTerm:   return Rf_mkString("RTerm");
+    case LinkDLL: return Rf_mkString("LinkDLL");
     }
-    return ScalarString(NA_STRING);
+    return Rf_ScalarString(NA_STRING);
 }
 
 
@@ -294,6 +296,7 @@ SEXP do_RConsole do_formals
 #else
 
 
+#define R_NO_REMAP
 #include <Rinternals.h>
 #include "backports.h"
 
@@ -301,21 +304,21 @@ SEXP do_RConsole do_formals
 SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
 {
-    error("Rgui_path() is implemented only on Windows");
+    Rf_error("Rgui_path() is implemented only on Windows");
     return R_NilValue;
 }
 
 
 SEXP do_CharacterMode do_formals
 {
-    error("do_CharacterMode() is implemented only on Windows");
+    Rf_error("do_CharacterMode() is implemented only on Windows");
     return R_NilValue;
 }
 
 
 SEXP do_RConsole do_formals
 {
-    error("do_RConsole() is implemented only on Windows");
+    Rf_error("do_RConsole() is implemented only on Windows");
     return R_NilValue;
 }
 

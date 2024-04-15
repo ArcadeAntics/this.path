@@ -2,6 +2,7 @@
 #define R_THISPATH_RVERSIONDEFINES_H
 
 
+#define R_NO_REMAP
 #include <Rversion.h>
 
 

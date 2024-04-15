@@ -378,14 +378,14 @@ SEXP do_is_clipboard do_formals
 
     SEXP file = CAR(args);
     if (TYPEOF(file) != STRSXP)
-        error(_("a character vector argument expected"));
+        Rf_error(_("a character vector argument expected"));
     int n = LENGTH(file);
-    SEXP value = allocVector(LGLSXP, n);
-    PROTECT(value);
+    SEXP value = Rf_allocVector(LGLSXP, n);
+    Rf_protect(value);
     int *ivalue = INTEGER(value);
     for (int i = 0; i < n; i++)
         ivalue[i] = is_clipboard(CHAR(STRING_ELT(file, i)));
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -399,9 +399,9 @@ SEXP isabspath(int windows, SEXP args)
     SEXP path = CAR(args);
     int n;
     if (TYPEOF(path) != STRSXP)
-        error(_("a character vector argument expected"));
-    SEXP value = allocVector(LGLSXP, n = LENGTH(path));
-    PROTECT(value);
+        Rf_error(_("a character vector argument expected"));
+    SEXP value = Rf_allocVector(LGLSXP, n = LENGTH(path));
+    Rf_protect(value);
     int *lvalue = LOGICAL(value);
     if (windows) {
         for (int i = 0; i < n; i++) {
@@ -412,7 +412,7 @@ SEXP isabspath(int windows, SEXP args)
             lvalue[i] = is_abs_path_unix(CHAR(STRING_ELT(path, i)));
         }
     }
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 

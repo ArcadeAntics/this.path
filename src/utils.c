@@ -9,7 +9,7 @@ SEXP do_istrue do_formals
     do_start_no_call_op_rho("istrue", 1);
 
 
-    return t_or_f(asLogical(CAR(args)) == TRUE);
+    return t_or_f(Rf_asLogical(CAR(args)) == TRUE);
 }
 
 
@@ -18,14 +18,14 @@ SEXP do_isfalse do_formals
     do_start_no_call_op_rho("isfalse", 1);
 
 
-    return t_or_f(asLogical(CAR(args)) == FALSE);
+    return t_or_f(Rf_asLogical(CAR(args)) == FALSE);
 }
 
 
 SEXP do_asLogical do_formals
 {
     do_start_no_call_op_rho("asLogical", 1);
-    return ScalarLogical(asLogical(CAR(args)));
+    return Rf_ScalarLogical(Rf_asLogical(CAR(args)));
 }
 
 
@@ -34,7 +34,7 @@ SEXP do_asInteger do_formals
     do_start_no_call_op_rho("asInteger", 1);
 
 
-    return ScalarInteger(asInteger(CAR(args)));
+    return Rf_ScalarInteger(Rf_asInteger(CAR(args)));
 }
 
 
@@ -43,10 +43,10 @@ SEXP do_asIntegerGE0 do_formals
     do_start_no_call_op_rho("asIntegerGE0", 1);
 
 
-    int value = asInteger(CAR(args));
+    int value = Rf_asInteger(CAR(args));
     if (value == NA_INTEGER || value < 0)
-        error(_("invalid '%s' value"), "n");
-    return ScalarInteger(value);
+        Rf_error(_("invalid '%s' value"), "n");
+    return Rf_ScalarInteger(value);
 }
 
 
@@ -61,7 +61,7 @@ SEXP do_IS_SCALAR_STR do_formals
 SEXP do_AS_SCALAR_STR do_formals
 {
     do_start_no_call_op_rho("AS_SCALAR_STR", 1);
-    return ScalarString(asChar(CAR(args)));
+    return Rf_ScalarString(Rf_asChar(CAR(args)));
 }
 
 
@@ -73,7 +73,7 @@ SEXP do_scalar_streql do_formals
         return R_FalseValue;
     SEXP e2 = CAR(args); args = CDR(args);
     // if (IS_SCALAR(e2, LGLSXP) && LOGICAL(e2)[0] == NA_LOGICAL)
-    //     e2 = ScalarString(NA_STRING);
+    //     e2 = Rf_ScalarString(NA_STRING);
     if (!IS_SCALAR(e2, STRSXP))
         return R_FalseValue;
     e1 = STRING_ELT(e1, 0);

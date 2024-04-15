@@ -11,7 +11,7 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
 
 
     if (for_msg == NA_LOGICAL)
-        error(_("invalid '%s' argument"), "for.msg");
+        Rf_error(_("invalid '%s' argument"), "for.msg");
 
 
     /* if 'for.msg = TRUE', we treat 'original = FALSE' as 'original = NA' */
@@ -24,7 +24,7 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
     {
         SEXP fun = getFromMyNS(where);
         if (TYPEOF(fun) != CLOSXP)
-            error(_("object '%s' of mode '%s' was not found"),
+            Rf_error(_("object '%s' of mode '%s' was not found"),
                 EncodeChar(PRINTNAME(where)), "function");
         where = fun;
     }
@@ -44,11 +44,11 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
 
 
 #define get_and_check(var, sym)                                \
-        SEXP var = findVarInFrame(env, (sym));                 \
+        SEXP var = Rf_findVarInFrame(env, (sym));              \
         if (var == R_UnboundValue)                             \
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
+            Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
         if (TYPEOF(var) != PROMSXP)                            \
-            error("invalid '%s', must be a promise", EncodeChar(PRINTNAME((sym))))
+            Rf_error("invalid '%s', must be a promise", EncodeChar(PRINTNAME((sym))))
 
 
         get_and_check(file, fileSymbol);
@@ -68,9 +68,9 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
                 if (PRSEEN(var) == 1);                         \
                 else SET_PRSEEN(var, 0);                       \
             }                                                  \
-            PROTECT(var);                                      \
-            var = eval(var, R_EmptyEnv);                       \
-            UNPROTECT(1);                                      \
+            Rf_protect(var);                                   \
+            var = Rf_eval(var, R_EmptyEnv);                    \
+            Rf_unprotect(1);                                   \
             return var;                                        \
         }                                                      \
         else                                                   \

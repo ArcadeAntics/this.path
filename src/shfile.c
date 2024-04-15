@@ -17,7 +17,7 @@ SEXP do_site_file do_formals
 {
     do_start_no_call_op_rho("site_file", 2);
 #define get_file_from_closure2(sym)                            \
-    (get_file_from_closure(asLogical(CAR(args)), asLogical(CADR(args)), (sym)))
+    (get_file_from_closure(Rf_asLogical(CAR(args)), Rf_asLogical(CADR(args)), (sym)))
     return get_file_from_closure2(_site_fileSymbol);
 }
 
@@ -269,43 +269,43 @@ SEXP do_shINFO do_formals
 #define return_shINFO(_ENC_, _NO_SITE_FILE_, _NO_INIT_FILE_, _NO_READLINE_, _NO_ECHO_, _ESS_, _FILE_, _EXPR_, _HAS_INPUT_)\
         do {                                                   \
             int len = 9;                                       \
-            SEXP value = allocVector(VECSXP, len);             \
-            PROTECT(value);                                    \
-            SEXP names = allocVector(STRSXP, len);             \
-            setAttrib(value, R_NamesSymbol, names);            \
+            SEXP value = Rf_allocVector(VECSXP, len);          \
+            Rf_protect(value);                                 \
+            SEXP names = Rf_allocVector(STRSXP, len);          \
+            Rf_setAttrib(value, R_NamesSymbol, names);         \
             int indx = -1;                                     \
-            SET_STRING_ELT(names, ++indx, mkChar("ENC"));      \
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("ENC"));   \
             SET_VECTOR_ELT(value,   indx, (_ENC_));            \
-            SET_STRING_ELT(names, ++indx, mkChar("no_site_file"));\
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("no_site_file"));\
             SET_VECTOR_ELT(value,   indx, (_NO_SITE_FILE_));   \
-            SET_STRING_ELT(names, ++indx, mkChar("no_init_file"));\
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("no_init_file"));\
             SET_VECTOR_ELT(value,   indx, (_NO_INIT_FILE_));   \
-            SET_STRING_ELT(names, ++indx, mkChar("no_readline"));\
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("no_readline"));\
             SET_VECTOR_ELT(value,   indx, (_NO_READLINE_));    \
-            SET_STRING_ELT(names, ++indx, mkChar("no_echo"));  \
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("no_echo"));\
             SET_VECTOR_ELT(value,   indx, (_NO_ECHO_));        \
-            SET_STRING_ELT(names, ++indx, mkChar("ess"));      \
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("ess"));   \
             SET_VECTOR_ELT(value,   indx, (_ESS_));            \
-            SET_STRING_ELT(names, ++indx, mkChar("FILE"));     \
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("FILE"));  \
             SET_VECTOR_ELT(value,   indx, (_FILE_));           \
-            SET_STRING_ELT(names, ++indx, mkChar("EXPR"));     \
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("EXPR"));  \
             SET_VECTOR_ELT(value,   indx, (_EXPR_));           \
-            SET_STRING_ELT(names, ++indx, mkChar("has_input"));\
+            SET_STRING_ELT(names, ++indx, Rf_mkChar("has_input"));\
             SET_VECTOR_ELT(value,   indx, (_HAS_INPUT_));      \
-            UNPROTECT(1);                                      \
+            Rf_unprotect(1);                                   \
             return value;                                      \
         } while (0)
 
 
         return_shINFO(
-            /* ENC          */ ScalarString(NA_STRING),
+            /* ENC          */ Rf_ScalarString(NA_STRING),
             /* no_site_file */ R_LogicalNAValue,
             /* no_init_file */ R_LogicalNAValue,
             /* no_readline  */ R_LogicalNAValue,
             /* no_echo      */ R_LogicalNAValue,
             /* ess          */ R_LogicalNAValue,
-            /* FILE         */ ScalarString(NA_STRING),
-            /* EXPR         */ ScalarString(NA_STRING),
+            /* FILE         */ Rf_ScalarString(NA_STRING),
+            /* EXPR         */ Rf_ScalarString(NA_STRING),
             /* has_input    */ R_LogicalNAValue
         );
     }
@@ -314,8 +314,8 @@ SEXP do_shINFO do_formals
     int ARGC; SEXP ARGV;
 
 
-    ARGV = eval(expr_commandArgs, R_BaseEnv);
-    PROTECT(ARGV);
+    ARGV = Rf_eval(expr_commandArgs, R_BaseEnv);
+    Rf_protect(ARGV);
     ARGC = LENGTH(ARGV);
 
 
@@ -337,20 +337,20 @@ SEXP do_shINFO do_formals
 
 
     if (ARGC <= 1) {
-        UNPROTECT(1);
+        Rf_unprotect(1);
 
 
 #define default_return_shINFO                                  \
         return_shINFO(                                         \
-            ScalarString(has_enc ? mkChar(enc) : NA_STRING),   \
-            ScalarLogical(no_site_file),                       \
-            ScalarLogical(no_init_file),                       \
-            ScalarLogical(no_readline),                        \
-            ScalarLogical(no_echo),                            \
-            ScalarLogical(ess),                                \
-            ScalarString(FILE ? mkChar(FILE) : NA_STRING),     \
-            ScalarString(strlen(cmdlines) ? mkChar(cmdlines) : NA_STRING),\
-            ScalarLogical(has_input)                           \
+            Rf_ScalarString(has_enc ? Rf_mkChar(enc) : NA_STRING),\
+            Rf_ScalarLogical(no_site_file),                    \
+            Rf_ScalarLogical(no_init_file),                    \
+            Rf_ScalarLogical(no_readline),                     \
+            Rf_ScalarLogical(no_echo),                         \
+            Rf_ScalarLogical(ess),                             \
+            Rf_ScalarString(FILE ? Rf_mkChar(FILE) : NA_STRING),\
+            Rf_ScalarString(strlen(cmdlines) ? Rf_mkChar(cmdlines) : NA_STRING),\
+            Rf_ScalarLogical(has_input)                        \
         )
 
 
@@ -361,8 +361,8 @@ SEXP do_shINFO do_formals
     /* determine the number of leading arguments:
      * the arguments up to and including --args
      */
-    SEXP argsChar = mkChar("--args");
-    PROTECT(argsChar);
+    SEXP argsChar = Rf_mkChar("--args");
+    Rf_protect(argsChar);
     int ac = ARGC;
     for (int i = 1; i < ARGC; i++) {
         if (STRING_ELT(ARGV, i) == argsChar) {
@@ -370,14 +370,14 @@ SEXP do_shINFO do_formals
             break;
         }
     }
-    UNPROTECT(1);
+    Rf_unprotect(1);
 
 
     /* copy the arguments from the STRSXP to a *char[] */
     const char *argv[ac];
     for (int i = 0; i < ac; i++)
         argv[i] = CHAR(STRING_ELT(ARGV, i));
-    UNPROTECT(1);  /* ARGV */
+    Rf_unprotect(1);  /* ARGV */
     const char **av = argv;
 
 
@@ -425,7 +425,7 @@ SEXP do_shINFO do_formals
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac) {
-                    errorcall(R_NilValue, _("option '%s' requires an argument"), "-f");
+                    Rf_errorcall(R_NilValue, _("option '%s' requires an argument"), "-f");
                 }
                 if (strcmp(*av, "-")) { /* av != "-" */
                     FILE = *av;
@@ -441,7 +441,7 @@ SEXP do_shINFO do_formals
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac || !strlen(*av)) {
-                    errorcall(R_NilValue, _("option '%s' requires a non-empty argument"), "-e");
+                    Rf_errorcall(R_NilValue, _("option '%s' requires a non-empty argument"), "-e");
                 }
                 if (strlen(cmdlines) + strlen(*av) + 2 <= 10000) {
                     strcat(cmdlines, *av);
@@ -502,12 +502,12 @@ SEXP do_shINFO do_formals
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac) {
-                    errorcall(R_NilValue, _("option '%s' requires an argument"), "-f");
+                    Rf_errorcall(R_NilValue, _("option '%s' requires an argument"), "-f");
                 }
 #define R_INIT_TREAT_F(_AV_)                                   \
                 if (strcmp(_AV_, "-")) {                       \
                     if (strlen(_AV_) >= PATH_MAX) {            \
-                        errorcall(R_NilValue, _("path given in -f/--file is too long"));\
+                        Rf_errorcall(R_NilValue, _("path given in -f/--file is too long"));\
                     }                                          \
                     char *p = path;                            \
                     p = unescape_arg(p, _AV_);                 \
@@ -525,7 +525,7 @@ SEXP do_shINFO do_formals
                 has_input = TRUE;
                 ac--; av++;
                 if (!ac) {
-                    errorcall(R_NilValue, _("option '%s' requires a non-empty argument"), "-e");
+                    Rf_errorcall(R_NilValue, _("option '%s' requires a non-empty argument"), "-e");
                 }
                 if (strlen(cmdlines) + strlen(*av) + 2 <= 10000) {
                     char *p = cmdlines + strlen(cmdlines);

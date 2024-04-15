@@ -7,15 +7,15 @@ SEXP do_reset_proj do_formals
 
 
     SEXP _proj = getFromMyNS(_projSymbol);
-    PROTECT(_proj);
+    Rf_protect(_proj);
     if (TYPEOF(_proj) != CLOSXP)
-        error(_("object '%s' of mode '%s' was not found"),
+        Rf_error(_("object '%s' of mode '%s' was not found"),
             CHAR(PRINTNAME(_projSymbol)), "function");
-    SEXP value = allocVector(STRSXP, 0);
-    PROTECT(value);
+    SEXP value = Rf_allocVector(STRSXP, 0);
+    Rf_protect(value);
     INCREMENT_NAMED_defineVar(xSymbol, value, CLOENV(_proj));
-    setAttrib(value, R_NamesSymbol, allocVector(STRSXP, 0));
+    Rf_setAttrib(value, R_NamesSymbol, Rf_allocVector(STRSXP, 0));
     set_R_Visible(FALSE);
-    UNPROTECT(2);
+    Rf_unprotect(2);
     return R_NilValue;
 }

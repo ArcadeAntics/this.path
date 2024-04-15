@@ -1,3 +1,4 @@
+#define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
 #include <Rversion.h>          /* need 'R_VERSION' and 'R_Version' */
@@ -23,8 +24,8 @@
         #else
             extern Rconnection getConnection(int n);
             Rconnection R_GetConnection(SEXP sConn) {
-                if (!inherits(sConn, "connection")) error(_("invalid connection"));
-                return getConnection(asInteger(sConn));
+                if (!Rf_inherits(sConn, "connection")) Rf_error(_("invalid connection"));
+                return getConnection(Rf_asInteger(sConn));
             }
         #endif
     #endif

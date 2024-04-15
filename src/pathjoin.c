@@ -23,7 +23,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
     int pwidth, drivewidth;
 
 
-    const char *ptr;  /* points to the entire string from translateCharUTF8() */
+    const char *ptr;  /* points to the entire string from Rf_translateCharUTF8() */
     int *need_trailing_slash;  /* which strings need a slash afterward */
 
 
@@ -51,7 +51,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
          */
         for (i = x_length - 1; i >= 0; i--) {
             len = LENGTH(VECTOR_ELT(x, i));
-            ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
+            ptr = Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
             nchar = (int) strlen(ptr);
             if (!nchar)
                 continue;
@@ -172,7 +172,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
             for (i--; i >= 0; i--) {
                 maybe_len = LENGTH(VECTOR_ELT(x, i));
-                maybe_ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % maybe_len));
+                maybe_ptr = Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % maybe_len));
                 maybe_nchar = (int) strlen(maybe_ptr);
                 if (!maybe_nchar)
                     continue;
@@ -376,7 +376,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
             /* start immediately AFTER the absolute path */
             for (i = start_from_here; i < x_length; i++) {
                 len = LENGTH(VECTOR_ELT(x, i));
-                ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
+                ptr = Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
                 nchar = (int) strlen(ptr);
 
 
@@ -422,14 +422,14 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
 #if debug
-        if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
-        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
+        if (check_width != pwidth) Rf_error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
+        if (strlen(cbuf) != pwidth) Rf_error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
         Rprintf("\n");
 #endif
 
 
         /* use cbuf because we want the whole string */
-        SET_STRING_ELT(value, j, mkCharCE(cbuf, CE_UTF8));
+        SET_STRING_ELT(value, j, Rf_mkCharCE(cbuf, CE_UTF8));
     }
 }
 
@@ -466,7 +466,7 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
          */
         for (i = x_length - 1; i >= 0; i--) {
             len = LENGTH(VECTOR_ELT(x, i));
-            ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
+            ptr = Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
             nchar = (int) strlen(ptr);
             if (!nchar)
                 continue;
@@ -532,7 +532,7 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
         if (i < 0) i = 0;
         for (; i < x_length; i++) {
             len = LENGTH(VECTOR_ELT(x, i));
-            ptr = translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
+            ptr = Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, i), j % len));
             nchar = (int) strlen(ptr);
 
 
@@ -563,14 +563,14 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
 #if debug
-        if (check_width != pwidth) error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
-        if (strlen(cbuf) != pwidth) error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
+        if (check_width != pwidth) Rf_error("allocated string of %d bytes, allocated %d bytes instead\n", pwidth, check_width);
+        if (strlen(cbuf) != pwidth) Rf_error("allocated string of %d bytes, got a string of %d bytes instead\n", pwidth, strlen(cbuf));
         Rprintf("\n");
 #endif
 
 
         /* use cbuf because we want the whole string */
-        SET_STRING_ELT(value, j, mkCharCE(cbuf, CE_UTF8));
+        SET_STRING_ELT(value, j, Rf_mkCharCE(cbuf, CE_UTF8));
     }
 }
 
@@ -584,20 +584,20 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     /* we don't pass the ... list directly because we want to
        avoid an accidental argument name match to PACKAGE
      */
-    SEXP dots = findVarInFrame(rho, R_DotsSymbol);
-    PROTECT(dots); nprotect++;
+    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    Rf_protect(dots); nprotect++;
     if (dots == R_UnboundValue)
-        error(_("object '%s' not found"), "...");
+        Rf_error(_("object '%s' not found"), "...");
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
+    int dots_length = ((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0);
 
 
-    if (dots_length == 0) return allocVector(STRSXP, 0);
+    if (dots_length == 0) return Rf_allocVector(STRSXP, 0);
 
 
-    SEXP x = allocVector(VECSXP, dots_length);
-    PROTECT(x); nprotect++;
+    SEXP x = Rf_allocVector(VECSXP, dots_length);
+    Rf_protect(x); nprotect++;
     int x_length = dots_length;
     int i, j;
     SEXP d, xi;
@@ -614,8 +614,8 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
         /* evaluate each argument of 'dots' */
         xi = CAR(d);
         if (xi == R_MissingArg)
-            errorcall(call, _("argument is missing, with no default"));
-        xi = eval(xi, rho);
+            Rf_errorcall(call, _("argument is missing, with no default"));
+        xi = Rf_eval(xi, rho);
         if (commonLength) {
 
 
@@ -624,26 +624,26 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
 
             /* coerce the object to string if needed */
-            if (!isString(xi)) {
+            if (!Rf_isString(xi)) {
                 if (OBJECT(xi)) {
                     /* as.character(quote(xi)) */
                     SEXP expr;
                     PROTECT_INDEX indx;
-                    PROTECT_WITH_INDEX(expr = CONS(xi, R_NilValue), &indx);
+                    R_ProtectWithIndex(expr = Rf_cons(xi, R_NilValue), &indx);
                     if (needQuote(xi)) {
-                        REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
-                        REPROTECT(expr = CONS(expr, R_NilValue), indx);
+                        R_Reprotect(expr = Rf_lcons(getFromBase(R_QuoteSymbol), expr), indx);
+                        R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
                     }
-                    REPROTECT(expr = LCONS(getFromBase(R_AsCharacterSymbol), expr), indx);
-                    SET_VECTOR_ELT(x, i, eval(expr, rho));
-                    UNPROTECT(1);
+                    R_Reprotect(expr = Rf_lcons(getFromBase(R_AsCharacterSymbol), expr), indx);
+                    SET_VECTOR_ELT(x, i, Rf_eval(expr, rho));
+                    Rf_unprotect(1);
                 }
-                else if (isSymbol(xi))
-                    SET_VECTOR_ELT(x, i, ScalarString(PRINTNAME(xi)));
-                else SET_VECTOR_ELT(x, i, coerceVector(xi, STRSXP));
+                else if (Rf_isSymbol(xi))
+                    SET_VECTOR_ELT(x, i, Rf_ScalarString(PRINTNAME(xi)));
+                else SET_VECTOR_ELT(x, i, Rf_coerceVector(xi, STRSXP));
 
-                if (!isString(VECTOR_ELT(x, i)))
-                    errorcall(call, "non-string argument to '%s'", name);
+                if (!Rf_isString(VECTOR_ELT(x, i)))
+                    Rf_errorcall(call, "non-string argument to '%s'", name);
             }
 
 
@@ -662,8 +662,8 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
 
     if (commonLength == 0) {
-        UNPROTECT(nprotect);
-        return allocVector(STRSXP, 0);
+        Rf_unprotect(nprotect);
+        return Rf_allocVector(STRSXP, 0);
     }
 
 
@@ -671,14 +671,14 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
         int len = LENGTH(VECTOR_ELT(x, i));
         for (j = 0; j < len; j++) {
             SEXP cs = STRING_ELT(VECTOR_ELT(x, i), j);
-            if (getCharCE(cs) == CE_BYTES)
-                error("strings with \"bytes\" encoding are not allowed");
+            if (Rf_getCharCE(cs) == CE_BYTES)
+                Rf_error("strings with \"bytes\" encoding are not allowed");
         }
     }
 
 
-    SEXP value = allocVector(STRSXP, commonLength);
-    PROTECT(value); nprotect++;
+    SEXP value = Rf_allocVector(STRSXP, commonLength);
+    Rf_protect(value); nprotect++;
 
 
     if (windows) {
@@ -688,7 +688,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     }
 
 
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
     return value;
 }
 

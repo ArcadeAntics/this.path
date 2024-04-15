@@ -33,38 +33,38 @@ SEXP do_asArgs do_formals
     int n;
 
 
-    switch (length(args)) {
+    switch (Rf_length(args)) {
     case 0:
         n = 0;
         break;
     case 1:
-        n = asInteger(CAR(args));
+        n = Rf_asInteger(CAR(args));
         if (n == NA_INTEGER || n < 0)
-            errorcall(call, _("argument must be coercible to non-negative integer"));
+            Rf_errorcall(call, _("argument must be coercible to non-negative integer"));
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_asArgs", "0 or 1"));
+        Rf_errorcall(call, wrong_nargs_to_External(Rf_length(args), ".C_asArgs", "0 or 1"));
         return R_NilValue;
     }
 
 
-    SEXP dots = findVarInFrame(rho, R_DotsSymbol);
-    PROTECT(dots); nprotect++;
+    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    Rf_protect(dots); nprotect++;
     if (dots == R_UnboundValue)
-        error("could not find the ... list; should never happen, please report!");
+        Rf_error("could not find the ... list; should never happen, please report!");
 
 
-    int dots_length = (((TYPEOF(dots) == DOTSXP) ? length(dots) : 0) - n);
+    int dots_length = (((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0) - n);
 
 
-    if (dots_length <= 0) return allocVector(STRSXP, 0);
+    if (dots_length <= 0) return Rf_allocVector(STRSXP, 0);
 
 
-    if (n) dots = nthcdr(dots, n);
+    if (n) dots = Rf_nthcdr(dots, n);
 
 
-    SEXP x = allocVector(VECSXP, dots_length);
-    PROTECT(x); nprotect++;
+    SEXP x = Rf_allocVector(VECSXP, dots_length);
+    Rf_protect(x); nprotect++;
     int i;
     SEXP d, xi;
 
@@ -74,14 +74,14 @@ SEXP do_asArgs do_formals
 
         /* evaluate each argument of 'dots' */
         xi = CAR(d);
-        xi = eval(xi, rho);
+        xi = Rf_eval(xi, rho);
         SET_VECTOR_ELT(x, i, xi);
     }
 
 
-    SEXP expr = LCONS(_asArgsSymbol, CONS(x, R_NilValue));
-    PROTECT(expr); nprotect++;
-    SEXP value = eval(expr, mynamespace);
-    UNPROTECT(nprotect);
+    SEXP expr = Rf_lcons(_asArgsSymbol, Rf_cons(x, R_NilValue));
+    Rf_protect(expr); nprotect++;
+    SEXP value = Rf_eval(expr, mynamespace);
+    Rf_unprotect(nprotect);
     return value;
 }

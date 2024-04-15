@@ -8,42 +8,42 @@ R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
      * we must call it in the user's environment in case they defined any
      * length methods in said environment
      */
-    if (isObject(x)) {
+    if (Rf_isObject(x)) {
         SEXP expr;
         PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
+        R_ProtectWithIndex(expr = Rf_cons(x, R_NilValue), &indx);
         if (needQuote(x)) {
-            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
-            REPROTECT(expr = CONS(expr, R_NilValue), indx);
+            R_Reprotect(expr = Rf_lcons(getFromBase(R_QuoteSymbol), expr), indx);
+            R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
         }
-        REPROTECT(expr = LCONS(getFromBase(R_LengthSymbol), expr), indx);
-        SEXP res = PROTECT(eval(expr, rho));
+        R_Reprotect(expr = Rf_lcons(getFromBase(R_LengthSymbol), expr), indx);
+        SEXP res = Rf_protect(Rf_eval(expr, rho));
         R_xlen_t value = (R_xlen_t)
-            ((TYPEOF(res) == REALSXP) ? REAL(res)[0] : asInteger(res));
-        UNPROTECT(2);
+            ((TYPEOF(res) == REALSXP) ? REAL(res)[0] : Rf_asInteger(res));
+        Rf_unprotect(2);
         return value;
     }
-    else return xlength(x);  /* otherwise, return the internal length */
+    else return Rf_xlength(x);  /* otherwise, return the internal length */
 }
 
 
 SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
 {
-    if (isObject(x)) {
-        SEXP expr = allocList(3);
-        PROTECT(expr);
+    if (Rf_isObject(x)) {
+        SEXP expr = Rf_allocList(3);
+        Rf_protect(expr);
         SET_TYPEOF(expr, LANGSXP);
         SETCAR(expr, getFromBase(R_Bracket2Symbol));
         if (needQuote(x)) {
-            SEXP expr2 = SETCADR(expr, allocList(2));
+            SEXP expr2 = SETCADR(expr, Rf_allocList(2));
             SET_TYPEOF(expr2, LANGSXP);
             SETCAR (expr2, getFromBase(R_QuoteSymbol));
             SETCADR(expr2, x);
         }
         else SETCADR(expr, x);
-        SETCADDR(expr, ScalarReal(((double) i) + 1));
-        expr = eval(expr, rho);
-        UNPROTECT(1);
+        SETCADDR(expr, Rf_ScalarReal(((double) i) + 1));
+        expr = Rf_eval(expr, rho);
+        Rf_unprotect(1);
         return expr;
     }
     else return VECTOR_ELT(x, i);
@@ -53,9 +53,9 @@ SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
 R_xlen_t dispatch_subset2_xlength(SEXP x, R_xlen_t i, SEXP rho)
 {
     SEXP x0 = dispatch_subset2(x, i, rho);
-    PROTECT(x0);
+    Rf_protect(x0);
     R_xlen_t value = dispatch_xlength(x0, rho);
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -63,7 +63,7 @@ R_xlen_t dispatch_subset2_xlength(SEXP x, R_xlen_t i, SEXP rho)
 #if R_version_less_than(3,1,0)
 
 
-SEXP lazy_duplicate(SEXP s)
+SEXP Rf_lazy_duplicate(SEXP s)
 {
     switch (TYPEOF(s)) {
     case NILSXP:
@@ -99,15 +99,15 @@ SEXP lazy_duplicate(SEXP s)
 }
 
 
-SEXP shallow_duplicate(SEXP s)
+SEXP Rf_shallow_duplicate(SEXP s)
 {
-    return duplicate(s);
+    return Rf_duplicate(s);
 }
 
 
 int IS_SCALAR(SEXP x, int type)
 {
-    return TYPEOF(x) == type && xlength(x) == 1;
+    return TYPEOF(x) == type && Rf_xlength(x) == 1;
 }
 
 
@@ -120,18 +120,18 @@ Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
         SEXP expr;
         PROTECT_INDEX indx;
         if (needQuote(x)) {
-            PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
-            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
-            REPROTECT(expr = CONS(expr, CONS((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), indx);
+            R_ProtectWithIndex(expr = Rf_cons(x, R_NilValue), &indx);
+            R_Reprotect(expr = Rf_lcons(getFromBase(R_QuoteSymbol), expr), indx);
+            R_Reprotect(expr = Rf_cons(expr, Rf_cons((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), indx);
         } else {
-            PROTECT_WITH_INDEX(expr = CONS(x, CONS((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), &indx);
+            R_ProtectWithIndex(expr = Rf_cons(x, Rf_cons((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), &indx);
         }
-        REPROTECT(expr = LCONS(getFromMyNS(_anyNA_dispatchSymbol), expr), indx);
-        SEXP env = eval(expr_parent_frame, rho);
-        PROTECT(env);
-        SEXP res = PROTECT(eval(expr, env));
-        Rboolean value = (asLogical(res) == TRUE);
-        UNPROTECT(3);
+        R_Reprotect(expr = Rf_lcons(getFromMyNS(_anyNA_dispatchSymbol), expr), indx);
+        SEXP env = Rf_eval(expr_parent_frame, rho);
+        Rf_protect(env);
+        SEXP res = Rf_protect(Rf_eval(expr, env));
+        Rboolean value = (Rf_asLogical(res) == TRUE);
+        Rf_unprotect(3);
         return value;
     }
     else return anyNA_default(x, recursive, rho);
@@ -144,24 +144,24 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
     if (OBJECT(x) || (!recursive && (type == VECSXP || type == LISTSXP))) {
         SEXP expr;
         PROTECT_INDEX indx;
-        PROTECT_WITH_INDEX(expr = CONS(x, R_NilValue), &indx);
+        R_ProtectWithIndex(expr = Rf_cons(x, R_NilValue), &indx);
         if (needQuote(x)) {
-            REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
-            REPROTECT(expr = CONS(expr, R_NilValue), indx);
+            R_Reprotect(expr = Rf_lcons(getFromBase(R_QuoteSymbol), expr), indx);
+            R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
         }
-        REPROTECT(expr = LCONS(getFromBase(is_naSymbol), expr), indx);
-        REPROTECT(expr = CONS(expr, R_NilValue), indx);
-        REPROTECT(expr = LCONS(getFromBase(anySymbol), expr), indx);
-        SEXP env = eval(expr_parent_frame, rho);
-        PROTECT(env);
-        SEXP res = PROTECT(eval(expr, env));
-        Rboolean value = (asLogical(res) == TRUE);
-        UNPROTECT(3);
+        R_Reprotect(expr = Rf_lcons(getFromBase(is_naSymbol), expr), indx);
+        R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
+        R_Reprotect(expr = Rf_lcons(getFromBase(anySymbol), expr), indx);
+        SEXP env = Rf_eval(expr_parent_frame, rho);
+        Rf_protect(env);
+        SEXP res = Rf_protect(Rf_eval(expr, env));
+        Rboolean value = (Rf_asLogical(res) == TRUE);
+        Rf_unprotect(3);
         return value;
     }
 
 
-    R_xlen_t i, n = xlength(x);
+    R_xlen_t i, n = Rf_xlength(x);
     switch (type) {
     case REALSXP:
     {
@@ -228,7 +228,7 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
         break;
     }
     default:
-        error("anyNA() applied to non-(list or vector) of type '%s'", type2char(type));
+        Rf_error("anyNA() applied to non-(list or vector) of type '%s'", Rf_type2char(type));
     }
     return FALSE;
 }
@@ -237,7 +237,7 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
 SEXP do_anyNA do_formals
 {
     do_start_no_call_op("anyNA", 2);
-    return ScalarLogical(anyNA(CAR(args), asLogical(CADR(args)), rho));
+    return Rf_ScalarLogical(anyNA(CAR(args), Rf_asLogical(CADR(args)), rho));
 }
 
 
@@ -247,8 +247,8 @@ SEXP do_anyNA_data_frame do_formals
 
 
     SEXP x = CAR(args);
-    Rboolean recursive = asLogical(CADR(args));
-    for (R_xlen_t i = 0, n = xlength(x); i < n; i++) {
+    Rboolean recursive = Rf_asLogical(CADR(args));
+    for (R_xlen_t i = 0, n = Rf_xlength(x); i < n; i++) {
         if (anyNA(VECTOR_ELT(x, i), recursive, rho))
             return R_TrueValue;
     }
@@ -262,7 +262,7 @@ SEXP do_anyNA_numeric_version do_formals
 
 
     SEXP x = CAR(args);
-    for (R_xlen_t i = 0, n = xlength(x); i < n; i++) {
+    for (R_xlen_t i = 0, n = Rf_xlength(x); i < n; i++) {
         if (dispatch_xlength(VECTOR_ELT(x, i), rho) <= 0)
             return R_TrueValue;
     }
@@ -273,7 +273,7 @@ SEXP do_anyNA_numeric_version do_formals
 SEXP do_anyNA_default do_formals
 {
     do_start_no_call_op("anyNA.default", 2);
-    return ScalarLogical(anyNA_default(CAR(args), asLogical(CADR(args)), rho));
+    return Rf_ScalarLogical(anyNA_default(CAR(args), Rf_asLogical(CADR(args)), rho));
 }
 
 
@@ -287,27 +287,27 @@ SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted)
 {
     SEXP expr;
     PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(sorted ? R_TrueValue : R_FalseValue, R_NilValue), &indx);
+    R_ProtectWithIndex(expr = Rf_cons(sorted ? R_TrueValue : R_FalseValue, R_NilValue), &indx);
     SET_TAG(expr, sortedSymbol);
-    REPROTECT(expr = CONS(all ? R_TrueValue : R_FalseValue, expr), indx);
+    R_Reprotect(expr = Rf_cons(all ? R_TrueValue : R_FalseValue, expr), indx);
     SET_TAG(expr, all_namesSymbol);
-    REPROTECT(expr = CONS(env, expr), indx);
+    R_Reprotect(expr = Rf_cons(env, expr), indx);
     SET_TAG(expr, envirSymbol);
-    REPROTECT(expr = LCONS(getFromBase(lsSymbol), expr), indx);
+    R_Reprotect(expr = Rf_lcons(getFromBase(lsSymbol), expr), indx);
 
 
-    SEXP value = eval(expr, R_EmptyEnv);
-    UNPROTECT(1);
+    SEXP value = Rf_eval(expr, R_EmptyEnv);
+    Rf_unprotect(1);
     return value;
 }
 
 
-SEXP topenv(SEXP target, SEXP envir)
+SEXP Rf_topenv(SEXP target, SEXP envir)
 {
-    SEXP expr = LCONS(topenvSymbol, CONS(envir, CONS(target, R_NilValue)));
-    PROTECT(expr);
-    SEXP value = eval(expr, R_BaseEnv);
-    UNPROTECT(1);
+    SEXP expr = Rf_lcons(topenvSymbol, Rf_cons(envir, Rf_cons(target, R_NilValue)));
+    Rf_protect(expr);
+    SEXP value = Rf_eval(expr, R_BaseEnv);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -318,27 +318,27 @@ SEXP do_dir_exists do_formals
 
 
     SEXP fn = CAR(args);
-    if (!isString(fn))
-        error(_("invalid filename argument"));
+    if (!Rf_isString(fn))
+        Rf_error(_("invalid filename argument"));
     int n = LENGTH(fn);
 
 
-    SEXP expr = LCONS(file_infoSymbol, CONS(fn, R_NilValue));
-    PROTECT(expr);
-    SEXP value = eval(expr, R_BaseEnv);
-    UNPROTECT(1);  /* expr */
-    PROTECT(value);
+    SEXP expr = Rf_lcons(file_infoSymbol, Rf_cons(fn, R_NilValue));
+    Rf_protect(expr);
+    SEXP value = Rf_eval(expr, R_BaseEnv);
+    Rf_unprotect(1);  /* expr */
+    Rf_protect(value);
 
 
     if (TYPEOF(value) != VECSXP)
-        error(_("invalid '%s' value"), "file.info(paths)");
+        Rf_error(_("invalid '%s' value"), "file.info(paths)");
     if (LENGTH(value) < 6)
-        error(_("invalid '%s' value"), "file.info(paths)");
+        Rf_error(_("invalid '%s' value"), "file.info(paths)");
     value = VECTOR_ELT(value, 1);
     if (TYPEOF(value) != LGLSXP)
-        error(_("invalid '%s' value"), "file.info(paths)$isdir");
+        Rf_error(_("invalid '%s' value"), "file.info(paths)$isdir");
     if (LENGTH(value) != n)
-        error(_("invalid '%s' value"), "file.info(paths)$isdir");
+        Rf_error(_("invalid '%s' value"), "file.info(paths)$isdir");
 
 
     int *lvalue = LOGICAL(value);
@@ -349,7 +349,7 @@ SEXP do_dir_exists do_formals
     }
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -360,12 +360,12 @@ SEXP lengths_default(SEXP args, SEXP rho)
     SEXP x = CAR(args), value;
     R_xlen_t len, i;
     int *ivalue;
-    int useNames = asLogical(CADR(args));
+    int useNames = Rf_asLogical(CADR(args));
     if (useNames == NA_LOGICAL)
-        error(_("invalid '%s' value"), "use.names");
+        Rf_error(_("invalid '%s' value"), "use.names");
 
 
-    Rboolean isList = isVectorList(x) || isS4(x);
+    Rboolean isList = Rf_isVectorList(x) || Rf_isS4(x);
     if (!isList) switch (TYPEOF(x)) {
         case NILSXP:
         case CHARSXP:
@@ -377,13 +377,13 @@ SEXP lengths_default(SEXP args, SEXP rho)
         case RAWSXP:
             break;
         default:
-            error(_("'%s' must be a list or atomic vector"), "x");
+            Rf_error(_("'%s' must be a list or atomic vector"), "x");
     }
 
 
     len = dispatch_xlength(x, rho);
-    value = allocVector(INTSXP, len);
-    PROTECT(value);
+    value = Rf_allocVector(INTSXP, len);
+    Rf_protect(value);
 
 
     if (isList) {
@@ -393,14 +393,14 @@ SEXP lengths_default(SEXP args, SEXP rho)
             if (x0_len > INT_MAX) {
                 SEXP oldvalue = value;
                 R_xlen_t oldi = i;
-                value = allocVector(REALSXP, len);
-                PROTECT(value);
+                value = Rf_allocVector(REALSXP, len);
+                Rf_protect(value);
                 double *rvalue;
                 /* copy old values to new vector */
                 for (i = 0, ivalue = INTEGER(oldvalue), rvalue = REAL(value); i < oldi; i++, ivalue++, rvalue++)
                     *rvalue = (double) *ivalue;
-                UNPROTECT(2);  /* oldvalue and value */
-                PROTECT(value);
+                Rf_unprotect(2);  /* oldvalue and value */
+                Rf_protect(value);
                 /* place current value in new vector */
                 *rvalue = (double) x0_len;
                 i++, rvalue++;
@@ -417,17 +417,17 @@ SEXP lengths_default(SEXP args, SEXP rho)
     }
 
 
-    SEXP dim = getAttrib(x, R_DimSymbol);
-    if (!isNull(dim)) setAttrib(value, R_DimSymbol, dim);
+    SEXP dim = Rf_getAttrib(x, R_DimSymbol);
+    if (!Rf_isNull(dim)) Rf_setAttrib(value, R_DimSymbol, dim);
     if (useNames) {
-        SEXP names = getAttrib(x, R_NamesSymbol);
-        if (!isNull(names)) setAttrib(value, R_NamesSymbol, names);
-        SEXP dimnames = getAttrib(x, R_DimNamesSymbol);
-        if (!isNull(dimnames)) setAttrib(value, R_DimNamesSymbol, dimnames);
+        SEXP names = Rf_getAttrib(x, R_NamesSymbol);
+        if (!Rf_isNull(names)) Rf_setAttrib(value, R_NamesSymbol, names);
+        SEXP dimnames = Rf_getAttrib(x, R_DimNamesSymbol);
+        if (!Rf_isNull(dimnames)) Rf_setAttrib(value, R_DimNamesSymbol, dimnames);
     }
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -438,12 +438,12 @@ SEXP do_lengths do_formals
 
 
     SEXP x = CAR(args);
-    int useNames = asLogical(CADR(args));
+    int useNames = Rf_asLogical(CADR(args));
     if (useNames == NA_LOGICAL)
-        error(_("invalid '%s' value"), "use.names");
+        Rf_error(_("invalid '%s' value"), "use.names");
 
 
-    if (OBJECT(x)) return eval(expr_UseMethod_lengths, rho);
+    if (OBJECT(x)) return Rf_eval(expr_UseMethod_lengths, rho);
     else return lengths_default(args, rho);
 }
 
@@ -462,12 +462,12 @@ SEXP checkNSname(SEXP call, SEXP name)
         break;
     case STRSXP:
         if (LENGTH(name) >= 1) {
-            name = installTrChar(STRING_ELT(name, 0));
+            name = Rf_installTrChar(STRING_ELT(name, 0));
             break;
         }
         /* else fall through */
     default:
-        errorcall(call, _("bad namespace name"));
+        Rf_errorcall(call, _("bad namespace name"));
     }
     return name;
 }
@@ -478,9 +478,9 @@ SEXP do_isRegisteredNamespace do_formals
     do_start_no_op_rho("isRegisteredNamespace", 1);
 
 
-    SEXP name = checkNSname(call, PROTECT(coerceVector(CAR(args), SYMSXP)));
-    UNPROTECT(1);
-    SEXP val = findVarInFrame(R_NamespaceRegistry, name);
+    SEXP name = checkNSname(call, Rf_protect(Rf_coerceVector(CAR(args), SYMSXP)));
+    Rf_unprotect(1);
+    SEXP val = Rf_findVarInFrame(R_NamespaceRegistry, name);
     return val == R_UnboundValue ? R_FalseValue : R_TrueValue;
 }
 
@@ -503,14 +503,14 @@ SEXP do_strrep do_formals
     R_xlen_t x_length     = XLENGTH(x    ),
              times_length = XLENGTH(times);
     if (x_length == 0 || times_length == 0)
-        return allocVector(STRSXP, 0);
+        return Rf_allocVector(STRSXP, 0);
 
 
     R_xlen_t len = (x_length > times_length) ? x_length : times_length;
 
 
-    SEXP value = allocVector(STRSXP, len);
-    PROTECT(value);
+    SEXP value = Rf_allocVector(STRSXP, len);
+    Rf_protect(value);
 
 
     R_xlen_t x_indx     = 0,
@@ -522,14 +522,14 @@ SEXP do_strrep do_formals
             SET_STRING_ELT(value, i, NA_STRING);
         } else {
             if (times0 < 0)
-                error(_("invalid '%s' value"), "times");
+                Rf_error(_("invalid '%s' value"), "times");
             const char *str = CHAR(x0);
             int nchar = (int) strlen(str);
 
 
             double nchar_out = ((double) nchar) * times0;
             if (nchar_out > INT_MAX)
-                error("R character strings are limited to 2^31-1 bytes");
+                Rf_error("R character strings are limited to 2^31-1 bytes");
 
 
             char _buf[nchar * times0 + 1];
@@ -540,7 +540,7 @@ SEXP do_strrep do_formals
                 buf += nchar;
             }
             buf[0] = '\0';
-            SET_STRING_ELT(value, i, mkCharCE(cbuf, getCharCE(x0)));
+            SET_STRING_ELT(value, i, Rf_mkCharCE(cbuf, Rf_getCharCE(x0)));
         }
         if (++x_indx     == x_length    ) x_indx     = 0;
         if (++times_indx == times_length) times_indx = 0;
@@ -548,13 +548,13 @@ SEXP do_strrep do_formals
 
 
     if (x_length == len) {
-        SEXP names = getAttrib(x, R_NamesSymbol);
+        SEXP names = Rf_getAttrib(x, R_NamesSymbol);
         if (names != R_NilValue)
-            setAttrib(value, R_NamesSymbol, names);
+            Rf_setAttrib(value, R_NamesSymbol, names);
     }
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -564,21 +564,21 @@ SEXP startsWith(SEXP args, int op)
 {
     SEXP x = CAR(args); args = CDR(args);
     SEXP xxxfix = CAR(args);
-    if (!isString(x) || !isString(xxxfix))
-        error(_("non-character object(s)"));
+    if (!Rf_isString(x) || !Rf_isString(xxxfix))
+        Rf_error(_("non-character object(s)"));
 
 
     R_xlen_t x_length      = XLENGTH(x     ),
              xxxfix_length = XLENGTH(xxxfix);
     if (x_length == 0 || xxxfix_length == 0)
-        return allocVector(LGLSXP, 0);
+        return Rf_allocVector(LGLSXP, 0);
 
 
     R_xlen_t len = (x_length > xxxfix_length) ? x_length : xxxfix_length;
 
 
-    SEXP value = allocVector(LGLSXP, len);
-    PROTECT(value);
+    SEXP value = Rf_allocVector(LGLSXP, len);
+    Rf_protect(value);
     int *lvalue = LOGICAL(value);
 
 
@@ -588,14 +588,14 @@ SEXP startsWith(SEXP args, int op)
             for (R_xlen_t i = 0; i < len; i++)
                 lvalue[i] = NA_LOGICAL;
         } else {
-            const char *xxxfix0_str = translateCharUTF8(xxxfix0);
+            const char *xxxfix0_str = Rf_translateCharUTF8(xxxfix0);
             int xxxfix0_nchar = (int) strlen(xxxfix0_str);
             for (R_xlen_t i = 0; i < len; i++) {
                 SEXP x0 = STRING_ELT(x, i);
                 if (x0 == NA_STRING) {
                     lvalue[i] = NA_LOGICAL;
                 } else {
-                    const char *x0_str = translateCharUTF8(x0);
+                    const char *x0_str = Rf_translateCharUTF8(x0);
                     if (op) {
                         lvalue[i] = strncmp(x0_str, xxxfix0_str, xxxfix0_nchar) == 0;
                     } else {
@@ -618,7 +618,7 @@ SEXP startsWith(SEXP args, int op)
             if (x0 == NA_STRING)
                 x_nchar[i] = -1;
             else {
-                x_str[i] = translateCharUTF8(x0);
+                x_str[i] = Rf_translateCharUTF8(x0);
                 x_nchar[i] = (int) strlen(x_str[i]);
             }
         }
@@ -627,7 +627,7 @@ SEXP startsWith(SEXP args, int op)
             if (x0 == NA_STRING)
                 xxxfix_nchar[i] = -1;
             else {
-                xxxfix_str[i] = translateCharUTF8(x0);
+                xxxfix_str[i] = Rf_translateCharUTF8(x0);
                 xxxfix_nchar[i] = (int) strlen(xxxfix_str[i]);
             }
         }
@@ -662,7 +662,7 @@ SEXP startsWith(SEXP args, int op)
     }
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -687,7 +687,7 @@ SEXP do_endsWith do_formals
 #if R_version_less_than(3,5,0)
 
 
-#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? length(_v_) : 0)
+#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? Rf_length(_v_) : 0)
 
 
 SEXP do_dotslength do_formals
@@ -695,30 +695,30 @@ SEXP do_dotslength do_formals
     do_start_no_call_op("...length", 0);
 
 
-    SEXP env = eval(expr_parent_frame, rho);
-    SEXP vl = findVar(R_DotsSymbol, env);
+    SEXP env = Rf_eval(expr_parent_frame, rho);
+    SEXP vl = Rf_findVar(R_DotsSymbol, env);
     if (vl == R_UnboundValue)
-        error(_("incorrect context: the current call has no '...' to look in"));
-    return ScalarInteger(length_DOTS(vl));
+        Rf_error(_("incorrect context: the current call has no '...' to look in"));
+    return Rf_ScalarInteger(length_DOTS(vl));
 }
 
 
 SEXP ddfind(int i, SEXP rho)
 {
     if (i <= 0)
-        error(_("indexing '...' with non-positive index %d"), i);
-    SEXP vl = findVar(R_DotsSymbol, rho);
+        Rf_error(_("indexing '...' with non-positive index %d"), i);
+    SEXP vl = Rf_findVar(R_DotsSymbol, rho);
     if (vl != R_UnboundValue) {
         if (length_DOTS(vl) >= i) {
-            vl = nthcdr(vl, i - 1);
+            vl = Rf_nthcdr(vl, i - 1);
             return CAR(vl);
         }
         else
-            error(_((i == 1) ? "the ... list contains fewer than %d element" :
-                               "the ... list contains fewer than %d elements"),
-                  i);
+            Rf_error(_((i == 1) ? "the ... list contains fewer than %d element" :
+                                  "the ... list contains fewer than %d elements"),
+                     i);
     }
-    else error(_("..%d used in an incorrect context, no ... to look in"), i);
+    else Rf_error(_("..%d used in an incorrect context, no ... to look in"), i);
     return R_NilValue;
 }
 
@@ -732,12 +732,12 @@ SEXP ddfind(int i, SEXP rho)
 #if R_version_less_than(3,6,0)
 
 
-SEXP R_shallow_duplicate_attr(SEXP x) { return shallow_duplicate(x); }
+SEXP R_shallow_duplicate_attr(SEXP x) { return Rf_shallow_duplicate(x); }
 
 
-SEXP installTrChar(SEXP x)
+SEXP Rf_installTrChar(SEXP x)
 {
-    return install(translateChar(x));
+    return Rf_install(Rf_translateChar(x));
 }
 
 
@@ -750,23 +750,23 @@ SEXP installTrChar(SEXP x)
 void R_removeVarFromFrame(SEXP name, SEXP env)
 {
     if (TYPEOF(env) == NILSXP)
-        error(_("use of NULL environment is defunct"));
+        Rf_error(_("use of NULL environment is defunct"));
 
-    if (!isEnvironment(env))
-        error(_("argument to '%s' is not an environment"), "R_removeVarFromFrame");
+    if (!Rf_isEnvironment(env))
+        Rf_error(_("argument to '%s' is not an environment"), "R_removeVarFromFrame");
 
     if (TYPEOF(name) != SYMSXP)
-        error(_("not a symbol"));
+        Rf_error(_("not a symbol"));
 
     SEXP expr;
     PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
+    R_ProtectWithIndex(expr = Rf_cons(R_FalseValue, R_NilValue), &indx);
     SET_TAG(expr, inheritsSymbol);
-    REPROTECT(expr = CONS(env, expr), indx);
+    R_Reprotect(expr = Rf_cons(env, expr), indx);
     SET_TAG(expr, envirSymbol);
-    REPROTECT(expr = LCONS(removeSymbol, CONS(name, expr)), indx);
-    eval(expr, R_BaseEnv);
-    UNPROTECT(1);
+    R_Reprotect(expr = Rf_lcons(removeSymbol, Rf_cons(name, expr)), indx);
+    Rf_eval(expr, R_BaseEnv);
+    Rf_unprotect(1);
 }
 
 
@@ -777,31 +777,31 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
 
 
 // ...elt(n) was added in R 3.5.0
-// but did not propogate visibility until R 4.1.0
+// but did not propagate visibility until R 4.1.0
 SEXP do_dotselt do_formals
 {
     do_start_no_op("...elt", 1);
 
 
-    SEXP env = eval(expr_parent_frame, rho);
+    SEXP env = Rf_eval(expr_parent_frame, rho);
     SEXP si = CAR(args);
-    if (!isNumeric(si) || XLENGTH(si) != 1)
-        errorcall(call, _("indexing '...' with an invalid index"));
-    int i = asInteger(si);
+    if (!Rf_isNumeric(si) || XLENGTH(si) != 1)
+        Rf_errorcall(call, _("indexing '...' with an invalid index"));
+    int i = Rf_asInteger(si);
 #if R_version_at_least(3,0,0)
-    return eval(ddfind(i, env), env);
+    return Rf_eval(ddfind(i, env), env);
 #else
     SEXP expr;
     PROTECT_INDEX indx;
     char buf[15];
     snprintf(buf, 15, "..%d", i);
-    PROTECT_WITH_INDEX(expr = CONS(install(buf), R_NilValue), &indx);
-    REPROTECT(expr = LCONS(getFromBase(withVisibleSymbol), expr), indx);
-    SEXP value = eval(expr, env);
-    PROTECT(value);
+    R_ProtectWithIndex(expr = Rf_cons(Rf_install(buf), R_NilValue), &indx);
+    R_Reprotect(expr = Rf_lcons(getFromBase(withVisibleSymbol), expr), indx);
+    SEXP value = Rf_eval(expr, env);
+    Rf_protect(value);
     set_this_path_value(VECTOR_ELT(value, 0));
-    set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));
-    UNPROTECT(2);
+    set_this_path_visible(Rf_asLogical(VECTOR_ELT(value, 1)));
+    Rf_unprotect(2);
     return R_NilValue;
 #endif
 }
@@ -809,13 +809,22 @@ SEXP do_dotselt do_formals
 
 SEXP R_NewEnv(SEXP enclos, int hash, int size)
 {
-    SEXP expr = LCONS(new_envSymbol,
-                      CONS(/* hash */ ScalarLogical(hash),
-                           CONS(/* parent */ enclos,
-                                CONS(/* size */ ScalarInteger(size), R_NilValue))));
-    PROTECT(expr);
-    SEXP value = eval(expr, R_BaseEnv);
-    UNPROTECT(1);
+    SEXP expr = Rf_lcons(
+        new_envSymbol,
+        Rf_cons(
+            /* hash */ Rf_ScalarLogical(hash),
+            Rf_cons(
+                /* parent */ enclos,
+                Rf_cons(
+                    /* size */ Rf_ScalarInteger(size),
+                    R_NilValue
+                )
+            )
+        )
+    );
+    Rf_protect(expr);
+    SEXP value = Rf_eval(expr, R_BaseEnv);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -842,17 +851,17 @@ Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
     SEXP expr;
     PROTECT_INDEX indx;
     /* exists(symbol, envir = rho, inherits = FALSE) */
-    PROTECT_WITH_INDEX(expr = CONS(R_FalseValue, R_NilValue), &indx);
+    R_ProtectWithIndex(expr = Rf_cons(R_FalseValue, R_NilValue), &indx);
     SET_TAG(expr, inheritsSymbol);
-    REPROTECT(expr = CONS(rho, expr), indx);
+    R_Reprotect(expr = Rf_cons(rho, expr), indx);
     SET_TAG(expr, envirSymbol);
-    REPROTECT(expr = CONS(ScalarString(PRINTNAME(symbol)), expr), indx);
-    REPROTECT(expr = LCONS(getFromBase(existsSymbol), expr), indx);
-    SEXP value = PROTECT(eval(expr, R_EmptyEnv));
+    R_Reprotect(expr = Rf_cons(Rf_ScalarString(PRINTNAME(symbol)), expr), indx);
+    R_Reprotect(expr = Rf_lcons(getFromBase(existsSymbol), expr), indx);
+    SEXP value = Rf_protect(Rf_eval(expr, R_EmptyEnv));
     if (!IS_SCALAR(value, LGLSXP))
-        error(_("invalid '%s' value"), "exists()");
+        Rf_error(_("invalid '%s' value"), "exists()");
     Rboolean lvalue = LOGICAL(value)[0];
-    UNPROTECT(2);
+    Rf_unprotect(2);
     return lvalue;
 }
 

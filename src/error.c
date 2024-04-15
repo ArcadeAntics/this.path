@@ -3,22 +3,22 @@
 
 SEXP errorCondition(const char *msg, SEXP call, int numFields, SEXP Class)
 {
-    SEXP value = allocVector(VECSXP, 2 + numFields);
-    PROTECT(value);
-    SEXP names = allocVector(STRSXP, 2 + numFields);
-    setAttrib(value, R_NamesSymbol, names);
+    SEXP value = Rf_allocVector(VECSXP, 2 + numFields);
+    Rf_protect(value);
+    SEXP names = Rf_allocVector(STRSXP, 2 + numFields);
+    Rf_setAttrib(value, R_NamesSymbol, names);
 
 
-    SET_STRING_ELT(names, 0, mkChar("message"));
-    SET_VECTOR_ELT(value, 0, mkString(msg));
-    SET_STRING_ELT(names, 1, mkChar("call"));
+    SET_STRING_ELT(names, 0, Rf_mkChar("message"));
+    SET_VECTOR_ELT(value, 0, Rf_mkString(msg));
+    SET_STRING_ELT(names, 1, Rf_mkChar("call"));
     SET_VECTOR_ELT(value, 1, call);
 
 
-    setAttrib(value, R_ClassSymbol, Class);
+    Rf_setAttrib(value, R_ClassSymbol, Class);
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -30,36 +30,36 @@ SEXP errorCondition_strings(const char *msg, SEXP call, int numFields, const cha
     if (Class) { while (Class[nClass]) ++nClass; }
 
 
-    SEXP klass = allocVector(STRSXP, nClass + 2);
-    PROTECT(klass);
+    SEXP klass = Rf_allocVector(STRSXP, nClass + 2);
+    Rf_protect(klass);
     for (int i = 0; i < nClass; i++) {
-    SET_STRING_ELT(klass, i         , mkChar(Class[i]));
+    SET_STRING_ELT(klass, i         , Rf_mkChar(Class[i]));
     }
-    SET_STRING_ELT(klass, nClass    , mkChar("error"));
-    SET_STRING_ELT(klass, nClass + 1, mkChar("condition"));
+    SET_STRING_ELT(klass, nClass    , Rf_mkChar("error"));
+    SET_STRING_ELT(klass, nClass + 1, Rf_mkChar("condition"));
 
 
     SEXP value = errorCondition(msg, call, numFields, klass);
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
 
 SEXP errorCondition_string(const char *msg, SEXP call, int numFields, const char *Class)
 {
-    SEXP klass = allocVector(STRSXP, 3);
-    PROTECT(klass);
-    SET_STRING_ELT(klass, 0, mkChar(Class));
-    SET_STRING_ELT(klass, 1, mkChar("error"));
-    SET_STRING_ELT(klass, 2, mkChar("condition"));
+    SEXP klass = Rf_allocVector(STRSXP, 3);
+    Rf_protect(klass);
+    SET_STRING_ELT(klass, 0, Rf_mkChar(Class));
+    SET_STRING_ELT(klass, 1, Rf_mkChar("error"));
+    SET_STRING_ELT(klass, 2, Rf_mkChar("condition"));
 
 
     SEXP value = errorCondition(msg, call, numFields, klass);
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -82,12 +82,12 @@ SEXP ThisPathInZipFileError(SEXP call, SEXP description)
 {
     const char *msg = "'this.path' cannot be used within a zip file";
     SEXP cond = errorCondition(msg, call, 1, ThisPathInZipFileErrorClass);
-    PROTECT(cond);
-    SEXP names = getAttrib(cond, R_NamesSymbol);
-    PROTECT(names);
-    SET_STRING_ELT(names, 2, mkChar("description"));
-    SET_VECTOR_ELT(cond , 2, ScalarString(description));
-    UNPROTECT(2);
+    Rf_protect(cond);
+    SEXP names = Rf_getAttrib(cond, R_NamesSymbol);
+    Rf_protect(names);
+    SET_STRING_ELT(names, 2, Rf_mkChar("description"));
+    SET_VECTOR_ELT(cond , 2, Rf_ScalarString(description));
+    Rf_unprotect(2);
     return cond;
 }
 
@@ -117,12 +117,12 @@ SEXP ThisPathNotImplementedError(const char *msg, SEXP call)
     char msg[n];                                               \
     snprintf(msg, n, format, klass);                           \
     SEXP cond = errorCondition(msg, call, 1, ThisPathUnrecognizedConnectionClassErrorClass);\
-    PROTECT(cond);                                             \
-    SEXP names = getAttrib(cond, R_NamesSymbol);               \
-    PROTECT(names);                                            \
-    SET_STRING_ELT(names, 2, mkChar("summary"));               \
+    Rf_protect(cond);                                          \
+    SEXP names = Rf_getAttrib(cond, R_NamesSymbol);            \
+    Rf_protect(names);                                         \
+    SET_STRING_ELT(names, 2, Rf_mkChar("summary"));            \
     SET_VECTOR_ELT(cond , 2, (summConn));                      \
-    UNPROTECT(2);                                              \
+    Rf_unprotect(2);                                           \
     return cond
 SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
 {
@@ -131,7 +131,7 @@ SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP summary)
 #if defined(R_CONNECTIONS_VERSION_1)
 SEXP ThisPathUnrecognizedConnectionClassError_Rcon_V1(SEXP call, Rconnection Rcon)
 {
-    funbody(mkChar(Rcon->class), summary_connection_Rcon_V1(Rcon));
+    funbody(Rf_mkChar(Rcon->class), summary_connection_Rcon_V1(Rcon));
 }
 #endif
 #undef funbody
@@ -146,10 +146,10 @@ SEXP ThisPathUnrecognizedMannerError(SEXP call)
 
 void stop(SEXP cond)
 {
-    SEXP expr = LCONS(stopSymbol, CONS(cond, R_NilValue));
-    PROTECT(expr);
-    eval(expr, R_BaseEnv);
-    UNPROTECT(1);
+    SEXP expr = Rf_lcons(stopSymbol, Rf_cons(cond, R_NilValue));
+    Rf_protect(expr);
+    Rf_eval(expr, R_BaseEnv);
+    Rf_unprotect(1);
     return;
 }
 
@@ -160,18 +160,18 @@ void stop(SEXP cond)
 SEXP do_ThisPathInAQUAError do_formals
 {
     do_start_no_call_op_rho("ThisPathInAQUAError", 1);
-    return ThisPathInAQUAError(lazy_duplicate(CAR(args)));
+    return ThisPathInAQUAError(Rf_lazy_duplicate(CAR(args)));
 }
 
 
 SEXP do_ThisPathInZipFileError do_formals
 {
     do_start_no_op_rho("ThisPathInZipFileError", 2);
-    SEXP call2 = lazy_duplicate(CAR(args)); args = CDR(args);
+    SEXP call2 = Rf_lazy_duplicate(CAR(args)); args = CDR(args);
     if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
-        errorcall(call, _("invalid first argument"));
+        Rf_errorcall(call, _("invalid first argument"));
     }
     SEXP description = STRING_ELT(CAR(args), 0);
     return ThisPathInZipFileError(call2, description);
@@ -184,10 +184,10 @@ SEXP do_ThisPathNotExistsError do_formals
     if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
-        errorcall(call, _("invalid first argument"));
+        Rf_errorcall(call, _("invalid first argument"));
     }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return ThisPathNotExistsError(msg, lazy_duplicate(CADR(args)));
+    const char *msg = Rf_translateChar(STRING_ELT(CAR(args), 0));
+    return ThisPathNotExistsError(msg, Rf_lazy_duplicate(CADR(args)));
 }
 
 
@@ -197,10 +197,10 @@ SEXP do_ThisPathNotFoundError do_formals
     if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
-        errorcall(call, _("invalid first argument"));
+        Rf_errorcall(call, _("invalid first argument"));
     }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return ThisPathNotFoundError(msg, lazy_duplicate(CADR(args)));
+    const char *msg = Rf_translateChar(STRING_ELT(CAR(args), 0));
+    return ThisPathNotFoundError(msg, Rf_lazy_duplicate(CADR(args)));
 }
 
 
@@ -210,10 +210,10 @@ SEXP do_ThisPathNotImplementedError do_formals
     if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
-        errorcall(call, _("invalid first argument"));
+        Rf_errorcall(call, _("invalid first argument"));
     }
-    const char *msg = translateChar(STRING_ELT(CAR(args), 0));
-    return ThisPathNotImplementedError(msg, lazy_duplicate(CADR(args)));
+    const char *msg = Rf_translateChar(STRING_ELT(CAR(args), 0));
+    return ThisPathNotImplementedError(msg, Rf_lazy_duplicate(CADR(args)));
 }
 
 
@@ -222,12 +222,12 @@ SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
     do_start_no_call_op_rho("ThisPathUnrecognizedConnectionClassError", 2);
 #if defined(R_CONNECTIONS_VERSION_1)
     if (ptr_R_GetConnection)
-        return ThisPathUnrecognizedConnectionClassError_Rcon_V1(lazy_duplicate(CAR(args)), ptr_R_GetConnection(CADR(args)));
+        return ThisPathUnrecognizedConnectionClassError_Rcon_V1(Rf_lazy_duplicate(CAR(args)), ptr_R_GetConnection(CADR(args)));
 #endif
     SEXP summary = summary_connection(CADR(args));
-    PROTECT(summary);
-    SEXP value = ThisPathUnrecognizedConnectionClassError(lazy_duplicate(CAR(args)), summary);
-    UNPROTECT(1);
+    Rf_protect(summary);
+    SEXP value = ThisPathUnrecognizedConnectionClassError(Rf_lazy_duplicate(CAR(args)), summary);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -235,7 +235,7 @@ SEXP do_ThisPathUnrecognizedConnectionClassError do_formals
 SEXP do_ThisPathUnrecognizedMannerError do_formals
 {
     do_start_no_call_op_rho("ThisPathUnrecognizedMannerError", 1);
-    return ThisPathUnrecognizedMannerError(lazy_duplicate(CAR(args)));
+    return ThisPathUnrecognizedMannerError(Rf_lazy_duplicate(CAR(args)));
 }
 
 
@@ -245,7 +245,7 @@ SEXP do_ThisPathUnrecognizedMannerError do_formals
 SEXP do_last_condition do_formals
 {
     do_start_no_op("last_condition", -1);
-    switch (length(args)) {
+    switch (Rf_length(args)) {
 #if R_version_at_least(3,0,0)
     case 0:
         return CAR(last_condition);
@@ -262,7 +262,7 @@ SEXP do_last_condition do_formals
         return R_NilValue;
 #endif
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_last_condition", "0 or 1"));
+        Rf_errorcall(call, wrong_nargs_to_External(Rf_length(args), ".C_last_condition", "0 or 1"));
         return R_NilValue;
     }
 }
@@ -276,186 +276,224 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
     int nprotect = 0;
 
 
-    SEXP finally = findVarInFrame(rho, finallySymbol);
+    SEXP finally = Rf_findVarInFrame(rho, finallySymbol);
     if (finally == R_UnboundValue)
-        error(_("object '%s' not found"), CHAR(PRINTNAME(finallySymbol)));
+        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(finallySymbol)));
     if (finally != R_MissingArg) {
-        SEXP on_exit = LCONS(on_exitSymbol, CONS(finallySymbol, R_NilValue));
-        PROTECT(on_exit);
-        eval(on_exit, rho);
-        UNPROTECT(1);
+        SEXP on_exit = Rf_lcons(on_exitSymbol, Rf_cons(finallySymbol, R_NilValue));
+        Rf_protect(on_exit);
+        Rf_eval(on_exit, rho);
+        Rf_unprotect(1);
     }
 
 
-    SEXP dots = findVarInFrame(rho, R_DotsSymbol);
-    PROTECT(dots); nprotect++;
+    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    Rf_protect(dots); nprotect++;
     if (dots == R_UnboundValue)
-        error(_("object '%s' not found"), CHAR(PRINTNAME(R_DotsSymbol)));
-    int dots_length = (TYPEOF(dots) == DOTSXP ? length(dots) : 0);
+        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(R_DotsSymbol)));
+    int dots_length = (TYPEOF(dots) == DOTSXP ? Rf_length(dots) : 0);
 
 
-    SEXP else_ = findVarInFrame(rho, else_Symbol);
-    PROTECT(else_); nprotect++;
+    SEXP else_ = Rf_findVarInFrame(rho, else_Symbol);
+    Rf_protect(else_); nprotect++;
     if (else_ == R_UnboundValue)
-        error(_("object '%s' not found"), CHAR(PRINTNAME(else_Symbol)));
+        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(else_Symbol)));
     if (else_ != R_MissingArg && dots_length <= 0)
-        error("'tryCatch' with 'else.' but no condition handlers makes no sense");
+        Rf_error("'tryCatch' with 'else.' but no condition handlers makes no sense");
 
 
     SEXP expr;
     PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = R_NilValue, &indx); nprotect++;
+    R_ProtectWithIndex(expr = R_NilValue, &indx); nprotect++;
 
 
     if (dots_length) {
         switch (op) {
         case TRYCATCHOP_2:
         {
-            SEXP fun = allocSExp(CLOSXP), formals;
-            PROTECT(fun);
+            SEXP fun = Rf_allocSExp(CLOSXP), formals;
+            Rf_protect(fun);
             MARK_NOT_MUTABLE_defineVar(funSymbol, fun, rho);
-            SET_FORMALS(fun, formals = CONS(R_MissingArg, R_NilValue));
+            SET_FORMALS(fun, formals = Rf_cons(R_MissingArg, R_NilValue));
             SET_TAG(formals, cSymbol);
-            SET_BODY(fun, LCONS(invisibleSymbol, R_NilValue));
+            SET_BODY(fun, Rf_lcons(invisibleSymbol, R_NilValue));
             SET_CLOENV(fun, rho);
-            UNPROTECT(1);
+            Rf_unprotect(1);
             SEXP expr0 = funSymbol;
             for (int i = dots_length - 1; i >= 0; i--) {
-                SEXP dot = nthcdr(dots, i);
+                SEXP dot = Rf_nthcdr(dots, i);
                 if (CAR(dot) != R_MissingArg) {
                     char buf[15];
                     snprintf(buf, 15, "..%d", i + 1);
-                    expr0 = install(buf);
+                    expr0 = Rf_install(buf);
                 }
-                REPROTECT(expr = CONS(expr0, expr), indx);
+                R_Reprotect(expr = Rf_cons(expr0, expr), indx);
                 SET_TAG(expr, TAG(dot));
                 if (TAG(dot) == R_NilValue)
-                    error("condition handlers must be specified with a condition class");
+                    Rf_error("condition handlers must be specified with a condition class");
             }
             break;
         }
         case TRYCATCHOP_3:
         {
-            SEXP fun0 = allocSExp(CLOSXP), formals, body, assign_last_condition;
+            SEXP fun0 = Rf_allocSExp(CLOSXP), formals, body, assign_last_condition;
             MARK_NOT_MUTABLE(fun0);
-            PROTECT(fun0);
-            SET_FORMALS(fun0, formals = CONS(R_MissingArg, R_NilValue));
-            PROTECT(formals);
+            Rf_protect(fun0);
+            SET_FORMALS(fun0, formals = Rf_cons(R_MissingArg, R_NilValue));
+            Rf_protect(formals);
             SET_TAG(formals, cSymbol);
-            SET_BODY(fun0, body = LCONS(R_BraceSymbol,
-                                        CONS(R_NilValue,
-                                             CONS(LCONS(invisibleSymbol,
-                                                        R_NilValue),
-                                                  R_NilValue))));
-            SETCADR(body, assign_last_condition = LCONS(_last_conditionSymbol,
-                                                        CONS(cSymbol,
-                                                             R_NilValue)));
-            PROTECT(assign_last_condition);
+            SET_BODY(
+                fun0,
+                body = Rf_lcons(
+                    R_BraceSymbol,
+                    Rf_cons(
+                        R_NilValue,
+                        Rf_cons(
+                            Rf_lcons(invisibleSymbol, R_NilValue),
+                            R_NilValue
+                        )
+                    )
+                )
+            );
+            SETCADR(
+                body,
+                assign_last_condition = Rf_lcons(
+                    _last_conditionSymbol,
+                    Rf_cons(cSymbol, R_NilValue)
+                )
+            );
+            Rf_protect(assign_last_condition);
             SET_CLOENV(fun0, rho);
-            SEXP funs = allocVector(VECSXP, dots_length);
-            PROTECT(funs);
+            SEXP funs = Rf_allocVector(VECSXP, dots_length);
+            Rf_protect(funs);
             MARK_NOT_MUTABLE_defineVar(funsSymbol, funs, rho);
             for (int i = dots_length - 1; i >= 0; i--) {
-                SEXP dot = nthcdr(dots, i);
+                SEXP dot = Rf_nthcdr(dots, i);
                 if (CAR(dot) == R_MissingArg)
                     SET_VECTOR_ELT(funs, i, fun0);
                 else {
-                    SET_VECTOR_ELT(funs, i, fun0 = allocSExp(CLOSXP));
+                    SET_VECTOR_ELT(funs, i, fun0 = Rf_allocSExp(CLOSXP));
                     SET_FORMALS(fun0, formals);
                     char buf[15];
                     snprintf(buf, 15, "..%d", i + 1);
-                    SET_BODY(fun0, LCONS(R_BraceSymbol,
-                                         CONS(assign_last_condition,
-                                              CONS(install(buf),
-                                                   R_NilValue))));
+                    SET_BODY(
+                        fun0,
+                        Rf_lcons(
+                            R_BraceSymbol,
+                            Rf_cons(
+                                assign_last_condition,
+                                Rf_cons(Rf_install(buf), R_NilValue)
+                            )
+                        )
+                    );
                     SET_CLOENV(fun0, rho);
                 }
-                REPROTECT(expr = CONS(LCONS(R_Bracket2Symbol,
-                                            CONS(funsSymbol,
-                                                 CONS(ScalarInteger(i + 1),
-                                                      R_NilValue))),
-                                      expr), indx);
+                R_Reprotect(
+                    expr = Rf_cons(
+                        Rf_lcons(
+                            R_Bracket2Symbol,
+                            Rf_cons(
+                                funsSymbol,
+                                Rf_cons(Rf_ScalarInteger(i + 1), R_NilValue)
+                            )
+                        ),
+                        expr
+                    ),
+                    indx
+                );
                 SET_TAG(expr, TAG(dot));
                 if (TAG(dot) == R_NilValue)
-                    error("condition handlers must be specified with a condition class");
+                    Rf_error("condition handlers must be specified with a condition class");
             }
-            UNPROTECT(4);
+            Rf_unprotect(4);
             break;
         }
         default:
-            error(_("invalid '%s' value"), "op");
-            UNPROTECT(nprotect);
+            Rf_error(_("invalid '%s' value"), "op");
+            Rf_unprotect(nprotect);
             return R_NilValue;
         }
     }
 
 
-    REPROTECT(expr = CONS(exprSymbol, expr), indx);
+    R_Reprotect(expr = Rf_cons(exprSymbol, expr), indx);
     SET_TAG(expr, exprSymbol);
-    REPROTECT(expr = LCONS(tryCatchSymbol, expr), indx);
+    R_Reprotect(expr = Rf_lcons(tryCatchSymbol, expr), indx);
 
 
     SEXP value;
     if (else_ == R_MissingArg) {
 #if R_version_at_least(3,0,0)
-        value = eval(expr, rho);
+        value = Rf_eval(expr, rho);
 #else
-        REPROTECT(expr = LCONS(withVisibleSymbol, CONS(expr, R_NilValue)), indx);
-        value = eval(expr, rho);
-        PROTECT(value);
+        R_Reprotect(expr = Rf_lcons(withVisibleSymbol, Rf_cons(expr, R_NilValue)), indx);
+        value = Rf_eval(expr, rho);
+        Rf_protect(value);
         set_this_path_value(VECTOR_ELT(value, 0));
-        set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));
-        UNPROTECT(1);
+        set_this_path_visible(Rf_asLogical(VECTOR_ELT(value, 1)));
+        Rf_unprotect(1);
         value = R_NilValue;
 #endif
     }
     else {
-        defineVar(do_elseSymbol, R_FalseValue, rho);
-        SETCADR(expr, LCONS(R_BraceSymbol,
-                            CONS(exprSymbol,
-                                 CONS(LCONS(AssignSymbol,
-                                            CONS(do_elseSymbol,
-                                                 CONS(R_TrueValue,
-                                                      R_NilValue))),
-                                      R_NilValue))));
+        Rf_defineVar(do_elseSymbol, R_FalseValue, rho);
+        SETCADR(
+            expr,
+            Rf_lcons(
+                R_BraceSymbol,
+                Rf_cons(
+                    exprSymbol,
+                    Rf_cons(
+                        Rf_lcons(
+                            AssignSymbol,
+                            Rf_cons(
+                                do_elseSymbol,
+                                Rf_cons(R_TrueValue, R_NilValue)
+                            )
+                        ),
+                        R_NilValue
+                    )
+                )
+            )
+        );
 #if R_version_at_least(3,0,0)
-        value = eval(expr, rho);
+        value = Rf_eval(expr, rho);
 #else
-        REPROTECT(expr = LCONS(withVisibleSymbol, CONS(expr, R_NilValue)), indx);
-        value = eval(expr, rho);
+        R_Reprotect(expr = Rf_lcons(withVisibleSymbol, Rf_cons(expr, R_NilValue)), indx);
+        value = Rf_eval(expr, rho);
 #endif
-        PROTECT(value); nprotect++;
-        SEXP do_else = findVarInFrame(rho, do_elseSymbol);
+        Rf_protect(value); nprotect++;
+        SEXP do_else = Rf_findVarInFrame(rho, do_elseSymbol);
         if (do_else == R_UnboundValue)
-            error(_("object '%s' not found"), CHAR(PRINTNAME(do_elseSymbol)));
+            Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(do_elseSymbol)));
         if (!IS_SCALAR(do_else, LGLSXP))
-            error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
+            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:
 #if R_version_at_least(3,0,0)
-            value = eval(else_Symbol, rho);
+            value = Rf_eval(else_Symbol, rho);
 #else
-            expr = LCONS(withVisibleSymbol, CONS(else_Symbol, R_NilValue));
-            PROTECT(expr);
-            value = eval(expr, rho);
-            UNPROTECT(1);
-            PROTECT(value); nprotect++;
+            expr = Rf_lcons(withVisibleSymbol, Rf_cons(else_Symbol, R_NilValue));
+            Rf_protect(expr);
+            value = Rf_eval(expr, rho);
+            Rf_unprotect(1);
+            Rf_protect(value); nprotect++;
 #endif
             break;
         case FALSE:
             break;
         default:
-            error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
+            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         }
 #if R_version_less_than(3,0,0)
         set_this_path_value(VECTOR_ELT(value, 0));
-        set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));
+        set_this_path_visible(Rf_asLogical(VECTOR_ELT(value, 1)));
         value = R_NilValue;
 #endif
     }
 
 
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
     return value;
 }
 

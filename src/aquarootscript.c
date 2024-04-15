@@ -24,6 +24,6 @@ SEXP do_aquarootscript do_formals
     do_start_no_op_rho("aquarootscript", 0);
 
 
-    errorcall(call, "not implemented yet");
+    Rf_errorcall(call, "not implemented yet");
     return R_NilValue;
 }

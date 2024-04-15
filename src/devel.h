@@ -2,6 +2,7 @@
 #define R_THISPATH_DEVEL_H
 
 
+#define R_NO_REMAP
 #include "rversiondefines.h" /* need definition of R_version_at_least */
 
 
@@ -33,10 +34,10 @@
 #if R_version_less_than(3,0,0)
     /* updating R_Visible has no effect since we are using .External */
     #define set_R_Visible(v) do {} while (0)
-    #include <Rinternals.h> /* need definition of defineVar, ScalarLogical */
+    #include <Rinternals.h> /* need definition of Rf_defineVar, Rf_ScalarLogical */
     #include "symbols.h"    /* need definition of _this_path_valueSymbol, _this_path_visibleSymbol */
-    #define set_this_path_value(v) { defineVar(_this_path_valueSymbol, (v), rho); }
-    #define set_this_path_visible(v) { (v) ? 0xDEADBEEF : defineVar(_this_path_visibleSymbol, ScalarLogical(0), rho); }
+    #define set_this_path_value(v) { Rf_defineVar(_this_path_valueSymbol, (v), rho); }
+    #define set_this_path_visible(v) { (v) ? 0xDEADBEEF : Rf_defineVar(_this_path_visibleSymbol, Rf_ScalarLogical(0), rho); }
 #elif defined(R_THIS_PATH_DEVEL)
     #include <R_ext/Boolean.h> /* need definition of Rboolean, TRUE, FALSE */
     extern Rboolean R_Visible;
@@ -44,11 +45,11 @@
 #else
     #define HAVE_SET_R_VISIBLE
     extern void (*ptr_set_R_Visible)(Rboolean);
-    #include <Rinternals.h> /* need definition of eval, R_NilValue, R_EmptyEnv */
+    #include <Rinternals.h> /* need definition of Rf_eval, R_NilValue, R_EmptyEnv */
     #include "ns-hooks.h"   /* need definition of expr_invisible */
     #define set_R_Visible(v) {                                 \
-        (v) ? ((ptr_set_R_Visible) ? ptr_set_R_Visible(TRUE) : eval(R_NilValue, R_EmptyEnv)) :\
-              ((ptr_set_R_Visible) ? ptr_set_R_Visible(FALSE) : eval(expr_invisible, R_EmptyEnv));\
+        (v) ? ((ptr_set_R_Visible) ? ptr_set_R_Visible(TRUE) : Rf_eval(R_NilValue, R_EmptyEnv)) :\
+              ((ptr_set_R_Visible) ? ptr_set_R_Visible(FALSE) : Rf_eval(expr_invisible, R_EmptyEnv));\
     }
 #endif
 

@@ -6,9 +6,9 @@
 
 SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 {
-    SEXP value = getAttrib(obj, _DataSymbol);
+    SEXP value = Rf_getAttrib(obj, _DataSymbol);
     if (value == R_NilValue)
-        value = getAttrib(obj, _xDataSymbol);
+        value = Rf_getAttrib(obj, _xDataSymbol);
     if (value != R_NilValue &&
         (type == ANYSXP || type == TYPEOF(value)))
     {
@@ -24,34 +24,34 @@ SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 #define _get_sym(elsecode)                                     \
     sym = CAR(args);                                           \
     if (TYPEOF(sym) == SYMSXP);                                \
-    else if (isValidStringF(sym)) {                            \
+    else if (Rf_isValidStringF(sym)) {                         \
         if (XLENGTH(sym) > 1)                                  \
-            errorcall(call, _("first argument has length > 1"));\
-        sym = installTrChar(STRING_ELT(sym, 0));               \
+            Rf_errorcall(call, _("first argument has length > 1"));\
+        sym = Rf_installTrChar(STRING_ELT(sym, 0));            \
     }                                                          \
     else elsecode
 
 
-#define get_sym _get_sym(errorcall(call, _("invalid first argument")))
+#define get_sym _get_sym(Rf_errorcall(call, _("invalid first argument")))
 
 
 #define get_env                                                \
         env = CADR(args);                                      \
-        if (!isEnvironment(env) &&                             \
-            !isEnvironment(env = simple_as_environment(env)))  \
-            errorcall(call, "invalid second argument")
+        if (!Rf_isEnvironment(env) &&                          \
+            !Rf_isEnvironment(env = simple_as_environment(env)))\
+            Rf_errorcall(call, "invalid second argument")
 
 
 #define get_inherits                                           \
-        inherits = asLogical(CADDR(args));                     \
+        inherits = Rf_asLogical(CADDR(args));                  \
         if (inherits == NA_LOGICAL)                            \
-            errorcall(call, "invalid third argument")
+            Rf_errorcall(call, "invalid third argument")
 
 
 #define handles_nargs(one_arg_env, name)                       \
     SEXP sym, env;                                             \
     Rboolean inherits;                                         \
-    switch (length(args)) {                                    \
+    switch (Rf_length(args)) {                                 \
     case 1:                                                    \
         get_sym;                                               \
         env = (one_arg_env);                                   \
@@ -68,7 +68,7 @@ SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
         get_inherits;                                          \
         break;                                                 \
     default:                                                   \
-        errorcall(call, wrong_nargs_to_External(length(args), (name), "1, 2, or 3"));\
+        Rf_errorcall(call, wrong_nargs_to_External(Rf_length(args), (name), "1, 2, or 3"));\
         return R_NilValue;                                     \
     }
 
@@ -94,13 +94,13 @@ SEXP do_is_unevaluated_promise do_formals
     if (DDVAL(sym))
         value = ddfindVar(sym, env);
     else
-        value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
+        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
-    return ScalarLogical(TYPEOF(value) == PROMSXP &&
-                         PRVALUE(value) == R_UnboundValue);
+    return Rf_ScalarLogical(TYPEOF(value) == PROMSXP &&
+                            PRVALUE(value) == R_UnboundValue);
 }
 
 
@@ -119,16 +119,16 @@ SEXP do_promise_is_unevaluated do_formals
     if (DDVAL(sym))
         value = ddfindVar(sym, env);
     else
-        value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
+        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
     if (TYPEOF(value) != PROMSXP)
-        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+        Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
-    return ScalarLogical(PRVALUE(value) == R_UnboundValue);
+    return Rf_ScalarLogical(PRVALUE(value) == R_UnboundValue);
 }
 
 
@@ -151,13 +151,13 @@ SEXP do_forcePromise_no_warn do_formals
     if (DDVAL(sym))
         value = ddfindVar(sym, env);
     else
-        value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
+        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
     if (TYPEOF(value) != PROMSXP)
-        errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+        Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
     if (PRVALUE(value) == R_UnboundValue) {
@@ -165,9 +165,9 @@ SEXP do_forcePromise_no_warn do_formals
             if (PRSEEN(value) == 1);
             else SET_PRSEEN(value, 0);
         }
-        PROTECT(value);
-        eval(value, env);
-        UNPROTECT(1);
+        Rf_protect(value);
+        Rf_eval(value, env);
+        Rf_unprotect(1);
     }
     return PRVALUE(value);
 }
@@ -179,7 +179,7 @@ SEXP do_forcePromise_no_warn do_formals
 SEXP PRINFO(SEXP e)
 {
     if (TYPEOF(e) != PROMSXP)
-        error("in PRINFO: argument is not a promise");
+        Rf_error("in PRINFO: argument is not a promise");
 
 
     /*
@@ -193,20 +193,20 @@ SEXP PRINFO(SEXP e)
 
 #define n 4
 #define allocate_value_and_names(len)                          \
-        value = allocVector(VECSXP, len);                      \
-        PROTECT(value);                                        \
-        names = allocVector(STRSXP, len);                      \
-        setAttrib(value, R_NamesSymbol, names);
+        value = Rf_allocVector(VECSXP, len);                   \
+        Rf_protect(value);                                     \
+        names = Rf_allocVector(STRSXP, len);                   \
+        Rf_setAttrib(value, R_NamesSymbol, names)
 
 
     SEXP value, names;
     if (PRVALUE(e) == R_UnboundValue) {
-        allocate_value_and_names(n)
+        allocate_value_and_names(n);
     }
     else {
-        allocate_value_and_names(n + 1)
+        allocate_value_and_names(n + 1);
         SET_VECTOR_ELT(value, n, PRVALUE(e));
-        SET_STRING_ELT(names, n, mkChar("PRVALUE"));
+        SET_STRING_ELT(names, n, Rf_mkChar("PRVALUE"));
     }
 
 
@@ -214,19 +214,19 @@ SEXP PRINFO(SEXP e)
 #undef allocate_value_and_names
 
 
-    SET_VECTOR_ELT(value, 0,               PRCODE(e) );
-    SET_VECTOR_ELT(value, 1,               PRENV (e) );
-    SET_VECTOR_ELT(value, 2,               PREXPR(e) );
-    SET_VECTOR_ELT(value, 3, ScalarInteger(PRSEEN(e)));
+    SET_VECTOR_ELT(value, 0,                  PRCODE(e) );
+    SET_VECTOR_ELT(value, 1,                  PRENV (e) );
+    SET_VECTOR_ELT(value, 2,                  PREXPR(e) );
+    SET_VECTOR_ELT(value, 3, Rf_ScalarInteger(PRSEEN(e)));
 
 
-    SET_STRING_ELT(names, 0, mkChar("PRCODE"));
-    SET_STRING_ELT(names, 1, mkChar("PRENV" ));
-    SET_STRING_ELT(names, 2, mkChar("PREXPR"));
-    SET_STRING_ELT(names, 3, mkChar("PRSEEN"));
+    SET_STRING_ELT(names, 0, Rf_mkChar("PRCODE"));
+    SET_STRING_ELT(names, 1, Rf_mkChar("PRENV" ));
+    SET_STRING_ELT(names, 2, Rf_mkChar("PREXPR"));
+    SET_STRING_ELT(names, 3, Rf_mkChar("PRSEEN"));
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -236,7 +236,7 @@ SEXP do_PRINFO do_formals
     do_start_no_op("PRINFO", -1);
 
 
-    int nargs = length(args);
+    int nargs = Rf_length(args);
 
 
     SEXP sym, env = rho;
@@ -245,42 +245,42 @@ SEXP do_PRINFO do_formals
 
     switch (nargs) {
     case 3:
-        inherits = asLogical(CADDR(args));
+        inherits = Rf_asLogical(CADDR(args));
         if (inherits == NA_LOGICAL)
-            errorcall(call, _("invalid '%s' argument"), "inherits");
+            Rf_errorcall(call, _("invalid '%s' argument"), "inherits");
     case 2:
         env = CADR(args);
-        if (!isEnvironment(env) &&
-            !isEnvironment(env = simple_as_environment(env)))
+        if (!Rf_isEnvironment(env) &&
+            !Rf_isEnvironment(env = simple_as_environment(env)))
         {
-            errorcall(call, _("invalid '%s' argument"), "envir");
+            Rf_errorcall(call, _("invalid '%s' argument"), "envir");
         }
     case 1:
         _get_sym({
             if (TYPEOF(sym) == PROMSXP)
                 return PRINFO(sym);
-            errorcall(call, _("invalid '%s' argument"), "x");
+            Rf_errorcall(call, _("invalid '%s' argument"), "x");
         })
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(nargs, ".C_PRINFO", "1, 2, or 3"));
+        Rf_errorcall(call, wrong_nargs_to_External(nargs, ".C_PRINFO", "1, 2, or 3"));
         return R_NilValue;
     }
 
 
     if (sym == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), "x");
+        Rf_error(_("argument \"%s\" is missing, with no default"), "x");
 
 
     SEXP e;
     if (DDVAL(sym))
         e = ddfindVar(sym, env);
     else
-        e = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
+        e = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (e == R_UnboundValue)
-        error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(e) != PROMSXP)
-        error("'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+        Rf_error("'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
     return PRINFO(e);
@@ -293,7 +293,7 @@ SEXP do_PRINFO do_formals
 SEXP makePROMISE(SEXP expr, SEXP env)
 {
     ENSURE_NAMEDMAX(expr);
-    SEXP s = allocSExp(PROMSXP);
+    SEXP s = Rf_allocSExp(PROMSXP);
     SET_PRCODE(s, expr);
     SET_PRENV(s, env);
     SET_PRVALUE(s, R_UnboundValue);
@@ -321,7 +321,7 @@ SEXP do_mkPROMISE do_formals
 
     SEXP expr = CAR(args); args = CDR(args);
     SEXP env  = CAR(args); args = CDR(args);
-    if (!isEnvironment(env)) error(_("not an environment"));
+    if (!Rf_isEnvironment(env)) Rf_error(_("not an environment"));
 
 
     return makePROMISE(expr, env);
@@ -348,14 +348,14 @@ void unLockEnvironment(SEXP env, Rboolean bindings)
 	    env = R_getS4DataSlot(env, ANYSXP); /* better be an ENVSXP */
 
     if (TYPEOF(env) != ENVSXP)
-	    error(_("not an environment"));
+	    Rf_error(_("not an environment"));
     if (bindings) {
-        PROTECT(env);
+        Rf_protect(env);
         SEXP names = R_lsInternal3(env, /* all */ TRUE, /* sorted */ FALSE);
-        PROTECT(names);
+        Rf_protect(names);
         for (int i = 0, n = LENGTH(names); i < n; i++)
-            R_unLockBinding(installTrChar(STRING_ELT(names, i)), env);
-        UNPROTECT(2);
+            R_unLockBinding(Rf_installTrChar(STRING_ELT(names, i)), env);
+        Rf_unprotect(2);
     }
     UNLOCK_FRAME(env);
 }
@@ -368,14 +368,14 @@ SEXP do_unlockEnvironment do_formals
 
     SEXP frame;
     Rboolean bindings = FALSE;
-    switch (length(args)) {
+    switch (Rf_length(args)) {
     case 2:
-        bindings = asLogical(CADR(args));
+        bindings = Rf_asLogical(CADR(args));
     case 1:
         frame = CAR(args);
         break;
     default:
-        errorcall(call, wrong_nargs_to_External(length(args), ".C_unlockEnvironment", "1 or 2"));
+        Rf_errorcall(call, wrong_nargs_to_External(Rf_length(args), ".C_unlockEnvironment", "1 or 2"));
         return R_NilValue;
     }
 
@@ -401,9 +401,9 @@ SEXP do_is_R_MissingArg do_formals
     if (DDVAL(sym))
         value = ddfindVar(sym, env);
     else
-        value = (inherits ? findVar(sym, env) : findVarInFrame(env, sym));
+        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
-        errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
     return ((value == R_MissingArg) ? R_TrueValue : R_FalseValue);

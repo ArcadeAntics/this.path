@@ -49,6 +49,7 @@ becomes:
 #define R_THISPATH_THISPATH_H
 
 
+#define R_NO_REMAP
 #include <Rinternals.h>         /* need definition of SEXP */
 #include "devel.h"
 #include "backports.h"          /* need definition of do_formals */

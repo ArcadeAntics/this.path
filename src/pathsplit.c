@@ -9,35 +9,35 @@ SEXP path_split(int windows, int length1, SEXP args)
 {
     SEXP path = CAR(args);
     if (TYPEOF(path) != STRSXP)
-        error(_("a character vector argument expected"));
+        Rf_error(_("a character vector argument expected"));
 
 
     int n = LENGTH(path);
     if ((length1) && n != 1)
-        error(_("'%s' must be a character string"), "path");
+        Rf_error(_("'%s' must be a character string"), "path");
 
 
-    SEXP value = allocVector(VECSXP, n);
-    PROTECT(value);
+    SEXP value = Rf_allocVector(VECSXP, n);
+    Rf_protect(value);
     for (int i = 0; i < n; i++) {
         SEXP path0 = STRING_ELT(path, i);
         if (path0 == NA_STRING) {
-            SET_VECTOR_ELT(value, i, ScalarString(NA_STRING));
+            SET_VECTOR_ELT(value, i, Rf_ScalarString(NA_STRING));
             continue;
         }
         if (path0 == R_BlankString) {
-            SET_VECTOR_ELT(value, i, allocVector(STRSXP, 0));
+            SET_VECTOR_ELT(value, i, Rf_allocVector(STRSXP, 0));
             continue;
         }
         const char *str = CHAR(path0);
         int nchar_scheme = is_url(str);
         if (nchar_scheme) {
-            str = translateCharUTF8(path0);
+            str = Rf_translateCharUTF8(path0);
             int nchar = (int) strlen(str);
             cetype_t enc = CE_UTF8;
             const char *p = strchr(str + nchar_scheme, '/');
             if (p == NULL) {
-                SET_VECTOR_ELT(value, i, ScalarString(mkCharLenCE(str, nchar, enc)));
+                SET_VECTOR_ELT(value, i, Rf_ScalarString(Rf_mkCharLenCE(str, nchar, enc)));
             } else {
                 int nchar_prefix = p - str;
                 const char *end = str + nchar;
@@ -48,26 +48,26 @@ SEXP path_split(int windows, int length1, SEXP args)
                     nstrings++;
                     p = strchr(p, '/');
                 }
-                SEXP value0 = allocVector(STRSXP, nstrings);
+                SEXP value0 = Rf_allocVector(STRSXP, nstrings);
                 SET_VECTOR_ELT(value, i, value0);
                 /* the prefix should INCLUDE the slash immediately afterward */
-                SET_STRING_ELT(value0, 0, mkCharLenCE(str, nchar_prefix + 1, enc));
+                SET_STRING_ELT(value0, 0, Rf_mkCharLenCE(str, nchar_prefix + 1, enc));
                 p = str + nchar_prefix;
                 for (int j = 1; j < nstrings; j++) {
                     while (*p == '/') p++;
                     if (p >= end) break;
                     const char *slash = strchr(p, '/');
                     if (slash == NULL) {
-                        SET_STRING_ELT(value0, j, mkCharCE(p, enc));
+                        SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
                         break;
                     }
-                    SET_STRING_ELT(value0, j, mkCharLenCE(p, slash - p, enc));
+                    SET_STRING_ELT(value0, j, Rf_mkCharLenCE(p, slash - p, enc));
                     p = slash;
                 }
             }
         }
         else {
-            str = translateChar(path0);
+            str = Rf_translateChar(path0);
             int nchar = (int) strlen(str);
             cetype_t enc = CE_NATIVE;
             int drivewidth = _drive_width(windows, str, nchar);
@@ -96,7 +96,7 @@ SEXP path_split(int windows, int length1, SEXP args)
                     }
                 }
                 if (drivewidth || *str == '/' || *str == '\\') nstrings++;
-                SEXP value0 = allocVector(STRSXP, nstrings);
+                SEXP value0 = Rf_allocVector(STRSXP, nstrings);
                 SET_VECTOR_ELT(value, i, value0);
                 int j = 0;
                 if (drivewidth == 2) {
@@ -105,13 +105,13 @@ SEXP path_split(int windows, int length1, SEXP args)
                         char buf[3];
                         strncpy(buf, str, 2);
                         buf[2] = '/';
-                        SET_STRING_ELT(value0, j++, mkCharLenCE(buf, 3, enc));
+                        SET_STRING_ELT(value0, j++, Rf_mkCharLenCE(buf, 3, enc));
                     } else {
-                        SET_STRING_ELT(value0, j++, mkCharLenCE(str, 2, enc));
+                        SET_STRING_ELT(value0, j++, Rf_mkCharLenCE(str, 2, enc));
                     }
                 }
                 else if (drivewidth == 1) {
-                    SET_STRING_ELT(value0, j++, mkCharLen("~", 1));
+                    SET_STRING_ELT(value0, j++, Rf_mkChar("~"));
                 }
                 else if (drivewidth) {
                     char _buf[drivewidth + 2];
@@ -129,7 +129,7 @@ SEXP path_split(int windows, int length1, SEXP args)
                         if (bslash) {
                             slash = bslash;
                         } else {
-                            error("something went wrong");
+                            Rf_error("something went wrong");
                         }
                     }
                     int nchar = slash - p;
@@ -146,10 +146,10 @@ SEXP path_split(int windows, int length1, SEXP args)
                         *(buf++) = '/';
                     }
                     *buf = '\0';
-                    SET_STRING_ELT(value0, j++, mkCharCE(_buf, enc));
+                    SET_STRING_ELT(value0, j++, Rf_mkCharCE(_buf, enc));
                 }
                 else if (*str == '/' || *str == '\\') {
-                    SET_STRING_ELT(value0, j++, mkCharLen("/", 1));
+                    SET_STRING_ELT(value0, j++, Rf_mkChar("/"));
                 }
                 p = str + drivewidth;
                 for (; j < nstrings; j++) {
@@ -165,11 +165,11 @@ SEXP path_split(int windows, int length1, SEXP args)
                         if (bslash) {
                             slash = bslash;
                         } else {
-                            SET_STRING_ELT(value0, j, mkCharCE(p, enc));
+                            SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
                             break;
                         }
                     }
-                    SET_STRING_ELT(value0, j, mkCharLenCE(p, slash - p, enc));
+                    SET_STRING_ELT(value0, j, Rf_mkCharLenCE(p, slash - p, enc));
                     p = slash;
                 }
             }
@@ -181,7 +181,7 @@ SEXP path_split(int windows, int length1, SEXP args)
                     p = strchr(p, '/');
                 }
                 if (drivewidth || *str == '/') nstrings++;
-                SEXP value0 = allocVector(STRSXP, nstrings);
+                SEXP value0 = Rf_allocVector(STRSXP, nstrings);
                 SET_VECTOR_ELT(value, i, value0);
                 int j = 0;
                 if (drivewidth) {
@@ -192,7 +192,7 @@ SEXP path_split(int windows, int length1, SEXP args)
                     p = str + 2;
                     const char *slash = strchr(p, '/');
                     if (slash);
-                    else error("something went wrong");
+                    else Rf_error("something went wrong");
                     int nchar = slash - p;
                     strncpy(buf, p, nchar);
                     buf += nchar;
@@ -207,10 +207,10 @@ SEXP path_split(int windows, int length1, SEXP args)
                         *(buf++) = '/';
                     }
                     *buf = '\0';
-                    SET_STRING_ELT(value0, j++, mkCharCE(_buf, enc));
+                    SET_STRING_ELT(value0, j++, Rf_mkCharCE(_buf, enc));
                 }
                 else if (*str == '/') {
-                    SET_STRING_ELT(value0, j++, mkCharLen("/", 1));
+                    SET_STRING_ELT(value0, j++, Rf_mkChar("/"));
                 }
                 p = str + drivewidth;
                 for (; j < nstrings; j++) {
@@ -219,10 +219,10 @@ SEXP path_split(int windows, int length1, SEXP args)
                     const char *slash = strchr(p, '/');
                     if (slash);
                     else {
-                        SET_STRING_ELT(value0, j, mkCharCE(p, enc));
+                        SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
                         break;
                     }
-                    SET_STRING_ELT(value0, j, mkCharLenCE(p, slash - p, enc));
+                    SET_STRING_ELT(value0, j, Rf_mkCharLenCE(p, slash - p, enc));
                     p = slash;
                 }
             }
@@ -231,7 +231,7 @@ SEXP path_split(int windows, int length1, SEXP args)
 
 
     if ((length1)) value = VECTOR_ELT(value, 0);
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return value;
 }
 
@@ -289,44 +289,44 @@ SEXP do_path_split_1 do_formals
 static R_INLINE
 SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 {
-    SEXP dots = findVarInFrame(rho, R_DotsSymbol);
-    PROTECT(dots);
+    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    Rf_protect(dots);
     if (dots == R_UnboundValue)
-        error(_("'...' used in an incorrect context"));
+        Rf_error(_("'...' used in an incorrect context"));
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? length(dots) : 0);
+    int dots_length = ((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0);
     if (dots_length <= 0) {
-        return allocVector(STRSXP, 0);
+        return Rf_allocVector(STRSXP, 0);
     }
 
 
     SEXP x;
     int n;
     if (dots_length == 1) {
-        x = eval(CAR(dots), rho);
-        if (isPairList(x)) {
-            PROTECT(x);
-            n = length(x);
+        x = Rf_eval(CAR(dots), rho);
+        if (Rf_isPairList(x)) {
+            Rf_protect(x);
+            n = Rf_length(x);
             /* verify that each element is a character vector */
             SEXP xptr = x;
             for (int i = 0; i < n; i++, xptr = CDR(xptr)) {
                 if (TYPEOF(CAR(xptr)) != STRSXP)
-                    error("%s, elements must be character vectors", _("invalid first argument"));
+                    Rf_error("%s, elements must be character vectors", _("invalid first argument"));
             }
         }
-        else if (isVectorList(x)) {
-            PROTECT(x);
+        else if (Rf_isVectorList(x)) {
+            Rf_protect(x);
             n = LENGTH(x);
             /* verify that each element is a character vector */
             for (int i = 0; i < n; i++) {
                 if (TYPEOF(VECTOR_ELT(x, i)) != STRSXP)
-                    error("%s, elements must be character vectors", _("invalid first argument"));
+                    Rf_error("%s, elements must be character vectors", _("invalid first argument"));
             }
         }
         else if (TYPEOF(x) == STRSXP) {
-            x = list1(x);
-            PROTECT(x);
+            x = Rf_list1(x);
+            Rf_protect(x);
             n = 1;
         }
         else {
@@ -335,20 +335,20 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
         }
     } else {
         n = dots_length;
-        x = allocVector(VECSXP, n);
-        PROTECT(x);
+        x = Rf_allocVector(VECSXP, n);
+        Rf_protect(x);
         SEXP d = dots;
         for (int i = 0; i < n; i++, d = CDR(d)) {
-            SET_VECTOR_ELT(x, i, eval(CAR(d), rho));
+            SET_VECTOR_ELT(x, i, Rf_eval(CAR(d), rho));
             if (TYPEOF(VECTOR_ELT(x, i)) != STRSXP)
                 UNIMPLEMENTED_TYPE("path.unsplit", VECTOR_ELT(x, i));
         }
     }
 
 
-    Rboolean ispairlist = isPairList(x);
-    SEXP value = allocVector(STRSXP, n);
-    PROTECT(value);
+    Rboolean ispairlist = Rf_isPairList(x);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
     for (int i = 0; i < n; i++) {
         SEXP x0;
         if (ispairlist) {
@@ -379,8 +379,8 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
         for (int j = 0; j < nstrings; j++) {
             x00 = STRING_ELT(x0, j);
-            str = (translate2utf8 ? translateCharUTF8(x00) :
-                                    translateChar(x00));
+            str = (translate2utf8 ? Rf_translateCharUTF8(x00) :
+                                    Rf_translateChar(x00));
             pwidth += (int) strlen(str);
         }
         /* a slash between each string plus a nul-terminating byte */
@@ -392,8 +392,8 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
 
         x00 = STRING_ELT(x0, 0);
-        str = (translate2utf8 ? translateCharUTF8(x00) :
-                                translateChar(x00));
+        str = (translate2utf8 ? Rf_translateCharUTF8(x00) :
+                                Rf_translateChar(x00));
         int nchar = (int) strlen(str);
 
 
@@ -433,8 +433,8 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
         for (int j = 1; j < nstrings; j++) {
             x00 = STRING_ELT(x0, j);
-            str = (translate2utf8 ? translateCharUTF8(x00) :
-                                    translateChar(x00));
+            str = (translate2utf8 ? Rf_translateCharUTF8(x00) :
+                                    Rf_translateChar(x00));
             int nchar = (int) strlen(str);
 
 
@@ -448,11 +448,11 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
 
         *buf = '\0';
-        SET_STRING_ELT(value, i, mkCharCE(_buf, enc));
+        SET_STRING_ELT(value, i, Rf_mkCharCE(_buf, enc));
     }
 
 
-    UNPROTECT(3);
+    Rf_unprotect(3);
     return value;
 }
 

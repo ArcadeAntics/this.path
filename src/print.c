@@ -6,7 +6,7 @@
 
 Rboolean my_isMethodDispatchOn(void)
 {
-    return asLogical(eval(expr__isMethodsDispatchOn, R_EmptyEnv));
+    return Rf_asLogical(Rf_eval(expr__isMethodsDispatchOn, R_EmptyEnv));
 }
 
 
@@ -15,35 +15,35 @@ void my_PrintObjectS4(SEXP s, SEXP env)
     int nprotect = 0;
 
 
-    SEXP methods = findVarInFrame(R_NamespaceRegistry, methodsSymbol);
-    PROTECT(methods); nprotect++;
+    SEXP methods = Rf_findVarInFrame(R_NamespaceRegistry, methodsSymbol);
+    Rf_protect(methods); nprotect++;
     if (methods == R_UnboundValue)
-        error("missing methods namespace: this should not happen");
+        Rf_error("missing methods namespace: this should not happen");
 
 
     SEXP mask = R_NewEnv(env, FALSE, 0);
-    PROTECT(mask); nprotect++;
+    Rf_protect(mask); nprotect++;
 
 
     SEXP show = getInFrame(showSymbol, methods, TRUE);
     if (show == R_UnboundValue)
-        error("missing show() in methods namespace: this should not happen");
+        Rf_error("missing show() in methods namespace: this should not happen");
 
 
-    defineVar(showSymbol, show, mask);
-    defineVar(objectSymbol, makeEVPROMISE(s, s), mask);
+    Rf_defineVar(showSymbol, show, mask);
+    Rf_defineVar(objectSymbol, makeEVPROMISE(s, s), mask);
 
 
-    SEXP expr = LCONS(showSymbol, CONS(objectSymbol, R_NilValue));
-    PROTECT(expr); nprotect++;
-    eval(expr, env);
+    SEXP expr = Rf_lcons(showSymbol, Rf_cons(objectSymbol, R_NilValue));
+    Rf_protect(expr); nprotect++;
+    Rf_eval(expr, env);
 
 
-    defineVar(showSymbol, R_NilValue, mask);
-    defineVar(objectSymbol, R_NilValue, mask);
+    Rf_defineVar(showSymbol, R_NilValue, mask);
+    Rf_defineVar(objectSymbol, R_NilValue, mask);
 
 
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
 }
 
 
@@ -53,23 +53,23 @@ void my_PrintObjectS3(SEXP s, SEXP env)
 
 
     SEXP mask = R_NewEnv(env, FALSE, 0);
-    PROTECT(mask); nprotect++;
+    Rf_protect(mask); nprotect++;
 
 
-    defineVar(printSymbol, findFunction(printSymbol, R_BaseNamespace), mask);
-    defineVar(xSymbol, makeEVPROMISE(s, s), mask);
+    Rf_defineVar(printSymbol, findFunction(printSymbol, R_BaseNamespace), mask);
+    Rf_defineVar(xSymbol, makeEVPROMISE(s, s), mask);
 
 
-    SEXP expr = LCONS(printSymbol, CONS(xSymbol, R_NilValue));
-    PROTECT(expr); nprotect++;
-    eval(expr, mask);
+    SEXP expr = Rf_lcons(printSymbol, Rf_cons(xSymbol, R_NilValue));
+    Rf_protect(expr); nprotect++;
+    Rf_eval(expr, mask);
 
 
-    defineVar(printSymbol, R_NilValue, mask);
-    defineVar(xSymbol, R_NilValue, mask);
+    Rf_defineVar(printSymbol, R_NilValue, mask);
+    Rf_defineVar(xSymbol, R_NilValue, mask);
 
 
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
 }
 
 
@@ -88,29 +88,29 @@ void my_PrintValueRec(SEXP s, SEXP env)
 
 
     SEXP mask = R_NewEnv(env, FALSE, 0);
-    PROTECT(mask); nprotect++;
+    Rf_protect(mask); nprotect++;
 
 
-    defineVar(print_defaultSymbol, findFunction(print_defaultSymbol, R_BaseNamespace), mask);
-    defineVar(xSymbol, makeEVPROMISE(s, s), mask);
+    Rf_defineVar(print_defaultSymbol, findFunction(print_defaultSymbol, R_BaseNamespace), mask);
+    Rf_defineVar(xSymbol, makeEVPROMISE(s, s), mask);
 
 
-    SEXP expr = LCONS(print_defaultSymbol, CONS(xSymbol, R_NilValue));
-    PROTECT(expr); nprotect++;
-    eval(expr, mask);
+    SEXP expr = Rf_lcons(print_defaultSymbol, Rf_cons(xSymbol, R_NilValue));
+    Rf_protect(expr); nprotect++;
+    Rf_eval(expr, mask);
 
 
-    defineVar(print_defaultSymbol, R_NilValue, mask);
-    defineVar(xSymbol, R_NilValue, mask);
+    Rf_defineVar(print_defaultSymbol, R_NilValue, mask);
+    Rf_defineVar(xSymbol, R_NilValue, mask);
 
 
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
 }
 
 
 void my_PrintDispatch(SEXP s, SEXP env)
 {
-    if (isObject(s))
+    if (Rf_isObject(s))
         my_PrintObject(s, env);
     else
         my_PrintValueRec(s, env);
@@ -119,16 +119,16 @@ void my_PrintDispatch(SEXP s, SEXP env)
 
 void my_PrintValueEnv(SEXP s, SEXP env)
 {
-    PROTECT(s);
+    Rf_protect(s);
 
 
-    if (isFunction(s))
+    if (Rf_isFunction(s))
         my_PrintObject(s, env);
     else
         my_PrintDispatch(s, env);
 
 
-    UNPROTECT(1);
+    Rf_unprotect(1);
 }
 
 
@@ -153,10 +153,10 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
     SEXP x = CAR(args); args = CDR(args);
     if (TYPEOF(x) != ENVSXP)
-        error(_("invalid '%s' value"), "x");
-    Rboolean quote = asLogical(CAR(args)); args = CDR(args);
+        Rf_error(_("invalid '%s' value"), "x");
+    Rboolean quote = Rf_asLogical(CAR(args)); args = CDR(args);
     if (quote == NA_LOGICAL)
-        error(_("invalid '%s' value"), "quote");
+        Rf_error(_("invalid '%s' value"), "quote");
 
 
     if (x == R_EmptyEnv) {
@@ -168,28 +168,28 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
     SEXP expr;
     PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(R_NilValue, R_NilValue), &indx);
+    R_ProtectWithIndex(expr = Rf_cons(R_NilValue, R_NilValue), &indx);
     SET_TAG(expr, R_QuoteSymbol);
-    REPROTECT(expr = LCONS(encodeStringSymbol, CONS(R_NilValue, expr)), indx);
+    R_Reprotect(expr = Rf_lcons(encodeStringSymbol, Rf_cons(R_NilValue, expr)), indx);
 
 
-    SEXP klass = getAttrib(x, R_ClassSymbol);
+    SEXP klass = Rf_getAttrib(x, R_ClassSymbol);
     int nklass = ((klass == R_NilValue) ? 0 : LENGTH(klass));
     if (nklass) {
         SETCADR(expr, klass);
-        SETCADDR(expr, mkString("\""));
-        SEXP tmp = eval(expr, R_BaseEnv);
-        PROTECT(tmp);
+        SETCADDR(expr, Rf_mkString("\""));
+        SEXP tmp = Rf_eval(expr, R_BaseEnv);
+        Rf_protect(tmp);
         Rprintf("<object of class ");
         for (int i = 0; i < nklass; i++)
             if (i) Rprintf(", %s", CHAR(STRING_ELT(tmp, i)));
             else   Rprintf("%s"  , CHAR(STRING_ELT(tmp, i)));
         Rprintf(" at %p>\n", (void *) x);
-        UNPROTECT(1);
+        Rf_unprotect(1);
     }
     else {
         Rprintf("<object of class \"%s\" at %p>\n",
-                type2char(TYPEOF(x)), (void *) x);
+                Rf_type2char(TYPEOF(x)), (void *) x);
     }
 
 
@@ -200,27 +200,27 @@ SEXP do_print_ThisPathDocumentContext do_formals
 #define print_invalid_unbound   Rprintf("%s: <invalid, R_UnboundValue>\n", CHAR(PRINTNAME(sym)))
 #define print_null              Rprintf("%s: NULL\n", CHAR(PRINTNAME(sym)))
 #define print_invalid_null      Rprintf("%s: <invalid, NULL>\n", CHAR(PRINTNAME(sym)))
-#define print_type(var)         Rprintf("%s: <type = \"%s\", length = %d>\n"         , CHAR(PRINTNAME(sym)), type2char(TYPEOF((var))), length((var)))
-#define print_invalid_type(var) Rprintf("%s: <invalid, type = \"%s\", length = %d>\n", CHAR(PRINTNAME(sym)), type2char(TYPEOF((var))), length((var)))
+#define print_type(var)         Rprintf("%s: <type = \"%s\", length = %d>\n"         , CHAR(PRINTNAME(sym)), Rf_type2char(TYPEOF((var))), Rf_length((var)))
+#define print_invalid_type(var) Rprintf("%s: <invalid, type = \"%s\", length = %d>\n", CHAR(PRINTNAME(sym)), Rf_type2char(TYPEOF((var))), Rf_length((var)))
 #define _print_encoded_str(fmt, str)                           \
     do {                                                       \
         SETCADR(expr, (str));                                  \
-        SEXP tmp = eval(expr, R_BaseEnv);                      \
-        PROTECT(tmp);                                          \
+        SEXP tmp = Rf_eval(expr, R_BaseEnv);                   \
+        Rf_protect(tmp);                                       \
         Rprintf((fmt), CHAR(PRINTNAME(sym)), CHAR(STRING_ELT(tmp, 0)));\
-        UNPROTECT(1);                                          \
+        Rf_unprotect(1);                                       \
     } while (0)
 #define print_encoded_str(str) _print_encoded_str("%s: %s\n", (str))
 
 
-    SEXP errcnd = findVarInFrame(x, sym = errcndSymbol);
-    PROTECT(errcnd);
+    SEXP errcnd = Rf_findVarInFrame(x, sym = errcndSymbol);
+    Rf_protect(errcnd);
     if (errcnd != R_UnboundValue) {
         if (errcnd == R_NilValue)
             print_invalid_null;
         else if (TYPEOF(errcnd) == VECSXP &&
                  LENGTH(errcnd) >= 2 &&
-                 inherits(errcnd, "condition"))
+                 Rf_inherits(errcnd, "condition"))
         {
             Rprintf("%s: ", CHAR(PRINTNAME(sym)));
             my_PrintValueEnv(errcnd, rho);
@@ -228,8 +228,8 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else print_invalid_type(errcnd);
 
 
-        SEXP for_msg = findVarInFrame(x, sym = for_msgSymbol);
-        PROTECT(for_msg);
+        SEXP for_msg = Rf_findVarInFrame(x, sym = for_msgSymbol);
+        Rf_protect(for_msg);
         if (for_msg == R_UnboundValue)
             print_invalid_unbound;
         else if (for_msg == R_NilValue)
@@ -238,11 +238,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_encoded_str(for_msg);
         else
             print_invalid_type(for_msg);
-        UNPROTECT(1);
+        Rf_unprotect(1);
 
 
-        SEXP associated_with_file = findVarInFrame(x, sym = associated_with_fileSymbol);
-        PROTECT(associated_with_file);
+        SEXP associated_with_file = Rf_findVarInFrame(x, sym = associated_with_fileSymbol);
+        Rf_protect(associated_with_file);
         if (associated_with_file == R_UnboundValue);
         else if (associated_with_file == R_NilValue)
             print_null;
@@ -252,11 +252,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
                 (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
         }
         else print_invalid_type(associated_with_file);
-        UNPROTECT(1);
+        Rf_unprotect(1);
     }
     else {
-        SEXP ofile = findVarInFrame(x, sym = ofileSymbol);
-        PROTECT(ofile);
+        SEXP ofile = Rf_findVarInFrame(x, sym = ofileSymbol);
+        Rf_protect(ofile);
         if (ofile == R_UnboundValue)
             print_invalid_unbound;
         else if (ofile == R_NilValue)
@@ -265,11 +265,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_encoded_str(ofile);
         else
             print_invalid_type(ofile);
-        UNPROTECT(1);
+        Rf_unprotect(1);
 
 
-        SEXP wd = findVarInFrame(x, sym = wdSymbol);
-        PROTECT(wd);
+        SEXP wd = Rf_findVarInFrame(x, sym = wdSymbol);
+        Rf_protect(wd);
         if (wd == R_UnboundValue);
         else if (wd == R_NilValue)
             print_null;
@@ -277,11 +277,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_encoded_str(wd);
         else
             print_invalid_type(wd);
-        UNPROTECT(1);
+        Rf_unprotect(1);
 
 
-        SEXP file = findVarInFrame(x, sym = fileSymbol);
-        PROTECT(file);
+        SEXP file = Rf_findVarInFrame(x, sym = fileSymbol);
+        Rf_protect(file);
         if (file == R_UnboundValue)
             print_invalid_unbound;
         else if (file == R_NilValue)
@@ -301,11 +301,11 @@ SEXP do_print_ThisPathDocumentContext do_formals
             else print_invalid_type(val);
         }
         else print_invalid_type(file);
-        UNPROTECT(1);
+        Rf_unprotect(1);
 
 
-        SEXP lines = findVarInFrame(x, sym = linesSymbol);
-        PROTECT(lines);
+        SEXP lines = Rf_findVarInFrame(x, sym = linesSymbol);
+        Rf_protect(lines);
         if (lines == R_UnboundValue);
         else if (lines == R_NilValue)
             print_invalid_null;
@@ -326,25 +326,25 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else if (TYPEOF(lines) == STRSXP)
             print_type(lines);
         else print_invalid_type(lines);
-        UNPROTECT(1);
+        Rf_unprotect(1);
     }
-    UNPROTECT(1);  /* errcnd */
+    Rf_unprotect(1);  /* errcnd */
 
 
-    SEXP source = findVarInFrame(x, sym = sourceSymbol);
-    PROTECT(source);
+    SEXP source = Rf_findVarInFrame(x, sym = sourceSymbol);
+    Rf_protect(source);
     if (source == R_UnboundValue)
         print_invalid_unbound;
     else if (source == R_NilValue)
         print_invalid_null;
     else if (TYPEOF(source) == CHARSXP)
-        _print_encoded_str("%s: <CHARSXP: %s>\n", ScalarString(source));
+        _print_encoded_str("%s: <CHARSXP: %s>\n", Rf_ScalarString(source));
     else print_invalid_type(source);
-    UNPROTECT(1);
+    Rf_unprotect(1);
 
 
-    SEXP setsyspathwashere = findVarInFrame(x, sym = setsyspathwashereSymbol);
-    PROTECT(setsyspathwashere);
+    SEXP setsyspathwashere = Rf_findVarInFrame(x, sym = setsyspathwashereSymbol);
+    Rf_protect(setsyspathwashere);
     if (setsyspathwashere != R_UnboundValue) {
         if (setsyspathwashere == R_NilValue)
             print_null;
@@ -357,8 +357,8 @@ SEXP do_print_ThisPathDocumentContext do_formals
     }
 
 
-    SEXP n = findVarInFrame(x, sym = nSymbol);
-    PROTECT(n);
+    SEXP n = Rf_findVarInFrame(x, sym = nSymbol);
+    Rf_protect(n);
     if (n == R_UnboundValue) {
         if (setsyspathwashere != R_UnboundValue)
             print_invalid_unbound;
@@ -370,10 +370,10 @@ SEXP do_print_ThisPathDocumentContext do_formals
     else print_invalid_type(n);
 
 
-    UNPROTECT(2);
+    Rf_unprotect(2);
 
 
     set_R_Visible(FALSE);
-    UNPROTECT(1);
+    Rf_unprotect(1);
     return x;
 }

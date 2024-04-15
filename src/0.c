@@ -1,3 +1,4 @@
+#define R_NO_REMAP
 #include <R_ext/Rdynload.h>    /* need definition of 'R_ExternalMethodDef' */
 #include <R_ext/Visibility.h>  /* need definition of 'attribute_visible' */
 #include "devel.h"

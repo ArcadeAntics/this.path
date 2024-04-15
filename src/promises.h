@@ -2,6 +2,7 @@
 #define R_THISPATH_PROMISES_H
 
 
+#define R_NO_REMAP
 #include <Rinternals.h>  /* need definition of SEXP */
 
 

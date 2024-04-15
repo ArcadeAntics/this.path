@@ -18,40 +18,40 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
 
     SEXP path = CAR(args); args = CDR(args);
     if (TYPEOF(path) != STRSXP)
-        error(_("a character vector argument expected"));
+        Rf_error(_("a character vector argument expected"));
 
 
-    Rboolean compression = asLogical(CAR(args)); args = CDR(args);
+    Rboolean compression = Rf_asLogical(CAR(args)); args = CDR(args);
     if (compression == NA_LOGICAL)
-        error(_("invalid '%s' value"), "compression");
+        Rf_error(_("invalid '%s' value"), "compression");
 
 
     SEXP newext = NULL;
     int length_newext = -1;
     if (op == EXTOP_EXTGETS) {
-        if (!isString(CAR(args))) {
+        if (!Rf_isString(CAR(args))) {
             if (OBJECT(CAR(args))) {
                 /* as.character(quote(CAR(args))) */
                 SEXP expr;
                 PROTECT_INDEX indx;
-                PROTECT_WITH_INDEX(expr = CONS(CAR(args), R_NilValue), &indx);
+                R_ProtectWithIndex(expr = Rf_cons(CAR(args), R_NilValue), &indx);
                 if (needQuote(CAR(args))) {
-                    REPROTECT(expr = LCONS(getFromBase(R_QuoteSymbol), expr), indx);
-                    REPROTECT(expr = CONS(expr, R_NilValue), indx);
+                    R_Reprotect(expr = Rf_lcons(getFromBase(R_QuoteSymbol), expr), indx);
+                    R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
                 }
-                REPROTECT(expr = LCONS(getFromBase(R_AsCharacterSymbol), expr), indx);
-                SETCAR(args, eval(expr, rho));
-                UNPROTECT(1);
+                R_Reprotect(expr = Rf_lcons(getFromBase(R_AsCharacterSymbol), expr), indx);
+                SETCAR(args, Rf_eval(expr, rho));
+                Rf_unprotect(1);
             }
-            else if (isSymbol(CAR(args)))
-                SETCAR(args, ScalarString(PRINTNAME(CAR(args))));
-            else SETCAR(args, coerceVector(CAR(args), STRSXP));
-            if (!isString(CAR(args)))
-                errorcall(call, _("non-string argument to '%s'"), ".C_ext<-");
+            else if (Rf_isSymbol(CAR(args)))
+                SETCAR(args, Rf_ScalarString(PRINTNAME(CAR(args))));
+            else SETCAR(args, Rf_coerceVector(CAR(args), STRSXP));
+            if (!Rf_isString(CAR(args)))
+                Rf_errorcall(call, _("non-string argument to '%s'"), ".C_ext<-");
         }
 
 
-        length_newext = length(CAR(args));
+        length_newext = Rf_length(CAR(args));
         if (!length_newext) {
             SETCAR(args, R_BlankScalarString);
             length_newext = 1;
@@ -70,22 +70,22 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
     n = LENGTH(path);
     switch (op) {
     case EXTOP_SPLITEXT:
-        value = allocMatrix(STRSXP, 2, n);
-        PROTECT(value); nprotect++;
-        SEXP dimnames = allocVector(VECSXP, 2);
-        setAttrib(value, R_DimNamesSymbol, dimnames);
-        SEXP rownames = allocVector(STRSXP, 2);
+        value = Rf_allocMatrix(STRSXP, 2, n);
+        Rf_protect(value); nprotect++;
+        SEXP dimnames = Rf_allocVector(VECSXP, 2);
+        Rf_setAttrib(value, R_DimNamesSymbol, dimnames);
+        SEXP rownames = Rf_allocVector(STRSXP, 2);
         SET_VECTOR_ELT(dimnames, 0, rownames);
-        SET_STRING_ELT(rownames, 0, mkChar("root"));
-        SET_STRING_ELT(rownames, 1, mkChar("ext"));
+        SET_STRING_ELT(rownames, 0, Rf_mkChar("root"));
+        SET_STRING_ELT(rownames, 1, Rf_mkChar("ext"));
         break;
     case EXTOP_EXTGETS:
         value = R_shallow_duplicate_attr(path);
-        PROTECT(value); nprotect++;
+        Rf_protect(value); nprotect++;
         break;
     default:
-        value = allocVector(STRSXP, n);
-        PROTECT(value); nprotect++;
+        value = Rf_allocVector(STRSXP, n);
+        Rf_protect(value); nprotect++;
     }
 
 
@@ -120,7 +120,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         }
 
 
-        ptr = R_ExpandFileName(translateCharUTF8(STRING_ELT(path, i)));
+        ptr = R_ExpandFileName(Rf_translateCharUTF8(STRING_ELT(path, i)));
         nchar = strlen(ptr);
         if (nchar == 0) {
             continue;
@@ -131,17 +131,17 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         if (nchar == drivewidth) {  /* pathspec is 0 bytes long */
             switch (op) {
             case EXTOP_REMOVEEXT:
-                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(ptr, CE_UTF8));
                 break;
             case EXTOP_EXT:
                 // SET_STRING_ELT(value, i, R_BlankString);
                 break;
             case EXTOP_SPLITEXT:
-                SET_STRING_ELT(value, 2 * i, mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(ptr, CE_UTF8));
                 // SET_STRING_ELT(value, 2 * i + 1, R_BlankString);
                 break;
             case EXTOP_EXTGETS:
-                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(ptr, CE_UTF8));
                 break;
             }
             continue;
@@ -152,7 +152,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         const char *cext = NULL;
         if (op == EXTOP_EXTGETS) {
             if (i < length_newext) {
-                ptr_ext = translateCharUTF8(STRING_ELT(newext, i));
+                ptr_ext = Rf_translateCharUTF8(STRING_ELT(newext, i));
                 if (windows) {
                     if (!strlen(ptr_ext))
                         cext = ptr_ext;
@@ -162,11 +162,11 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                         if (*p == '.') {
                             add_dot = 0;
                             p++;
-                            if (!strlen(p)) error("extension \".\" is invalid");
-                            if (*p == '.')  error("extension starting with \"..\" is invalid");
+                            if (!strlen(p)) Rf_error("extension \".\" is invalid");
+                            if (*p == '.')  Rf_error("extension starting with \"..\" is invalid");
                         }
                         for (; *p; p++) {
-                            if (*p == '/' || *p == '\\') error("extension containing / is invalid");
+                            if (*p == '/' || *p == '\\') Rf_error("extension containing / is invalid");
                             if (*p == '.') {
                                 if (strlen(p) == 3 &&
                                     *(p + 1) == 'g' &&
@@ -187,12 +187,12 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                                 {
                                     break;
                                 }
-                                error("extension containing \".\" but is not a compression extension");
+                                Rf_error("extension containing \".\" but is not a compression extension");
                             }
                         }
                         if (add_dot) {
                             if (strlen(ptr_ext) >= PATH_MAX)
-                                error("file extension is too long");
+                                Rf_error("file extension is too long");
                             buf = _buf_ext;
                             cext = _buf_ext;
                             *buf = '.';
@@ -209,11 +209,11 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                         if (*p == '.') {
                             add_dot = 0;
                             p++;
-                            if (!strlen(p)) error("extension \".\" is invalid");
-                            if (*p == '.')  error("extension starting with \"..\" is invalid");
+                            if (!strlen(p)) Rf_error("extension \".\" is invalid");
+                            if (*p == '.')  Rf_error("extension starting with \"..\" is invalid");
                         }
                         for (; *p; p++) {
-                            if (*p == '/') error("extension containing / is invalid");
+                            if (*p == '/') Rf_error("extension containing / is invalid");
                             if (*p == '.') {
                                 if (strlen(p) == 3 &&
                                     *(p + 1) == 'g' &&
@@ -234,12 +234,12 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                                 {
                                     break;
                                 }
-                                error("extension containing \".\" but is not a compression extension");
+                                Rf_error("extension containing \".\" but is not a compression extension");
                             }
                         }
                         if (add_dot) {
                             if (strlen(ptr_ext) >= PATH_MAX)
-                                error("file extension is too long");
+                                Rf_error("file extension is too long");
                             buf = _buf_ext;
                             cext = _buf_ext;
                             *buf = '.';
@@ -249,7 +249,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                     }
                 }
             } else {
-                ptr_ext = translateCharUTF8(STRING_ELT(newext, i % length_newext));
+                ptr_ext = Rf_translateCharUTF8(STRING_ELT(newext, i % length_newext));
                 if (!strlen(ptr_ext) || *ptr_ext == '.')
                     cext = ptr_ext;
                 else {
@@ -291,17 +291,17 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         if (last_char < pathspec) {
             switch (op) {
             case EXTOP_REMOVEEXT:
-                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(ptr, CE_UTF8));
                 break;
             case EXTOP_EXT:
                 // SET_STRING_ELT(value, i, R_BlankString);
                 break;
             case EXTOP_SPLITEXT:
-                SET_STRING_ELT(value, 2 * i, mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(ptr, CE_UTF8));
                 // SET_STRING_ELT(value, 2 * i + 1, R_BlankString);
                 break;
             case EXTOP_EXTGETS:
-                SET_STRING_ELT(value, i, mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(ptr, CE_UTF8));
                 break;
             }
             continue;
@@ -339,13 +339,13 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         if (nchar_basename < 3) {
             switch (op) {
             case EXTOP_REMOVEEXT:
-                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                 break;
             case EXTOP_EXT:
                 // SET_STRING_ELT(value, i, R_BlankString);
                 break;
             case EXTOP_SPLITEXT:
-                SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(buf, CE_UTF8));
                 // SET_STRING_ELT(value, 2 * i + 1, R_BlankString);
                 break;
             case EXTOP_EXTGETS:
@@ -359,7 +359,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                 if (found_non_dot) {
                     strcpy(last_char + 1, cext);
                 }
-                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                 break;
             }
             continue;
@@ -408,20 +408,20 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                     if (found_non_dot) {
                         switch (op) {
                         case EXTOP_EXT:
-                            SET_STRING_ELT(value, i, mkCharCE(dot, CE_UTF8));
+                            SET_STRING_ELT(value, i, Rf_mkCharCE(dot, CE_UTF8));
                             break;
                         case EXTOP_REMOVEEXT:
                             *dot = '\0';
-                            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                             break;
                         case EXTOP_SPLITEXT:
-                            SET_STRING_ELT(value, 2 * i + 1, mkCharCE(dot, CE_UTF8));
+                            SET_STRING_ELT(value, 2 * i + 1, Rf_mkCharCE(dot, CE_UTF8));
                             *dot = '\0';
-                            SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
+                            SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(buf, CE_UTF8));
                             break;
                         case EXTOP_EXTGETS:
                             strcpy(dot, cext);
-                            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                             break;
                         }
                         continue;
@@ -438,13 +438,13 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         if (!dot || dot == last_char || dot == basename) {
             switch (op) {
             case EXTOP_REMOVEEXT:
-                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                 break;
             case EXTOP_EXT:
                 // SET_STRING_ELT(value, i, R_BlankString);
                 break;
             case EXTOP_SPLITEXT:
-                SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(buf, CE_UTF8));
                 // SET_STRING_ELT(value, 2 * i + 1, R_BlankString);
                 break;
             case EXTOP_EXTGETS:
@@ -458,7 +458,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
                 if (found_non_dot) {
                     strcpy(last_char + 1, cext);
                 }
-                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                 break;
             }
             continue;
@@ -476,17 +476,17 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         if (!found_non_dot) {  /* basename contains only leading dots */
             switch (op) {
             case EXTOP_REMOVEEXT:
-                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                 break;
             case EXTOP_EXT:
                 // SET_STRING_ELT(value, i, R_BlankString);
                 break;
             case EXTOP_SPLITEXT:
-                SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(buf, CE_UTF8));
                 // SET_STRING_ELT(value, 2 * i + 1, R_BlankString);
                 break;
             case EXTOP_EXTGETS:
-                SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
                 break;
             }
             continue;
@@ -495,26 +495,26 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
 
         switch (op) {
         case EXTOP_EXT:
-            SET_STRING_ELT(value, i, mkCharCE(dot, CE_UTF8));
+            SET_STRING_ELT(value, i, Rf_mkCharCE(dot, CE_UTF8));
             break;
         case EXTOP_REMOVEEXT:
             *dot = '\0';
-            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
             break;
         case EXTOP_SPLITEXT:
-            SET_STRING_ELT(value, 2 * i + 1, mkCharCE(dot, CE_UTF8));
+            SET_STRING_ELT(value, 2 * i + 1, Rf_mkCharCE(dot, CE_UTF8));
             *dot = '\0';
-            SET_STRING_ELT(value, 2 * i, mkCharCE(buf, CE_UTF8));
+            SET_STRING_ELT(value, 2 * i, Rf_mkCharCE(buf, CE_UTF8));
             break;
         case EXTOP_EXTGETS:
             strcpy(dot, cext);
-            SET_STRING_ELT(value, i, mkCharCE(buf, CE_UTF8));
+            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
             break;
         }
     }
 
 
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
     return value;
 }
 

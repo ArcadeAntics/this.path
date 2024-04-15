@@ -4,9 +4,9 @@
 static R_INLINE
 Rboolean asFlag(SEXP x, const char *name)
 {
-    Rboolean val = asLogical(x);
+    Rboolean val = Rf_asLogical(x);
     if (val == NA_LOGICAL)
-        error(_("invalid '%s' value"), name);
+        Rf_error(_("invalid '%s' value"), name);
     return val;
 }
 
@@ -18,20 +18,20 @@ SEXP do_SET_PRSEEN_2 do_formals
 
     SEXP ptr = CAR(args);
     if (TYPEOF(ptr) != EXTPTRSXP)
-        errorcall(call, "invalid first argument, must be an external pointer");
+        Rf_errorcall(call, "invalid first argument, must be an external pointer");
     SEXP promises = R_ExternalPtrProtected(ptr);
     /* 'promises' is an empty pairlist, so nothing to do */
     if (TYPEOF(promises) == NILSXP)
         return R_NilValue;
     if (TYPEOF(promises) != LISTSXP)
-        errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist");
+        Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist");
     for (SEXP x = promises; x != R_NilValue; x = CDR(x)) {
         if (TYPEOF(CAR(x)) != PROMSXP)
-            errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist of promises, not type '%s'", type2char(TYPEOF(CAR(x))));
+            Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist of promises, not type '%s'", Rf_type2char(TYPEOF(CAR(x))));
         if (PRSEEN(CAR(x)) != 1)
-            errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' contains a promise in which PRSEEN is not 1");
+            Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' contains a promise in which PRSEEN is not 1");
         if (PRVALUE(CAR(x)) != R_UnboundValue)
-            errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' contains a promise for which 'PRVALUE()' is defined");
+            Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' contains a promise for which 'PRVALUE()' is defined");
     }
     /* now that we know the list is safe to modify, change all the PRSEEN
        value to 2, the value used for interrupted promises */
@@ -45,23 +45,23 @@ SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
 {
     SEXP ptr = R_MakeExternalPtr(NULL, R_NilValue, promises);
     /* ptr does not need to be protected, but rchk complains if it is not */
-    PROTECT(ptr);
+    Rf_protect(ptr);
     SEXP expr;
     PROTECT_INDEX indx;
-    PROTECT_WITH_INDEX(expr = CONS(ptr, R_NilValue), &indx);
+    R_ProtectWithIndex(expr = Rf_cons(ptr, R_NilValue), &indx);
 #if R_version_at_least(3,0,0)
     /* .External2(.C_SET_PRSEEN_2, ptr) */
-    REPROTECT(expr = CONS(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
-    REPROTECT(expr = LCONS(getFromBase(_External2Symbol), expr), indx);
+    R_Reprotect(expr = Rf_cons(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
+    R_Reprotect(expr = Rf_lcons(getFromBase(_External2Symbol), expr), indx);
 #else
     /* .SET_PRSEEN_2(ptr) */
-    REPROTECT(expr = LCONS(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
+    R_Reprotect(expr = Rf_lcons(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
 #endif
-    REPROTECT(expr = CONS(expr, CONS(R_TrueValue, R_NilValue)), indx);
+    R_Reprotect(expr = Rf_cons(expr, Rf_cons(R_TrueValue, R_NilValue)), indx);
     SET_TAG(CDR(expr), addSymbol);
-    REPROTECT(expr = LCONS(getFromBase(on_exitSymbol), expr), indx);
-    eval(expr, rho);
-    UNPROTECT(2);
+    R_Reprotect(expr = Rf_lcons(getFromBase(on_exitSymbol), expr), indx);
+    Rf_eval(expr, rho);
+    Rf_unprotect(2);
     return ptr;
 }
 
@@ -74,24 +74,24 @@ SEXP do_wrap_source do_formals
     int nprotect = 0;
 
 
-    SEXP promise = findVarInFrame(rho, exprSymbol);
+    SEXP promise = Rf_findVarInFrame(rho, exprSymbol);
     if (promise == R_UnboundValue)
-        error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
     if (promise == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(promise) != PROMSXP)
-        error("invalid '%s', must be a promise; should never happen, please report!",
+        Rf_error("invalid '%s', must be a promise; should never happen, please report!",
               CHAR(PRINTNAME(exprSymbol)));
 
 
     /* determine context number for .getframenumber() */
     int context_number;
-    int nframe = asInteger(eval(expr_sys_nframe, rho));
+    int nframe = Rf_asInteger(Rf_eval(expr_sys_nframe, rho));
     // Rprintf("sys.nframe() = %d\n", nframe);
 
 
     if (nframe <= 0) {
-        errorcall(call, "cannot be called from the global environment");
+        Rf_errorcall(call, "cannot be called from the global environment");
         return R_NilValue;
     }
     else if (nframe < 2)
@@ -114,17 +114,17 @@ SEXP do_wrap_source do_formals
         else {
             SEXP tmp;
             PROTECT_INDEX indx;
-            PROTECT_WITH_INDEX(tmp = CONS(ScalarInteger(parent), R_NilValue), &indx);
-            REPROTECT(tmp = LCONS(getFromBase(sys_functionSymbol), tmp), indx);
-            SEXP function = eval(tmp, rho);
-            PROTECT(function);
+            R_ProtectWithIndex(tmp = Rf_cons(Rf_ScalarInteger(parent), R_NilValue), &indx);
+            R_Reprotect(tmp = Rf_lcons(getFromBase(sys_functionSymbol), tmp), indx);
+            SEXP function = Rf_eval(tmp, rho);
+            Rf_protect(function);
             if (TYPEOF(function) != CLOSXP)
                 context_number = nframe;
             else if (identical(function, getFromMyNS(withArgsSymbol)))
                 context_number = nframe;
             else
                 context_number = parent;
-            UNPROTECT(2);
+            Rf_unprotect(2);
         }
     }
     // Rprintf("context_number = %d\n", context_number);
@@ -187,14 +187,14 @@ SEXP do_wrap_source do_formals
 #define check_validity                                         \
     do {                                                       \
         if (PRVALUE(promise) != R_UnboundValue)                \
-            error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));\
-        R_SetExternalPtrProtected(ptr, promises = CONS(promise, promises));\
+            Rf_error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));\
+        R_SetExternalPtrProtected(ptr, promises = Rf_cons(promise, promises));\
         if (PRSEEN(promise)) {                                 \
             if (PRSEEN(promise) == 1)                          \
-                error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));\
+                Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));\
             else {                                             \
                 SET_PRSEEN(promise, 1);                        \
-                warning(_("restarting interrupted promise evaluation"));\
+                Rf_warning(_("restarting interrupted promise evaluation"));\
             }                                                  \
         }                                                      \
         else SET_PRSEEN(promise, 1);                           \
@@ -216,25 +216,25 @@ SEXP do_wrap_source do_formals
 
 
     if (expr == R_MissingArg)
-        error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(expr) != LANGSXP)
-        error("invalid '%s', must be a call", CHAR(PRINTNAME(exprSymbol)));
+        Rf_error("invalid '%s', must be a call", CHAR(PRINTNAME(exprSymbol)));
 
 
 #if R_version_at_least(3,0,0)
 #define eval_with_visible(expr, env)                           \
-    SEXP tmp = eval(expr, env);                                \
-    PROTECT(tmp); nprotect++
+    SEXP tmp = Rf_eval(expr, env);                             \
+    Rf_protect(tmp); nprotect++
 #else
 #define eval_with_visible(expr, env)                           \
-    SEXP expr2 = CONS(expr, R_NilValue);                       \
-    PROTECT(expr2); nprotect++;                                \
-    expr2 = LCONS(getFromBase(withVisibleSymbol), expr2);      \
-    PROTECT(expr2); nprotect++;                                \
-    SEXP value = eval(expr2, env);                             \
-    PROTECT(value); nprotect++;                                \
+    SEXP expr2 = Rf_cons(expr, R_NilValue);                    \
+    Rf_protect(expr2); nprotect++;                             \
+    expr2 = Rf_lcons(getFromBase(withVisibleSymbol), expr2);   \
+    Rf_protect(expr2); nprotect++;                             \
+    SEXP value = Rf_eval(expr2, env);                          \
+    Rf_protect(value); nprotect++;                             \
     set_this_path_value(VECTOR_ELT(value, 0));                 \
-    set_this_path_visible(asLogical(VECTOR_ELT(value, 1)));    \
+    set_this_path_visible(Rf_asLogical(VECTOR_ELT(value, 1))); \
     SEXP tmp = VECTOR_ELT(value, 0)
 #endif
 
@@ -250,12 +250,12 @@ SEXP do_wrap_source do_formals
             SET_PRENV  (p, R_NilValue);                        \
             R_SetExternalPtrProtected(ptr, promises = CDR(promises));\
         }                                                      \
-        UNPROTECT(nprotect);                                   \
+        Rf_unprotect(nprotect);                                \
         return tmp;                                            \
     } while (0)
 
 
-    if (length(expr) < 2) {
+    if (Rf_length(expr) < 2) {
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
@@ -267,8 +267,8 @@ SEXP do_wrap_source do_formals
        original version of it for possible error messages */
     SEXP oexpr = expr;
     /* we will modify a copy */
-    expr = duplicate(expr);
-    PROTECT(expr); nprotect++;
+    expr = Rf_duplicate(expr);
+    Rf_protect(expr); nprotect++;
 
 
     SEXP fun     = CAR(expr),
@@ -276,7 +276,7 @@ SEXP do_wrap_source do_formals
     if (TYPEOF(fun) == SYMSXP)
         fun = findFunction3(fun, env, expr);
     else
-        fun = eval(fun, env);
+        fun = Rf_eval(fun, env);
     /* change the function so that it is not evaluated twice */
     SETCAR(expr, fun);
 
@@ -287,7 +287,7 @@ SEXP do_wrap_source do_formals
     case CLOSXP:
         break;
     default:
-        error(_("attempt to apply non-function"));
+        Rf_error(_("attempt to apply non-function"));
     }
 
 
@@ -317,25 +317,25 @@ SEXP do_wrap_source do_formals
                 if (already_checked_dots)
                     continue;
                 already_checked_dots = 1;
-                dots = findVar(R_DotsSymbol, env);
+                dots = Rf_findVar(R_DotsSymbol, env);
                 if (TYPEOF(dots) == DOTSXP) {
                     for (dot = dots; dot != R_NilValue; dot = CDR(dot)) {
-                        if (TAG(dot) != R_NilValue && pmatch(tag, TAG(dot), 1)) {
+                        if (TAG(dot) != R_NilValue && Rf_pmatch(tag, TAG(dot), 1)) {
                             if (s != NULL)
-                                errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
+                                Rf_errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                             else
                                 s = CAR(dot);
                             if (TYPEOF(s) != PROMSXP)
-                                error(_("value in '...' is not a promise"));
+                                Rf_error(_("value in '...' is not a promise"));
                         }
                     }
                 }
                 else if (dots != R_NilValue && dots != R_MissingArg)
-                    error(_("'...' used in an incorrect context"));
+                    Rf_error(_("'...' used in an incorrect context"));
             }
-            else if (TAG(b) != R_NilValue && pmatch(tag, TAG(b), 1)) {
+            else if (TAG(b) != R_NilValue && Rf_pmatch(tag, TAG(b), 1)) {
                 if (s != NULL)
-                    errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
+                    Rf_errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                 else
                     s = CAR(b);
                 n = i;
@@ -353,22 +353,22 @@ SEXP do_wrap_source do_formals
                     already_checked_dots = 1;
                     if (TYPEOF(dots) == DOTSXP) {
                         for (dot = dots; dot != R_NilValue; dot = CDR(dot)) {
-                            if (TAG(dot) != R_NilValue && pmatch(tag, TAG(dot), 0)) {
+                            if (TAG(dot) != R_NilValue && Rf_pmatch(tag, TAG(dot), 0)) {
                                 if (s != NULL)
-                                    errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
+                                    Rf_errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                                 else
                                     s = CAR(dot);
                                 if (TYPEOF(s) != PROMSXP)
-                                    error(_("value in '...' is not a promise"));
+                                    Rf_error(_("value in '...' is not a promise"));
                             }
                         }
                     }
                     else if (dots != R_NilValue && dots != R_MissingArg)
-                        error(_("'...' used in an incorrect context"));
+                        Rf_error(_("'...' used in an incorrect context"));
                 }
-                else if (TAG(b) != R_NilValue && pmatch(tag, TAG(b), 0)) {
+                else if (TAG(b) != R_NilValue && Rf_pmatch(tag, TAG(b), 0)) {
                     if (s != NULL)
-                        errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
+                        Rf_errorcall(oexpr, _("formal argument \"%s\" matched by multiple actual arguments"), EncodeChar(PRINTNAME(tag)));
                     else
                         s = CAR(b);
                     n = i;
@@ -390,14 +390,14 @@ SEXP do_wrap_source do_formals
                             if (TAG(dot) == R_NilValue) {
                                 s = CAR(dot);
                                 if (TYPEOF(s) != PROMSXP)
-                                    error(_("value in '...' is not a promise"));
+                                    Rf_error(_("value in '...' is not a promise"));
                                 break;
                             }
                         }
                         if (s != NULL) break;  /* break out of both for loops */
                     }
                     else if (dots != R_NilValue && dots != R_MissingArg)
-                        error(_("'...' used in an incorrect context"));
+                        Rf_error(_("'...' used in an incorrect context"));
                 }
                 else if (TAG(b) == R_NilValue) {
                     s = CAR(b);
@@ -416,15 +416,15 @@ SEXP do_wrap_source do_formals
                 if (already_checked_dots)
                     continue;
                 already_checked_dots = 1;
-                dots = findVar(R_DotsSymbol, env);
+                dots = Rf_findVar(R_DotsSymbol, env);
                 if (TYPEOF(dots) == DOTSXP) {
                     s = CAR(dots);
                     if (TYPEOF(s) != PROMSXP)
-                        error(_("value in '...' is not a promise"));
+                        Rf_error(_("value in '...' is not a promise"));
                     break;
                 }
                 else if (dots != R_NilValue && dots != R_MissingArg)
-                    error(_("'...' used in an incorrect context"));
+                    Rf_error(_("'...' used in an incorrect context"));
             }
             else {
                 s = CAR(b);
@@ -446,13 +446,13 @@ SEXP do_wrap_source do_formals
 
     switch (TYPEOF(s)) {
     case PROMSXP:
-        e = eval(s, env);
+        e = Rf_eval(s, env);
         break;
     case SYMSXP:
     case LANGSXP:
         if (n == -1)
-            error("found a symbol / / call but not an index; should never happen, please report!");
-        e = PROTECT(eval(s, env));
+            Rf_error("found a symbol / / call but not an index; should never happen, please report!");
+        e = Rf_protect(Rf_eval(s, env));
         ENSURE_NAMEDMAX(e);
         /* we want to replace 's' with 'e' in the call. we could directly
            replace but then we would need to quote 's'. even if we didn't, it
@@ -463,8 +463,8 @@ SEXP do_wrap_source do_formals
            something. this means substitute() works, we don't evaluate 's'
            twice, and we don't need to quote 'e' */
         e = makeEVPROMISE(s, e);
-        SETCAR(nthcdr(funargs, n), e);
-        UNPROTECT(1);
+        SETCAR(Rf_nthcdr(funargs, n), e);
+        Rf_unprotect(1);
         break;
     default:
         e = s;
@@ -497,13 +497,13 @@ SEXP do_wrap_source do_formals
         allow_rawConnection, allow_sockconn, allow_servsockconn,
         allow_customConnection, ignore_blank_string, ignore_clipboard,
         ignore_stdin, ignore_url, ignore_file_uri,
-        /* source                 */ mkChar("call to function wrap.source from package @R_PACKAGE_NAME@"),
+        /* source                 */ Rf_mkChar("call to function wrap.source from package @R_PACKAGE_NAME@"),
         /* srcfile_original       */ NULL
     );
 
 
 #define define_n(n, documentcontext)                           \
-    MARK_NOT_MUTABLE_defineVar(nSymbol, ScalarInteger((n)), (documentcontext))
+    MARK_NOT_MUTABLE_defineVar(nSymbol, Rf_ScalarInteger((n)), (documentcontext))
 
 
     if (documentcontext != R_EmptyEnv) {
@@ -538,64 +538,64 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
     case SPA_SET_SRC_PATH:   name = "'set.src.path()'";   break;
     case SPA_SET_SYS_PATH_FUNCTION: name = "'set.sys.path.function()'"; break;
     default:
-        error(_("invalid '%s' value"), "spa");
+        Rf_error(_("invalid '%s' value"), "spa");
         return R_NilValue;
     }
 
 
     int parent = sys_parent(1, rho);
     if (parent < 1)
-        error("%s cannot be used within the global environment", name);
+        Rf_error("%s cannot be used within the global environment", name);
 
 
     {
         INTEGER(CADR(expr_sys_function_which))[0] = parent;
-        SEXP function = eval(expr_sys_function_which, rho);
-        PROTECT(function);
+        SEXP function = Rf_eval(expr_sys_function_which, rho);
+        Rf_protect(function);
         if (function == eval_op)
-            error("%s cannot be used within '%s'",
+            Rf_error("%s cannot be used within '%s'",
                 name, CHAR(PRINTNAME(R_EvalSymbol)));
         else if (TYPEOF(function) != CLOSXP)
-            error("%s cannot be used within a '%s', possible errors with eval?",
-                name, type2char(TYPEOF(function)));
+            Rf_error("%s cannot be used within a '%s', possible errors with eval?",
+                name, Rf_type2char(TYPEOF(function)));
         else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
-            error("%s cannot be called within %s() from package %s",
+            Rf_error("%s cannot be called within %s() from package %s",
                 name, CHAR(PRINTNAME(wrap_sourceSymbol)), "@R_PACKAGE_NAME@");
-        UNPROTECT(1);
+        Rf_unprotect(1);
     }
 
 
     SEXP ofile, frame, documentcontext;
 
 
-    frame = eval(expr_parent_frame, rho);
-    PROTECT(frame); nprotect++;
+    frame = Rf_eval(expr_parent_frame, rho);
+    Rf_protect(frame); nprotect++;
 
 
     /* ensure 'set.sys.path()' isn't evaluated in an invalid environment */
     if (frame == R_EmptyEnv)
-        error("%s cannot be used within the empty environment", name);
+        Rf_error("%s cannot be used within the empty environment", name);
     else if (frame == R_GlobalEnv)
-        error("%s cannot be used within the global environment", name);
+        Rf_error("%s cannot be used within the global environment", name);
     else if (frame == R_BaseEnv)
-        error("%s cannot be used within the base environment", name);
+        Rf_error("%s cannot be used within the base environment", name);
     else if (frame == R_BaseNamespace)
-        error("%s cannot be used within the base namespace environment", name);
+        Rf_error("%s cannot be used within the base namespace environment", name);
     else if (R_IsPackageEnv(frame))
-        error("%s cannot be used within a package environment", name);
+        Rf_error("%s cannot be used within a package environment", name);
     else if (R_IsNamespaceEnv(frame))
-        error("%s cannot be used within a namespace environment", name);
+        Rf_error("%s cannot be used within a namespace environment", name);
     else if (R_existsVarInFrame(frame, R_dot_packageName))
-        error("%s cannot be used within a top level environment", name);
+        Rf_error("%s cannot be used within a top level environment", name);
     else if (R_EnvironmentIsLocked(frame))
-        error("%s cannot be used within a locked environment", name);
+        Rf_error("%s cannot be used within a locked environment", name);
 
 
     if (spa == SPA_SET_SYS_PATH_FUNCTION) {
 
 
         if (R_existsVarInFrame(frame, documentcontextSymbol))
-            error("%s cannot be called more than once within an environment", name);
+            Rf_error("%s cannot be called more than once within an environment", name);
 
 
         extern SEXP src_context(SEXP srcfile, SEXP rho);
@@ -603,52 +603,52 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 
         SEXP fun = CAR(args);
         if (TYPEOF(fun) != CLOSXP)
-            error(_("invalid '%s' value"), "fun");
+            Rf_error(_("invalid '%s' value"), "fun");
         SEXP documentcontext = src_context(fun, rho);
         if (documentcontext == R_EmptyEnv) {
             INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
             R_LockBinding(documentcontextSymbol, frame);
             set_R_Visible(FALSE);
-            UNPROTECT(nprotect);
+            Rf_unprotect(nprotect);
             return R_NilValue;
         }
         documentcontext = duplicateEnv(documentcontext);
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        SEXP osource = findVarInFrame(documentcontext, sourceSymbol);
+        SEXP osource = Rf_findVarInFrame(documentcontext, sourceSymbol);
         if (osource == R_UnboundValue)
-            error(_("object '%s' not found"), CHAR(PRINTNAME(sourceSymbol)));
+            Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(sourceSymbol)));
         if (TYPEOF(osource) != CHARSXP)
-            error(_("invalid '%s' value"), CHAR(PRINTNAME(sourceSymbol)));
+            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(sourceSymbol)));
         const char *ostr = CHAR(osource);
         const char *str = "call to function 'set.sys.path.function'";
         SEXP source;
         if (!LENGTH(osource))
-            source = mkChar(str);
+            source = Rf_mkChar(str);
         else {
             const char *fmt = "%s, copied from %s";
             int pwidth = 1 + ((int) strlen(fmt)) + ((int) strlen(str)) + ((int) strlen(ostr)) - 4;
             char buf[pwidth];
             snprintf(buf, pwidth, fmt, str, ostr);
-            source = mkChar(buf);
+            source = Rf_mkChar(buf);
         }
         INCREMENT_NAMED_defineVar(sourceSymbol, source, documentcontext);
-        defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
+        Rf_defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
         define_n(parent, documentcontext);
         set_R_Visible(FALSE);
-        UNPROTECT(nprotect);
+        Rf_unprotect(nprotect);
         return R_NilValue;
     }
     else if (spa) {
-        documentcontext = findVarInFrame(frame, documentcontextSymbol);
+        documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
         if (documentcontext == R_UnboundValue)
-            error("%s cannot be called before set.sys.path()", name);
+            Rf_error("%s cannot be called before set.sys.path()", name);
         if (TYPEOF(documentcontext) != ENVSXP)
-            error(_("invalid '%s' value"), CHAR(PRINTNAME(documentcontextSymbol)));
+            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(documentcontextSymbol)));
         if (documentcontext != R_EmptyEnv &&
             !R_existsVarInFrame(documentcontext, setsyspathwashereSymbol))
         {
-            error("%s cannot be called before set.sys.path()", name);
+            Rf_error("%s cannot be called before set.sys.path()", name);
         }
         SEXP returnthis = R_NilValue;
         switch (spa) {
@@ -664,14 +664,14 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             if (TYPEOF(envir) != ENVSXP) break;
             SEXP target = CAR(args); args = CDR(args);
             if (target != R_NilValue && TYPEOF(target) != ENVSXP) target = R_NilValue;
-            SEXP env = topenv(target, envir);
+            SEXP env = Rf_topenv(target, envir);
             if (env == R_GlobalEnv ||
                 env == R_BaseEnv || env == R_BaseNamespace ||
                 R_IsPackageEnv(env) || R_IsNamespaceEnv(env));
-            else if (inherits(env, "box$ns"));
-            else if (!ISNULL(getAttrib(env, documentcontextSymbol)))
-                error("cannot overwrite existing '%s' attribute", CHAR(PRINTNAME(documentcontextSymbol)));
-            else setAttrib(env, documentcontextSymbol, documentcontext);
+            else if (Rf_inherits(env, "box$ns"));
+            else if (!ISNULL(Rf_getAttrib(env, documentcontextSymbol)))
+                Rf_error("cannot overwrite existing '%s' attribute", CHAR(PRINTNAME(documentcontextSymbol)));
+            else Rf_setAttrib(env, documentcontextSymbol, documentcontext);
             break;
         }
         case SPA_SET_SRC_PATH:
@@ -681,16 +681,16 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             SEXP srcfile = NULL;
             switch (TYPEOF(x)) {
             case EXPRSXP:
-                srcfile = PROTECT(getAttrib(x, srcfileSymbol)); nprotect++;
+                srcfile = Rf_protect(Rf_getAttrib(x, srcfileSymbol)); nprotect++;
                 if (TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
                 break;
             case ENVSXP:
-                if (inherits(x, "srcfile")) srcfile = x;
+                if (Rf_inherits(x, "srcfile")) srcfile = x;
                 break;
             }
             if (srcfile) {
                 if (R_existsVarInFrame(srcfile, documentcontextSymbol))
-                    error("cannot overwrite existing binding '%s'", CHAR(PRINTNAME(documentcontextSymbol)));
+                    Rf_error("cannot overwrite existing binding '%s'", CHAR(PRINTNAME(documentcontextSymbol)));
 
 
                 extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
@@ -703,46 +703,46 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             break;
         }
         default:
-            error(_("invalid '%s' value"), "spa");
+            Rf_error(_("invalid '%s' value"), "spa");
             return R_NilValue;
         }
         set_R_Visible(FALSE);
-        UNPROTECT(nprotect);
+        Rf_unprotect(nprotect);
         return returnthis;
     }
 
 
     if (R_existsVarInFrame(frame, documentcontextSymbol))
-        error("%s cannot be called more than once within an environment", name);
+        Rf_error("%s cannot be called more than once within an environment", name);
 
 
     /* why would this be NA??? idk but might as well test for it anyway */
-    Rboolean missing_file = asFlag(eval(expr_missing_file, rho), "missing(file)");
+    Rboolean missing_file = asFlag(Rf_eval(expr_missing_file, rho), "missing(file)");
     if (missing_file) {
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        UNPROTECT(nprotect);
+        Rf_unprotect(nprotect);
         // return R_MissingArg;
         /* this is better because it preserves the original value */
-        SEXP value = findVarInFrame(rho, fileSymbol);
+        SEXP value = Rf_findVarInFrame(rho, fileSymbol);
         if (value == R_UnboundValue)
-            error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
+            Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
         if (value == R_MissingArg)
             return R_MissingArg;
         if (TYPEOF(value) != PROMSXP)
-            error("invalid '%s' value, expected R_MissingArg or a promise", CHAR(PRINTNAME(fileSymbol)));
+            Rf_error("invalid '%s' value, expected R_MissingArg or a promise", CHAR(PRINTNAME(fileSymbol)));
         if (TYPEOF(PREXPR(value)) != SYMSXP)
-            error("invalid '%s' value, expected a symbol", CHAR(PRINTNAME(fileSymbol)));
-        value = findVarInFrame(PRENV(value), PREXPR(value));
+            Rf_error("invalid '%s' value, expected a symbol", CHAR(PRINTNAME(fileSymbol)));
+        value = Rf_findVarInFrame(PRENV(value), PREXPR(value));
         if (value == R_UnboundValue)
-            error(_("object '%s' not found"), EncodeChar(PRINTNAME(PREXPR(value))));
+            Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(PREXPR(value))));
         return value;
     }
 
 
     ofile = getInFrame(fileSymbol, rho, FALSE);
-    PROTECT(ofile); nprotect++;
+    Rf_protect(ofile); nprotect++;
 
 
     flag_declarations;
@@ -753,21 +753,21 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
     SEXP source = NULL;
     switch (TYPEOF(Function)) {
     case NILSXP:
-        source = mkChar("call to function set.sys.path from package @R_PACKAGE_NAME@");
-        PROTECT(source); nprotect++;
+        source = Rf_mkChar("call to function set.sys.path from package @R_PACKAGE_NAME@");
+        Rf_protect(source); nprotect++;
         break;
     case SYMSXP:
     {
         Function = PRINTNAME(Function);
         if (Function == NA_STRING || Function == R_BlankString)
-            error(_("invalid '%s' argument"), "Function");
+            Rf_error(_("invalid '%s' argument"), "Function");
         const char *fmt = "call to function '%s'";
         const char *tmp = EncodeChar(Function);
         int pwidth = 1 + ((int) strlen(fmt)) + ((int) strlen(tmp)) - 2;
         char buf[pwidth];
         snprintf(buf, pwidth, fmt, tmp);
-        source = mkChar(buf);
-        PROTECT(source); nprotect++;
+        source = Rf_mkChar(buf);
+        Rf_protect(source); nprotect++;
     }
         break;
     case STRSXP:
@@ -778,15 +778,15 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             if (STRING_ELT(Function, 0) == NA_STRING ||
                 STRING_ELT(Function, 0) == R_BlankString)
             {
-                error(_("invalid '%s' argument"), "Function");
+                Rf_error(_("invalid '%s' argument"), "Function");
             }
             const char *fmt = "call to function '%s'";
             const char *tmp = EncodeChar(STRING_ELT(Function, 0));
             int pwidth = 1 + ((int) strlen(fmt)) + ((int) strlen(tmp)) - 2;
             char buf[pwidth];
             snprintf(buf, pwidth, fmt, tmp);
-            source = mkChar(buf);
-            PROTECT(source); nprotect++;
+            source = Rf_mkChar(buf);
+            Rf_protect(source); nprotect++;
         }
             break;
         case 2:
@@ -794,12 +794,12 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             if (STRING_ELT(Function, 0) == NA_STRING ||
                 STRING_ELT(Function, 0) == R_BlankString)
             {
-                error(_("invalid '%s' value"), "Function[1]");
+                Rf_error(_("invalid '%s' value"), "Function[1]");
             }
             if (STRING_ELT(Function, 1) == NA_STRING ||
                 STRING_ELT(Function, 1) == R_BlankString)
             {
-                error(_("invalid '%s' value"), "Function[2]");
+                Rf_error(_("invalid '%s' value"), "Function[2]");
             }
             const char *fmt = "call to function '%s' from package '%s'";
             const char *tmp0 = EncodeChar(STRING_ELT(Function, 0));
@@ -807,8 +807,8 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             int pwidth = 1 + ((int) strlen(fmt)) + ((int) strlen(tmp0)) - 2 + ((int) strlen(tmp1)) - 2;
             char buf[pwidth];
             snprintf(buf, pwidth, fmt, tmp0, tmp1);
-            source = mkChar(buf);
-            PROTECT(source); nprotect++;
+            source = Rf_mkChar(buf);
+            Rf_protect(source); nprotect++;
         }
             break;
         case 3:
@@ -816,17 +816,17 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             if (STRING_ELT(Function, 0) == NA_STRING ||
                 STRING_ELT(Function, 0) == R_BlankString)
             {
-                error(_("invalid '%s' value"), "Function[1]");
+                Rf_error(_("invalid '%s' value"), "Function[1]");
             }
             if (STRING_ELT(Function, 1) == NA_STRING ||
                 STRING_ELT(Function, 1) == R_BlankString)
             {
-                error(_("invalid '%s' value"), "Function[2]");
+                Rf_error(_("invalid '%s' value"), "Function[2]");
             }
             if (STRING_ELT(Function, 2) == NA_STRING ||
                 STRING_ELT(Function, 2) == R_BlankString)
             {
-                error(_("invalid '%s' value"), "Function[3]");
+                Rf_error(_("invalid '%s' value"), "Function[3]");
             }
             const char *fmt;
             const char *tmp1 = CHAR(STRING_ELT(Function, 1));
@@ -852,31 +852,31 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
                                                    ((int) strlen(tmp2)) - 2;
             char buf[pwidth];
             snprintf(buf, pwidth, fmt, tmp0, tmp1, tmp2);
-            source = mkChar(buf);
-            PROTECT(source); nprotect++;
+            source = Rf_mkChar(buf);
+            Rf_protect(source); nprotect++;
         }
             break;
         default:
-            error("invalid '%s'; must be of length 1, 2, or 3", "Function");
+            Rf_error("invalid '%s'; must be of length 1, 2, or 3", "Function");
             return R_NilValue;
         }
     }
         break;
     default:
-        error("invalid '%s' argument of type %s", "Function", type2char(TYPEOF(Function)));
+        Rf_error("invalid '%s' argument of type %s", "Function", Rf_type2char(TYPEOF(Function)));
         return R_NilValue;
     }
     if (source && TYPEOF(source) == CHARSXP);
-    else error("internal error; invalid '%s' value", "source");
+    else Rf_error("internal error; invalid '%s' value", "source");
 
 
     SEXP ofilearg;
-    Rboolean missing_ofile = asFlag(eval(expr_missing_ofile, rho), "missing(ofile)");
+    Rboolean missing_ofile = asFlag(Rf_eval(expr_missing_ofile, rho), "missing(ofile)");
     if (missing_ofile)
         ofilearg = NULL;
     else {
         ofilearg = getInFrame(ofileSymbol, rho, FALSE);
-        PROTECT(ofilearg); nprotect++;
+        Rf_protect(ofilearg); nprotect++;
     }
 
 
@@ -903,14 +903,14 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         /* source                 */ source,
         /* srcfile_original       */ NULL
     );
-    PROTECT(returnvalue); nprotect++;
+    Rf_protect(returnvalue); nprotect++;
 
 
     if (documentcontext != R_EmptyEnv) {
-        defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
+        Rf_defineVar(setsyspathwashereSymbol, R_NilValue, documentcontext);
         define_n(parent, documentcontext);
     }
-    UNPROTECT(nprotect);
+    Rf_unprotect(nprotect);
     return returnvalue;
 }
 

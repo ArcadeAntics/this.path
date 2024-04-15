@@ -2,18 +2,19 @@
 #define R_THISPATH_BACKPORTS_H
 
 
+#define R_NO_REMAP
 #include <Rinternals.h>       /* need definition of SEXP */
 #include "rversiondefines.h"  /* need definition of R_version_less_than */
 
 
-extern SEXP lazy_duplicate(SEXP s);
-extern SEXP shallow_duplicate(SEXP s);
+extern SEXP Rf_lazy_duplicate(SEXP s);
+extern SEXP Rf_shallow_duplicate(SEXP s);
 
 extern SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted);
-extern SEXP topenv(SEXP target, SEXP envir);
+extern SEXP Rf_topenv(SEXP target, SEXP envir);
 
 extern SEXP R_shallow_duplicate_attr(SEXP x);
-extern SEXP installTrChar(SEXP x);
+extern SEXP Rf_installTrChar(SEXP x);
 
 extern void R_removeVarFromFrame(SEXP name, SEXP env);
 
@@ -27,7 +28,7 @@ extern SEXP ddfind(int i, SEXP rho);
 
 #if R_version_less_than(3,0,0)
 #define XLENGTH LENGTH
-#define xlength length
+#define Rf_xlength Rf_length
 #define R_xlen_t R_len_t
 #define R_XLEN_T_MAX R_LEN_T_MAX
 #define asXLength asLength
@@ -57,12 +58,12 @@ extern SEXP ddfind(int i, SEXP rho);
 #define do_formals (SEXP args)
 #define _do_start(name, numParameters)                         \
     args = CDR(args);                                          \
-    if (length(args) < 3)                                      \
-        error(_("in .External(), 'call', 'op', and 'rho' must be provided"));\
+    if (Rf_length(args) < 3)                                   \
+        Rf_error(_("in .External(), 'call', 'op', and 'rho' must be provided"));\
     if ((numParameters) > -1) {                                \
-        int nargs = length(args) - 3;                          \
+        int nargs = Rf_length(args) - 3;                       \
         if ((numParameters) != nargs)                          \
-            errorcall(CAR(args),                               \
+            Rf_errorcall(CAR(args),                            \
                 _("Incorrect number of arguments (%d), expecting %d for '%s'"),\
                 nargs, (numParameters), (name));               \
     }
@@ -123,15 +124,15 @@ LibExtern SEXP R_TrueValue;
 LibExtern SEXP R_FalseValue;
 LibExtern SEXP R_LogicalNAValue;
 #else
-#define R_TrueValue ScalarLogical(TRUE)
-#define R_FalseValue ScalarLogical(FALSE)
-#define R_LogicalNAValue ScalarLogical(NA_LOGICAL)
+#define R_TrueValue Rf_ScalarLogical(TRUE)
+#define R_FalseValue Rf_ScalarLogical(FALSE)
+#define R_LogicalNAValue Rf_ScalarLogical(NA_LOGICAL)
 #endif
 
 
 #if R_version_less_than(3,1,0)
-extern SEXP lazy_duplicate(SEXP s);
-extern SEXP shallow_duplicate(SEXP s);
+extern SEXP Rf_lazy_duplicate(SEXP s);
+extern SEXP Rf_shallow_duplicate(SEXP s);
 extern int IS_SCALAR(SEXP x, int type);
 #endif
 
@@ -143,7 +144,7 @@ extern SEXP R_BlankScalarString;
 
 
 #if R_version_less_than(3,2,0)
-#define installChar(x) install(CHAR((x)))
+#define Rf_installChar(x) Rf_install(CHAR((x)))
 #endif
 
 
@@ -160,7 +161,7 @@ extern void (ENSURE_NAMEDMAX)(SEXP x);
 
 
 #if R_version_less_than(4,1,0)
-#define IS_UTF8(x) (getCharCE((x)) == CE_UTF8)
+#define IS_UTF8(x) (Rf_getCharCE((x)) == CE_UTF8)
 #else
 extern int IS_UTF8(SEXP x);
 #endif

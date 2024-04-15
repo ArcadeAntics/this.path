@@ -2,6 +2,7 @@
 #define R_THISPATH_NSHOOKS_H
 
 
+#define R_NO_REMAP
 #include <Rinternals.h>  /* need 'SEXP' */
 
 
