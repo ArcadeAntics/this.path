@@ -166,12 +166,10 @@ local({
 
     x <- this.path:::.readFiles(files)
     Encoding(x) <- "bytes"
-    x <- grep("local\\.path|Sys\\.path|Sys\\.dir", x, value = TRUE)
+    # x <- grep("^.{0,62}\\\\$|^.{63,65535} +\\\\$", x, perl = TRUE, value = TRUE)
+    x <- grep("expr_getOption_topLevelEnvironment", x, value = TRUE)
     x <- x |> names() |> print(quote = FALSE, width = 10)
     x |> file.edit()
-
-
-    ## ^.{0,62}\\$|^.{63,65535} +\\$
 
 
     x <- this.path:::.readFiles(Rfiles)

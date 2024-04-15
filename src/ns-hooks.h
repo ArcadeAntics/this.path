@@ -35,7 +35,6 @@ extern SEXP expr_commandArgs                              ,
             expr_info_dollar_source_path                  ,
             expr_knitr_output_dir                         ,
             expr_testthat_source_file_uses_brio_read_lines,
-            expr_getOption_topLevelEnvironment            ,
             expr__toplevel_nframe                         ,
             expr__isMethodsDispatchOn                     ,
             expr_UseMethod_lengths                        ;

@@ -210,6 +210,8 @@ extern0 SEXP0
     fixedNewlinesSymbol                    INI_as(Rf_install("fixedNewlines")),
     _fixNewlinesSymbol                     INI_as(Rf_install(".fixNewlines")),
 
+    topLevelEnvironmentSymbol              INI_as(Rf_install("topLevelEnvironment")),
+
     else_Symbol                            INI_as(Rf_install("else.")),
     finallySymbol                          INI_as(Rf_install("finally")),
     funSymbol                              INI_as(Rf_install("fun")),

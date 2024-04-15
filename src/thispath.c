@@ -2404,25 +2404,9 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
     SEXP env;
-    if (target == NULL) {
-        target = Rf_protect(Rf_eval(expr_getOption_topLevelEnvironment, rho));
-
-
-#define getenv                                                 \
-        if (target != R_NilValue && TYPEOF(target) != ENVSXP) target = R_NilValue;\
-        env = Rf_topenv(target, envir)
-
-
-        getenv;
-
-
-        Rf_unprotect(1);
-    } else {
-        getenv;
-
-
-#undef getenv
-    }
+    if (target == NULL) target = Rf_GetOption1(topLevelEnvironmentSymbol);
+    if (target != R_NilValue && TYPEOF(target) != ENVSXP) target = R_NilValue;
+    env = Rf_topenv(target, envir);
 
 
     SEXP returnvalue;

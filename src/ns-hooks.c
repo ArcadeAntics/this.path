@@ -39,7 +39,6 @@ SEXP expr_commandArgs                               = NULL,
      expr_info_dollar_source_path                   = NULL,
      expr_knitr_output_dir                          = NULL,
      expr_testthat_source_file_uses_brio_read_lines = NULL,
-     expr_getOption_topLevelEnvironment             = NULL,
      expr__toplevel_nframe                          = NULL,
      expr__isMethodsDispatchOn                      = NULL,
      expr_UseMethod_lengths                         = NULL;
@@ -756,17 +755,6 @@ SEXP do_onLoad do_formals
     }
 
 
-    {
-        SEXP tmp;
-        Rf_protect(tmp = getFromBase(Rf_install("getOption")));
-        expr_getOption_topLevelEnvironment = Rf_lcons(tmp, Rf_cons(Rf_mkString("topLevelEnvironment"), R_NilValue));
-        R_PreserveObject(expr_getOption_topLevelEnvironment);
-        Rf_unprotect(1);
-        if (!Rf_isFunction(CAR(expr_getOption_topLevelEnvironment)))
-            Rf_error(_("object '%s' of mode '%s' was not found"), "getOption", "function");
-    }
-
-
     expr__toplevel_nframe = Rf_lcons(getFromMyNS(Rf_install(".toplevel.nframe")), R_NilValue);
     R_PreserveObject(expr__toplevel_nframe);
     if (!Rf_isFunction(CAR(expr__toplevel_nframe)))
@@ -901,7 +889,6 @@ SEXP do_onUnload do_formals
     maybe_release(expr_info_dollar_source_path);
     maybe_release(expr_knitr_output_dir);
     maybe_release(expr_testthat_source_file_uses_brio_read_lines);
-    maybe_release(expr_getOption_topLevelEnvironment);
     maybe_release(expr__toplevel_nframe);
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
