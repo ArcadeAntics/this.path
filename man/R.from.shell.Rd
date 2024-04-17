@@ -94,13 +94,9 @@
   To add a new path to your \env{Path} environment variable:
 
   \enumerate{
-    \item{Open the \strong{Control Panel}}
+    \item{Open the Windows search bar (press \strong{Windows} key)}
 
-    \item{Open category \strong{User Accounts}}
-
-    \item{Open category \strong{User Accounts} (again)}
-
-    \item{Open \strong{Change my environment variables}}
+    \item{Type \strong{Edit environment variables for your account}}
 
     \item{Click the variable \env{Path}}
 
@@ -109,7 +105,7 @@
     \item{Click the button \strong{New}}
 
     \item{Type (or paste) the full path of the directory where your \R
-      executables are located, and press \strong{OK}}
+      executables are located and click the \strong{OK} button}
   }
 
   This will modify your environment variable \env{Path}, not the systems. If
@@ -120,18 +116,20 @@
   need admin permissions):
 
   \enumerate{
-    \item{Open the \strong{Control Panel}}
+    \item{Open the Windows search bar (press \strong{Windows} key)}
 
-    \item{Open category \strong{System and Security}}
-
-    \item{Open category \strong{System}}
-
-    \item{Open \strong{Advanced system settings}}
+    \item{Type \strong{Edit the system environment variables}}
 
     \item{Click the button \strong{Environment Variables...}}
 
-    \item{Modify \env{Path} same as before, just select \env{Path} in
-      \strong{System variables} instead of \strong{User variables}}
+    \item{Click the variable \env{Path} in section \strong{System variables}}
+
+    \item{Click the button \strong{Edit...}}
+
+    \item{Click the button \strong{New}}
+
+    \item{Type (or paste) the full path of the directory where your \R
+      executables are located and click the \strong{OK} button}
   }
 
   To check that this worked correctly, open a shell and execute the following
@@ -153,12 +151,7 @@
   In an \R session, you can find the location of your \R executable files with
   the following command:
 
-#ifdef unix
-  \verb{cat(sQuote(R.home("bin")), "\\n")}
-#endif
-#ifdef windows
-  \verb{cat(sQuote(normalizePath(R.home("bin"))), "\\n")}
-#endif
+  \code{R.home("bin")}
 
   For me, this is:
 
@@ -166,7 +159,7 @@
   \file{\verb{/usr/lib/R/bin}}
 #endif
 #ifdef windows
-  \file{\verb{C:\\Program Files\\R\\R-}\Sexpr[stage=render]{getRversion()}\verb{\\bin\\x64}}
+  \file{\verb{C:/PROGRA~1/R/R-}\Sexpr[stage=render]{getRversion()}\verb{/bin/x64}}
 #endif
 }
 \keyword{internal}

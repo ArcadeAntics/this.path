@@ -23,24 +23,41 @@ SEXP mynamespace = NULL,
 SEXP R_BlankScalarString = NULL;
 #endif
 
-
+     /* commandArgs() */
 SEXP expr_commandArgs                               = NULL,
+     /* invisible() */
      expr_invisible                                 = NULL,
+     /* parent.frame() */
      expr_parent_frame                              = NULL,
+     /* sys.call() */
      expr_sys_call                                  = NULL,
+     /* sys.call(which) */
      expr_sys_call_which                            = NULL,
+     /* sys.function(which) */
      expr_sys_function_which                        = NULL,
+     /* evalq(sys.function()) */
      eval_op                                        = NULL,
+     /* sys.nframe() */
      expr_sys_nframe                                = NULL,
+     /* sys.parents() */
      expr_sys_parents                               = NULL,
+     /* missing(file) */
      expr_missing_file                              = NULL,
+     /* missing(input) */
      expr_missing_input                             = NULL,
+     /* missing(ofile) */
      expr_missing_ofile                             = NULL,
+     /* info$source_path */
      expr_info_dollar_source_path                   = NULL,
+     /* knitr::opts_knit[["get"]]("output.dir") */
      expr_knitr_output_dir                          = NULL,
+     /* as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2" */
      expr_testthat_source_file_uses_brio_read_lines = NULL,
+     /* .toplevel.nframe() */
      expr__toplevel_nframe                          = NULL,
+     /* .isMethodsDispatchOn() */
      expr__isMethodsDispatchOn                      = NULL,
+     /* UseMethod("lengths") */
      expr_UseMethod_lengths                         = NULL;
 
 
