@@ -523,7 +523,7 @@ SEXP do_strrep do_formals
         } else {
             if (times0 < 0)
                 Rf_error(_("invalid '%s' value"), "times");
-            const char *str = CHAR(x0);
+            const char *str = R_CHAR(x0);
             int nchar = (int) strlen(str);
 
 
@@ -831,7 +831,7 @@ SEXP R_NewEnv(SEXP enclos, int hash, int size)
 
 int IS_ASCII(SEXP x)
 {
-    for (const char *s = CHAR(x); *s; s++) {
+    for (const char *s = R_CHAR(x); *s; s++) {
         if (*s > 0x7f) {
             return FALSE;
         }

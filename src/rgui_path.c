@@ -149,7 +149,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
     for (int i = 0; i < EnumNUntitled; i++) {
         SEXP untitled0 = STRING_ELT(EnumUntitled, i);
         if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
-        if (!strcmp(title, CHAR(untitled0))) {
+        if (!strcmp(title, R_CHAR(untitled0))) {
 #define RprintRguiMessage                                      \
             if (EnumVerbose)                                   \
                 Rprintf(EnumActive ? "Source: active document in Rgui\n" :\
@@ -182,7 +182,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
     for (int i = 0; i < EnumNREditor; i++) {
         SEXP r_editor0 = STRING_ELT(EnumREditor, i);
         if (r_editor0 == NA_STRING || r_editor0 == R_BlankString) continue;
-        const char *suffix = CHAR(r_editor0);
+        const char *suffix = R_CHAR(r_editor0);
         int nchar_suffix = (int) strlen(suffix);
         int off = nchar_title - nchar_suffix;
         if (off > 0) {

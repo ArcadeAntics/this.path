@@ -155,7 +155,7 @@ extern SEXP get_debugSource(void);
             summary = summary_connection(ofile);               \
             Rf_protect(summary); nprotect++;                   \
             description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
-            klass = CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
+            klass = R_CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
             if (streql(klass, "gzcon")) {                      \
                 const char *msg = "'this.path' cannot be used within a 'gzcon()'";\
                 SEXP call = getCurrentCall(rho);               \
@@ -234,14 +234,14 @@ do {                                                           \
         if (conv2utf8) {                                       \
             /* https://github.com/wch/r-source/blob/trunk/src/main/util.c#L2257 */\
             if (IS_UTF8(file) || IS_ASCII(file) || IS_BYTES(file))\
-                url = CHAR(file);                              \
+                url = R_CHAR(file);                            \
             else {                                             \
                 url = Rf_translateCharUTF8(file);              \
                 file = Rf_mkCharCE(url, CE_UTF8);              \
                 Rf_protect(file); nprotect++;                  \
             }                                                  \
         }                                                      \
-        else url = CHAR(file);                                 \
+        else url = R_CHAR(file);                               \
         if (!ignore_blank_string && !(LENGTH(file) > 0)) {     \
             if (allow_blank_string) {                          \
                 documentcontext = R_EmptyEnv;                  \

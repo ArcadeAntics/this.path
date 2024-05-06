@@ -82,5 +82,5 @@ SEXP do_scalar_streql do_formals
         return R_TrueValue;
     if (e1 == NA_STRING || e2 == NA_STRING)
         return R_FalseValue;
-    return t_or_f(streql(CHAR(e1), CHAR(e2)));
+    return t_or_f(streql(R_CHAR(e1), R_CHAR(e2)));
 }

@@ -76,12 +76,12 @@ SEXP do_wrap_source do_formals
 
     SEXP promise = Rf_findVarInFrame(rho, exprSymbol);
     if (promise == R_UnboundValue)
-        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));
     if (promise == R_MissingArg)
-        Rf_error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(promise) != PROMSXP)
         Rf_error("invalid '%s', must be a promise; should never happen, please report!",
-              CHAR(PRINTNAME(exprSymbol)));
+              R_CHAR(PRINTNAME(exprSymbol)));
 
 
     /* determine context number for .getframenumber() */
@@ -187,7 +187,7 @@ SEXP do_wrap_source do_formals
 #define check_validity                                         \
     do {                                                       \
         if (PRVALUE(promise) != R_UnboundValue)                \
-            Rf_error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));\
+            Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));\
         R_SetExternalPtrProtected(ptr, promises = Rf_cons(promise, promises));\
         if (PRSEEN(promise)) {                                 \
             if (PRSEEN(promise) == 1)                          \
@@ -216,9 +216,9 @@ SEXP do_wrap_source do_formals
 
 
     if (expr == R_MissingArg)
-        Rf_error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(expr) != LANGSXP)
-        Rf_error("invalid '%s', must be a call", CHAR(PRINTNAME(exprSymbol)));
+        Rf_error("invalid '%s', must be a call", R_CHAR(PRINTNAME(exprSymbol)));
 
 
 #if R_version_at_least(3,0,0)
@@ -554,13 +554,13 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         Rf_protect(function);
         if (function == eval_op)
             Rf_error("%s cannot be used within '%s'",
-                name, CHAR(PRINTNAME(R_EvalSymbol)));
+                name, R_CHAR(PRINTNAME(R_EvalSymbol)));
         else if (TYPEOF(function) != CLOSXP)
             Rf_error("%s cannot be used within a '%s', possible errors with eval?",
                 name, Rf_type2char(TYPEOF(function)));
         else if (identical(function, getFromMyNS(wrap_sourceSymbol)))
             Rf_error("%s cannot be called within %s() from package %s",
-                name, CHAR(PRINTNAME(wrap_sourceSymbol)), "@R_PACKAGE_NAME@");
+                name, R_CHAR(PRINTNAME(wrap_sourceSymbol)), "@R_PACKAGE_NAME@");
         Rf_unprotect(1);
     }
 
@@ -617,10 +617,10 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         R_LockBinding(documentcontextSymbol, frame);
         SEXP osource = Rf_findVarInFrame(documentcontext, sourceSymbol);
         if (osource == R_UnboundValue)
-            Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(sourceSymbol)));
+            Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(sourceSymbol)));
         if (TYPEOF(osource) != CHARSXP)
-            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(sourceSymbol)));
-        const char *ostr = CHAR(osource);
+            Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(sourceSymbol)));
+        const char *ostr = R_CHAR(osource);
         const char *str = "call to function 'set.sys.path.function'";
         SEXP source;
         if (!LENGTH(osource))
@@ -644,7 +644,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         if (documentcontext == R_UnboundValue)
             Rf_error("%s cannot be called before set.sys.path()", name);
         if (TYPEOF(documentcontext) != ENVSXP)
-            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(documentcontextSymbol)));
+            Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(documentcontextSymbol)));
         if (documentcontext != R_EmptyEnv &&
             !R_existsVarInFrame(documentcontext, setsyspathwashereSymbol))
         {
@@ -670,7 +670,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
                 R_IsPackageEnv(env) || R_IsNamespaceEnv(env));
             else if (Rf_inherits(env, "box$ns"));
             else if (!ISNULL(Rf_getAttrib(env, documentcontextSymbol)))
-                Rf_error("cannot overwrite existing '%s' attribute", CHAR(PRINTNAME(documentcontextSymbol)));
+                Rf_error("cannot overwrite existing '%s' attribute", R_CHAR(PRINTNAME(documentcontextSymbol)));
             else Rf_setAttrib(env, documentcontextSymbol, documentcontext);
             break;
         }
@@ -690,7 +690,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             }
             if (srcfile) {
                 if (R_existsVarInFrame(srcfile, documentcontextSymbol))
-                    Rf_error("cannot overwrite existing binding '%s'", CHAR(PRINTNAME(documentcontextSymbol)));
+                    Rf_error("cannot overwrite existing binding '%s'", R_CHAR(PRINTNAME(documentcontextSymbol)));
 
 
                 extern void document_context_assign_lines(SEXP documentcontext, SEXP srcfile);
@@ -727,13 +727,13 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         /* this is better because it preserves the original value */
         SEXP value = Rf_findVarInFrame(rho, fileSymbol);
         if (value == R_UnboundValue)
-            Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(fileSymbol)));
+            Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(fileSymbol)));
         if (value == R_MissingArg)
             return R_MissingArg;
         if (TYPEOF(value) != PROMSXP)
-            Rf_error("invalid '%s' value, expected R_MissingArg or a promise", CHAR(PRINTNAME(fileSymbol)));
+            Rf_error("invalid '%s' value, expected R_MissingArg or a promise", R_CHAR(PRINTNAME(fileSymbol)));
         if (TYPEOF(ptr_R_PromiseExpr(value)) != SYMSXP)
-            Rf_error("invalid '%s' value, expected a symbol", CHAR(PRINTNAME(fileSymbol)));
+            Rf_error("invalid '%s' value, expected a symbol", R_CHAR(PRINTNAME(fileSymbol)));
         value = Rf_findVarInFrame(PRENV(value), ptr_R_PromiseExpr(value));
         if (value == R_UnboundValue)
             Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(ptr_R_PromiseExpr(value))));
@@ -829,7 +829,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
                 Rf_error(_("invalid '%s' value"), "Function[3]");
             }
             const char *fmt;
-            const char *tmp1 = CHAR(STRING_ELT(Function, 1));
+            const char *tmp1 = R_CHAR(STRING_ELT(Function, 1));
             if (streql(tmp1, "package"    ) ||
                 streql(tmp1, "module"     ) ||
                 streql(tmp1, "namespace"  ) ||

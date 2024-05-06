@@ -54,7 +54,7 @@ int ddVal(SEXP symbol)
     char *endp;
     int rval;
 
-    buf = CHAR(PRINTNAME(symbol));
+    buf = R_CHAR(PRINTNAME(symbol));
     if (!strncmp(buf, "..", 2) && strlen(buf) > 2) {
         buf += 2;
         rval = (int) strtol(buf, &endp, 10);
@@ -107,7 +107,7 @@ const char *EncodeChar(SEXP x)
     R_Reprotect(expr = Rf_lcons(encodeStringSymbol, Rf_cons(Rf_ScalarString(x), expr)), indx);
     SEXP value = Rf_eval(expr, R_BaseEnv);
     Rf_unprotect(1);
-    return CHAR(STRING_ELT(value, 0));
+    return R_CHAR(STRING_ELT(value, 0));
 }
 
 
@@ -316,7 +316,7 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
         url = Rf_translateCharUTF8(file);
     } else {
         ienc = Rf_getCharCE(file);
-        url = CHAR(file);
+        url = R_CHAR(file);
     }
 #else
     url = Rf_translateChar(file);
@@ -344,7 +344,7 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
         url = Rf_translateCharUTF8(file);
     } else {
         ienc = Rf_getCharCE(file);
-        url = CHAR(file);
+        url = R_CHAR(file);
     }
 #else
     url = Rf_translateChar(file);
@@ -365,7 +365,7 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 
 void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP documentcontext, NORMALIZE_ACTION na)
 {
-    const char *url = CHAR(description);
+    const char *url = R_CHAR(description);
     char _buf[8 + strlen(url) + 1];
     char *buf = _buf;
 #if defined(_WIN32)
@@ -404,7 +404,7 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
         url = Rf_translateCharUTF8(file);
     } else {
         ienc = Rf_getCharCE(file);
-        url = CHAR(file);
+        url = R_CHAR(file);
     }
 #else
     url = Rf_translateChar(file);

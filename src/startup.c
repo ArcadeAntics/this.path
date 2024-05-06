@@ -9,18 +9,18 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
 {
     SEXP promise = Rf_findVarInFrame(rho, exprSymbol);
     if (promise == R_UnboundValue)
-        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));
     if (promise == R_MissingArg)
-        Rf_error(_("argument \"%s\" is missing, with no default"), CHAR(PRINTNAME(exprSymbol)));
+        Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
     if (TYPEOF(promise) != PROMSXP)
-        Rf_error("invalid '%s', is not a promise", CHAR(PRINTNAME(exprSymbol)));
+        Rf_error("invalid '%s', is not a promise", R_CHAR(PRINTNAME(exprSymbol)));
 
 
     SEXP code = PRCODE(promise);
     if (TYPEOF(code) != LANGSXP || CAR(code) != R_BraceSymbol)
-        Rf_error("invalid '%s', expected a braced expression", CHAR(PRINTNAME(exprSymbol)));
+        Rf_error("invalid '%s', expected a braced expression", R_CHAR(PRINTNAME(exprSymbol)));
     if (PRVALUE(promise) != R_UnboundValue)
-        Rf_error("invalid '%s', must be an unevaluated call", CHAR(PRINTNAME(exprSymbol)));
+        Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));
 
 
     if (check_is_valid_init_file_expr) {

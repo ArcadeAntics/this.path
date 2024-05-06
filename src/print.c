@@ -182,8 +182,8 @@ SEXP do_print_ThisPathDocumentContext do_formals
         Rf_protect(tmp);
         Rprintf("<object of class ");
         for (int i = 0; i < nklass; i++)
-            if (i) Rprintf(", %s", CHAR(STRING_ELT(tmp, i)));
-            else   Rprintf("%s"  , CHAR(STRING_ELT(tmp, i)));
+            if (i) Rprintf(", %s", R_CHAR(STRING_ELT(tmp, i)));
+            else   Rprintf("%s"  , R_CHAR(STRING_ELT(tmp, i)));
         Rprintf(" at %p>\n", (void *) x);
         Rf_unprotect(1);
     }
@@ -197,17 +197,17 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
     SEXP sym;
-#define print_invalid_unbound   Rprintf("%s: <invalid, R_UnboundValue>\n", CHAR(PRINTNAME(sym)))
-#define print_null              Rprintf("%s: NULL\n", CHAR(PRINTNAME(sym)))
-#define print_invalid_null      Rprintf("%s: <invalid, NULL>\n", CHAR(PRINTNAME(sym)))
-#define print_type(var)         Rprintf("%s: <type = \"%s\", length = %d>\n"         , CHAR(PRINTNAME(sym)), Rf_type2char(TYPEOF((var))), Rf_length((var)))
-#define print_invalid_type(var) Rprintf("%s: <invalid, type = \"%s\", length = %d>\n", CHAR(PRINTNAME(sym)), Rf_type2char(TYPEOF((var))), Rf_length((var)))
+#define print_invalid_unbound   Rprintf("%s: <invalid, R_UnboundValue>\n", R_CHAR(PRINTNAME(sym)))
+#define print_null              Rprintf("%s: NULL\n", R_CHAR(PRINTNAME(sym)))
+#define print_invalid_null      Rprintf("%s: <invalid, NULL>\n", R_CHAR(PRINTNAME(sym)))
+#define print_type(var)         Rprintf("%s: <type = \"%s\", length = %d>\n"         , R_CHAR(PRINTNAME(sym)), Rf_type2char(TYPEOF((var))), Rf_length((var)))
+#define print_invalid_type(var) Rprintf("%s: <invalid, type = \"%s\", length = %d>\n", R_CHAR(PRINTNAME(sym)), Rf_type2char(TYPEOF((var))), Rf_length((var)))
 #define _print_encoded_str(fmt, str)                           \
     do {                                                       \
         SETCADR(expr, (str));                                  \
         SEXP tmp = Rf_eval(expr, R_BaseEnv);                   \
         Rf_protect(tmp);                                       \
-        Rprintf((fmt), CHAR(PRINTNAME(sym)), CHAR(STRING_ELT(tmp, 0)));\
+        Rprintf((fmt), R_CHAR(PRINTNAME(sym)), R_CHAR(STRING_ELT(tmp, 0)));\
         Rf_unprotect(1);                                       \
     } while (0)
 #define print_encoded_str(str) _print_encoded_str("%s: %s\n", (str))
@@ -222,7 +222,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
                  LENGTH(errcnd) >= 2 &&
                  Rf_inherits(errcnd, "condition"))
         {
-            Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+            Rprintf("%s: ", R_CHAR(PRINTNAME(sym)));
             my_PrintValueEnv(errcnd, rho);
         }
         else print_invalid_type(errcnd);
@@ -248,7 +248,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_null;
         else if (ptr_IS_SCALAR(associated_with_file, LGLSXP)) {
             Rboolean tmp = LOGICAL(associated_with_file)[0];
-            Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)),
+            Rprintf("%s: %s\n", R_CHAR(PRINTNAME(sym)),
                 (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
         }
         else print_invalid_type(associated_with_file);
@@ -289,7 +289,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else if (TYPEOF(file) == PROMSXP) {
             SEXP val = PRVALUE(file);
             if (val == R_UnboundValue) {
-                Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+                Rprintf("%s: ", R_CHAR(PRINTNAME(sym)));
                 my_PrintValueEnv(R_PromiseExpr(file), rho);
             }
             else if (val == R_NilValue) {
@@ -312,7 +312,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else if (TYPEOF(lines) == PROMSXP) {
             SEXP val = PRVALUE(lines);
             if (val == R_UnboundValue) {
-                Rprintf("%s: ", CHAR(PRINTNAME(sym)));
+                Rprintf("%s: ", R_CHAR(PRINTNAME(sym)));
                 my_PrintValueEnv(R_PromiseExpr(lines), rho);
             }
             else if (val == R_NilValue) {
@@ -350,7 +350,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_null;
         else if (ptr_IS_SCALAR(setsyspathwashere, LGLSXP)) {
             Rboolean tmp = LOGICAL(setsyspathwashere)[0];
-            Rprintf("%s: %s\n", CHAR(PRINTNAME(sym)),
+            Rprintf("%s: %s\n", R_CHAR(PRINTNAME(sym)),
                 (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
         }
         else print_invalid_type(setsyspathwashere);
@@ -366,7 +366,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     else if (n == R_NilValue)
         print_invalid_null;
     else if (ptr_IS_SCALAR(n, INTSXP))
-        Rprintf("%s: %d\n", CHAR(PRINTNAME(sym)), INTEGER(n)[0]);
+        Rprintf("%s: %d\n", R_CHAR(PRINTNAME(sym)), INTEGER(n)[0]);
     else print_invalid_type(n);
 
 

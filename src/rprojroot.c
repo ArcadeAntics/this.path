@@ -10,7 +10,7 @@ SEXP do_reset_proj do_formals
     Rf_protect(_proj);
     if (TYPEOF(_proj) != CLOSXP)
         Rf_error(_("object '%s' of mode '%s' was not found"),
-            CHAR(PRINTNAME(_projSymbol)), "function");
+            R_CHAR(PRINTNAME(_projSymbol)), "function");
     SEXP value = Rf_allocVector(STRSXP, 0);
     Rf_protect(value);
     INCREMENT_NAMED_defineVar(xSymbol, value, CLOENV(_proj));

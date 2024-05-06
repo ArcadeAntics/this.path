@@ -29,7 +29,7 @@ SEXP path_split(int windows, int length1, SEXP args)
             SET_VECTOR_ELT(value, i, Rf_allocVector(STRSXP, 0));
             continue;
         }
-        const char *str = CHAR(path0);
+        const char *str = R_CHAR(path0);
         int nchar_scheme = is_url(str);
         if (nchar_scheme) {
             str = Rf_translateCharUTF8(path0);
@@ -372,7 +372,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
         unsigned int pwidth = 0;
         SEXP x00 = STRING_ELT(x0, 0);
-        const char *str = CHAR(x00);
+        const char *str = R_CHAR(x00);
         Rboolean translate2utf8 = is_url(str);
         cetype_t enc = (translate2utf8 ? CE_UTF8 : CE_NATIVE);
 

@@ -376,7 +376,7 @@ SEXP do_shINFO do_formals
     /* copy the arguments from the STRSXP to a *char[] */
     const char *argv[ac];
     for (int i = 0; i < ac; i++)
-        argv[i] = CHAR(STRING_ELT(ARGV, i));
+        argv[i] = R_CHAR(STRING_ELT(ARGV, i));
     Rf_unprotect(1);  /* ARGV */
     const char **av = argv;
 

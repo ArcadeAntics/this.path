@@ -144,7 +144,7 @@ extern SEXP R_BlankScalarString;
 
 
 #if R_version_less_than(3,2,0)
-#define Rf_installChar(x) Rf_install(CHAR((x)))
+#define Rf_installChar(x) Rf_install(R_CHAR((x)))
 #endif
 
 

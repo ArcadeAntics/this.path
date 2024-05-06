@@ -703,28 +703,28 @@ SEXP do_onLoad do_formals
     R_PreserveObject(expr_commandArgs);
     if (!Rf_isFunction(CAR(expr_commandArgs)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(commandArgsSymbol)), "function");
+              R_CHAR(PRINTNAME(commandArgsSymbol)), "function");
 
 
     expr_invisible = Rf_lcons(getFromBase(invisibleSymbol), R_NilValue);
     R_PreserveObject(expr_invisible);
     if (!Rf_isFunction(CAR(expr_invisible)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(invisibleSymbol)), "function");
+              R_CHAR(PRINTNAME(invisibleSymbol)), "function");
 
 
     expr_parent_frame = Rf_lcons(getFromBase(parent_frameSymbol), R_NilValue);
     R_PreserveObject(expr_parent_frame);
     if (!Rf_isFunction(CAR(expr_parent_frame)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(parent_frameSymbol)), "function");
+              R_CHAR(PRINTNAME(parent_frameSymbol)), "function");
 
 
     expr_sys_call = Rf_lcons(getFromBase(sys_callSymbol), R_NilValue);
     R_PreserveObject(expr_sys_call);
     if (!Rf_isFunction(CAR(expr_sys_call)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(sys_callSymbol)), "function");
+              R_CHAR(PRINTNAME(sys_callSymbol)), "function");
 
 
     expr_sys_call_which = Rf_lcons(CAR(expr_sys_call), Rf_cons(Rf_ScalarInteger(0), R_NilValue));
@@ -740,21 +740,21 @@ SEXP do_onLoad do_formals
     eval_op = INTERNAL(R_EvalSymbol);
     if (TYPEOF(eval_op) != BUILTINSXP)
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(R_EvalSymbol)), "builtin");
+              R_CHAR(PRINTNAME(R_EvalSymbol)), "builtin");
 
 
     expr_sys_nframe = Rf_lcons(getFromBase(sys_nframeSymbol), R_NilValue);
     R_PreserveObject(expr_sys_nframe);
     if (!Rf_isFunction(CAR(expr_sys_nframe)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(sys_nframeSymbol)), "function");
+              R_CHAR(PRINTNAME(sys_nframeSymbol)), "function");
 
 
     expr_sys_parents = Rf_lcons(getFromBase(sys_parentsSymbol), R_NilValue);
     R_PreserveObject(expr_sys_parents);
     if (!Rf_isFunction(CAR(expr_sys_parents)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-              CHAR(PRINTNAME(sys_parentsSymbol)), "function");
+              R_CHAR(PRINTNAME(sys_parentsSymbol)), "function");
 
 
     {
@@ -765,7 +765,7 @@ SEXP do_onLoad do_formals
         Rf_unprotect(1);
         if (!Rf_isFunction(CAR(expr_missing_file)))
             Rf_error(_("object '%s' of mode '%s' was not found"),
-                  CHAR(PRINTNAME(missingSymbol)), "function");
+                  R_CHAR(PRINTNAME(missingSymbol)), "function");
     }
 
 
@@ -777,7 +777,7 @@ SEXP do_onLoad do_formals
         Rf_unprotect(1);
         if (!Rf_isFunction(CAR(expr_missing_input)))
             Rf_error(_("object '%s' of mode '%s' was not found"),
-                  CHAR(PRINTNAME(missingSymbol)), "function");
+                  R_CHAR(PRINTNAME(missingSymbol)), "function");
     }
 
 
@@ -789,7 +789,7 @@ SEXP do_onLoad do_formals
         Rf_unprotect(1);
         if (!Rf_isFunction(CAR(expr_missing_ofile)))
             Rf_error(_("object '%s' of mode '%s' was not found"),
-                  CHAR(PRINTNAME(missingSymbol)), "function");
+                  R_CHAR(PRINTNAME(missingSymbol)), "function");
     }
 
 
@@ -807,7 +807,7 @@ SEXP do_onLoad do_formals
         Rf_unprotect(1);
         if (!Rf_isFunction(CAR(expr_info_dollar_source_path)))
             Rf_error(_("object '%s' of mode '%s' was not found"),
-                  CHAR(PRINTNAME(R_DollarSymbol)), "function");
+                  R_CHAR(PRINTNAME(R_DollarSymbol)), "function");
     }
 
 
@@ -862,7 +862,7 @@ SEXP do_onLoad do_formals
     R_PreserveObject(expr__isMethodsDispatchOn);
     if (!Rf_isFunction(CAR(expr__isMethodsDispatchOn)))
         Rf_error(_("object '%s' of mode '%s' was not found"),
-            CHAR(PRINTNAME(_isMethodsDispatchOnSymbol)), "function");
+            R_CHAR(PRINTNAME(_isMethodsDispatchOnSymbol)), "function");
 
 
 #if R_version_less_than(3,2,0)

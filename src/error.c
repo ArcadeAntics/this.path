@@ -278,7 +278,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
 
     SEXP finally = Rf_findVarInFrame(rho, finallySymbol);
     if (finally == R_UnboundValue)
-        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(finallySymbol)));
+        Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(finallySymbol)));
     if (finally != R_MissingArg) {
         SEXP on_exit = Rf_lcons(on_exitSymbol, Rf_cons(finallySymbol, R_NilValue));
         Rf_protect(on_exit);
@@ -290,14 +290,14 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
     SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
     Rf_protect(dots); nprotect++;
     if (dots == R_UnboundValue)
-        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(R_DotsSymbol)));
+        Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(R_DotsSymbol)));
     int dots_length = (TYPEOF(dots) == DOTSXP ? Rf_length(dots) : 0);
 
 
     SEXP else_ = Rf_findVarInFrame(rho, else_Symbol);
     Rf_protect(else_); nprotect++;
     if (else_ == R_UnboundValue)
-        Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(else_Symbol)));
+        Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(else_Symbol)));
     if (else_ != R_MissingArg && dots_length <= 0)
         Rf_error("'tryCatch' with 'else.' but no condition handlers makes no sense");
 
@@ -465,9 +465,9 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         Rf_protect(value); nprotect++;
         SEXP do_else = Rf_findVarInFrame(rho, do_elseSymbol);
         if (do_else == R_UnboundValue)
-            Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(do_elseSymbol)));
+            Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(do_elseSymbol)));
         if (!ptr_IS_SCALAR(do_else, LGLSXP))
-            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
+            Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:
 #if R_version_at_least(3,0,0)
@@ -483,7 +483,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         case FALSE:
             break;
         default:
-            Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
+            Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(do_elseSymbol)));
         }
 #if R_version_less_than(3,0,0)
         set_this_path_value(VECTOR_ELT(value, 0));

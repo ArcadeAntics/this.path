@@ -384,7 +384,7 @@ SEXP do_is_clipboard do_formals
     Rf_protect(value);
     int *ivalue = INTEGER(value);
     for (int i = 0; i < n; i++)
-        ivalue[i] = is_clipboard(CHAR(STRING_ELT(file, i)));
+        ivalue[i] = is_clipboard(R_CHAR(STRING_ELT(file, i)));
     Rf_unprotect(1);
     return value;
 }
@@ -405,11 +405,11 @@ SEXP isabspath(int windows, SEXP args)
     int *lvalue = LOGICAL(value);
     if (windows) {
         for (int i = 0; i < n; i++) {
-            lvalue[i] = is_abs_path_windows(CHAR(STRING_ELT(path, i)));
+            lvalue[i] = is_abs_path_windows(R_CHAR(STRING_ELT(path, i)));
         }
     } else {
         for (int i = 0; i < n; i++) {
-            lvalue[i] = is_abs_path_unix(CHAR(STRING_ELT(path, i)));
+            lvalue[i] = is_abs_path_unix(R_CHAR(STRING_ELT(path, i)));
         }
     }
     Rf_unprotect(1);
