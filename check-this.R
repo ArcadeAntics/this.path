@@ -5,11 +5,22 @@ local({
     essentials:::.check_this(  ## this.path
         # special = TRUE,
 
-        # INSTALL = FALSE, # html = TRUE, latex = TRUE,
-        # with.keep.source = TRUE,
+        build_opts = list(
+            user = "iris"
+        ),
 
-        check = FALSE, no.stop.on.test.error = TRUE,
-        as.cran = TRUE, `_R_CHECK_CRAN_INCOMING_` = TRUE,
+        # INSTALL = FALSE,
+        INSTALL_opts = list(
+            # html = TRUE, latex = TRUE,
+            # with_keep.source = TRUE
+        ),
+
+        check = FALSE,
+        check_opts = list(
+            no_stop_on_test_error = TRUE,
+            as_cran = TRUE
+        ),
+        `_R_CHECK_CRAN_INCOMING_` = TRUE,
 
         chdir = TRUE
     )

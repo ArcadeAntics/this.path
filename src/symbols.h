@@ -98,6 +98,7 @@ extern0 SEXP0
 
     utilsSymbol                            INI_as(Rf_install("utils")),
     SweaveSymbol                           INI_as(Rf_install("Sweave")),
+    srcFilenamesSymbol                     INI_as(Rf_install("srcFilenames")),
 
     boxSymbol                              INI_as(Rf_install("box")),
     load_from_sourceSymbol                 INI_as(Rf_install("load_from_source")),

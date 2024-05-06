@@ -858,7 +858,7 @@ Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
     R_Reprotect(expr = Rf_cons(Rf_ScalarString(PRINTNAME(symbol)), expr), indx);
     R_Reprotect(expr = Rf_lcons(getFromBase(existsSymbol), expr), indx);
     SEXP value = Rf_protect(Rf_eval(expr, R_EmptyEnv));
-    if (!IS_SCALAR(value, LGLSXP))
+    if (!ptr_IS_SCALAR(value, LGLSXP))
         Rf_error(_("invalid '%s' value"), "exists()");
     Rboolean lvalue = LOGICAL(value)[0];
     Rf_unprotect(2);

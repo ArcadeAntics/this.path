@@ -14,14 +14,17 @@
 #endif
 
 
+/* file R_ext/Connections.h was added in R 3.0.0 */
 #if defined(R_VERSION) && R_VERSION >= R_Version(3,0,0)
     #include <R_ext/Connections.h>
     #if !defined(R_CONNECTIONS_VERSION)
     #elif R_CONNECTIONS_VERSION == 1
         #define R_CONNECTIONS_VERSION_1
+        /* R_GetConnection was added in R 3.3.0 */
         #if defined(R_VERSION) && R_VERSION >= R_Version(3,3,0)
             extern Rconnection R_GetConnection(SEXP sConn);
         #else
+            /* create our own version of R_GetConnection */
             extern Rconnection getConnection(int n);
             Rconnection R_GetConnection(SEXP sConn) {
                 if (!Rf_inherits(sConn, "connection")) Rf_error(_("invalid connection"));
@@ -32,6 +35,7 @@
 #endif
 
 
+/* R_Visible was made visible in R 3.0.0 */
 #if defined(R_VERSION) && R_VERSION >= R_Version(3,0,0)
 extern Rboolean R_Visible;
 #define HAVE_SET_R_VISIBLE
@@ -59,5 +63,14 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
 
 #if defined(HAVE_SET_R_VISIBLE)
     R_RegisterCCallable("this_path_reg_ptrs", "set_R_Visible", (DL_FUNC) set_R_Visible);
+#endif
+
+
+#if defined(R_VERSION) && R_VERSION >= R_Version(4,5,0)
+    R_RegisterCCallable("this_path_reg_ptrs", "IS_SCALAR", (DL_FUNC) IS_SCALAR);
+    R_RegisterCCallable("this_path_reg_ptrs", "R_PromiseExpr", (DL_FUNC) R_PromiseExpr);
+    R_RegisterCCallable("this_path_reg_ptrs", "SET_PRCODE", (DL_FUNC) SET_PRCODE);
+    R_RegisterCCallable("this_path_reg_ptrs", "SET_PRENV", (DL_FUNC) SET_PRENV);
+    R_RegisterCCallable("this_path_reg_ptrs", "SET_PRVALUE", (DL_FUNC) SET_PRVALUE);
 #endif
 }

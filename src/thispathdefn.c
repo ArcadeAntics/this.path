@@ -264,7 +264,7 @@ SEXP DocumentContext(void)
 
 #define _assign_default(srcfile_original, owd, trans, documentcontext, na)\
     if (srcfile_original) {                                    \
-        SET_PRCODE(                                            \
+        ptr_SET_PRCODE(                                        \
             e,                                                 \
             Rf_lcons(                                          \
                 _normalizePath_srcfilealiasSymbol,             \
@@ -286,7 +286,7 @@ SEXP DocumentContext(void)
             Rf_errorcall(R_NilValue, _("invalid '%s' value"), "na");\
             sym = R_NilValue;                                  \
         }                                                      \
-        SET_PRCODE(e, Rf_lcons(sym, Rf_cons(wdSymbol, Rf_cons(trans, R_NilValue))));\
+        ptr_SET_PRCODE(e, Rf_lcons(sym, Rf_cons(wdSymbol, Rf_cons(trans, R_NilValue))));\
     }                                                          \
     else {                                                     \
         SEXP sym;                                              \
@@ -298,7 +298,7 @@ SEXP DocumentContext(void)
             Rf_errorcall(R_NilValue, _("invalid '%s' value"), "na");\
             sym = R_NilValue;                                  \
         }                                                      \
-        SET_PRCODE(e, Rf_lcons(sym, Rf_cons(trans, R_NilValue)));\
+        ptr_SET_PRCODE(e, Rf_lcons(sym, Rf_cons(trans, R_NilValue)));\
     }
 
 
@@ -411,7 +411,11 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 #endif
 
 
-    SET_PRCODE(e, Rf_lcons(_normalizeURL_1Symbol, Rf_cons(Rf_ScalarString(Rf_mkCharCE(url, ienc)), R_NilValue)));
+    ptr_SET_PRCODE(
+        e,
+        Rf_lcons(_normalizeURL_1Symbol,
+            Rf_cons(Rf_ScalarString(Rf_mkCharCE(url, ienc)), R_NilValue))
+    );
     Rf_eval(e, R_EmptyEnv);  /* force the promise */
     Rf_unprotect(1);
 }
@@ -483,10 +487,6 @@ SEXP duplicateEnv(SEXP env)
     if (R_EnvironmentIsLocked(env))
         R_LockEnvironment(value, FALSE);
     DUPLICATE_ATTRIB(/* to */ value, /* from */ env);
-    if (OBJECT(env))
-        SET_OBJECT(value, 1);
-    if (IS_S4_OBJECT(env))
-        SET_S4_OBJECT(value);
     Rf_unprotect(2);
     return value;
 }

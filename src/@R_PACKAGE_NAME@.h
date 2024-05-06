@@ -214,10 +214,6 @@ extern SEXP do_asArgs do_formals;
 extern SEXP do_is_unevaluated_promise do_formals;
 extern SEXP do_promise_is_unevaluated do_formals;
 extern SEXP do_forcePromise_no_warn   do_formals;
-extern SEXP do_PRINFO                 do_formals;
-extern SEXP do_mkPROMISE              do_formals;
-extern SEXP do_mkEVPROMISE            do_formals;
-extern SEXP do_unlockEnvironment      do_formals;
 extern SEXP do_is_R_MissingArg        do_formals;
 
 

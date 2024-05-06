@@ -107,20 +107,51 @@ Rconnection (*ptr_R_GetConnection)(SEXP sConn);
 #if defined(HAVE_SET_R_VISIBLE)
 void (*ptr_set_R_Visible)(Rboolean x);
 #endif
+#if defined(NEED_R_4_5_0_FUNCTIONS)
+int (*ptr_IS_SCALAR)(SEXP x, int type);
+SEXP (*ptr_R_PromiseExpr)(SEXP);
+void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
+void (*ptr_SET_PRENV)(SEXP x, SEXP v);
+void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
+#endif
 
 
-#if R_version_at_least(3,0,0)
-    #if defined(R_CONNECTIONS_VERSION_1)
-        #if defined(R_THIS_PATH_DEVEL)
-            #if R_version_less_than(3,3,0)
+#if defined(R_CONNECTIONS_VERSION_1)
+    #if defined(R_THIS_PATH_DEVEL)
+        #if R_version_less_than(3,3,0)
 Rconnection R_GetConnection(SEXP sConn)
 {
     if (!Rf_inherits(sConn, "connection")) Rf_error(_("invalid connection"));
     return getConnection(Rf_asInteger(sConn));
 }
-            #endif
         #endif
     #endif
+#endif
+
+
+#if defined(NEED_R_4_5_0_FUNCTIONS)
+/* create default values for the function pointers */
+int ptr_IS_SCALAR_default(SEXP x, int type)
+{
+    return TYPEOF(x) == type && Rf_xlength(x) == 1;
+}
+SEXP ptr_R_PromiseExpr_default(SEXP p)
+{
+    Rf_error("'%s' is not available", "R_PromiseExpr");
+    return R_NilValue;
+}
+void ptr_SET_PRCODE_default(SEXP x, SEXP v)
+{
+    Rf_error("'%s' is not available", "SET_PRCODE");
+}
+void ptr_SET_PRENV_default(SEXP x, SEXP v)
+{
+    Rf_error("'%s' is not available", "SET_PRENV");
+}
+void ptr_SET_PRVALUE_default(SEXP x, SEXP v)
+{
+    Rf_error("'%s' is not available", "SET_PRVALUE");
+}
 #endif
 
 
@@ -137,6 +168,18 @@ SEXP do_get_ptrs do_formals
     ptr_set_R_Visible = (void(*)(Rboolean))
         R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
 #endif
+#if defined(NEED_R_4_5_0_FUNCTIONS)
+    ptr_IS_SCALAR = (int(*)(SEXP,int))
+        R_GetCCallable("this_path_reg_ptrs", "IS_SCALAR");
+    ptr_R_PromiseExpr = (SEXP(*)(SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "R_PromiseExpr");
+    ptr_SET_PRCODE = (void(*)(SEXP,SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "SET_PRCODE");
+    ptr_SET_PRENV = (void(*)(SEXP,SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "SET_PRENV");
+    ptr_SET_PRVALUE = (void(*)(SEXP,SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "SET_PRVALUE");
+#endif
     return R_NilValue;
 }
 #endif
@@ -147,19 +190,15 @@ SEXP do_onLoad do_formals
     do_start_no_call_op_rho("onLoad", 2);
 
 
+    /* these arguments are passed from .onLoad() */
+    // SEXP libname = CAR(args);   // warning: unused variable 'libname'
+    // SEXP pkgname = CADR(args);  // warning: unused variable 'pkgname'
+
+
     static int been_here_before = 0;
     if (been_here_before)
         Rf_error("cannot call 'onLoad' more than once (wtf are you doing\?\?\?)");
     been_here_before = 1;
-
-
-#define R_THIS_PATH_DEFINE_SYMBOLS
-#include "symbols.h"
-
-
-    /* these arguments are passed from .onLoad() */
-    // SEXP libname = CAR(args);   // warning: unused variable 'libname'
-    // SEXP pkgname = CADR(args);  // warning: unused variable 'pkgname'
 
 
 #if defined(R_VERSION)
@@ -168,9 +207,9 @@ SEXP do_onLoad do_formals
         Rf_protect(expr);
         SEXP v = Rf_eval(expr, R_BaseEnv);
         Rf_protect(v);
-        if (IS_SCALAR(v, VECSXP)) {
+        if (TYPEOF(v) == VECSXP && XLENGTH(v) == 1) {
             v = VECTOR_ELT(v, 0);
-            if (TYPEOF(v) == INTSXP && LENGTH(v) == 3) {
+            if (TYPEOF(v) == INTSXP && XLENGTH(v) == 3) {
                 int *iv = INTEGER(v);
                 if (iv[0] == atoi(R_MAJOR) &&
                     iv[1] == atoi(R_MINOR));
@@ -184,6 +223,10 @@ SEXP do_onLoad do_formals
 #endif
 
 
+#define R_THIS_PATH_DEFINE_SYMBOLS
+#include "symbols.h"
+
+
     /* get my namespace from the namespace registry */
     mynamespace = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("@R_PACKAGE_NAME@"));
     if (TYPEOF(mynamespace) != ENVSXP)
@@ -192,6 +235,42 @@ SEXP do_onLoad do_formals
 
 
     INCREMENT_NAMED_defineVar(Rf_install(".mynamespace"), mynamespace, mynamespace);
+
+
+#define LockCLOENV(symbol, bindings)                           \
+    do {                                                       \
+        SEXP sym = (symbol);                                   \
+        SEXP tmp = getFromMyNS(sym);                           \
+        if (TYPEOF(tmp) != CLOSXP)                             \
+            Rf_error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME(sym)), "function");\
+        R_LockEnvironment(CLOENV(tmp), (bindings));            \
+    } while (0)
+
+
+#if defined(NEED_R_4_5_0_FUNCTIONS)
+    ptr_IS_SCALAR = ptr_IS_SCALAR_default;
+    ptr_R_PromiseExpr = ptr_R_PromiseExpr_default;
+    ptr_SET_PRCODE = ptr_SET_PRCODE_default;
+    ptr_SET_PRENV = ptr_SET_PRENV_default;
+    ptr_SET_PRVALUE = ptr_SET_PRVALUE_default;
+#endif
+
+
+#if defined(R_THIS_PATH_DEVEL)
+    #if defined(R_CONNECTIONS_VERSION_1)
+    ptr_R_GetConnection = R_GetConnection;
+    #endif
+#else
+    {
+        SEXP expr = Rf_lcons(Rf_install(".get_ptrs"), R_NilValue);
+        Rf_protect(expr);
+        Rf_eval(expr, mynamespace);
+        Rf_unprotect(1);
+        R_removeVarFromFrame(Rf_install(".get_ptrs"), mynamespace);
+        R_removeVarFromFrame(Rf_install(".C_get_ptrs"), mynamespace);
+        LockCLOENV(Rf_install(".maybe_dyn_unload"), TRUE);
+    }
+#endif
 
 
 #define make_STRSXP_from_char_array(var, ...)                  \
@@ -343,6 +422,16 @@ SEXP do_onLoad do_formals
         R_NewEnv(/* enclos */ mynamespace, /* hash */ TRUE, /* size */ 10);
     R_PreserveObject(_custom_gui_path_character_environment);
     Rf_defineVar(guinameSymbol, R_MissingArg, _custom_gui_path_character_environment);
+#if defined(NEED_R_4_5_0_FUNCTIONS)
+    {
+        Rf_defineVar(ofileSymbol, R_NilValue, _custom_gui_path_character_environment);
+        R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
+    }
+    {
+        Rf_defineVar(fileSymbol, R_NilValue, _custom_gui_path_character_environment);
+        R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
+    }
+#else
     {
         SEXP na = Rf_ScalarString(NA_STRING);
         Rf_protect(na);
@@ -362,6 +451,7 @@ SEXP do_onLoad do_formals
         R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
         Rf_unprotect(1);
     }
+#endif
     Rf_defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
     R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
 
@@ -377,16 +467,6 @@ SEXP do_onLoad do_formals
     R_BlankScalarString = Rf_ScalarString(R_BlankString);
     R_PreserveObject(R_BlankScalarString);
 #endif
-
-
-#define LockCLOENV(symbol, bindings)                           \
-    do {                                                       \
-        SEXP sym = (symbol);                                   \
-        SEXP tmp = getFromMyNS(sym);                           \
-        if (TYPEOF(tmp) != CLOSXP)                             \
-            Rf_error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME(sym)), "function");\
-        R_LockEnvironment(CLOENV(tmp), (bindings));            \
-    } while (0)
 
 
     /* rprojroot.R */
@@ -836,24 +916,6 @@ SEXP do_onLoad do_formals
             Rf_defineVar(sym, val, R_BaseEnv);
             R_LockBinding(sym, R_BaseEnv);
         }
-    }
-#endif
-
-
-#if defined(R_THIS_PATH_DEVEL)
-    #if defined(R_CONNECTIONS_VERSION_1)
-
-    ptr_R_GetConnection = R_GetConnection;
-    #endif
-#else
-    {
-        SEXP expr = Rf_lcons(Rf_install(".get_ptrs"), R_NilValue);
-        Rf_protect(expr);
-        Rf_eval(expr, mynamespace);
-        Rf_unprotect(1);
-        R_removeVarFromFrame(Rf_install(".get_ptrs"), mynamespace);
-        R_removeVarFromFrame(Rf_install(".C_get_ptrs"), mynamespace);
-        LockCLOENV(Rf_install(".maybe_dyn_unload"), TRUE);
     }
 #endif
 

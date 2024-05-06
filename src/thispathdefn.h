@@ -225,7 +225,7 @@ do {                                                           \
         if (file == NA_STRING)                                 \
             Rf_errorcall(call, "invalid '%s', must not be NA", EncodeChar(PRINTNAME(sym)));\
         if (ofilearg != NULL) {                                \
-            if (!IS_SCALAR(ofilearg, STRSXP))                  \
+            if (!ptr_IS_SCALAR(ofilearg, STRSXP))              \
                 Rf_errorcall(call, "'%s' must be a character string", "ofile");\
             if (STRING_ELT(ofilearg, 0) == NA_STRING)          \
                 Rf_errorcall(call, "invalid '%s', must not be NA", "ofile");\
@@ -340,7 +340,7 @@ do {                                                           \
     else {                                                     \
         if (character_only)                                    \
             Rf_errorcall(call, "'%s' must be a character string", EncodeChar(PRINTNAME(sym)));\
-        else if (!(IS_SCALAR(ofile, INTSXP) && Rf_inherits(ofile, "connection")))\
+        else if (!(ptr_IS_SCALAR(ofile, INTSXP) && Rf_inherits(ofile, "connection")))\
             Rf_errorcall(call, "invalid '%s', must be a character string or connection", EncodeChar(PRINTNAME(sym)));\
         else {                                                 \
             if (ofilearg != NULL) {                            \

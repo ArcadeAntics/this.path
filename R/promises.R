@@ -54,7 +54,7 @@
 ## ```
 ##
 ## you'll see that the expression `writeLines("evaluating 'x'")` is only
-## evaluated once, as desired! you can use `this.path:::.PRINFO()` to examine
+## evaluated once, as desired! you can use `ikws.debug::PRINFO()` to examine
 ## the state of the promise:
 ##
 ## ```R
@@ -62,9 +62,9 @@
 ##     writeLines("evaluating 'x'")
 ##     5 + 6
 ## })
-## this.path:::.PRINFO(x)
+## ikws.debug::PRINFO(x)
 ## x
-## this.path:::.PRINFO(x)
+## ikws.debug::PRINFO(x)
 ## ```
 ##
 ## which produces the following output:
@@ -74,7 +74,7 @@
 ## +     writeLines("evaluating 'x'")
 ## +     5 + 6
 ## + })
-## > this.path:::.PRINFO(x)
+## > ikws.debug::PRINFO(x)
 ## $PRCODE
 ## {
 ##     writeLines("evaluating 'x'")
@@ -96,7 +96,7 @@
 ## > x
 ## evaluating 'x'
 ## [1] 11
-## > this.path:::.PRINFO(x)
+## > ikws.debug::PRINFO(x)
 ## $PRCODE
 ## {
 ##     writeLines("evaluating 'x'")
@@ -138,12 +138,12 @@
 ## ```R
 ## delayedAssign("x", withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## }))
-## this.path:::.PRINFO(x)
+## ikws.debug::PRINFO(x)
 ## try(x)
-## this.path:::.PRINFO(x)
+## ikws.debug::PRINFO(x)
 ## ```
 ##
 ## notice "PRSEEN" is 0 when `x` is not being evaluated, it is 1 when `x` is
@@ -151,11 +151,11 @@
 ## restarted:
 ##
 ## ```
-## > this.path:::.PRINFO(x)
+## > ikws.debug::PRINFO(x)
 ## $PRCODE
 ## withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## })
 ##
@@ -165,7 +165,7 @@
 ## $PREXPR
 ## withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## })
 ##
@@ -175,11 +175,11 @@
 ## > try(x)
 ## > 5 + 6
 ## [1] 11
-## > this.path:::.PRINFO(x)
+## > ikws.debug::PRINFO(x)
 ## $PRCODE
 ## withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## })
 ##
@@ -189,7 +189,7 @@
 ## $PREXPR
 ## withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## })
 ##
@@ -199,11 +199,11 @@
 ## > x
 ## Error in eval(ei, envir) :
 ##   promise already under evaluation: recursive default argument reference or earlier problems?
-## > this.path:::.PRINFO(x)
+## > ikws.debug::PRINFO(x)
 ## $PRCODE
 ## withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## })
 ##
@@ -213,7 +213,7 @@
 ## $PREXPR
 ## withAutoprint({
 ##     5 + 6
-##     this.path:::.PRINFO(x)
+##     ikws.debug::PRINFO(x)
 ##     x
 ## })
 ##
@@ -378,23 +378,6 @@ delayedAssign(".GUI", {
 delayedAssign("initwd", { getwd() })
 getinitwd <- function ()
 initwd
-
-
-.PRINFO <- function (x, pos = -1L, envir = as.environment(pos), inherits = TRUE,
-    evaluated = FALSE)
-.External2(.C_PRINFO, if (evaluated) x else substitute(x), envir, inherits)
-
-
-.mkPROMISE <- function (expr, envir = parent.frame(1))
-.External2(.C_mkPROMISE, expr, envir)
-
-
-.mkEVPROMISE <- function (expr, value)
-.External2(.C_mkEVPROMISE, expr, value)
-
-
-.unlockEnvironment <- function (env, bindings = FALSE)
-.External2(.C_unlockEnvironment, env, bindings)
 
 
 .unset_these_envvars <- c(

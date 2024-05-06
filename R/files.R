@@ -130,8 +130,11 @@ path.unsplit <- function (...)
 {
     if (.OS_windows) {
         s <- chartr("\\", "/", s)
-        if (startsWith(s, "//"))
+        i <- startsWith(s, "//")
+        if (all(i))
             substr(s, 1L, 2L) <- "\\\\"
+        else if (any(i))
+            substr(s[i], 1L, 2L) <- "\\\\"
     }
     s
 }
@@ -147,7 +150,9 @@ path.unsplit <- function (...)
 
 .as_file_URL <- function (path)
 {
-    if (.OS_windows) {
+    if (!length(path))
+        character(0)
+    else if (.OS_windows) {
         ## on Windows we have file:///C:/path/to/file or similar
         path <- .fixslash(path)
         i <- grepl("^.:", path, useBytes = TRUE)

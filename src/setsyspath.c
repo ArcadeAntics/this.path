@@ -205,13 +205,13 @@ SEXP do_wrap_source do_formals
 
 
     /* find the root promise */
-    while (TYPEOF(PREXPR(promise)) == PROMSXP) {
-        promise = PREXPR(promise);
+    while (TYPEOF(ptr_R_PromiseExpr(promise)) == PROMSXP) {
+        promise = ptr_R_PromiseExpr(promise);
         check_validity;
     }
 
 
-    SEXP expr = PREXPR(promise),
+    SEXP expr = ptr_R_PromiseExpr(promise),
          env  = PRENV (promise);
 
 
@@ -732,11 +732,11 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             return R_MissingArg;
         if (TYPEOF(value) != PROMSXP)
             Rf_error("invalid '%s' value, expected R_MissingArg or a promise", CHAR(PRINTNAME(fileSymbol)));
-        if (TYPEOF(PREXPR(value)) != SYMSXP)
+        if (TYPEOF(ptr_R_PromiseExpr(value)) != SYMSXP)
             Rf_error("invalid '%s' value, expected a symbol", CHAR(PRINTNAME(fileSymbol)));
-        value = Rf_findVarInFrame(PRENV(value), PREXPR(value));
+        value = Rf_findVarInFrame(PRENV(value), ptr_R_PromiseExpr(value));
         if (value == R_UnboundValue)
-            Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(PREXPR(value))));
+            Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(ptr_R_PromiseExpr(value))));
         return value;
     }
 

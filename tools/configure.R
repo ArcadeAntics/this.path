@@ -39,6 +39,7 @@ main <- function ()
 
     ## we need the contents of the DESCRIPTION file
     desc <- local({
+        ## see tools:::.read_description
         desc <- read.dcf("./DESCRIPTION", keep.white = c("Description", "Authors@R", "Author", "Built", "Packaged"))
         if (nrow(desc) != 1L)
             stop("contains a blank line", call. = FALSE)

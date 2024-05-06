@@ -204,7 +204,7 @@ SEXP do_splitlines do_formals
 {
     do_start_no_op_rho("splitlines", 1);
     SEXP x = CAR(args);
-    if (!IS_SCALAR(x, STRSXP))
+    if (!ptr_IS_SCALAR(x, STRSXP))
         Rf_errorcall(call, _("argument must be a character string"));
     SEXP x0 = STRING_ELT(x, 0);
     const char *str = CHAR(x0);
@@ -425,7 +425,7 @@ SEXP do_set_jupyter_path do_formals
     }
 
 
-    if (!IS_SCALAR(path, STRSXP))
+    if (!ptr_IS_SCALAR(path, STRSXP))
         Rf_errorcall(call, _("'%s' must be a character string"), "path");
     if (STRING_ELT(path, 0) == NA_STRING);
     else if (is_abs_path(CHAR(STRING_ELT(path, 0))));
@@ -462,16 +462,16 @@ SEXP do_set_jupyter_path do_formals
 
 
     /* restore and evaluate the promise 'ofile' */
-    SET_PRCODE(ofile, path);
-    SET_PRENV(ofile, R_NilValue);
-    SET_PRVALUE(ofile, path);
+    ptr_SET_PRCODE(ofile, path);
+    ptr_SET_PRENV(ofile, R_NilValue);
+    ptr_SET_PRVALUE(ofile, path);
     SET_PRSEEN(ofile, 0);
 
 
     /* restore the promise 'file' to its original state */
-    // SET_PRCODE(file, );
-    SET_PRENV(file, env);
-    SET_PRVALUE(file, R_UnboundValue);
+    // ptr_SET_PRCODE(file, );
+    ptr_SET_PRENV(file, env);
+    ptr_SET_PRVALUE(file, R_UnboundValue);
     SET_PRSEEN(file, 0);
 
 
@@ -610,7 +610,7 @@ SEXP do_set_gui_path do_formals
         case LISTSXP: guiname = CAR(dots); break;
         case VECSXP: guiname = VECTOR_ELT(dots, 0); break;
         }
-        if (!IS_SCALAR(guiname, STRSXP) || STRING_ELT(guiname, 0) == NA_STRING)
+        if (!ptr_IS_SCALAR(guiname, STRSXP) || STRING_ELT(guiname, 0) == NA_STRING)
             Rf_error(_("invalid first argument"));
         SEXP path = R_NilValue;  /* for -Wall */
         switch (t) {
@@ -624,7 +624,7 @@ SEXP do_set_gui_path do_formals
         case LISTSXP: path = CADR(dots); break;
         case VECSXP: path = VECTOR_ELT(dots, 1); break;
         }
-        if (!IS_SCALAR(path, STRSXP))
+        if (!ptr_IS_SCALAR(path, STRSXP))
             Rf_error("invalid '%s' argument; expected a character string", "path");
         if (!is_abs_path(CHAR(STRING_ELT(path, 0))))
             Rf_error("invalid '%s' argument; expected an absolute path", "path");
@@ -669,15 +669,15 @@ SEXP do_set_gui_path do_formals
 
 
         /* restore and evaluate the promise 'ofile' */
-        SET_PRCODE(ofile, path);
-        SET_PRENV(ofile, R_NilValue);
-        SET_PRVALUE(ofile, path);
+        ptr_SET_PRCODE(ofile, path);
+        ptr_SET_PRENV(ofile, R_NilValue);
+        ptr_SET_PRVALUE(ofile, path);
         SET_PRSEEN(ofile, 0);
 
 
         /* restore the promise 'file' to its original state */
-        SET_PRENV(file, _custom_gui_path_character_environment);
-        SET_PRVALUE(file, R_UnboundValue);
+        ptr_SET_PRENV(file, _custom_gui_path_character_environment);
+        ptr_SET_PRVALUE(file, R_UnboundValue);
         SET_PRSEEN(file, 0);
 
 
@@ -1316,7 +1316,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 #define check_path_only do {                                   \
                 ofile = getInFrame(fileSymbol, frame, FALSE);  \
-                if (!IS_SCALAR(ofile, STRSXP))                 \
+                if (!ptr_IS_SCALAR(ofile, STRSXP))             \
                     Rf_error(_("'%s' must be a character string"), CHAR(PRINTNAME(fileSymbol)));\
                 file = STRING_ELT(ofile, 0);                   \
                 const char *url = CHAR(file);                  \
@@ -1385,7 +1385,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (documentcontext == R_EmptyEnv) continue;
             check_documentcontext_env;
             SEXP n = Rf_findVarInFrame(documentcontext, nSymbol);
-            if (!IS_SCALAR(n, INTSXP))
+            if (!ptr_IS_SCALAR(n, INTSXP))
                 Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(nSymbol)));
             returnfile(n, source_char);
         }
@@ -1524,26 +1524,27 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             SEXP documentcontexts = Rf_findVarInFrame(frame, documentcontextsSymbol);
             SEXP names;
             if (documentcontexts == R_UnboundValue) {
-                documentcontexts = Rf_allocVector(VECSXP, 8);
+                SEXP srcFilenames = Rf_findVarInFrame(frame, srcFilenamesSymbol);
+                if (srcFilenames == R_UnboundValue)
+                    Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(srcFilenamesSymbol)));
+                if (TYPEOF(srcFilenames) != STRSXP)
+                    Rf_error(_("object '%s' of mode '%s' was not found"),
+                        CHAR(PRINTNAME(srcFilenamesSymbol)), "character");
+
+
+                R_xlen_t n = XLENGTH(srcFilenames);
+
+
+                documentcontexts = Rf_allocVector(VECSXP, n);
                 INCREMENT_NAMED_defineVar(documentcontextsSymbol, documentcontexts, frame);
                 R_LockBinding(documentcontextsSymbol, frame);
-                names = Rf_allocVector(STRSXP, XLENGTH(documentcontexts));
+
+
+                /* copy names to new object */
+                names = Rf_allocVector(STRSXP, n);
                 Rf_setAttrib(documentcontexts, R_NamesSymbol, names);
-
-
-#if R_version_less_than(3,4,0)
-#define SET_GROWABLE_BIT(x)
-#endif
-
-
-                SET_GROWABLE_BIT(documentcontexts);
-                SET_TRUELENGTH(documentcontexts, XLENGTH(documentcontexts));
-                SETLENGTH(documentcontexts, 0);
-
-
-                SET_GROWABLE_BIT(names);
-                SET_TRUELENGTH(names, TRUELENGTH(documentcontexts));
-                SETLENGTH(names, XLENGTH(documentcontexts));
+                for (R_xlen_t i = 0; i < n; i++)
+                    SET_STRING_ELT(names, i, STRING_ELT(srcFilenames, i));
             }
             else {
                 if (TYPEOF(documentcontexts) != VECSXP)
@@ -1555,7 +1556,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                         CHAR(PRINTNAME(R_NamesSymbol)), Rf_type2char(TYPEOF(names)));
             }
             SEXP ofile = Rf_findVarInFrame(frame, fileSymbol);
-            if (!IS_SCALAR(ofile, STRSXP)) continue;
+            if (!ptr_IS_SCALAR(ofile, STRSXP)) continue;
             SEXP file = STRING_ELT(ofile, 0);
             R_xlen_t indx = -999;
             for (R_xlen_t i = 0, n = Rf_xlength(names); i < n; i++) {
@@ -1564,45 +1565,10 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     break;
                 }
             }
-            if (indx < 0) {
-                indx = XLENGTH(documentcontexts);
-                if (indx >= TRUELENGTH(documentcontexts)) {
-                    double dindx = 2.0 * (double) indx;
-                    if (dindx > R_XLEN_T_MAX) Rf_error("too many files");
-                    SEXP xdocumentcontexts = Rf_allocVector(VECSXP, 2 * indx);
-                    Rf_protect(xdocumentcontexts);
-                    SEXP xnames = Rf_allocVector(STRSXP, XLENGTH(xdocumentcontexts));
-                    Rf_setAttrib(xdocumentcontexts, R_NamesSymbol, xnames);
-
-
-                    SET_GROWABLE_BIT(xdocumentcontexts);
-                    SET_TRUELENGTH(xdocumentcontexts, XLENGTH(xdocumentcontexts));
-                    SETLENGTH(xdocumentcontexts, indx);
-
-
-                    SET_GROWABLE_BIT(xnames);
-                    SET_TRUELENGTH(xnames, TRUELENGTH(xdocumentcontexts));
-                    SETLENGTH(xnames, XLENGTH(xdocumentcontexts));
-
-
-                    for (R_xlen_t i = 0; i < indx; i++) {
-                        SET_VECTOR_ELT(xdocumentcontexts, i, VECTOR_ELT(documentcontexts, i));
-                        SET_STRING_ELT(xnames, i, STRING_ELT(names, i));
-                    }
-
-
-                    documentcontexts = xdocumentcontexts;
-                    names = xnames;
-                    if (R_BindingIsLocked(documentcontextsSymbol, frame)) {
-                        R_unLockBinding(documentcontextsSymbol, frame);
-                        INCREMENT_NAMED_defineVar(documentcontextsSymbol, documentcontexts, frame);
-                        R_LockBinding(documentcontextsSymbol, frame);
-                    }
-                    // if the user unlocked the binding, leave it unlocked,
-                    // they probably have a good reason for it being so
-                    else INCREMENT_NAMED_defineVar(documentcontextsSymbol, documentcontexts, frame);
-                    Rf_unprotect(1);
-                }
+            if (indx < 0)
+                Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(documentcontextsSymbol)));
+            documentcontext = VECTOR_ELT(documentcontexts, indx);
+            if (documentcontext == R_NilValue) {
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ fileSymbol,
@@ -1623,13 +1589,9 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* ignore_all             */ FALSE,
                     /* srcfile_original       */ NULL
                 );
-                SETLENGTH(documentcontexts, indx + 1);
-                SETLENGTH(names, indx + 1);
                 SET_VECTOR_ELT(documentcontexts, indx, documentcontext);
-                SET_STRING_ELT(names, indx, file);
             }
             else {
-                documentcontext = VECTOR_ELT(documentcontexts, indx);
                 check_documentcontext_env;
                 check_documentcontext_not_emptyenv;
             }
@@ -2169,7 +2131,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
             SEXP n = Rf_findVarInFrame(documentcontext, nSymbol);
-            if (!IS_SCALAR(n, INTSXP))
+            if (!ptr_IS_SCALAR(n, INTSXP))
                 Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(nSymbol)));
             /* this could happen with eval() or similar */
             if (iwhich[0] != INTEGER(n)[0]) continue;
@@ -2213,7 +2175,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             return value;
         if (gave_contents)
             return value;
-        if (!IS_SCALAR(value, STRSXP))
+        if (!ptr_IS_SCALAR(value, STRSXP))
             Rf_error("internal error; invalid '%s' value", "_sys_path()");
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
@@ -2237,9 +2199,9 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
 
         if (!contents)
             return value;
-        if (IS_SCALAR(value, VECSXP))
+        if (ptr_IS_SCALAR(value, VECSXP))
             return VECTOR_ELT(value, 0);
-        if (!IS_SCALAR(value, STRSXP))
+        if (!ptr_IS_SCALAR(value, STRSXP))
             Rf_error("internal error; invalid '%s()' value", CHAR(PRINTNAME(_gui_pathSymbol)));
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
@@ -2268,13 +2230,13 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
         SEXP value = Rf_eval(expr, _custom_gui_path_function_environment);
         Rf_protect(value);
         if (contents) {
-            if (for_msg && IS_SCALAR(value, STRSXP) && STRING_ELT(value, 0) == NA_STRING)
+            if (for_msg && ptr_IS_SCALAR(value, STRSXP) && STRING_ELT(value, 0) == NA_STRING)
                 value = R_NilValue;
             else if (TYPEOF(value) == STRSXP)
                 value = fixNewlines(value);
         }
         else {
-            if (!IS_SCALAR(value, STRSXP))
+            if (!ptr_IS_SCALAR(value, STRSXP))
                 Rf_errorcall(expr, "invalid return value; must be a character string");
             if (for_msg);
             else if (is_abs_path(CHAR(STRING_ELT(value, 0))));
@@ -2521,7 +2483,7 @@ SEXP env_path8(Rboolean verbose, Rboolean original, Rboolean for_msg,
         return value;
     if (gave_contents)
         return value;
-    if (!IS_SCALAR(value, STRSXP))
+    if (!ptr_IS_SCALAR(value, STRSXP))
         Rf_error("internal error; invalid '%s' value", "_env_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
@@ -2604,7 +2566,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
     if (get_lineno) {
-        if (x == NULL || IS_SCALAR(x, INTSXP)) {
+        if (x == NULL || ptr_IS_SCALAR(x, INTSXP)) {
             Rf_protect(srcref = sys_srcref(x ? INTEGER(x)[0] : 0, rho));
             SEXP returnthis = Rf_ScalarInteger(
                 ISNULL(srcref) ? (NA_INTEGER) : (INTEGER(srcref)[0])
@@ -2669,7 +2631,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     }
 
 
-    if (x == NULL || IS_SCALAR(x, INTSXP)) {
+    if (x == NULL || ptr_IS_SCALAR(x, INTSXP)) {
 
 
 #define get_srcfile_from_srcref do {                           \
@@ -2866,7 +2828,7 @@ SEXP src_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
         return value;
     if (gave_contents)
         return value;
-    if (!IS_SCALAR(value, STRSXP))
+    if (!ptr_IS_SCALAR(value, STRSXP))
         Rf_error("internal error; invalid '%s' value", "_src_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;

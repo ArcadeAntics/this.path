@@ -338,10 +338,6 @@ if (getRversion() < "3.0.0") {
     fix_External2(.OS_windows_maybe_unembedded_shell)
     fix_External2(.shINFO)
     fix_External2(.GUI_Rgui)
-    fix_External2(.PRINFO)
-    fix_External2(.mkPROMISE)
-    fix_External2(.mkEVPROMISE)
-    fix_External2(.unlockEnvironment)
 
 
     ## relpath.R    ----

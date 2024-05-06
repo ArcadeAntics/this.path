@@ -168,7 +168,7 @@ SEXP do_ThisPathInZipFileError do_formals
 {
     do_start_no_op_rho("ThisPathInZipFileError", 2);
     SEXP call2 = Rf_lazy_duplicate(CAR(args)); args = CDR(args);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
+    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -181,7 +181,7 @@ SEXP do_ThisPathInZipFileError do_formals
 SEXP do_ThisPathNotExistsError do_formals
 {
     do_start_no_op_rho("ThisPathNotExistsError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
+    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -194,7 +194,7 @@ SEXP do_ThisPathNotExistsError do_formals
 SEXP do_ThisPathNotFoundError do_formals
 {
     do_start_no_op_rho("ThisPathNotFoundError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
+    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -207,7 +207,7 @@ SEXP do_ThisPathNotFoundError do_formals
 SEXP do_ThisPathNotImplementedError do_formals
 {
     do_start_no_op_rho("ThisPathNotImplementedError", 2);
-    if (!IS_SCALAR(CAR(args), STRSXP) ||
+    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -466,7 +466,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         SEXP do_else = Rf_findVarInFrame(rho, do_elseSymbol);
         if (do_else == R_UnboundValue)
             Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(do_elseSymbol)));
-        if (!IS_SCALAR(do_else, LGLSXP))
+        if (!ptr_IS_SCALAR(do_else, LGLSXP))
             Rf_error(_("invalid '%s' value"), CHAR(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:

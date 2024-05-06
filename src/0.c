@@ -166,10 +166,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"is_unevaluated_promise", (DL_FUNC) &do_is_unevaluated_promise, -1},
 {"promise_is_unevaluated", (DL_FUNC) &do_promise_is_unevaluated, -1},
 {"forcePromise_no_warn"  , (DL_FUNC) &do_forcePromise_no_warn  , -1},
-{"PRINFO"                , (DL_FUNC) &do_PRINFO                , -1},
-{"mkPROMISE"             , (DL_FUNC) &do_mkPROMISE             ,  2},
-{"mkEVPROMISE"           , (DL_FUNC) &do_mkEVPROMISE           ,  2},
-{"unlockEnvironment"     , (DL_FUNC) &do_unlockEnvironment     , -1}, // R_Visible off
 {"is_R_MissingArg"       , (DL_FUNC) &do_is_R_MissingArg       , -1},
 
 
@@ -266,4 +262,10 @@ void R_init_@R_PACKAGE_LIB@(DllInfo *dll)
 #if R_version_at_least(3,0,0)
     R_forceSymbols(dll, TRUE);
 #endif
+
+
+    extern SEXP makePROMISE(SEXP expr, SEXP env);
+    extern SEXP makeEVPROMISE(SEXP expr, SEXP value);
+    R_RegisterCCallable("this.path", "makePROMISE", (DL_FUNC) makePROMISE);
+    R_RegisterCCallable("this.path", "makeEVPROMISE", (DL_FUNC) makeEVPROMISE);
 }

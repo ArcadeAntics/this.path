@@ -54,4 +54,21 @@
 #endif
 
 
+#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+    #define ptr_IS_SCALAR IS_SCALAR
+    #define ptr_R_PromiseExpr R_PromiseExpr
+    #define ptr_SET_PRCODE SET_PRCODE
+    #define ptr_SET_PRENV SET_PRENV
+    #define ptr_SET_PRVALUE SET_PRVALUE
+#else
+    #define NEED_R_4_5_0_FUNCTIONS
+    #include <Rinternals.h> /* need SEXP */
+    extern int (*ptr_IS_SCALAR)(SEXP x, int type);
+    extern SEXP (*ptr_R_PromiseExpr)(SEXP);
+    extern void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
+    extern void (*ptr_SET_PRENV)(SEXP x, SEXP v);
+    extern void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
+#endif
+
+
 #endif
