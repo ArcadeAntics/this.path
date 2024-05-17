@@ -39,19 +39,24 @@ withArgs(...)
   character. They are converted as follows:
 
   \describe{
-    \item{Factors (class \string{factor})}{using
-      \codelink3{base:character}{as.character.factor}{()}}
+    \item{Factors (class \string{factor})}{
 
-    \item{Date-Times (class \string{POSIXct} and \string{POSIXlt})}{using
-      format
+      using \codelink3{base:character}{as.character.factor}{()}}
+
+    \item{Date-Times (class \string{POSIXct} and \string{POSIXlt})}{
+
+      using format
       \ifelse{text}{"\%Y-\%m-\%d \%H:\%M:\%OS6"}{\code{"\%Y-\%m-\%d \%H:\%M:\%OS6"}}
       (retains as much precision as possible)}
 
-    \item{Numbers (class \string{numeric} and \string{complex})}{with 17
-      significant digits (retains as much precision as possible) and \string{.}
-      as the decimal point character.}
+    \item{Numbers (class \string{numeric} and \string{complex})}{
 
-    \item{Raw Bytes (class \string{raw})}{using
+      with 17 significant digits (retains as much precision as possible) and
+      \string{.} as the decimal point character.}
+
+    \item{Raw Bytes (class \string{raw})}{
+
+      using
       \ifelse{html}{\code{\link[base]{sprintf}("0x\%02x", )}}{\code{sprintf("0x\%02x", )}}
       (for easy conversion back to raw with \codelink3{base:raw}{as.raw}{()} or
       \codelink3{base:vector}{as.vector}{(, "raw")})}

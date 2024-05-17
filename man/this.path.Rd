@@ -115,8 +115,9 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   in use. If \R is running from:
 
   \describe{
-    \item{a shell, such as the Windows command-line / / Unix terminal}{then the
-      shell arguments are searched for \option{-f} \option{FILE} or
+    \item{a shell, such as the Windows command-line / / Unix terminal}{
+
+      then the shell arguments are searched for \option{-f} \option{FILE} or
       \option{--file=FILE} (the two methods of taking input from \option{FILE})
       (\option{-f} \option{-} and \option{--file=-} are ignored). The last
       \option{FILE} is extracted and returned. If no arguments of either type
@@ -127,51 +128,59 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
       not make use of its \option{-f} \option{FILE}, \option{--file=FILE}
       arguments.}
 
-    \item{\sQuote{Rgui}}{then the source document's filename (the document most
-      recently interacted with) is returned (at the time of evaluation). Please
-      note that minimized documents \emph{WILL} be included when looking for
-      the most recently used document. It is important to not leave the current
+    \item{\sQuote{Rgui}}{
+
+      then the source document's filename (the document most recently
+      interacted with) is returned (at the time of evaluation). Please note
+      that minimized documents \emph{WILL} be included when looking for the
+      most recently used document. It is important to not leave the current
       document (either by closing the document or interacting with another
       document) while any calls to \code{this.path()} have yet to be evaluated
       in the run selection. If no documents are open or the source document
       does not exist (not saved anywhere), an error is thrown.}
 
-    \item{\sQuote{\RStudio}}{then the active document's filename (the document
-      in which the cursor is active) is returned (at the time of evaluation).
-      If the active document is the \R console, the source document's filename
-      (the document open in the current tab) is returned (at the time of
-      evaluation). Please note that the source document will \emph{NEVER} be a
-      document open in another window (with the \strong{Show in new window}
-      button). Please also note that an active document open in another window
-      can sometimes lose focus and become inactive, thus returning the
-      incorrect path. It is best \strong{NOT} to not run \R code from a
-      document open in another window. It is important to not leave the current
-      tab (either by closing or switching tabs) while any calls to
-      \code{this.path()} have yet to be evaluated in the run selection. If no
-      documents are open or the source document does not exist (not saved
-      anywhere), an error is thrown.}
+    \item{\sQuote{\RStudio}}{
 
-    \item{\sQuote{\VSCode}}{then the source document's filename is returned (at
-      the time of evaluation). It is important to not leave the current tab
-      (either by closing or switching tabs) while any calls to
-      \code{this.path()} have yet to be evaluated in the run selection. If no
-      documents are open or the source document does not exist (not saved
-      anywhere), an error is thrown.}
+      then the active document's filename (the document in which the cursor is
+      active) is returned (at the time of evaluation). If the active document
+      is the \R console, the source document's filename (the document open in
+      the current tab) is returned (at the time of evaluation). Please note
+      that the source document will \emph{NEVER} be a document open in another
+      window (with the \strong{Show in new window} button). Please also note
+      that an active document open in another window can sometimes lose focus
+      and become inactive, thus returning the incorrect path. It is best
+      \strong{NOT} to not run \R code from a document open in another window.
+      It is important to not leave the current tab (either by closing or
+      switching tabs) while any calls to \code{this.path()} have yet to be
+      evaluated in the run selection. If no documents are open or the source
+      document does not exist (not saved anywhere), an error is thrown.}
 
-    \item{\sQuote{\Jupyter}}{then the source document's filename is guessed by
-      looking for \R notebooks in the initial working directory, then searching
-      the contents of those files for an expression matching the top-level
-      expression. Please be sure to save your notebook before using
-      \code{this.path()}, or explicitly use \code{\link{set.jupyter.path}()}.}
+    \item{\sQuote{\VSCode}}{
 
-    \item{\sQuote{\Emacs}}{then the source document's filename is returned (at
-      the time of evaluation). \sQuote{Emacs} must be running as a server,
-      either by running \code{(server-start)} (consider adding to your
-      \file{~/.emacs} file) or typing \code{M-x server-start}. It is important
-      to not leave the current window (either by closing or switching buffers)
-      while any calls to \code{this.path()} have yet to be evaluated in the run
-      selection. If multiple frames are active, \code{this.path()} will pick
-      the first frame containing the corresponding \R session.
+      then the source document's filename is returned (at the time of
+      evaluation). It is important to not leave the current tab (either by
+      closing or switching tabs) while any calls to \code{this.path()} have yet
+      to be evaluated in the run selection. If no documents are open or the
+      source document does not exist (not saved anywhere), an error is thrown.}
+
+    \item{\sQuote{\Jupyter}}{
+
+      then the source document's filename is guessed by looking for \R
+      notebooks in the initial working directory, then searching the contents
+      of those files for an expression matching the top-level expression.
+      Please be sure to save your notebook before using \code{this.path()}, or
+      explicitly use \code{\link{set.jupyter.path}()}.}
+
+    \item{\sQuote{\Emacs}}{
+
+      then the source document's filename is returned (at the time of
+      evaluation). \sQuote{Emacs} must be running as a server, either by
+      running \code{(server-start)} (consider adding to your \file{~/.emacs}
+      file) or typing \code{M-x server-start}. It is important to not leave the
+      current window (either by closing or switching buffers) while any calls
+      to \code{this.path()} have yet to be evaluated in the run selection. If
+      multiple frames are active, \code{this.path()} will pick the first frame
+      containing the corresponding \R session.
 
       If multiple \sQuote{Emacs} sessions are active, \code{this.path()} will
       only work in the primary session due to limitations in
@@ -192,12 +201,13 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
       Instead, use \code{C-x h} to select the entire buffer then \code{C-c C-r}
       to evaluate the selection.}
 
-    \item{\sQuote{AQUA}}{then the executing script's path cannot be determined.
-      Unlike \sQuote{Rgui}, \sQuote{RStudio}, \sQuote{VSCode},
-      \sQuote{Jupyter}, and \sQuote{Emacs}, there is currently no way to
-      request the path of an open document. Until such a time that there is a
-      method for requesting the path of an open document, consider using
-      another GUI.}
+    \item{\sQuote{AQUA}}{
+
+      then the executing script's path cannot be determined. Unlike
+      \sQuote{Rgui}, \sQuote{RStudio}, \sQuote{VSCode}, \sQuote{Jupyter}, and
+      \sQuote{Emacs}, there is currently no way to request the path of an open
+      document. Until such a time that there is a method for requesting the
+      path of an open document, consider using another GUI.}
   }
 
   If \R is running in another manner, an error is thrown.

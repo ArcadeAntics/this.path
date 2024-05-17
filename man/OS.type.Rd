@@ -16,31 +16,57 @@ OS.type
 
   A list with at least the following components:
 
-  \item{AIX}{Built under IBM AIX.}
+  \item{AIX}{
 
-  \item{HPUX}{Built under Hewlett-Packard HP-UX.}
+    Built under IBM AIX.}
 
-  \item{linux}{Built under some distribution of Linux.}
+  \item{HPUX}{
 
-  \item{darwin}{Built under Apple OSX and iOS (Darwin).}
+    Built under Hewlett-Packard HP-UX.}
 
-  \item{iOS.simulator}{Built under iOS in Xcode simulator.}
+  \item{linux}{
 
-  \item{iOS}{Built under iOS on iPhone, iPad, etc.}
+    Built under some distribution of Linux.}
 
-  \item{macOS}{Built under OSX.}
+  \item{darwin}{
 
-  \item{solaris}{Built under Solaris (SunOS).}
+    Built under Apple OSX and iOS (Darwin).}
 
-  \item{cygwin}{Built under Cygwin POSIX under Microsoft Windows.}
+  \item{iOS.simulator}{
 
-  \item{windows}{Built under Microsoft Windows.}
+    Built under iOS in Xcode simulator.}
 
-  \item{win64}{Built under Microsoft Windows (64-bit).}
+  \item{iOS}{
 
-  \item{win32}{Built under Microsoft Windows (32-bit).}
+    Built under iOS on iPhone, iPad, etc.}
 
-  \item{UNIX}{Built under a UNIX-style OS.}
+  \item{macOS}{
+
+    Built under OSX.}
+
+  \item{solaris}{
+
+    Built under Solaris (SunOS).}
+
+  \item{cygwin}{
+
+    Built under Cygwin POSIX under Microsoft Windows.}
+
+  \item{windows}{
+
+    Built under Microsoft Windows.}
+
+  \item{win64}{
+
+    Built under Microsoft Windows (64-bit).}
+
+  \item{win32}{
+
+    Built under Microsoft Windows (32-bit).}
+
+  \item{UNIX}{
+
+    Built under a UNIX-style OS.}
 }
 \source{
   \href{http://web.archive.org/web/20191012035921/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system}{http://web.archive.org/web/20191012035921/http://nadeausoftware.com/articles/2012/01/c_c_tip_how_use_compiler_predefined_macros_detect_operating_system}

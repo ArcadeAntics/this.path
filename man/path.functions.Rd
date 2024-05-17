@@ -19,25 +19,36 @@ path.functions(file, local = FALSE, n = 0,
 \value{
   An environment with at least the following bindings:
 
-  \item{this.path}{Function with formals
-    \code{(original = FALSE, contents = FALSE)} which returns the
+  \item{this.path}{
+
+    Function with formals \code{(original = FALSE, contents = FALSE)} which
+    returns the
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path, the original file path, or the contents of the file.}
 
-  \item{this.dir}{Function with no formals which returns the directory of the
+  \item{this.dir}{
+
+    Function with no formals which returns the directory of the
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path.}
 
-  \item{here}{Function with formals \code{(..., .. = 0)} which constructs file
-    paths, starting with the file's directory.}
+  \item{here}{
 
-  \item{this.proj}{Function with formals \code{(..., .. = 0)} which constructs
-    file paths, starting with the project root.}
+    Function with formals \code{(..., .. = 0)} which constructs file paths,
+    starting with the file's directory.}
 
-  \item{rel2here, rel2proj}{Functions with formals \code{(path)} which turn
-    absolute paths into relative paths, against the file's directory / /
-    project root.}
+  \item{this.proj}{
 
-  \item{LINENO}{Function with no formals which returns the line number of the
-    executing expression in \code{file}.}
+    Function with formals \code{(..., .. = 0)} which constructs file paths,
+    starting with the project root.}
+
+  \item{rel2here, rel2proj}{
+
+    Functions with formals \code{(path)} which turn absolute paths into
+    relative paths, against the file's directory / / project root.}
+
+  \item{LINENO}{
+
+    Function with no formals which returns the line number of the executing
+    expression in \code{file}.}
 }
