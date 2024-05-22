@@ -36,12 +36,11 @@ asArgs <- function (...)
 .asArgs(list(...))
 
 
-progArgs <- function ()
+progArgs <- function (ifnotfound = character())
 {
     n <- .External2(.C_getframenumber)
     if (n) {
         if (n > .toplevel.nframe()) {
-            value <- character()
             whiches <- .External2(.C_sys.whiches, n)
             ## remove the last element and reverse
             if (n <- length(whiches))
@@ -49,17 +48,17 @@ progArgs <- function ()
             for (which in whiches) {
                 if (.identical(sys.function(which), withArgs)) {
                     value <- get("args", envir = sys.frame(which), inherits = FALSE)
-                    break
+                    return(value)
                 }
             }
-            value
+            ifnotfound
         }
         ## in the site-wide startup profile file or a user profile
-        else character()
+        else ifnotfound
     }
     else if (.in_shell)
         commandArgs(trailingOnly = TRUE)
-    else character()
+    else ifnotfound
 }
 
 

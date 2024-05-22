@@ -1,6 +1,12 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{\code{progArgs()} now accepts argument \codeorsQuote{ifnotfound}
+        specifying what to do when no program arguments are found.}
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item{\code{this.path(original = TRUE)} used inside a \string{gzfile},

@@ -17,7 +17,7 @@
 }
 \usage{
 asArgs(...)
-progArgs()
+progArgs(ifnotfound = character())
 withArgs(...)
 }
 \arguments{
@@ -28,6 +28,9 @@ withArgs(...)
 
     for \code{withArgs()}, the first argument should be an (unevaluated) call
     to a \sourcenolink-like function.}
+
+  \item{ifnotfound}{any \R object, e.g., \code{character(0)}, \code{NULL}, a
+    call to \codelink3{base}{stop}{()}}
 }
 \details{
   \code{progArgs()} will return the arguments associated with the executing
