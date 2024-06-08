@@ -237,6 +237,7 @@ main <- function ()
             list.files(file, all.files = TRUE, full.names = TRUE, recursive = TRUE)
         else file
     }))
+    files <- grep("\\.dat$", files, value = TRUE, invert = TRUE)
 
 
     gsub_from_DESCRIPTION <- function(x) {
