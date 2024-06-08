@@ -36,7 +36,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming_CRAN_version <- "2.4.1"
+    upcoming_CRAN_version <- "2.5.0"
 
 
     if (!file.exists(this.path::here("tools", "maintainers-copy")))

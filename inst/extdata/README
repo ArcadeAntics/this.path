@@ -8,12 +8,16 @@ into another language.
 
 What we do in "main.R" is:
 
-  * launch a new Rgui process in each supported language and each C
-    Runtime (Microsoft Visual C++ Runtime and Universal C Runtime)
+  * launch a new Rgui process in each supported language and each
+    supported version of R
 
   * open an existing script and grab the translation of " - R Editor"
 
   * open a new script and grab the translation of "Untitled - R Editor"
 
-We will then save that information into files "r-editor_msvcrt.txt",
-"r-editor_ucrt.txt", "untitled_msvcrt.txt", and "untitled_ucrt.txt".
+We will then save that information into files
+"r-editor_msvcrt_2_15.dat", ..., "r-editor_ucrt_4_2.dat", ...,
+"untitled_msvcrt_2_15.dat", ..., and "untitled_ucrt_4_2.dat", ...
+
+Some of the files are redundant because the translations did not change
+from previous R versions, and in such cases we delete those files.

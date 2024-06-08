@@ -13,6 +13,9 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
       "xzfile", or "fifo" connection will no longer return a "file://"
       URL.
 
+    * this.path() once again works in 'Rgui' running in a Japanese or
+      Turkish locale.
+
 CHANGES IN this.path 2.4.0 (2024-02-16):
 
   SIGNIFICANT USER-VISIBLE CHANGES:

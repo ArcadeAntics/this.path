@@ -12,6 +12,9 @@
       \item{\code{this.path(original = TRUE)} used inside a \string{gzfile},
         \string{bzfile}, \string{xzfile}, or \string{fifo} connection will no
         longer return a \samp{file://} URL.}
+
+      \item{\code{this.path()} once again works in \sQuote{Rgui} running in a
+        Japanese or Turkish locale.}
     }
   }
 }

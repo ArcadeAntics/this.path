@@ -99,54 +99,46 @@
 ## path of active file in GUI          ----
 
 
-readLines2 <- function (path, default = character(0))
-{
-    conn <- tryCatch({
-        file(path, "rb", encoding = "")
-    }, error = function(e) NULL)
-    if (is.null(conn))
-        ## we do not throw a warning here because one should
-        ## have already been thrown, something like:
-        ##
-        ## Warning message:
-        ## In file(path, "rb", encoding = "") :
-        ## cannot open file '%s': No such file or directory
-        return(default)
-    on.exit(close(conn))
-    x <- readLines(conn)
-    if (!length(x) || length(x) %% 2L)
-        stop(sprintf("invalid '%s' contents", path))
-    encoding <- x[c(FALSE, TRUE)]
-    x        <- x[c(TRUE, FALSE)]
-    Encoding(x) <- encoding
-    x
-}
-
-
-.r_editor_msvcrt <- readLines2("./inst/extdata/r-editor_msvcrt.txt", " - R Editor")
-.r_editor_ucrt   <- readLines2("./inst/extdata/r-editor_ucrt.txt"  , " - R Editor")
-
-
-.untitled_msvcrt <- readLines2("./inst/extdata/untitled_msvcrt.txt", "Untitled - R Editor")
-.untitled_ucrt   <- readLines2("./inst/extdata/untitled_ucrt.txt"  , "Untitled - R Editor")
-
-
-rm(readLines2)
+.r_editor_info <- lapply(c("r-editor", "untitled"), function(name) {
+    dir <- "./inst/extdata"
+    pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
+    files <- list.files(dir, pattern)
+    matches <- regmatches(files, regexec(pattern, files))
+    info <- data.frame(
+        crt  = vapply(matches, `[[`, "", 2L),
+        vrsn = paste(
+            vapply(matches, `[[`, "", 3L),
+            vapply(matches, `[[`, "", 4L),
+            0L,
+            sep = ".",
+            recycle0 = TRUE
+        ),
+        as.data.frame.vector(lapply(file.path(dir, files), .read_C_strings_with_encoding), nm = "matches")
+    )
+    info <- info[order(R_system_version(info$vrsn), decreasing = TRUE), , drop = FALSE]
+    info
+})
+.untitled_info <- .r_editor_info[[2L]]
+.r_editor_info <- .r_editor_info[[1L]]
 
 
 delayedAssign(".r_editor", {
-    if (.GUI_Rgui) {
-        if (.ucrt)
-            .r_editor_ucrt
-        else .r_editor_msvcrt
-    }
+    if (.GUI_Rgui) local({
+        i <- match(TRUE, .r_editor_info$crt == (if (.ucrt) "ucrt" else "msvcrt") &
+                         .r_editor_info$vrsn <= getRversion())
+        if (is.na(i))
+            " - R Editor"
+        else .r_editor_info[[i, "matches"]]
+    })
 })
 delayedAssign(".untitled", {
-    if (.GUI_Rgui) {
-        if (.ucrt)
-            .untitled_ucrt
-        else .untitled_msvcrt
-    }
+    if (.GUI_Rgui) local({
+        i <- match(TRUE, .untitled_info$crt == (if (.ucrt) "ucrt" else "msvcrt") &
+                         .untitled_info$vrsn <= getRversion())
+        if (is.na(i))
+            "Untitled - R Editor"
+        else .untitled_info[[i, "matches"]]
+    })
 })
 
 
