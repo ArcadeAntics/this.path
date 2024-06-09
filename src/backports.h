@@ -167,4 +167,9 @@ extern int IS_UTF8(SEXP x);
 #endif
 
 
+#if R_version_less_than(4,5,0)
+extern SEXP Rf_allocLang(int n);
+#endif
+
+
 #endif /* R_THISPATH_BACKPORTS_H */

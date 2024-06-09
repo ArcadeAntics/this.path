@@ -30,13 +30,11 @@ R_xlen_t dispatch_xlength(SEXP x, SEXP rho)
 SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP rho)
 {
     if (Rf_isObject(x)) {
-        SEXP expr = Rf_allocList(3);
+        SEXP expr = Rf_allocLang(3);
         Rf_protect(expr);
-        SET_TYPEOF(expr, LANGSXP);
         SETCAR(expr, getFromBase(R_Bracket2Symbol));
         if (needQuote(x)) {
-            SEXP expr2 = SETCADR(expr, Rf_allocList(2));
-            SET_TYPEOF(expr2, LANGSXP);
+            SEXP expr2 = SETCADR(expr, Rf_allocLang(2));
             SETCAR (expr2, getFromBase(R_QuoteSymbol));
             SETCADR(expr2, x);
         }
@@ -863,6 +861,21 @@ Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
     Rboolean lvalue = LOGICAL(value)[0];
     Rf_unprotect(2);
     return lvalue;
+}
+
+
+#endif
+
+
+#if R_version_less_than(4,5,0)
+
+
+SEXP Rf_allocLang(int n)
+{
+    if (n > 0)
+        return Rf_lcons(R_NilValue, Rf_allocList(n - 1));
+    else
+        return R_NilValue;
 }
 
 

@@ -811,17 +811,14 @@ SEXP do_onLoad do_formals
     }
 
 
-    expr_knitr_output_dir = Rf_allocList(2);
+    expr_knitr_output_dir = Rf_allocLang(2);
     R_PreserveObject(expr_knitr_output_dir);
-    SET_TYPEOF(expr_knitr_output_dir, LANGSXP);
     {
-        SEXP tmp = SETCAR(expr_knitr_output_dir, Rf_allocList(3));
-        SET_TYPEOF(tmp, LANGSXP);
+        SEXP tmp = SETCAR(expr_knitr_output_dir, Rf_allocLang(3));
         SETCADR(expr_knitr_output_dir, Rf_mkString("output.dir"));
         {
             SETCAR(tmp, getFromBase(R_Bracket2Symbol));
-            SEXP tmp2 = SETCADR(tmp, Rf_allocList(3));
-            SET_TYPEOF(tmp2, LANGSXP);
+            SEXP tmp2 = SETCADR(tmp, Rf_allocLang(3));
             SETCADDR(tmp, Rf_mkString("get"));
             {
                 SETCAR  (tmp2, getFromBase(R_DoubleColonSymbol));
@@ -832,18 +829,16 @@ SEXP do_onLoad do_formals
     }
 
 
-    expr_testthat_source_file_uses_brio_read_lines = Rf_allocList(3);
+    expr_testthat_source_file_uses_brio_read_lines = Rf_allocLang(3);
     R_PreserveObject(expr_testthat_source_file_uses_brio_read_lines);
-    SET_TYPEOF(expr_testthat_source_file_uses_brio_read_lines, LANGSXP);
     {
         SETCAR(expr_testthat_source_file_uses_brio_read_lines, getFromBase(Rf_install(">=")));
-        SEXP tmp = SETCADR(expr_testthat_source_file_uses_brio_read_lines, Rf_allocList(2));
-        SET_TYPEOF(tmp, LANGSXP);
+        SEXP tmp = SETCADR(expr_testthat_source_file_uses_brio_read_lines, Rf_allocLang(2));
         SETCADDR(expr_testthat_source_file_uses_brio_read_lines, Rf_mkString("3.1.2"));
         {
             SETCAR(tmp, getFromBase(Rf_install("as.numeric_version")));
-            SEXP tmp2 = SETCADR(tmp, Rf_allocList(2));
-            SET_TYPEOF(tmp2, LANGSXP);
+            SEXP tmp2 = SETCADR(tmp, Rf_allocLang(2));
+
             {
                 SETCAR (tmp2, getFromBase(Rf_install("getNamespaceVersion")));
                 SETCADR(tmp2, Rf_ScalarString(PRINTNAME(testthatSymbol)));
