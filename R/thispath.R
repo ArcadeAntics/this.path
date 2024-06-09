@@ -105,17 +105,15 @@
     files <- list.files(dir, pattern)
     matches <- regmatches(files, regexec(pattern, files))
     info <- data.frame(
-        crt  = vapply(matches, `[[`, "", 2L),
-        vrsn = paste(
+        crt = vapply(matches, `[[`, "", 2L),
+        vrsn = R_system_version(sprintf(
+            "%s.%s.0",
             vapply(matches, `[[`, "", 3L),
-            vapply(matches, `[[`, "", 4L),
-            0L,
-            sep = ".",
-            recycle0 = TRUE
-        ),
+            vapply(matches, `[[`, "", 4L)
+        )),
         as.data.frame.vector(lapply(file.path(dir, files), .read_C_strings_with_encoding), nm = "matches")
     )
-    info <- info[order(R_system_version(info$vrsn), decreasing = TRUE), , drop = FALSE]
+    info <- info[order(info$vrsn, decreasing = TRUE), , drop = FALSE]
     info
 })
 .untitled_info <- .r_editor_info[[2L]]
