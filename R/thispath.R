@@ -100,6 +100,25 @@
 
 
 .r_editor_info <- lapply(c("r-editor", "untitled"), function(name) {
+    ## for R 2.15, avoid forcing .C_mapply promise
+    assign(
+        ".mapply",
+        function(FUN, dots, MoreArgs) {
+            do.call(
+                "mapply",
+                c(list(FUN = FUN), dots, list(MoreArgs = MoreArgs, SIMPLIFY = FALSE, USE.NAMES = FALSE)),
+                quote = TRUE
+            )
+        },
+        envir = environment(.read_C_strings) <- new.env(parent = environment(.read_C_strings))
+    )
+    assign(
+        ".read_C_strings",
+        .read_C_strings,
+        envir = environment(.read_C_strings_with_encoding) <- new.env(parent = environment(.read_C_strings_with_encoding))
+    )
+
+
     dir <- "./inst/extdata"
     pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
     files <- .BaseNamespaceEnv$list.files(dir, pattern)
