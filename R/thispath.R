@@ -102,7 +102,7 @@
 .r_editor_info <- lapply(c("r-editor", "untitled"), function(name) {
     dir <- "./inst/extdata"
     pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
-    files <- list.files(dir, pattern)
+    files <- .BaseNamespaceEnv$list.files(dir, pattern)
     matches <- regmatches(files, regexec(pattern, files))
     info <- data.frame(
         crt = vapply(matches, `[[`, "", 2L),
