@@ -37,7 +37,7 @@
     #include <Rinternals.h> /* need definition of Rf_defineVar, Rf_ScalarLogical */
     #include "symbols.h"    /* need definition of _this_path_valueSymbol, _this_path_visibleSymbol */
     #define set_this_path_value(v) { Rf_defineVar(_this_path_valueSymbol, (v), rho); }
-    #define set_this_path_visible(v) { (v) ? TRUE : (Rf_defineVar(_this_path_visibleSymbol, Rf_ScalarLogical(0), rho), FALSE); }
+    #define set_this_path_visible(v) { (v) ? 0xDEADBEEF : Rf_defineVar(_this_path_visibleSymbol, Rf_ScalarLogical(0), rho); }
 #elif defined(R_THIS_PATH_DEVEL)
     #include <R_ext/Boolean.h> /* need definition of Rboolean, TRUE, FALSE */
     extern Rboolean R_Visible;

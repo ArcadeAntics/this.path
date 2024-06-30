@@ -10,10 +10,6 @@ delayedAssign(".C_mapply", { getNativeSymbolInfo("do_mapply", PACKAGE = "base") 
 .Call(.C_mapply, match.fun(FUN), dots, MoreArgs, environment())
 
 
-.SET_PRSEEN_2 <- function (ptr)
-.External2(.C_SET_PRSEEN_2, ptr)
-
-
 list.files <- function (path = ".", pattern = NULL, all.files = FALSE, full.names = FALSE,
     recursive = FALSE, ignore.case = FALSE, include.dirs = FALSE,
     no.. = FALSE)

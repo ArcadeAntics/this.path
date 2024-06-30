@@ -187,8 +187,6 @@ if (getRversion() < "3.0.0") {
     ## backports.R  ----
 
 
-    fix_External2(.SET_PRSEEN_2)
-
     fix_External2(anyNA)
     fix_External2(anyNA.data.frame)
     fix_External2(anyNA.numeric_version)
