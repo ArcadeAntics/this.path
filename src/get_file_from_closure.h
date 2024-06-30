@@ -53,15 +53,16 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
 
         get_and_check(file, fileSymbol);
         /* if the promise has not already been forced, just get the original */
-        if (PRVALUE(file) == R_UnboundValue)
+        if (ptr_PRVALUE(file) == R_UnboundValue)
             original = TRUE;
         else
-            return PRVALUE(file);
+            return ptr_PRVALUE(file);
     }
     if (original) {
+#if defined(R_THIS_PATH_HAS_PRSEEN)
 #define get_and_return(var, sym)                               \
         get_and_check(var, sym);                               \
-        if (PRVALUE(var) == R_UnboundValue) {                  \
+        if (ptr_PRVALUE(var) == R_UnboundValue) {              \
             /* unlike a normal promise, we DO NOT want to */   \
             /* throw a warning if var is re-evaluated     */   \
             if (PRSEEN(var)) {                                 \
@@ -74,7 +75,22 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
             return var;                                        \
         }                                                      \
         else                                                   \
-            return PRVALUE(var)
+            return ptr_PRVALUE(var)
+#else
+#define get_and_return(var, sym)                               \
+        get_and_check(var, sym);                               \
+        if (ptr_PRVALUE(var) == R_UnboundValue) {              \
+            Rf_protect(var);                                   \
+            SEXP x = Rf_eval(ptr_PRCODE(var), ptr_PRENV(var)); \
+            ptr_SET_PRVALUE(var, x);                           \
+            ENSURE_NAMEDMAX(x);                                \
+            ptr_SET_PRENV(var, R_NilValue);                    \
+            Rf_unprotect(1);                                   \
+            return x;                                          \
+        }                                                      \
+        else                                                   \
+            return ptr_PRVALUE(var)
+#endif
 
 
         get_and_return(ofile, ofileSymbol);

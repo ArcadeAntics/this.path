@@ -1,6 +1,6 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
-\section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+\section{CHANGES IN VERSION 2.5.0 (2024-06-29)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{progArgs()} now accepts argument \codeorsQuote{ifnotfound}

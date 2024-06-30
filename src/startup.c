@@ -16,18 +16,21 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
         Rf_error("invalid '%s', is not a promise", R_CHAR(PRINTNAME(exprSymbol)));
 
 
-    SEXP code = PRCODE(promise);
+    SEXP code = ptr_PRCODE(promise);
     if (TYPEOF(code) != LANGSXP || CAR(code) != R_BraceSymbol)
         Rf_error("invalid '%s', expected a braced expression", R_CHAR(PRINTNAME(exprSymbol)));
-    if (PRVALUE(promise) != R_UnboundValue)
+    if (ptr_PRVALUE(promise) != R_UnboundValue)
         Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));
 
 
     if (check_is_valid_init_file_expr) {
         if (already_set_init_file) return R_FalseValue;
         return Rf_ScalarLogical(ATTRIB(code) == R_NilValue &&
-                                PRENV(promise) == R_GlobalEnv &&
-                                PRSEEN(promise) == 0);
+                                ptr_PRENV(promise) == R_GlobalEnv
+#if defined(R_THIS_PATH_HAS_PRSEEN)
+                                && PRSEEN(promise) == 0
+#endif
+                                );
     }
 
 
@@ -38,7 +41,7 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
 
 
     code = CDR(code);
-    SEXP env = PRENV(promise);
+    SEXP env = ptr_PRENV(promise);
     SEXP withVisible = getFromBase(withVisibleSymbol);
     Rf_protect(withVisible); nprotect++;
 
@@ -49,23 +52,6 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
     R_ProtectWithIndex(value = R_NilValue, &value_indx); nprotect++;
 
 
-    extern SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho);
-
-
-    SEXP ptr = on_exit_SET_PRSEEN_2(R_NilValue, rho);
-    Rf_protect(ptr); nprotect++;
-    R_SetExternalPtrProtected(ptr, Rf_cons(promise, R_NilValue));
-    if (PRSEEN(promise)) {
-        if (PRSEEN(promise) == 1)
-            Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
-        else {
-            SET_PRSEEN(promise, 1);
-            Rf_warning(_("restarting interrupted promise evaluation"));
-        }
-    }
-    else SET_PRSEEN(promise, 1);
-
-
     for (; code != R_NilValue; code = CDR(code)) {
         R_Reprotect(expr = Rf_lcons(withVisible, Rf_cons(CAR(code), R_NilValue)), expr_indx);
         R_Reprotect(value = Rf_eval(expr, env), value_indx);
@@ -74,10 +60,11 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
     }
 
 
-    SET_PRSEEN (promise, 0);
-    SET_PRVALUE(promise, value);
-    SET_PRENV  (promise, R_NilValue);
-    R_SetExternalPtrProtected(ptr, R_NilValue);
+#if defined(R_THIS_PATH_HAS_PRSEEN)
+        SET_PRSEEN (promise, 0);
+#endif
+    ptr_SET_PRVALUE(promise, value);
+    ptr_SET_PRENV  (promise, R_NilValue);
 
 
     Rf_unprotect(nprotect);

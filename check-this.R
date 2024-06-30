@@ -31,7 +31,12 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
     FILE <- "./tools/for-r-mac-builder"
             if (!file.create(FILE)) stop(sprintf("unable to create file '%s'", FILE))
     on.exit(if (!file.remove(FILE)) stop(sprintf("unable to remove file '%s'", FILE)))
-    essentials:::.check_this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
+    essentials:::.check_this(
+        build_opts = list(user = "iris"),
+        INSTALL = FALSE,
+        check = FALSE,
+        chdir = TRUE
+    )
 })
 
 
@@ -89,7 +94,12 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
 
 
     essentials:::.update_DESCRIPTION_Date()
-    essentials:::.check_this(INSTALL = FALSE, check = FALSE, chdir = TRUE)
+    essentials:::.check_this(
+        build_opts = list(user = "iris"),
+        INSTALL = FALSE,
+        check = FALSE,
+        chdir = TRUE
+    )
 })
 
 
@@ -162,12 +172,12 @@ local({
     files <- dir(all.files = TRUE, full.names = TRUE, no.. = TRUE)
     files <- setdiff(files, c("./.git", "./.Rproj.user"))
     files <- grep("\\.Rcheck$", files, value = TRUE, invert = TRUE)
-    files <- grep("(\\.tar\\.gz|\\.zip|\\.tgz)$", files, value = TRUE, invert = TRUE)
     files <- unlist(lapply(files, function(file) {
         if (dir.exists(file))
             dir(file, all.files = TRUE, full.names = TRUE, recursive = TRUE)
         else file
     }))
+    files <- grep("(\\.tar\\.gz|\\.zip|\\.tgz|\\.dat)$", files, value = TRUE, invert = TRUE)
     Rfiles <- files[grepl("(?i)\\.R$", basename(files))]
     Rdfiles <- files[grepl("(?i)\\.Rd$", basename(files))]
     files

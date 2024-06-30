@@ -168,7 +168,7 @@ SEXP do_ThisPathInZipFileError do_formals
 {
     do_start_no_op_rho("ThisPathInZipFileError", 2);
     SEXP call2 = Rf_lazy_duplicate(CAR(args)); args = CDR(args);
-    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -181,7 +181,7 @@ SEXP do_ThisPathInZipFileError do_formals
 SEXP do_ThisPathNotExistsError do_formals
 {
     do_start_no_op_rho("ThisPathNotExistsError", 2);
-    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -194,7 +194,7 @@ SEXP do_ThisPathNotExistsError do_formals
 SEXP do_ThisPathNotFoundError do_formals
 {
     do_start_no_op_rho("ThisPathNotFoundError", 2);
-    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -207,7 +207,7 @@ SEXP do_ThisPathNotFoundError do_formals
 SEXP do_ThisPathNotImplementedError do_formals
 {
     do_start_no_op_rho("ThisPathNotImplementedError", 2);
-    if (!ptr_IS_SCALAR(CAR(args), STRSXP) ||
+    if (!IS_SCALAR(CAR(args), STRSXP) ||
         STRING_ELT(CAR(args), 0) == NA_STRING)
     {
         Rf_errorcall(call, _("invalid first argument"));
@@ -311,14 +311,16 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         switch (op) {
         case TRYCATCHOP_2:
         {
-            SEXP fun = Rf_allocSExp(CLOSXP), formals;
-            Rf_protect(fun);
-            MARK_NOT_MUTABLE_defineVar(funSymbol, fun, rho);
-            SET_FORMALS(fun, formals = Rf_cons(R_MissingArg, R_NilValue));
+            SEXP formals = Rf_cons(R_MissingArg, R_NilValue);
+            Rf_protect(formals);
             SET_TAG(formals, cSymbol);
-            SET_BODY(fun, Rf_lcons(invisibleSymbol, R_NilValue));
-            SET_CLOENV(fun, rho);
-            Rf_unprotect(1);
+
+            SEXP body = Rf_lcons(invisibleSymbol, R_NilValue);
+            Rf_protect(body);
+
+            MARK_NOT_MUTABLE_defineVar(funSymbol, R_mkClosure(formals, body, rho), rho);
+            Rf_unprotect(2);
+
             SEXP expr0 = funSymbol;
             for (int i = dots_length - 1; i >= 0; i--) {
                 SEXP dot = Rf_nthcdr(dots, i);
@@ -336,34 +338,36 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         }
         case TRYCATCHOP_3:
         {
-            SEXP fun0 = Rf_allocSExp(CLOSXP), formals, body, assign_last_condition;
-            MARK_NOT_MUTABLE(fun0);
-            Rf_protect(fun0);
-            SET_FORMALS(fun0, formals = Rf_cons(R_MissingArg, R_NilValue));
+            SEXP fun0, formals, assign_last_condition;
+
+            formals = Rf_cons(R_MissingArg, R_NilValue);
             Rf_protect(formals);
             SET_TAG(formals, cSymbol);
-            SET_BODY(
-                fun0,
-                body = Rf_lcons(
-                    R_BraceSymbol,
+
+            SEXP body = Rf_lcons(
+                R_BraceSymbol,
+                Rf_cons(
+                    R_NilValue,
                     Rf_cons(
-                        R_NilValue,
-                        Rf_cons(
-                            Rf_lcons(invisibleSymbol, R_NilValue),
-                            R_NilValue
-                        )
+                        Rf_lcons(invisibleSymbol, R_NilValue),
+                        R_NilValue
                     )
                 )
             );
-            SETCADR(
+            Rf_protect(body);
+
+            assign_last_condition = SETCADR(
                 body,
-                assign_last_condition = Rf_lcons(
+                Rf_lcons(
                     _last_conditionSymbol,
                     Rf_cons(cSymbol, R_NilValue)
                 )
             );
-            Rf_protect(assign_last_condition);
-            SET_CLOENV(fun0, rho);
+
+            fun0 = R_mkClosure(formals, body, rho);
+            MARK_NOT_MUTABLE(fun0);
+            Rf_protect(fun0);
+
             SEXP funs = Rf_allocVector(VECSXP, dots_length);
             Rf_protect(funs);
             MARK_NOT_MUTABLE_defineVar(funsSymbol, funs, rho);
@@ -372,21 +376,20 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
                 if (CAR(dot) == R_MissingArg)
                     SET_VECTOR_ELT(funs, i, fun0);
                 else {
-                    SET_VECTOR_ELT(funs, i, fun0 = Rf_allocSExp(CLOSXP));
-                    SET_FORMALS(fun0, formals);
                     char buf[15];
                     snprintf(buf, 15, "..%d", i + 1);
-                    SET_BODY(
-                        fun0,
+                    fun0 = R_mkClosure(
+                        formals,
                         Rf_lcons(
                             R_BraceSymbol,
                             Rf_cons(
                                 assign_last_condition,
                                 Rf_cons(Rf_install(buf), R_NilValue)
                             )
-                        )
+                        ),
+                        rho
                     );
-                    SET_CLOENV(fun0, rho);
+                    SET_VECTOR_ELT(funs, i, fun0);
                 }
                 R_Reprotect(
                     expr = Rf_cons(
@@ -466,7 +469,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         SEXP do_else = Rf_findVarInFrame(rho, do_elseSymbol);
         if (do_else == R_UnboundValue)
             Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(do_elseSymbol)));
-        if (!ptr_IS_SCALAR(do_else, LGLSXP))
+        if (!IS_SCALAR(do_else, LGLSXP))
             Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(do_elseSymbol)));
         switch (LOGICAL(do_else)[0]) {
         case TRUE:

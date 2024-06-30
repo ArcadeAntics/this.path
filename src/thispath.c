@@ -204,7 +204,7 @@ SEXP do_splitlines do_formals
 {
     do_start_no_op_rho("splitlines", 1);
     SEXP x = CAR(args);
-    if (!ptr_IS_SCALAR(x, STRSXP))
+    if (!IS_SCALAR(x, STRSXP))
         Rf_errorcall(call, _("argument must be a character string"));
     SEXP x0 = STRING_ELT(x, 0);
     const char *str = R_CHAR(x0);
@@ -425,7 +425,7 @@ SEXP do_set_jupyter_path do_formals
     }
 
 
-    if (!ptr_IS_SCALAR(path, STRSXP))
+    if (!IS_SCALAR(path, STRSXP))
         Rf_errorcall(call, _("'%s' must be a character string"), "path");
     if (STRING_ELT(path, 0) == NA_STRING);
     else if (is_abs_path(R_CHAR(STRING_ELT(path, 0))));
@@ -465,14 +465,18 @@ SEXP do_set_jupyter_path do_formals
     ptr_SET_PRCODE(ofile, path);
     ptr_SET_PRENV(ofile, R_NilValue);
     ptr_SET_PRVALUE(ofile, path);
+#if defined(R_THIS_PATH_HAS_PRSEEN)
     SET_PRSEEN(ofile, 0);
+#endif
 
 
     /* restore the promise 'file' to its original state */
     // ptr_SET_PRCODE(file, );
     ptr_SET_PRENV(file, env);
     ptr_SET_PRVALUE(file, R_UnboundValue);
+#if defined(R_THIS_PATH_HAS_PRSEEN)
     SET_PRSEEN(file, 0);
+#endif
 
 
     set_R_Visible(FALSE);
@@ -532,7 +536,7 @@ SEXP do_set_gui_path do_formals
             _custom_gui_path_character_environment,
             guinameSymbol
         )));
-        SET_VECTOR_ELT(value, 1, PRVALUE(Rf_findVarInFrame(
+        SET_VECTOR_ELT(value, 1, ptr_PRVALUE(Rf_findVarInFrame(
             _custom_gui_path_character_environment,
             ofileSymbol
         )));
@@ -610,7 +614,7 @@ SEXP do_set_gui_path do_formals
         case LISTSXP: guiname = CAR(dots); break;
         case VECSXP: guiname = VECTOR_ELT(dots, 0); break;
         }
-        if (!ptr_IS_SCALAR(guiname, STRSXP) || STRING_ELT(guiname, 0) == NA_STRING)
+        if (!IS_SCALAR(guiname, STRSXP) || STRING_ELT(guiname, 0) == NA_STRING)
             Rf_error(_("invalid first argument"));
         SEXP path = R_NilValue;  /* for -Wall */
         switch (t) {
@@ -624,7 +628,7 @@ SEXP do_set_gui_path do_formals
         case LISTSXP: path = CADR(dots); break;
         case VECSXP: path = VECTOR_ELT(dots, 1); break;
         }
-        if (!ptr_IS_SCALAR(path, STRSXP))
+        if (!IS_SCALAR(path, STRSXP))
             Rf_error("invalid '%s' argument; expected a character string", "path");
         if (!is_abs_path(R_CHAR(STRING_ELT(path, 0))))
             Rf_error("invalid '%s' argument; expected an absolute path", "path");
@@ -672,13 +676,17 @@ SEXP do_set_gui_path do_formals
         ptr_SET_PRCODE(ofile, path);
         ptr_SET_PRENV(ofile, R_NilValue);
         ptr_SET_PRVALUE(ofile, path);
+#if defined(R_THIS_PATH_HAS_PRSEEN)
         SET_PRSEEN(ofile, 0);
+#endif
 
 
         /* restore the promise 'file' to its original state */
         ptr_SET_PRENV(file, _custom_gui_path_character_environment);
         ptr_SET_PRVALUE(file, R_UnboundValue);
+#if defined(R_THIS_PATH_HAS_PRSEEN)
         SET_PRSEEN(file, 0);
+#endif
 
 
         Rf_defineVar(_get_contentsSymbol, _getContents, _custom_gui_path_character_environment);
@@ -1197,6 +1205,22 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
 
 
+#if defined(R_THIS_PATH_HAS_PRSEEN)
+#define forcePromise_no_warning                                \
+                        if (PRSEEN(file)) {                    \
+                            if (PRSEEN(file) == 1);            \
+                            else SET_PRSEEN(file, 0);          \
+                        }                                      \
+                        returnthis = Rf_eval(file, R_EmptyEnv)
+#else
+#define forcePromise_no_warning                                \
+                        returnthis = Rf_eval(ptr_PRCODE(file), ptr_PRENV(file));\
+                        ptr_SET_PRVALUE(file, returnthis);     \
+                        ENSURE_NAMEDMAX(returnthis);           \
+                        ptr_SET_PRENV(file, R_NilValue)
+#endif
+
+
 #define _returnfile(which, source, unprotect) do {             \
             if (documentcontext == R_EmptyEnv) break;          \
             SEXP returnthis = NULL;                            \
@@ -1234,12 +1258,12 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }                                                  \
             else if (contents && !ISUNBOUND(lines = Rf_findVarInFrame(documentcontext, linesSymbol))) {\
                 if (TYPEOF(lines) == PROMSXP) {                \
-                    if (PRVALUE(lines) == R_UnboundValue) {    \
+                    if (ptr_PRVALUE(lines) == R_UnboundValue) {\
                         Rf_protect(lines);                     \
                         lines = Rf_eval(lines, R_EmptyEnv);    \
                         Rf_unprotect(1);                       \
                     }                                          \
-                    else lines = PRVALUE(lines);               \
+                    else lines = ptr_PRVALUE(lines);           \
                 }                                              \
                 if (TYPEOF(lines) != STRSXP)                   \
                     Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(linesSymbol)));\
@@ -1261,7 +1285,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(fileSymbol)));\
                 if (TYPEOF(file) != PROMSXP)                   \
                     Rf_error("invalid '%s', is not a promise; should never happen, please report!", R_CHAR(PRINTNAME(fileSymbol)));\
-                if (PRVALUE(file) == R_UnboundValue) {         \
+                if (ptr_PRVALUE(file) == R_UnboundValue) {     \
                     if (original || for_msg) {                 \
                         ofile = Rf_findVarInFrame(documentcontext, ofileSymbol);\
                         if (ofile == R_UnboundValue)           \
@@ -1269,14 +1293,10 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                         returnthis = ofile;                    \
                     }                                          \
                     else {                                     \
-                        if (PRSEEN(file)) {                    \
-                            if (PRSEEN(file) == 1);            \
-                            else SET_PRSEEN(file, 0);          \
-                        }                                      \
-                        returnthis = Rf_eval(file, R_EmptyEnv);\
+                        forcePromise_no_warning;               \
                     }                                          \
                 }                                              \
-                else returnthis = PRVALUE(file);               \
+                else returnthis = ptr_PRVALUE(file);           \
             }                                                  \
             if (verbose) {                                     \
                 SEXP osource = Rf_findVarInFrame(documentcontext, sourceSymbol);\
@@ -1316,7 +1336,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 #define check_path_only do {                                   \
                 ofile = getInFrame(fileSymbol, frame, FALSE);  \
-                if (!ptr_IS_SCALAR(ofile, STRSXP))             \
+                if (!IS_SCALAR(ofile, STRSXP))                 \
                     Rf_error(_("'%s' must be a character string"), R_CHAR(PRINTNAME(fileSymbol)));\
                 file = STRING_ELT(ofile, 0);                   \
                 const char *url = R_CHAR(file);                \
@@ -1342,7 +1362,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = Rf_findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(fileSymbol)));
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 SEXP wd = Rf_findVarInFrame(frame, owdSymbol);
                 if (srcfile && wd == R_UnboundValue)
                     wd = Rf_findVarInFrame(srcfile, wdSymbol);
@@ -1385,7 +1405,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (documentcontext == R_EmptyEnv) continue;
             check_documentcontext_env;
             SEXP n = Rf_findVarInFrame(documentcontext, nSymbol);
-            if (!ptr_IS_SCALAR(n, INTSXP))
+            if (!IS_SCALAR(n, INTSXP))
                 Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(nSymbol)));
             returnfile(n, source_char);
         }
@@ -1403,7 +1423,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = Rf_findVarInFrame(frame, fileNameSymbol);
                 if (ofile == R_UnboundValue)
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(fileNameSymbol)));
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ fileNameSymbol,
@@ -1451,7 +1471,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = Rf_findVarInFrame(frame, scriptSymbol);
                 if (ofile == R_UnboundValue)
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(scriptSymbol)));
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -1492,7 +1512,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = Rf_findVarInFrame(frame, fileSymbol);
                 if (ofile == R_UnboundValue)
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(fileSymbol)));
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ fileSymbol,
@@ -1556,7 +1576,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                         R_CHAR(PRINTNAME(R_NamesSymbol)), Rf_type2char(TYPEOF(names)));
             }
             SEXP ofile = Rf_findVarInFrame(frame, fileSymbol);
-            if (!ptr_IS_SCALAR(ofile, STRSXP)) continue;
+            if (!IS_SCALAR(ofile, STRSXP)) continue;
             SEXP file = STRING_ELT(ofile, 0);
             R_xlen_t indx = -999;
             for (R_xlen_t i = 0, n = Rf_xlength(names); i < n; i++) {
@@ -1735,7 +1755,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = Rf_findVarInFrame(frame, fileSymbol);
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 SEXP wd = srcfile ? Rf_findVarInFrame(srcfile, wdSymbol) : R_UnboundValue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
@@ -1825,7 +1845,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = Rf_findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -1862,7 +1882,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = Rf_findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -1914,7 +1934,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 SEXP ofile = Rf_findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 SEXP wd = srcfile ? Rf_findVarInFrame(srcfile, wdSymbol) : Rf_findVarInFrame(frame, oldSymbol);
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
@@ -1960,16 +1980,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 {
                     SEXP tmp = Rf_findVarInFrame(frame, sourceSymbol);
                     if (TYPEOF(tmp) == PROMSXP) {
-                        /* if tmp is a promise already under evaluation */
-                        if (PRSEEN(tmp) == 1) continue;
                         /* we expect this promise to already be forced */
-                        if (PRVALUE(tmp) == R_UnboundValue) continue;
-                        tmp = PRVALUE(tmp);
+                        if (ptr_PRVALUE(tmp) == R_UnboundValue) continue;
+                        tmp = ptr_PRVALUE(tmp);
                     }
                     if (Rf_asLogical(tmp) != TRUE) continue;
                 }
                 SEXP ofile = Rf_findVarInFrame(frame, scriptSymbol);
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
                     /* sym                    */ scriptSymbol,
@@ -2016,7 +2034,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 ofile = Rf_findVarInFrame(frame, pathSymbol);
                 if (ofile == R_UnboundValue)
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(pathSymbol)));
-                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = PRVALUE(ofile))) continue;
+                if (TYPEOF(ofile) == PROMSXP && ISUNBOUND(ofile = ptr_PRVALUE(ofile))) continue;
                 int ignore_all = Rf_asLogical(Rf_eval(expr_testthat_source_file_uses_brio_read_lines, R_EmptyEnv));
                 SEXP wd = Rf_findVarInFrame(frame, old_dirSymbol);
                 if (srcfile && wd == R_UnboundValue)
@@ -2131,7 +2149,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
             SEXP n = Rf_findVarInFrame(documentcontext, nSymbol);
-            if (!ptr_IS_SCALAR(n, INTSXP))
+            if (!IS_SCALAR(n, INTSXP))
                 Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(nSymbol)));
             /* this could happen with eval() or similar */
             if (iwhich[0] != INTEGER(n)[0]) continue;
@@ -2175,7 +2193,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             return value;
         if (gave_contents)
             return value;
-        if (!ptr_IS_SCALAR(value, STRSXP))
+        if (!IS_SCALAR(value, STRSXP))
             Rf_error("internal error; invalid '%s' value", "_sys_path()");
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
@@ -2199,9 +2217,9 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
 
         if (!contents)
             return value;
-        if (ptr_IS_SCALAR(value, VECSXP))
+        if (IS_SCALAR(value, VECSXP))
             return VECTOR_ELT(value, 0);
-        if (!ptr_IS_SCALAR(value, STRSXP))
+        if (!IS_SCALAR(value, STRSXP))
             Rf_error("internal error; invalid '%s()' value", R_CHAR(PRINTNAME(_gui_pathSymbol)));
         if (STRING_ELT(value, 0) == NA_STRING)
             return R_NilValue;
@@ -2230,13 +2248,13 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
         SEXP value = Rf_eval(expr, _custom_gui_path_function_environment);
         Rf_protect(value);
         if (contents) {
-            if (for_msg && ptr_IS_SCALAR(value, STRSXP) && STRING_ELT(value, 0) == NA_STRING)
+            if (for_msg && IS_SCALAR(value, STRSXP) && STRING_ELT(value, 0) == NA_STRING)
                 value = R_NilValue;
             else if (TYPEOF(value) == STRSXP)
                 value = fixNewlines(value);
         }
         else {
-            if (!ptr_IS_SCALAR(value, STRSXP))
+            if (!IS_SCALAR(value, STRSXP))
                 Rf_errorcall(expr, "invalid return value; must be a character string");
             if (for_msg);
             else if (is_abs_path(R_CHAR(STRING_ELT(value, 0))));
@@ -2483,7 +2501,7 @@ SEXP env_path8(Rboolean verbose, Rboolean original, Rboolean for_msg,
         return value;
     if (gave_contents)
         return value;
-    if (!ptr_IS_SCALAR(value, STRSXP))
+    if (!IS_SCALAR(value, STRSXP))
         Rf_error("internal error; invalid '%s' value", "_env_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;
@@ -2566,7 +2584,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
     if (get_lineno) {
-        if (x == NULL || ptr_IS_SCALAR(x, INTSXP)) {
+        if (x == NULL || IS_SCALAR(x, INTSXP)) {
             Rf_protect(srcref = sys_srcref(x ? INTEGER(x)[0] : 0, rho));
             SEXP returnthis = Rf_ScalarInteger(
                 ISNULL(srcref) ? (NA_INTEGER) : (INTEGER(srcref)[0])
@@ -2631,7 +2649,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     }
 
 
-    if (x == NULL || ptr_IS_SCALAR(x, INTSXP)) {
+    if (x == NULL || IS_SCALAR(x, INTSXP)) {
 
 
 #define get_srcfile_from_srcref do {                           \
@@ -2828,7 +2846,7 @@ SEXP src_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
         return value;
     if (gave_contents)
         return value;
-    if (!ptr_IS_SCALAR(value, STRSXP))
+    if (!IS_SCALAR(value, STRSXP))
         Rf_error("internal error; invalid '%s' value", "_src_path()");
     if (STRING_ELT(value, 0) == NA_STRING)
         return R_NilValue;

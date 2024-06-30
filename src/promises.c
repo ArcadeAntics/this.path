@@ -91,8 +91,17 @@ SEXP do_is_unevaluated_promise do_formals
 
 
     SEXP value;
-    if (DDVAL(sym))
+#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+#define if_DDVAL_ddfindVar                                     \
+    if (DDVAL(sym))                                            \
         value = ddfindVar(sym, env);
+#else
+#define if_DDVAL_ddfindVar                                     \
+    int i;                                                     \
+    if ((i = ddVal(sym)))                                      \
+        value = ddfind(i, env);
+#endif
+    if_DDVAL_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
@@ -100,7 +109,7 @@ SEXP do_is_unevaluated_promise do_formals
 
 
     return Rf_ScalarLogical(TYPEOF(value) == PROMSXP &&
-                            PRVALUE(value) == R_UnboundValue);
+                            ptr_PRVALUE(value) == R_UnboundValue);
 }
 
 
@@ -116,8 +125,7 @@ SEXP do_promise_is_unevaluated do_formals
 
 
     SEXP value;
-    if (DDVAL(sym))
-        value = ddfindVar(sym, env);
+    if_DDVAL_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
@@ -128,7 +136,7 @@ SEXP do_promise_is_unevaluated do_formals
         Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
-    return Rf_ScalarLogical(PRVALUE(value) == R_UnboundValue);
+    return Rf_ScalarLogical(ptr_PRVALUE(value) == R_UnboundValue);
 }
 
 
@@ -148,8 +156,7 @@ SEXP do_forcePromise_no_warn do_formals
 
 
     SEXP value;
-    if (DDVAL(sym))
-        value = ddfindVar(sym, env);
+    if_DDVAL_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
@@ -160,16 +167,23 @@ SEXP do_forcePromise_no_warn do_formals
         Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
-    if (PRVALUE(value) == R_UnboundValue) {
+    if (ptr_PRVALUE(value) == R_UnboundValue) {
+        Rf_protect(value);
+#if defined(R_THIS_PATH_HAS_PRSEEN)
         if (PRSEEN(value)) {
             if (PRSEEN(value) == 1);
             else SET_PRSEEN(value, 0);
         }
-        Rf_protect(value);
         Rf_eval(value, env);
+#else
+        SEXP x = Rf_eval(ptr_PRCODE(value), ptr_PRENV(value));
+        ptr_SET_PRVALUE(value, x);
+        ENSURE_NAMEDMAX(x);
+        ptr_SET_PRENV(value, R_NilValue);
+#endif
         Rf_unprotect(1);
     }
-    return PRVALUE(value);
+    return ptr_PRVALUE(value);
 }
 
 
@@ -178,6 +192,7 @@ SEXP do_forcePromise_no_warn do_formals
 
 SEXP makePROMISE(SEXP expr, SEXP env)
 {
+#if defined(R_THIS_PATH_HAS_PRSEEN)
     ENSURE_NAMEDMAX(expr);
     SEXP s = Rf_allocSExp(PROMSXP);
     ptr_SET_PRCODE(s, expr);
@@ -186,6 +201,19 @@ SEXP makePROMISE(SEXP expr, SEXP env)
     SET_PRSEEN(s, 0);
     SET_ATTRIB(s, R_NilValue);
     return s;
+#else
+    SEXP my_envir = R_NewEnv(R_BaseEnv, 1, 1);
+    Rf_protect(my_envir);
+    SEXP my_expr = Rf_lcons(Rf_install("delayedAssign"), Rf_cons(Rf_mkString("x"), Rf_cons(R_NilValue, Rf_cons(R_EmptyEnv, R_NilValue))));
+    Rf_protect(my_expr);
+    Rf_eval(my_expr, my_envir);
+    SEXP s = Rf_findVarInFrame(my_envir, xSymbol);
+    Rf_protect(s);
+    ptr_SET_PRCODE(s, expr);
+    ptr_SET_PRENV(s, env);
+    Rf_unprotect(3);
+    return s;
+#endif
 }
 
 
@@ -209,8 +237,7 @@ SEXP do_is_R_MissingArg do_formals
 
 
     SEXP value;
-    if (DDVAL(sym))
-        value = ddfindVar(sym, env);
+    if_DDVAL_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)

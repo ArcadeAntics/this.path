@@ -67,8 +67,10 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
 
 
 #if defined(R_VERSION) && R_VERSION >= R_Version(4,5,0)
-    R_RegisterCCallable("this_path_reg_ptrs", "IS_SCALAR", (DL_FUNC) IS_SCALAR);
+    R_RegisterCCallable("this_path_reg_ptrs", "PRCODE", (DL_FUNC) PRCODE);
+    R_RegisterCCallable("this_path_reg_ptrs", "PRENV", (DL_FUNC) PRENV);
     R_RegisterCCallable("this_path_reg_ptrs", "R_PromiseExpr", (DL_FUNC) R_PromiseExpr);
+    R_RegisterCCallable("this_path_reg_ptrs", "PRVALUE", (DL_FUNC) PRVALUE);
     R_RegisterCCallable("this_path_reg_ptrs", "SET_PRCODE", (DL_FUNC) SET_PRCODE);
     R_RegisterCCallable("this_path_reg_ptrs", "SET_PRENV", (DL_FUNC) SET_PRENV);
     R_RegisterCCallable("this_path_reg_ptrs", "SET_PRVALUE", (DL_FUNC) SET_PRVALUE);

@@ -35,10 +35,6 @@ extern0 SEXP0
 #if R_version_less_than(3,0,0)
     _this_path_valueSymbol                 INI_as(Rf_install(".this_path_value")),
     _this_path_visibleSymbol               INI_as(Rf_install(".this_path_visible")),
-    _SET_PRSEEN_2Symbol                    INI_as(Rf_install(".SET_PRSEEN_2")),
-#else
-    _External2Symbol                       INI_as(Rf_install(".External2")),
-    _C_SET_PRSEEN_2Symbol                  INI_as(Rf_install(".C_SET_PRSEEN_2")),
 #endif
 #if R_version_less_than(3,1,0)
     _anyNA_dispatchSymbol                  INI_as(Rf_install(".anyNA_dispatch")),

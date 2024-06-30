@@ -11,61 +11,6 @@ Rboolean asFlag(SEXP x, const char *name)
 }
 
 
-SEXP do_SET_PRSEEN_2 do_formals
-{
-    do_start_no_op_rho("SET_PRSEEN_2", 1);
-
-
-    SEXP ptr = CAR(args);
-    if (TYPEOF(ptr) != EXTPTRSXP)
-        Rf_errorcall(call, "invalid first argument, must be an external pointer");
-    SEXP promises = R_ExternalPtrProtected(ptr);
-    /* 'promises' is an empty pairlist, so nothing to do */
-    if (TYPEOF(promises) == NILSXP)
-        return R_NilValue;
-    if (TYPEOF(promises) != LISTSXP)
-        Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist");
-    for (SEXP x = promises; x != R_NilValue; x = CDR(x)) {
-        if (TYPEOF(CAR(x)) != PROMSXP)
-            Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' must be a pairlist of promises, not type '%s'", Rf_type2char(TYPEOF(CAR(x))));
-        if (PRSEEN(CAR(x)) != 1)
-            Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' contains a promise in which PRSEEN is not 1");
-        if (PRVALUE(CAR(x)) != R_UnboundValue)
-            Rf_errorcall(call, "invalid first argument, 'R_ExternalPtrProtected()' contains a promise for which 'PRVALUE()' is defined");
-    }
-    /* now that we know the list is safe to modify, change all the PRSEEN
-       value to 2, the value used for interrupted promises */
-    for (; promises != R_NilValue; promises = CDR(promises))
-        SET_PRSEEN(CAR(promises), 2);
-    return R_NilValue;
-}
-
-
-SEXP on_exit_SET_PRSEEN_2(SEXP promises, SEXP rho)
-{
-    SEXP ptr = R_MakeExternalPtr(NULL, R_NilValue, promises);
-    /* ptr does not need to be protected, but rchk complains if it is not */
-    Rf_protect(ptr);
-    SEXP expr;
-    PROTECT_INDEX indx;
-    R_ProtectWithIndex(expr = Rf_cons(ptr, R_NilValue), &indx);
-#if R_version_at_least(3,0,0)
-    /* .External2(.C_SET_PRSEEN_2, ptr) */
-    R_Reprotect(expr = Rf_cons(getFromMyNS(_C_SET_PRSEEN_2Symbol), expr), indx);
-    R_Reprotect(expr = Rf_lcons(getFromBase(_External2Symbol), expr), indx);
-#else
-    /* .SET_PRSEEN_2(ptr) */
-    R_Reprotect(expr = Rf_lcons(getFromMyNS(_SET_PRSEEN_2Symbol), expr), indx);
-#endif
-    R_Reprotect(expr = Rf_cons(expr, Rf_cons(R_TrueValue, R_NilValue)), indx);
-    SET_TAG(CDR(expr), addSymbol);
-    R_Reprotect(expr = Rf_lcons(getFromBase(on_exitSymbol), expr), indx);
-    Rf_eval(expr, rho);
-    Rf_unprotect(2);
-    return ptr;
-}
-
-
 SEXP do_wrap_source do_formals
 {
     do_start_no_op("wrap_source", 20);
@@ -82,6 +27,8 @@ SEXP do_wrap_source do_formals
     if (TYPEOF(promise) != PROMSXP)
         Rf_error("invalid '%s', must be a promise; should never happen, please report!",
               R_CHAR(PRINTNAME(exprSymbol)));
+    if (ptr_PRVALUE(promise) != R_UnboundValue)
+        Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));
 
 
     /* determine context number for .getframenumber() */
@@ -169,50 +116,19 @@ SEXP do_wrap_source do_formals
 
 
     SEXP frame = rho;
-    SEXP ptr;
-    SEXP promises = R_NilValue;
     SEXP documentcontext;
-
-
-    /* we will be modifying the PRSEEN values of the promises,
-     * but we need to change them to 0 or 2 depending upon whether
-     * this returns a value as normal or the promises get interrupted
-     *
-     * save the root promise, the original code of the promise,
-     * and make an on.exit() call that will restore said promise
-     */
-    ptr = on_exit_SET_PRSEEN_2(promises, rho);
-
-
-#define check_validity                                         \
-    do {                                                       \
-        if (PRVALUE(promise) != R_UnboundValue)                \
-            Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));\
-        R_SetExternalPtrProtected(ptr, promises = Rf_cons(promise, promises));\
-        if (PRSEEN(promise)) {                                 \
-            if (PRSEEN(promise) == 1)                          \
-                Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));\
-            else {                                             \
-                SET_PRSEEN(promise, 1);                        \
-                Rf_warning(_("restarting interrupted promise evaluation"));\
-            }                                                  \
-        }                                                      \
-        else SET_PRSEEN(promise, 1);                           \
-    } while (0)
-
-
-    check_validity;
 
 
     /* find the root promise */
     while (TYPEOF(ptr_R_PromiseExpr(promise)) == PROMSXP) {
         promise = ptr_R_PromiseExpr(promise);
-        check_validity;
+        if (ptr_PRVALUE(promise) != R_UnboundValue)
+            Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));
     }
 
 
     SEXP expr = ptr_R_PromiseExpr(promise),
-         env  = PRENV (promise);
+         env  = ptr_PRENV (promise);
 
 
     if (expr == R_MissingArg)
@@ -239,17 +155,10 @@ SEXP do_wrap_source do_formals
 #endif
 
 
-#define set_prvalues_then_return(expr, env)                    \
+#define eval_then_return(expr, env)                            \
     do {                                                       \
         eval_with_visible((expr), (env));                      \
         ENSURE_NAMEDMAX(tmp);                                  \
-        while (promises != R_NilValue) {                       \
-            SEXP p = CAR(promises);                            \
-            SET_PRSEEN (p, 0);                                 \
-            SET_PRVALUE(p, tmp);                               \
-            SET_PRENV  (p, R_NilValue);                        \
-            R_SetExternalPtrProtected(ptr, promises = CDR(promises));\
-        }                                                      \
         Rf_unprotect(nprotect);                                \
         return tmp;                                            \
     } while (0)
@@ -259,7 +168,7 @@ SEXP do_wrap_source do_formals
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        set_prvalues_then_return(PRCODE(promise), env);
+        eval_then_return(ptr_PRCODE(promise), env);
     }
 
 
@@ -437,7 +346,7 @@ SEXP do_wrap_source do_formals
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
-        set_prvalues_then_return(expr, env);
+        eval_then_return(expr, env);
     }
 
 
@@ -472,7 +381,7 @@ SEXP do_wrap_source do_formals
     }
 
 
-    SEXP ofile = ((TYPEOF(e) == PROMSXP) ? PRVALUE(e) : e);
+    SEXP ofile = ((TYPEOF(e) == PROMSXP) ? ptr_PRVALUE(e) : e);
 
 
     SEXP returnvalue;  /* this is never used */
@@ -509,10 +418,10 @@ SEXP do_wrap_source do_formals
     if (documentcontext != R_EmptyEnv) {
         define_n(context_number, documentcontext);
     }
-    set_prvalues_then_return(expr, env);
+    eval_then_return(expr, env);
 
 
-#undef set_prvalues_then_return
+#undef eval_then_return
 }
 
 
@@ -734,7 +643,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
             Rf_error("invalid '%s' value, expected R_MissingArg or a promise", R_CHAR(PRINTNAME(fileSymbol)));
         if (TYPEOF(ptr_R_PromiseExpr(value)) != SYMSXP)
             Rf_error("invalid '%s' value, expected a symbol", R_CHAR(PRINTNAME(fileSymbol)));
-        value = Rf_findVarInFrame(PRENV(value), ptr_R_PromiseExpr(value));
+        value = Rf_findVarInFrame(ptr_PRENV(value), ptr_R_PromiseExpr(value));
         if (value == R_UnboundValue)
             Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(ptr_R_PromiseExpr(value))));
         return value;

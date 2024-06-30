@@ -108,8 +108,10 @@ Rconnection (*ptr_R_GetConnection)(SEXP sConn);
 void (*ptr_set_R_Visible)(Rboolean x);
 #endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
-int (*ptr_IS_SCALAR)(SEXP x, int type);
-SEXP (*ptr_R_PromiseExpr)(SEXP);
+SEXP (*ptr_PRCODE)(SEXP x);
+SEXP (*ptr_PRENV)(SEXP x);
+SEXP (*ptr_R_PromiseExpr)(SEXP x);
+SEXP (*ptr_PRVALUE)(SEXP x);
 void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
 void (*ptr_SET_PRENV)(SEXP x, SEXP v);
 void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
@@ -131,14 +133,21 @@ Rconnection R_GetConnection(SEXP sConn)
 
 #if defined(NEED_R_4_5_0_FUNCTIONS)
 /* create default values for the function pointers */
-int ptr_IS_SCALAR_default(SEXP x, int type)
+SEXP ptr_PRCODE_default(SEXP x)
 {
-    return TYPEOF(x) == type && Rf_xlength(x) == 1;
+    Rf_error("'%s' is not available", "PRCODE");
 }
-SEXP ptr_R_PromiseExpr_default(SEXP p)
+SEXP ptr_PRENV_default(SEXP x)
+{
+    Rf_error("'%s' is not available", "PRENV");
+}
+SEXP ptr_R_PromiseExpr_default(SEXP x)
 {
     Rf_error("'%s' is not available", "R_PromiseExpr");
-    return R_NilValue;
+}
+SEXP ptr_PRVALUE_default(SEXP x)
+{
+    Rf_error("'%s' is not available", "PRVALUE");
 }
 void ptr_SET_PRCODE_default(SEXP x, SEXP v)
 {
@@ -169,10 +178,14 @@ SEXP do_get_ptrs do_formals
         R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
 #endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
-    ptr_IS_SCALAR = (int(*)(SEXP,int))
-        R_GetCCallable("this_path_reg_ptrs", "IS_SCALAR");
+    ptr_PRCODE = (SEXP(*)(SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "PRCODE");
+    ptr_PRENV = (SEXP(*)(SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "PRENV");
     ptr_R_PromiseExpr = (SEXP(*)(SEXP))
         R_GetCCallable("this_path_reg_ptrs", "R_PromiseExpr");
+    ptr_PRVALUE = (SEXP(*)(SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "PRVALUE");
     ptr_SET_PRCODE = (void(*)(SEXP,SEXP))
         R_GetCCallable("this_path_reg_ptrs", "SET_PRCODE");
     ptr_SET_PRENV = (void(*)(SEXP,SEXP))
@@ -248,8 +261,10 @@ SEXP do_onLoad do_formals
 
 
 #if defined(NEED_R_4_5_0_FUNCTIONS)
-    ptr_IS_SCALAR = ptr_IS_SCALAR_default;
+    ptr_PRCODE = ptr_PRCODE_default;
+    ptr_PRENV = ptr_PRENV_default;
     ptr_R_PromiseExpr = ptr_R_PromiseExpr_default;
+    ptr_PRVALUE = ptr_PRVALUE_default;
     ptr_SET_PRCODE = ptr_SET_PRCODE_default;
     ptr_SET_PRENV = ptr_SET_PRENV_default;
     ptr_SET_PRVALUE = ptr_SET_PRVALUE_default;
@@ -737,7 +752,17 @@ SEXP do_onLoad do_formals
     }
 
 
+#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
     eval_op = INTERNAL(R_EvalSymbol);
+#else
+    {
+        SEXP evalqSymbol = Rf_install("evalq");
+        SEXP expr = Rf_lcons(evalqSymbol, Rf_cons(Rf_lcons(sys_functionSymbol, R_NilValue), R_NilValue));
+        Rf_protect(expr);
+        eval_op = Rf_eval(expr, R_BaseEnv);
+        Rf_unprotect(1);
+    }
+#endif
     if (TYPEOF(eval_op) != BUILTINSXP)
         Rf_error(_("object '%s' of mode '%s' was not found"),
               R_CHAR(PRINTNAME(R_EvalSymbol)), "builtin");
@@ -927,6 +952,30 @@ SEXP do_onUnload do_formals
     SEXP libpath = CAR(args);
 
 
+    {
+        /* on.exit(library.dynam.unload("@R_PACKAGE_NAME@", libpath)) */
+        SEXP expr;
+        PROTECT_INDEX indx;
+        R_ProtectWithIndex(expr = Rf_cons(libpath, R_NilValue), &indx);
+        R_Reprotect(expr = Rf_cons(Rf_mkString("@R_PACKAGE_NAME@"), expr), indx);
+        R_Reprotect(expr = Rf_lcons(getFromBase(Rf_install("library.dynam.unload")), expr), indx);
+        R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
+        R_Reprotect(expr = Rf_lcons(getFromBase(on_exitSymbol), expr), indx);
+        Rf_eval(expr, rho);
+        Rf_unprotect(1);
+    }
+
+
+#if !defined(R_THIS_PATH_DEVEL)
+    {
+        SEXP expr = Rf_lcons(Rf_install(".maybe_dyn_unload"), R_NilValue);
+        Rf_protect(expr);
+        Rf_eval(expr, mynamespace);
+        Rf_unprotect(1);
+    }
+#endif
+
+
 #define maybe_release(var) if ((var)) R_ReleaseObject((var))
 
 
@@ -966,29 +1015,6 @@ SEXP do_onUnload do_formals
     maybe_release(expr__toplevel_nframe);
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
-
-
-#if !defined(R_THIS_PATH_DEVEL)
-    {
-        SEXP expr = Rf_lcons(Rf_install(".maybe_dyn_unload"), R_NilValue);
-        Rf_protect(expr);
-        Rf_eval(expr, mynamespace);
-        Rf_unprotect(1);
-    }
-#endif
-
-
-    {
-        SEXP expr;
-        PROTECT_INDEX indx;
-        R_ProtectWithIndex(expr = Rf_cons(libpath, R_NilValue), &indx);
-        R_Reprotect(expr = Rf_cons(Rf_mkString("@R_PACKAGE_NAME@"), expr), indx);
-        R_Reprotect(expr = Rf_lcons(getFromBase(Rf_install("library.dynam.unload")), expr), indx);
-        R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
-        R_Reprotect(expr = Rf_lcons(getFromBase(on_exitSymbol), expr), indx);
-        Rf_eval(expr, rho);
-        Rf_unprotect(1);
-    }
 
 
     return R_NilValue;

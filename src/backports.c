@@ -103,12 +103,6 @@ SEXP Rf_shallow_duplicate(SEXP s)
 }
 
 
-int IS_SCALAR(SEXP x, int type)
-{
-    return TYPEOF(x) == type && Rf_xlength(x) == 1;
-}
-
-
 Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho);
 
 
@@ -272,6 +266,31 @@ SEXP do_anyNA_default do_formals
 {
     do_start_no_call_op("anyNA.default", 2);
     return Rf_ScalarLogical(anyNA_default(CAR(args), Rf_asLogical(CADR(args)), rho));
+}
+
+
+#endif
+
+
+#if defined(R_THIS_PATH_NEED_IS_SCALAR)
+
+
+int IS_SCALAR(SEXP x, int type)
+{
+    switch (type) {
+    case LGLSXP:
+    case INTSXP:
+    case REALSXP:
+    case CPLXSXP:
+    case STRSXP:
+    case RAWSXP:
+
+    case VECSXP:
+    case EXPRSXP:
+        return TYPEOF(x) == type && XLENGTH(x) == 1;
+    default:
+        return 0;
+    }
 }
 
 
@@ -682,10 +701,10 @@ SEXP do_endsWith do_formals
 #endif
 
 
-#if R_version_less_than(3,5,0)
-
-
 #define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? Rf_length(_v_) : 0)
+
+
+#if R_version_less_than(3,5,0)
 
 
 SEXP do_dotslength do_formals
@@ -699,6 +718,12 @@ SEXP do_dotslength do_formals
         Rf_error(_("incorrect context: the current call has no '...' to look in"));
     return Rf_ScalarInteger(length_DOTS(vl));
 }
+
+
+#endif
+
+
+#if defined(ddfind)
 
 
 SEXP ddfind(int i, SEXP rho)
@@ -721,16 +746,13 @@ SEXP ddfind(int i, SEXP rho)
 }
 
 
-#undef length_DOTS
-
-
 #endif
 
 
+#undef length_DOTS
+
+
 #if R_version_less_than(3,6,0)
-
-
-SEXP R_shallow_duplicate_attr(SEXP x) { return Rf_shallow_duplicate(x); }
 
 
 SEXP Rf_installTrChar(SEXP x)
@@ -827,6 +849,12 @@ SEXP R_NewEnv(SEXP enclos, int hash, int size)
 }
 
 
+#endif
+
+
+#if defined(IS_ASCII)
+
+
 int IS_ASCII(SEXP x)
 {
     for (const char *s = R_CHAR(x); *s; s++) {
@@ -856,7 +884,7 @@ Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol)
     R_Reprotect(expr = Rf_cons(Rf_ScalarString(PRINTNAME(symbol)), expr), indx);
     R_Reprotect(expr = Rf_lcons(getFromBase(existsSymbol), expr), indx);
     SEXP value = Rf_protect(Rf_eval(expr, R_EmptyEnv));
-    if (!ptr_IS_SCALAR(value, LGLSXP))
+    if (!IS_SCALAR(value, LGLSXP))
         Rf_error(_("invalid '%s' value"), "exists()");
     Rboolean lvalue = LOGICAL(value)[0];
     Rf_unprotect(2);
@@ -876,6 +904,45 @@ SEXP Rf_allocLang(int n)
         return Rf_lcons(R_NilValue, Rf_allocList(n - 1));
     else
         return R_NilValue;
+}
+
+
+SEXP R_mkClosure(SEXP formals, SEXP body, SEXP rho)
+{
+    SEXP c = Rf_allocSExp(CLOSXP);
+
+    SET_FORMALS(c, formals);
+
+    switch (TYPEOF(body)) {
+    case CLOSXP:
+    case BUILTINSXP:
+    case SPECIALSXP:
+    case DOTSXP:
+    case ANYSXP:
+        Rf_error(_("invalid body argument for 'function'"));
+        break;
+    default:
+        SET_BODY(c, body);
+        break;
+    }
+
+    if (rho == R_NilValue)
+        SET_CLOENV(c, R_GlobalEnv);
+    else
+        SET_CLOENV(c, rho);
+    return c;
+}
+
+
+#endif
+
+
+#if defined(Rf_isValidStringF)
+
+
+Rboolean Rf_isValidStringF(SEXP x)
+{
+    return (TYPEOF(x) == STRSXP && LENGTH(x) > 0 && TYPEOF(STRING_ELT(x, 0)) != NILSXP) && R_CHAR(STRING_ELT(x, 0))[0];
 }
 
 

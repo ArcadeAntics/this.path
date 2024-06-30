@@ -233,7 +233,6 @@ extern SEXP do_reset_proj do_formals;
 /* setsyspath.c */
 
 
-extern SEXP do_SET_PRSEEN_2          do_formals;
 extern SEXP do_wrap_source           do_formals;
 extern SEXP do_set_sys_path          do_formals;
 extern SEXP do_unset_sys_path        do_formals;

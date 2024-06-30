@@ -25,6 +25,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
     const char *ptr;  /* points to the entire string from Rf_translateCharUTF8() */
     int *need_trailing_slash;  /* which strings need a slash afterward */
+    need_trailing_slash = (int *) R_alloc(x_length, sizeof(int));
 
 
     int len, nchar;
@@ -43,7 +44,7 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
         ptr = "";  /* for -Wall */
-        need_trailing_slash = (int *) calloc(x_length, sizeof(int));  /* which strings need a slash afterward */
+        memset(need_trailing_slash, 0, x_length * sizeof(int));
 
 
         /* we're going to work backwards here
@@ -446,6 +447,7 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
     const char *ptr;
     int *need_trailing_slash;
+    need_trailing_slash = (int *) R_alloc(x_length, sizeof(int));
 
 
     int len, nchar;
@@ -458,7 +460,7 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
         ptr = "";
-        need_trailing_slash = (int *) calloc(x_length, sizeof(int));
+        memset(need_trailing_slash, 0, x_length * sizeof(int));
 
 
         /* we're going to work backwards here
@@ -537,7 +539,7 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
 
 
             /* an empty string does not need to be copied to the buffer
-             * and will never need a trailing backslash
+             * and will never need a trailing slash
              */
             if (!nchar)
                 continue;

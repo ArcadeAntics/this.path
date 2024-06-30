@@ -117,12 +117,12 @@ SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
     if (!unbound_ok && value == R_UnboundValue)
         Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
     if (TYPEOF(value) == PROMSXP) {
-        if (PRVALUE(value) == R_UnboundValue) {
+        if (ptr_PRVALUE(value) == R_UnboundValue) {
             Rf_protect(value);
             value = Rf_eval(value, R_EmptyEnv);
             Rf_unprotect(1);
         }
-        else value = PRVALUE(value);
+        else value = ptr_PRVALUE(value);
     }
     return value;
 }
@@ -166,12 +166,12 @@ SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call)
         vl = Rf_findVarInFrame(rho, symbol);
         if (vl != R_UnboundValue) {
             if (TYPEOF(vl) == PROMSXP) {
-                if (PRVALUE(vl) == R_UnboundValue) {
+                if (ptr_PRVALUE(vl) == R_UnboundValue) {
                     Rf_protect(vl);
                     vl = Rf_eval(vl, R_EmptyEnv);
                     Rf_unprotect(1);
                 }
-                else vl = PRVALUE(vl);
+                else vl = ptr_PRVALUE(vl);
             }
             if (TYPEOF(vl) == CLOSXP ||
                 TYPEOF(vl) == BUILTINSXP ||
@@ -459,6 +459,23 @@ SEXP get_debugSource(void)
 }
 
 
+int my_HASHASH(SEXP x)
+{
+#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+    return HASHTAB(x) != R_NilValue;
+#else
+    static SEXP env_profileSymbol = NULL;
+    if (env_profileSymbol == NULL)
+        env_profileSymbol = Rf_install("env.profile");
+    SEXP expr = Rf_lcons(env_profileSymbol, Rf_cons(x, R_NilValue));
+    Rf_protect(expr);
+    int value = Rf_eval(expr, R_BaseEnv) != R_NilValue;
+    Rf_unprotect(1);
+    return value;
+#endif
+}
+
+
 SEXP duplicateEnv(SEXP env)
 {
     if (TYPEOF(env) != ENVSXP)
@@ -467,7 +484,7 @@ SEXP duplicateEnv(SEXP env)
         return env;
     SEXP value = R_NewEnv(
         /* enclos */ ENCLOS(env),
-        /* hash */ HASHTAB(env) != R_NilValue,
+        /* hash */ my_HASHASH(env),
         /* size */ 29
     );
     Rf_protect(value);

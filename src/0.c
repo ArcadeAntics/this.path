@@ -185,7 +185,6 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* setsyspath.c */
 
 
-{"SET_PRSEEN_2"         , (DL_FUNC) &do_SET_PRSEEN_2         ,  1},
 {"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20}, // R_Visible updatable
 {"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 21},
 {"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0}, // R_Visible off
