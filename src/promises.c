@@ -202,16 +202,12 @@ SEXP makePROMISE(SEXP expr, SEXP env)
     SET_ATTRIB(s, R_NilValue);
     return s;
 #else
-    SEXP my_envir = R_NewEnv(R_BaseEnv, 1, 1);
-    Rf_protect(my_envir);
-    SEXP my_expr = Rf_lcons(Rf_install("delayedAssign"), Rf_cons(Rf_mkString("x"), Rf_cons(R_NilValue, Rf_cons(R_EmptyEnv, R_NilValue))));
-    Rf_protect(my_expr);
-    Rf_eval(my_expr, my_envir);
-    SEXP s = Rf_findVarInFrame(my_envir, xSymbol);
+    Rf_eval(expr_makePROMISE, R_EmptyEnv);
+    SEXP s = Rf_findVarInFrame(makePROMISE_environment, xSymbol);
     Rf_protect(s);
     ptr_SET_PRCODE(s, expr);
     ptr_SET_PRENV(s, env);
-    Rf_unprotect(3);
+    Rf_unprotect(1);
     return s;
 #endif
 }

@@ -17,7 +17,8 @@ extern SEXP mynamespace,
             ThisPathUnrecognizedMannerErrorClass         ,
             last_condition,
             _custom_gui_path_character_environment,
-            _custom_gui_path_function_environment ;
+            _custom_gui_path_function_environment ,
+            makePROMISE_environment;
 
 
 extern SEXP expr_commandArgs                              ,
@@ -37,7 +38,8 @@ extern SEXP expr_commandArgs                              ,
             expr_testthat_source_file_uses_brio_read_lines,
             expr__toplevel_nframe                         ,
             expr__isMethodsDispatchOn                     ,
-            expr_UseMethod_lengths                        ;
+            expr_UseMethod_lengths                        ,
+            expr_makePROMISE                              ;
 
 
 #endif /* R_THISPATH_NSHOOKS_H */

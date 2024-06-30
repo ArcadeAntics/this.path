@@ -16,7 +16,8 @@ SEXP mynamespace = NULL,
      ThisPathUnrecognizedMannerErrorClass          = NULL,
      last_condition = NULL,
      _custom_gui_path_character_environment = NULL,
-     _custom_gui_path_function_environment  = NULL;
+     _custom_gui_path_function_environment  = NULL,
+     makePROMISE_environment = NULL;
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
@@ -58,7 +59,9 @@ SEXP expr_commandArgs                               = NULL,
      /* .isMethodsDispatchOn() */
      expr__isMethodsDispatchOn                      = NULL,
      /* UseMethod("lengths") */
-     expr_UseMethod_lengths                         = NULL;
+     expr_UseMethod_lengths                         = NULL,
+     /* delayedAssign("x", NULL, R_EmptyEnv, makePROMISE_environment) */
+     expr_makePROMISE                               = NULL;
 
 
 LibExtern Rboolean mbcslocale;
@@ -437,16 +440,6 @@ SEXP do_onLoad do_formals
         R_NewEnv(/* enclos */ mynamespace, /* hash */ TRUE, /* size */ 10);
     R_PreserveObject(_custom_gui_path_character_environment);
     Rf_defineVar(guinameSymbol, R_MissingArg, _custom_gui_path_character_environment);
-#if defined(NEED_R_4_5_0_FUNCTIONS)
-    {
-        Rf_defineVar(ofileSymbol, R_NilValue, _custom_gui_path_character_environment);
-        R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
-    }
-    {
-        Rf_defineVar(fileSymbol, R_NilValue, _custom_gui_path_character_environment);
-        R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
-    }
-#else
     {
         SEXP na = Rf_ScalarString(NA_STRING);
         Rf_protect(na);
@@ -466,7 +459,6 @@ SEXP do_onLoad do_formals
         R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
         Rf_unprotect(1);
     }
-#endif
     Rf_defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
     R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
 
@@ -476,6 +468,13 @@ SEXP do_onLoad do_formals
     R_PreserveObject(_custom_gui_path_function_environment);
     Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
     R_LockEnvironment(_custom_gui_path_function_environment, FALSE);
+
+
+    makePROMISE_environment =
+        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
+    R_PreserveObject(makePROMISE_environment);
+    Rf_defineVar(xSymbol, R_NilValue, makePROMISE_environment);
+    R_LockEnvironment(makePROMISE_environment, FALSE);
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
@@ -891,6 +890,17 @@ SEXP do_onLoad do_formals
 #endif
 
 
+    expr_makePROMISE = Rf_allocLang(5);
+    R_PreserveObject(expr_makePROMISE);
+    SETCAR(expr_makePROMISE, getFromBase(Rf_install("delayedAssign")));
+    SETCADR(expr_makePROMISE, /* x */ Rf_mkString("x"));
+    // SETCADDR(expr_makePROMISE, /* value */ R_NilValue);
+    SETCADDDR(expr_makePROMISE, /* eval.env */ R_EmptyEnv);
+    SETCAD4R(expr_makePROMISE, /* assign.env */ makePROMISE_environment);
+    if (!Rf_isFunction(CAR(expr_makePROMISE)))
+        Rf_error(_("object '%s' of mode '%s' was not found"), "delayedAssign", "function");
+
+
     {
         /* if package:utils is loaded, call '.fix_utils' */
         if (!ISUNBOUND(Rf_findVarInFrame(R_NamespaceRegistry, utilsSymbol))) {
@@ -991,6 +1001,7 @@ SEXP do_onUnload do_formals
     maybe_release(last_condition);
     maybe_release(_custom_gui_path_character_environment);
     maybe_release(_custom_gui_path_function_environment);
+    maybe_release(makePROMISE_environment);
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
@@ -1015,6 +1026,7 @@ SEXP do_onUnload do_formals
     maybe_release(expr__toplevel_nframe);
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
+    maybe_release(expr_makePROMISE);
 
 
     return R_NilValue;
