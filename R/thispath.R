@@ -237,7 +237,8 @@ delayedAssign(".untitled", {
         else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
     }
     else if (nzchar(path <- context[["path"]])) {
-        Encoding(path) <- "UTF-8"
+        if (.OS_windows)
+            Encoding(path) <- "UTF-8"
         if (verbose) cat("Source: document in VSCode\n")
         if (.isfalse(original))
             .normalizePath(path)
@@ -653,9 +654,11 @@ set.jupyter.path <- function (...)
             list(x)
         }
         else if (nzchar(path <- context[["path"]])) {
-            ## the encoding is not explicitly set (at least on Windows),
-            ## so we have to do that ourselves
-            Encoding(path) <- "UTF-8"
+            if (.OS_windows)
+                ## on Windows, file path encoding is UTF-8
+                ## (well, more specifically UCS-2, but unimportant for this)
+                ## it is not explicitly set, so we have to do that ourselves
+                Encoding(path) <- "UTF-8"
             if (verbose)
                 cat(
                     if (active)
