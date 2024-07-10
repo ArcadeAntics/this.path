@@ -88,6 +88,12 @@ if (getRversion() < "4.2.0") {
 export(check.path, check.dir , check.proj)
 
 
+## defunct.R    ----
+
+
+export(set.sys.path.jupyter , fileArgs             )
+
+
 ## enhances.R   ----
 
 
@@ -187,16 +193,16 @@ export(shFILE    , try.shFILE)
 export(site.file     , init.file     , with_site.file, with_init.file)
 
 
-## sysputenv.R  ----
-
-
-export(Sys.putenv)
-
-
 ## sys.R        ----
 
 
 export(sys.srcref , sys.whiches)
+
+
+## sysputenv.R  ----
+
+
+export(Sys.putenv)
 
 
 ## thispath.R   ----
@@ -209,12 +215,6 @@ export(set.jupyter.path, set.gui.path    , sys.path        ,
        src.here        , here            , ici             ,
        try.sys.path    , try.env.path    , try.src.path    ,
        try.this.path   , FILE            )
-
-
-## thispath-defunct.R ----
-
-
-export(set.sys.path.jupyter , fileArgs             )
 
 
 ## utils.R      ----
