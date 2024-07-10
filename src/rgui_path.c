@@ -63,9 +63,9 @@ static void HWND_lines(HWND handle, const char *title)
 
     R_Reprotect(EnumResult = Rf_allocVector(VECSXP, 1), EnumIndex);
     LRESULT len = SendMessage(EnumHandle, WM_GETTEXTLENGTH, 0, (LPARAM) 0);
-    /* if there is no text to get, then return list("") */
+    /* if there is no text to get, then return list(character(0)) */
     if (!len) {
-        SET_VECTOR_ELT(EnumResult, 0, R_BlankScalarString);
+        SET_VECTOR_ELT(EnumResult, 0, Rf_allocVector(STRSXP, 0));
         return;
     }
     char buf[len + 1];
