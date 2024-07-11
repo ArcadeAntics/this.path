@@ -5,7 +5,7 @@
 \description{
   Determine the path of the executing script.
 
-  Compatible with a few popular GUIs:
+  Compatible with several popular GUIs:
 
   \itemize{
     \item{\sQuote{Rgui}}
