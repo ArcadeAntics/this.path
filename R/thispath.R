@@ -680,6 +680,56 @@ set.jupyter.path <- function (...)
             } else "document in RStudio does not exist"
         ))
     }
+    else if (.GUI_Positron) {
+
+
+        indx <- match("tools:positron", search(), 0L)
+        if (!indx) {
+            if (for.msg)
+                return(NA_character_)
+            else stop(.ThisPathNotExistsError("Positron has not finished loading"))
+        }
+        tools_positron <- as.environment(indx)
+
+
+        ## ".ps.ui.LastActiveEditorContext" from "tools:positron" returns a
+        ## list of information about the document where your cursor is located
+
+
+        context <- get(".ps.ui.LastActiveEditorContext", envir = tools_positron, inherits = FALSE)()
+
+
+        if (is.null(context)) {
+            if (for.msg)
+                NA_character_
+            else stop(.ThisPathNotExistsError(
+                "R is running from Positron with no documents open\n",
+                " (or document has no path)"))
+        }
+        else if (contents) {
+            if (verbose) cat("Source: document in Positron\n")
+            x <- context[["contents"]]
+            storage.mode(x) <- "character"
+            x <- .External2(.C_remove_trailing_blank_string, x)
+            list(x)
+        }
+        else if (context[["document"]][["is_untitled"]]) {
+            if (for.msg)
+                context[["document"]][["path"]]
+            else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+        }
+        else if (nzchar(path <- context[["document"]][["path"]])) {
+            if (.OS_windows)
+                Encoding(path) <- "UTF-8"
+            if (verbose) cat("Source: document in Positron\n")
+            if (.isfalse(original))
+                .normalizePath(path)
+            else path
+        }
+        else if (for.msg)
+            gettext("Untitled", domain = "RGui", trim = FALSE)
+        else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+    }
     else if (.GUI_vscode) {
         .vscode_path(verbose, original, for.msg, contents)
     }

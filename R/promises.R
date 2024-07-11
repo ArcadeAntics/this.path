@@ -244,6 +244,17 @@ delayedAssign(".GUI_RStudio", {
 })
 
 
+delayedAssign(".GUI_Positron", {
+    .scalar_streql(Sys.getenv("POSITRON"), "1") &&
+    Sys.getenv("POSITRON_VERSION") != "" &&
+
+    (
+        ( .OS_unix    && .Platform$GUI %in% c("X11", "unknown", "none") ) ||
+        ( .OS_windows && .Platform$GUI == "Rgui"                        )
+    )
+})
+
+
 delayedAssign(".OS_unix_maybe_unembedded_shell"   , { .OS_unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") &&                        "R" == basename2(commandArgs()[[1L]])                                             })
 delayedAssign(".OS_windows_maybe_unembedded_shell", { .OS_windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && grepl("(?i)^Rterm(\\.exe)?$", basename2(commandArgs()[[1L]])) && .External2(.C_CharacterMode) == "RTerm" })
 delayedAssign(".maybe_unembedded_shell", { .OS_unix_maybe_unembedded_shell || .OS_windows_maybe_unembedded_shell })
@@ -336,19 +347,20 @@ delayedAssign(".in_callr", {
 })
 
 
-delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
-delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
-delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
+delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
 
 
-delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
-delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
+delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
+delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
 delayedAssign(".in_shell", { .OS_unix_in_shell || .OS_windows_in_shell })
 
 
 delayedAssign(".unrecognized_manner", {
     !.in_shell &&
     !.GUI_RStudio &&
+    !.GUI_Positron &&
     !.GUI_vscode &&
     !.GUI_jupyter &&
     !.GUI_emacs &&
@@ -364,6 +376,7 @@ delayedAssign(".ucrt", { identical(R.version[["crt"]], "ucrt") })
 delayedAssign(".GUI", {
     if (.in_shell) .Platform$GUI
     else if (.GUI_RStudio) "RStudio"
+    else if (.GUI_Positron) "Positron"
     else if (.GUI_vscode) "vscode"
     else if (.GUI_jupyter) "jupyter"
     else if (.GUI_emacs) "emacs"
@@ -383,5 +396,5 @@ initwd
 .unset_these_envvars <- c(
     "TERM_PROGRAM", "JPY_API_TOKEN", "JPY_PARENT_PID", "STATATERM",
     "RPackagesLibrariesDirectory", "RScriptWrapperWorkingDirectory",
-    "CALLR_IS_RUNNING"
+    "CALLR_IS_RUNNING", "POSITRON", "POSITRON_VERSION"
 )
