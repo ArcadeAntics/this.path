@@ -1,5 +1,11 @@
 @R_PACKAGE_NAME@ News
 
+CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
+
+  NEW FEATURES:
+
+    * this.path() is now compatible with GUI 'Positron'.
+
 CHANGES IN this.path 2.5.0 (2024-06-29):
 
   NEW FEATURES:

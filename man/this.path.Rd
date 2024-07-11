@@ -155,6 +155,14 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
       evaluated in the run selection. If no documents are open or the source
       document does not exist (not saved anywhere), an error is thrown.}
 
+    \item{\sQuote{\Positron}}{
+
+      then the source document's filename is returned (at the time of
+      evaluation). It is important to not leave the current tab (either by
+      closing or switching tabs) while any calls to \code{this.path()} have yet
+      to be evaluated in the run selection. If no documents are open or the
+      source document does not exist (not saved anywhere), an error is thrown.}
+
     \item{\sQuote{\VSCode}}{
 
       then the source document's filename is returned (at the time of

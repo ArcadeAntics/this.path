@@ -19,6 +19,7 @@
 
 \newcommand{\Emacs}{\href{https://ess.r-project.org/}{Emacs}}
 \newcommand{\Jupyter}{\href{https://jupyter.org/}{Jupyter}}
+\newcommand{\Positron}{\href{https://github.com/posit-dev/positron}{Positron}}
 \newcommand{\Python}{\href{https://www.python.org/}{Python}}
 \newcommand{\radian}{\href{https://github.com/randy3k/radian}{radian}}
 \newcommand{\RStudio}{\href{https://posit.co/products/open-source/rstudio/}{RStudio}}
