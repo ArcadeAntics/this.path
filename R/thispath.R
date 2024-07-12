@@ -693,7 +693,7 @@ set.jupyter.path <- function (...)
 
 
         ## ".ps.ui.LastActiveEditorContext" from "tools:positron" returns a
-        ## list of information about the document where your cursor is located
+        ## list of information about the document open in the current tab
 
 
         context <- get(".ps.ui.LastActiveEditorContext", envir = tools_positron, inherits = FALSE)()
@@ -704,7 +704,8 @@ set.jupyter.path <- function (...)
                 NA_character_
             else stop(.ThisPathNotExistsError(
                 "R is running from Positron with no documents open\n",
-                " (or document has no path)"))
+                " (or document has no path)"
+            ))
         }
         else if (contents) {
             if (verbose) cat("Source: document in Positron\n")
