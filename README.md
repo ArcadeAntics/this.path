@@ -115,7 +115,7 @@ These are lacking in functionality compared to `package:this.path`:
     *   '[Positron](https://github.com/posit-dev/positron)'
 
     *   '[VSCode](https://code.visualstudio.com/)' +
-        '[REditorSupport](https://code.visualstudio.com/docs/languages/r#:~:text=Install the R extension for Visual Studio Code.)'
+        '[REditorSupport](https://code.visualstudio.com/docs/languages/r#:~:text=Install%20the%20R%20extension%20for%20Visual%20Studio%20Code.)'
 
     *   '[Jupyter](https://jupyter.org/)'
 
