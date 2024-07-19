@@ -17,11 +17,13 @@
 \newcommand{\CRANpackage}{\href{https://CRAN.R-project.org/package=#1}{\pkgorsQuote{package:#1}}}
 
 
-\newcommand{\Emacs}{\href{https://ess.r-project.org/}{Emacs}}
+\newcommand{\Emacs}{\href{https://www.gnu.org/software/emacs/}{Emacs}}
+\newcommand{\ESS}{\href{https://ess.r-project.org/}{ESS}}
 \newcommand{\Jupyter}{\href{https://jupyter.org/}{Jupyter}}
 \newcommand{\Positron}{\href{https://github.com/posit-dev/positron}{Positron}}
 \newcommand{\Python}{\href{https://www.python.org/}{Python}}
 \newcommand{\radian}{\href{https://github.com/randy3k/radian}{radian}}
+\newcommand{\REditorSupport}{\href{https://code.visualstudio.com/docs/languages/r#:~:text=Install the R extension for Visual Studio Code.}{REditorSupport}}
 \newcommand{\RStudio}{\href{https://posit.co/products/open-source/rstudio/}{RStudio}}
 \newcommand{\VSCode}{\href{https://code.visualstudio.com/}{VSCode}}
 

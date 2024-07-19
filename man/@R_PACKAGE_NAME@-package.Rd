@@ -15,11 +15,11 @@
 
     \item{\sQuote{\Positron}}
 
-    \item{\sQuote{\VSCode}}
+    \item{\sQuote{\VSCode} + \sQuote{\REditorSupport}}
 
     \item{\sQuote{\Jupyter}}
 
-    \item{\sQuote{\Emacs}}
+    \item{\sQuote{\Emacs} + \sQuote{\ESS}}
 
     \item{\sQuote{\ifelse{html}{\Rscriptlink}{\ifelse{text}{Rscript}{\code{Rscript}}}}
       (shell)}

@@ -34,7 +34,7 @@ thisPathNotFoundError(..., call. = TRUE, domain = NULL,
   following arguments: \code{(verbose, original, for.msg, contents)} (default
   values are unnecessary). This makes sense for a GUI which can edit and run \R
   code from several different documents such as RGui, \RStudio, \Positron,
-  \VSCode, and \Emacs.
+  \VSCode + \REditorSupport, and \Emacs + \ESS.
 
   If two or three arguments are passed to \code{set.gui.path()}, they must be
   the name of the GUI, the path of the active document, and optionally a

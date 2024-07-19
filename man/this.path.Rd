@@ -163,7 +163,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
       to be evaluated in the run selection. If no documents are open or the
       source document does not exist (not saved anywhere), an error is thrown.}
 
-    \item{\sQuote{\VSCode}}{
+    \item{\sQuote{\VSCode} + \sQuote{\REditorSupport}}{
 
       then the source document's filename is returned (at the time of
       evaluation). It is important to not leave the current tab (either by
@@ -179,7 +179,7 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
       Please be sure to save your notebook before using \code{this.path()}, or
       explicitly use \code{\link{set.jupyter.path}()}.}
 
-    \item{\sQuote{\Emacs}}{
+    \item{\sQuote{\Emacs} + \sQuote{\ESS}}{
 
       then the source document's filename is returned (at the time of
       evaluation). \sQuote{Emacs} must be running as a server, either by
