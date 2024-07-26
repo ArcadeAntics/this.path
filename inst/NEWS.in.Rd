@@ -1,9 +1,31 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item{Previously defunct functions \code{reset.this.proj()},
+        \code{set.this.path.jupyter()}, \code{inside.source()},
+        \code{set.this.path()}, \code{unset.this.path()},
+        \code{set.sys.path.jupyter()}, and \code{fileArgs()} were removed
+        entirely.}
+    }
+  }
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with GUI \sQuote{\Positron}.}
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{\code{this.path(contents = TRUE)} in \sQuote{Rgui} in which the
+        source document contains no text now returns \code{character(0)}
+        instead of the previously incorrect \code{""}.}
+
+      \item{\code{this.path()} in \sQuote{\RStudio} and \sQuote{\VSCode} will
+        now declare a \string{UTF-8} file path encoding only on Windows.}
+
+      \item{Improved detection of \sQuote{\RStudio}, no longer relying on
+        environment variable \string{RSTUDIO_SESSION_PID} which may be unset.}
     }
   }
 }

@@ -240,7 +240,10 @@ delayedAssign(".OS_windows", { .Platform$OS.type == "windows" })
 ## as such, I've made my own ways of determining the type of GUI in use
 delayedAssign(".GUI_RStudio", {
     commandArgs()[[1L]] == "RStudio" &&
-    isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID"))
+    ## fails if the process id cannot be converted to string:
+    # isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID"))
+    ## use this instead:
+    identical(Sys.getenv("RSTUDIO"), "1")
 })
 
 
