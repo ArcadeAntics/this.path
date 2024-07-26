@@ -5,8 +5,7 @@
     \itemize{
       \item{Previously defunct functions \code{reset.this.proj()},
         \code{set.this.path.jupyter()}, \code{inside.source()},
-        \code{set.this.path()}, \code{unset.this.path()},
-        \code{set.sys.path.jupyter()}, and \code{fileArgs()} were removed
+        \code{set.this.path()}, and \code{unset.this.path()} were removed
         entirely.}
     }
   }

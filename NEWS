@@ -5,9 +5,8 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
   SIGNIFICANT USER-VISIBLE CHANGES:
 
     * Previously defunct functions reset.this.proj(),
-      set.this.path.jupyter(), inside.source(), set.this.path(),
-      unset.this.path(), set.sys.path.jupyter(), and fileArgs() were
-      removed entirely.
+      set.this.path.jupyter(), inside.source(), set.this.path(), and
+      unset.this.path() were removed entirely.
 
   NEW FEATURES:
 
