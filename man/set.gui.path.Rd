@@ -5,9 +5,7 @@
 \title{Declare GUI's Active Document}
 \description{
   \code{set.gui.path()} can be used to implement \code{\link{this.path}()} for
-  arbitrary GUIs. This is similar to \code{\link{set.sys.path}()} which can be
-  used to implement \code{\link{sys.path}()} for arbitrary \sourcelink-like
-  functions.
+  arbitrary GUIs.
 }
 \usage{
 set.gui.path(...)
@@ -79,9 +77,9 @@ function(pkgname, pkgpath)
             path <- <doc$path>
             if (nzchar(path)) {
                 ## if the path is not normalized, this will normalize it
-                if (isTRUE(original))
-                    path
-                else normalizePath(path, "/", TRUE)
+                if (isFALSE(original))
+                    normalizePath(path, "/", TRUE)
+                else path
                 # ## otherwise, you could just do:
                 # path
             }
