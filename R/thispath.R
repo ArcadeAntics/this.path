@@ -99,68 +99,164 @@
 ## path of active file in GUI          ----
 
 
-.r_editor_info <- lapply(c("r-editor", "untitled"), function(name) {
-    ## for R 2.15, avoid forcing .C_mapply promise
-    assign(
-        ".mapply",
-        function(FUN, dots, MoreArgs) {
-            do.call(
-                "mapply",
-                c(list(FUN = FUN), dots, list(MoreArgs = MoreArgs, SIMPLIFY = FALSE, USE.NAMES = FALSE)),
-                quote = TRUE
+.site_file_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (contents && .startup_info[["has_site_file"]])
+        for.msg <- FALSE
+    value <- site.file(original, for.msg, default = {
+        stop(.ThisPathNotExistsError(
+            "site-wide startup profile file was not found",
+            call = sys.call()
+        ))
+    })
+    if (verbose) cat("Source: site-wide startup profile file\n")
+    value
+}
+
+
+.init_file_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (contents && .startup_info[["has_init_file"]])
+        for.msg <- FALSE
+    value <- init.file(original, for.msg, default = {
+        stop(.ThisPathNotExistsError(
+            "user profile was not found",
+            call = sys.call()
+        ))
+    })
+    if (verbose) cat("Source: user profile\n")
+    value
+}
+
+
+.RStudio_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    indx <- match("tools:rstudio", search(), 0L)
+    if (!indx) {
+        if (for.msg)
+            return(NA_character_)
+        else stop(.ThisPathNotExistsError("RStudio has not finished loading"))
+    }
+    tools_rstudio <- as.environment(indx)
+
+
+    ## ".rs.api.getActiveDocumentContext" from "tools:rstudio" returns a
+    ## list of information about the document where your cursor is located
+    ##
+    ## ".rs.api.getSourceEditorContext" from "tools:rstudio" returns a list
+    ## of information about the document open in the current tab
+    ##
+    ## element 'id' is a character string, an identification for the document
+    ## element 'path' is a character string, the path of the document
+
+
+    if (verbose) {
+        context <- get(".rs.api.getActiveDocumentContext", envir = tools_rstudio, inherits = FALSE)()
+        active <- context[["id"]] != "#console"
+        if (!active)
+            context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
+    } else context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
+
+
+    if (is.null(context)) {
+        if (for.msg)
+            NA_character_
+        else stop(.ThisPathNotExistsError(
+            "R is running from RStudio with no documents open\n",
+            " (or source document has no path)"
+        ))
+    }
+    else if (contents) {
+        if (verbose)
+            cat(
+                if (active)
+                    "Source: active document in RStudio\n"
+                else
+                    "Source: source document in RStudio\n"
             )
-        },
-        envir = environment(.read_C_strings) <- new.env(parent = environment(.read_C_strings))
-    )
-    assign(
-        ".read_C_strings",
-        .read_C_strings,
-        envir = environment(.read_C_strings_with_encoding) <- new.env(parent = environment(.read_C_strings_with_encoding))
-    )
+        list(.External2(.C_remove_trailing_blank_string, context[["contents"]]))
+    }
+    else if (nzchar(path <- context[["path"]])) {
+        if (.OS_windows)
+            ## on Windows, file path encoding is UTF-8
+            ## (well, more specifically UCS-2, but unimportant for this)
+            ## it is not explicitly set, so we have to do that ourselves
+            Encoding(path) <- "UTF-8"
+        if (verbose)
+            cat(
+                if (active)
+                    "Source: active document in RStudio\n"
+                else
+                    "Source: source document in RStudio\n"
+            )
+        if (.isfalse(original))
+            .normalizePath(path)
+        else path
+    }
+    else if (for.msg)
+        gettext("Untitled", domain = "RGui", trim = FALSE)
+    else stop(.ThisPathNotFoundError(
+        if (verbose) {
+            if (active)
+                "active document in RStudio does not exist"
+            else
+                "source document in RStudio does not exist"
+        }
+        else "document in RStudio does not exist"
+    ))
+}
 
 
-    dir <- "./inst/extdata"
-    pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
-    files <- .BaseNamespaceEnv$list.files(dir, pattern)
-    matches <- regmatches(files, regexec(pattern, files))
-    info <- data.frame(
-        crt = vapply(matches, `[[`, "", 2L),
-        vrsn = R_system_version(sprintf(
-            "%s.%s.0",
-            vapply(matches, `[[`, "", 3L),
-            vapply(matches, `[[`, "", 4L)
-        )),
-        as.data.frame.vector(lapply(file.path(dir, files), .read_C_strings_with_encoding), nm = "matches")
-    )
-    info <- info[order(info$vrsn, decreasing = TRUE), , drop = FALSE]
-    info
-})
-.untitled_info <- .r_editor_info[[2L]]
-.r_editor_info <- .r_editor_info[[1L]]
+.Positron_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    indx <- match("tools:positron", search(), 0L)
+    if (!indx) {
+        if (for.msg)
+            return(NA_character_)
+        else stop(.ThisPathNotExistsError("Positron has not finished loading"))
+    }
+    tools_positron <- as.environment(indx)
 
 
-delayedAssign(".r_editor", {
-    if (.GUI_Rgui) local({
-        i <- match(TRUE, .r_editor_info$crt == (if (.ucrt) "ucrt" else "msvcrt") &
-                         .r_editor_info$vrsn <= getRversion())
-        if (is.na(i))
-            " - R Editor"
-        else .r_editor_info[[i, "matches"]]
-    })
-})
-delayedAssign(".untitled", {
-    if (.GUI_Rgui) local({
-        i <- match(TRUE, .untitled_info$crt == (if (.ucrt) "ucrt" else "msvcrt") &
-                         .untitled_info$vrsn <= getRversion())
-        if (is.na(i))
-            "Untitled - R Editor"
-        else .untitled_info[[i, "matches"]]
-    })
-})
+    ## ".ps.ui.LastActiveEditorContext" from "tools:positron" returns a
+    ## list of information about the document open in the current tab
 
 
-.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
+    context <- get(".ps.ui.LastActiveEditorContext", envir = tools_positron, inherits = FALSE)()
+
+
+    if (is.null(context)) {
+        if (for.msg)
+            NA_character_
+        else stop(.ThisPathNotExistsError(
+            "R is running from Positron with no documents open\n",
+            " (or document has no path)"
+        ))
+    }
+    else if (contents) {
+        if (verbose) cat("Source: document in Positron\n")
+        x <- context[["contents"]]
+        storage.mode(x) <- "character"
+        x <- .External2(.C_remove_trailing_blank_string, x)
+        list(x)
+    }
+    else if (context[["document"]][["is_untitled"]]) {
+        if (for.msg)
+            context[["document"]][["path"]]
+        else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+    }
+    else if (nzchar(path <- context[["document"]][["path"]])) {
+        if (.OS_windows)
+            Encoding(path) <- "UTF-8"
+        if (verbose) cat("Source: document in Positron\n")
+        if (.isfalse(original))
+            .normalizePath(path)
+        else path
+    }
+    else if (for.msg)
+        gettext("Untitled", domain = "RGui", trim = FALSE)
+    else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+}
 
 
 .vscode_path <- evalq(envir = new.env(), {
@@ -563,32 +659,68 @@ set.jupyter.path <- function (...)
 })
 
 
-.site_file_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-{
-    if (contents && .startup_info[["has_site_file"]])
-        for.msg <- FALSE
-    value <- site.file(original, for.msg, default = {
-        stop(.ThisPathNotExistsError(
-            "site-wide startup profile file was not found",
-            call = sys.call()))
-    })
-    if (verbose) cat("Source: site-wide startup profile file\n")
-    value
-}
+.r_editor_info <- lapply(c("r-editor", "untitled"), function(name) {
+    ## for R 2.15, avoid forcing .C_mapply promise
+    assign(
+        ".mapply",
+        function(FUN, dots, MoreArgs) {
+            do.call(
+                "mapply",
+                c(list(FUN = FUN), dots, list(MoreArgs = MoreArgs, SIMPLIFY = FALSE, USE.NAMES = FALSE)),
+                quote = TRUE
+            )
+        },
+        envir = environment(.read_C_strings) <- new.env(parent = environment(.read_C_strings))
+    )
+    assign(
+        ".read_C_strings",
+        .read_C_strings,
+        envir = environment(.read_C_strings_with_encoding) <- new.env(parent = environment(.read_C_strings_with_encoding))
+    )
 
 
-.init_file_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-{
-    if (contents && .startup_info[["has_init_file"]])
-        for.msg <- FALSE
-    value <- init.file(original, for.msg, default = {
-        stop(.ThisPathNotExistsError(
-            "user profile was not found",
-            call = sys.call()))
+    dir <- "./inst/extdata"
+    pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
+    files <- .BaseNamespaceEnv$list.files(dir, pattern)
+    matches <- regmatches(files, regexec(pattern, files))
+    info <- data.frame(
+        crt = vapply(matches, `[[`, "", 2L),
+        vrsn = R_system_version(sprintf(
+            "%s.%s.0",
+            vapply(matches, `[[`, "", 3L),
+            vapply(matches, `[[`, "", 4L)
+        )),
+        as.data.frame.vector(lapply(file.path(dir, files), .read_C_strings_with_encoding), nm = "matches")
+    )
+    info <- info[order(info$vrsn, decreasing = TRUE), , drop = FALSE]
+    info
+})
+
+
+delayedAssign(".r_editor", {
+    if (.GUI_Rgui) local({
+        x <- .r_editor_info$`r-editor`
+        i <- match(TRUE, x$crt == (if (.ucrt) "ucrt" else "msvcrt") &
+                         x$vrsn <= getRversion())
+        if (is.na(i))
+            " - R Editor"
+        else x[[i, "matches"]]
     })
-    if (verbose) cat("Source: user profile\n")
-    value
-}
+})
+delayedAssign(".untitled", {
+    if (.GUI_Rgui) local({
+        x <- .r_editor_info$untitled
+        i <- match(TRUE, x$crt == (if (.ucrt) "ucrt" else "msvcrt") &
+                         x$vrsn <= getRversion())
+        if (is.na(i))
+            "Untitled - R Editor"
+        else x[[i, "matches"]]
+    })
+})
+
+
+.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
 
 
 .gui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
@@ -605,131 +737,10 @@ set.jupyter.path <- function (...)
         value
     }
     else if (.GUI_RStudio) {
-
-
-        indx <- match("tools:rstudio", search(), 0L)
-        if (!indx) {
-            if (for.msg)
-                return(NA_character_)
-            else stop(.ThisPathNotExistsError("RStudio has not finished loading"))
-        }
-        tools_rstudio <- as.environment(indx)
-
-
-        ## ".rs.api.getActiveDocumentContext" from "tools:rstudio" returns a
-        ## list of information about the document where your cursor is located
-        ##
-        ## ".rs.api.getSourceEditorContext" from "tools:rstudio" returns a list
-        ## of information about the document open in the current tab
-        ##
-        ## element 'id' is a character string, an identification for the document
-        ## element 'path' is a character string, the path of the document
-
-
-        if (verbose) {
-            context <- get(".rs.api.getActiveDocumentContext", envir = tools_rstudio, inherits = FALSE)()
-            active <- context[["id"]] != "#console"
-            if (!active)
-                context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
-        } else context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
-
-
-        if (is.null(context)) {
-            if (for.msg)
-                NA_character_
-            else stop(.ThisPathNotExistsError(
-                "R is running from RStudio with no documents open\n",
-                " (or source document has no path)"))
-        }
-        else if (contents) {
-            if (verbose)
-                cat(
-                    if (active)
-                        "Source: active document in RStudio\n"
-                    else
-                        "Source: source document in RStudio\n"
-                )
-            x <- context[["contents"]]
-            x <- .External2(.C_remove_trailing_blank_string, x)
-            list(x)
-        }
-        else if (nzchar(path <- context[["path"]])) {
-            if (.OS_windows)
-                ## on Windows, file path encoding is UTF-8
-                ## (well, more specifically UCS-2, but unimportant for this)
-                ## it is not explicitly set, so we have to do that ourselves
-                Encoding(path) <- "UTF-8"
-            if (verbose)
-                cat(
-                    if (active)
-                        "Source: active document in RStudio\n"
-                    else
-                        "Source: source document in RStudio\n"
-                )
-            if (.isfalse(original))
-                .normalizePath(path)
-            else path
-        }
-        else if (for.msg)
-            gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop(.ThisPathNotFoundError(
-            if (verbose) {
-                if (active)
-                    "active document in RStudio does not exist"
-                else "source document in RStudio does not exist"
-            } else "document in RStudio does not exist"
-        ))
+        .RStudio_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_Positron) {
-
-
-        indx <- match("tools:positron", search(), 0L)
-        if (!indx) {
-            if (for.msg)
-                return(NA_character_)
-            else stop(.ThisPathNotExistsError("Positron has not finished loading"))
-        }
-        tools_positron <- as.environment(indx)
-
-
-        ## ".ps.ui.LastActiveEditorContext" from "tools:positron" returns a
-        ## list of information about the document open in the current tab
-
-
-        context <- get(".ps.ui.LastActiveEditorContext", envir = tools_positron, inherits = FALSE)()
-
-
-        if (is.null(context)) {
-            if (for.msg)
-                NA_character_
-            else stop(.ThisPathNotExistsError(
-                "R is running from Positron with no documents open\n",
-                " (or document has no path)"
-            ))
-        }
-        else if (contents) {
-            if (verbose) cat("Source: document in Positron\n")
-            x <- context[["contents"]]
-            storage.mode(x) <- "character"
-            x <- .External2(.C_remove_trailing_blank_string, x)
-            list(x)
-        }
-        else if (context[["document"]][["is_untitled"]]) {
-            if (for.msg)
-                context[["document"]][["path"]]
-            else stop(.ThisPathNotFoundError("document in Positron does not exist"))
-        }
-        else if (nzchar(path <- context[["document"]][["path"]])) {
-            if (.OS_windows)
-                Encoding(path) <- "UTF-8"
-            if (verbose) cat("Source: document in Positron\n")
-            if (.isfalse(original))
-                .normalizePath(path)
-            else path
-        }
-        else if (for.msg)
-            gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+        .Positron_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_vscode) {
         .vscode_path(verbose, original, for.msg, contents)
@@ -755,36 +766,23 @@ set.jupyter.path <- function (...)
             " 'package:callr' calls a function in a separate session,\n",
             " you should not need the path of the script where it was written"))
     }
-
-
-    ## running from 'Rgui' on Windows
     else if (.GUI_Rgui) {
         .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
     }
     else if (.GUI_AQUA) {
-
-
         if (for.msg)
             NA_character_
         else stop(.ThisPathInAQUAError())
     }
-
-
     ## running from a shell under Unix-alikes with GUI 'Tk'
     else if (.GUI_Tk) {
-
-
         if (for.msg)
             NA_character_
         else stop(.ThisPathNotExistsError(
             "R is running from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
-
-
     ## running R in another manner
     else {
-
-
         if (for.msg)
             NA_character_
         else stop(.ThisPathUnrecognizedMannerError())
