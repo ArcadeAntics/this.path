@@ -307,57 +307,37 @@ SEXP do_remove_trailing_blank_string do_formals
 
 SEXP do_Rgui_path do_formals
 {
-    do_start_no_op("Rgui_path", -1);
+    do_start_no_op("Rgui_path", 6);
 
 
     Rboolean verbose, original, for_msg, contents;
     SEXP untitled, r_editor;
-    Rboolean list_contents = TRUE;
 
 
-    switch (Rf_length(args)) {
-    case 6:
-        verbose  = Rf_asLogical(CAR(args)); args = CDR(args);
-        original = Rf_asLogical(CAR(args)); args = CDR(args);
-        for_msg  = Rf_asLogical(CAR(args)); args = CDR(args);
-        contents = Rf_asLogical(CAR(args)); args = CDR(args);
-        untitled = CAR(args); args = CDR(args);
-        r_editor = CAR(args); args = CDR(args);
-        break;
-    case 7:
-        verbose  = Rf_asLogical(CAR(args)); args = CDR(args);
-        original = Rf_asLogical(CAR(args)); args = CDR(args);
-        for_msg  = Rf_asLogical(CAR(args)); args = CDR(args);
-        contents = Rf_asLogical(CAR(args)); args = CDR(args);
-        /* strings representing non-existent files in RGui */
-        untitled = CAR(args); args = CDR(args);
-        /* strings representing R scripts in RGui */
-        r_editor = CAR(args); args = CDR(args);
-        list_contents = Rf_asLogical(CAR(args)); args = CDR(args);
-        break;
-    default:
-        Rf_errorcall(call, wrong_nargs_to_External(Rf_length(args), ".C_Rgui_path", "6 or 7"));
-        return R_NilValue;
-    }
-
-
+    verbose  = Rf_asLogical(CAR(args)); args = CDR(args);
+    original = Rf_asLogical(CAR(args)); args = CDR(args);
+    for_msg  = Rf_asLogical(CAR(args)); args = CDR(args);
+    contents = Rf_asLogical(CAR(args)); args = CDR(args);
     check_arguments4(verbose, original, for_msg, contents);
 
 
+    /* strings representing non-existent files in RGui */
+    untitled = CAR(args); args = CDR(args);
     if (!(TYPEOF(untitled) == STRSXP || untitled == R_NilValue))
         Rf_errorcall(call, "%s, must be %s", "invalid second argument", "'character' / / NULL");
 
 
+    /* strings representing R scripts in RGui */
+    r_editor = CAR(args); args = CDR(args);
     if (!(TYPEOF(r_editor) == STRSXP || r_editor == R_NilValue))
         Rf_errorcall(call, "%s, must be %s", "invalid third argument", "'character' / / NULL");
 
 
     extern SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-                          Rboolean contents, SEXP untitled, SEXP r_editor,
-                          Rboolean list_contents, SEXP rho);
+                          Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho);
 
 
-    return Rgui_path(verbose, original, for_msg, contents, untitled, r_editor, list_contents, rho);
+    return Rgui_path(verbose, original, for_msg, contents, untitled, r_editor, rho);
 }
 
 
@@ -366,15 +346,14 @@ SEXP do_Rgui_path do_formals
 
 SEXP do_jupyter_path do_formals
 {
-    do_start_no_op_rho("jupyter_path", 5);
+    do_start_no_op_rho("jupyter_path", 4);
 
 
-    Rboolean verbose, original, for_msg, contents, list_contents;
-    verbose       = Rf_asLogical(CAR(args)); args = CDR(args);
-    original      = Rf_asLogical(CAR(args)); args = CDR(args);
-    for_msg       = Rf_asLogical(CAR(args)); args = CDR(args);
-    contents      = Rf_asLogical(CAR(args)); args = CDR(args);
-    list_contents = Rf_asLogical(CAR(args)); args = CDR(args);
+    Rboolean verbose, original, for_msg, contents;
+    verbose  = Rf_asLogical(CAR(args)); args = CDR(args);
+    original = Rf_asLogical(CAR(args)); args = CDR(args);
+    for_msg  = Rf_asLogical(CAR(args)); args = CDR(args);
+    contents = Rf_asLogical(CAR(args)); args = CDR(args);
 
 
     check_arguments4(verbose, original, for_msg, contents);
@@ -385,20 +364,11 @@ SEXP do_jupyter_path do_formals
 
     if (contents) {
         for_msg = FALSE;
-        SEXP value;
-        int nprotect = 0;
         SEXP file = get_file_from_closure(original, for_msg, _jupyter_pathSymbol);
         SEXP expr = Rf_lcons(_get_jupyter_notebook_contentsSymbol, Rf_cons(file, R_NilValue));
-        Rf_protect(expr); nprotect++;
-        if (list_contents) {
-            value = Rf_allocVector(VECSXP, 1);
-            Rf_protect(value); nprotect++;
-            SET_VECTOR_ELT(value, 0, Rf_eval(expr, mynamespace));
-        }
-        else {
-            value = Rf_eval(expr, mynamespace);
-        }
-        Rf_unprotect(nprotect);
+        Rf_protect(expr);
+        SEXP value = Rf_eval(expr, mynamespace);
+        Rf_unprotect(1);
         return value;
     }
     return get_file_from_closure(original, for_msg, _jupyter_pathSymbol);
@@ -2227,20 +2197,8 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
         Rf_protect(expr);
         SEXP value = Rf_eval(expr, mynamespace);
         Rf_unprotect(1);
-
-
-        if (!contents)
-            return value;
-        if (IS_SCALAR(value, VECSXP))
-            return VECTOR_ELT(value, 0);
-        if (!IS_SCALAR(value, STRSXP))
-            Rf_error("internal error; invalid '%s()' value", R_CHAR(PRINTNAME(_gui_pathSymbol)));
-        if (STRING_ELT(value, 0) == NA_STRING)
-            return R_NilValue;
-        expr = Rf_lcons(_get_contentsSymbol, Rf_cons(value, R_NilValue));
-        Rf_protect(expr);
-        value = Rf_eval(expr, mynamespace);
-        Rf_unprotect(1);
+        if (contents && for_msg && IS_SCALAR(value, STRSXP) && STRING_ELT(value, 0) == NA_STRING)
+            value = R_NilValue;
         return value;
     }
     case GUIPATH_FUNCTION:
@@ -2253,7 +2211,10 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
                     Rf_ScalarLogical(original),
                     Rf_cons(
                         Rf_ScalarLogical(for_msg),
-                        Rf_cons(Rf_ScalarLogical(contents), R_NilValue)
+                        Rf_cons(
+                            Rf_ScalarLogical(contents),
+                            R_NilValue
+                        )
                     )
                 )
             )

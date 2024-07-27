@@ -104,10 +104,7 @@
     if (contents && .startup_info[["has_site_file"]])
         for.msg <- FALSE
     value <- site.file(original, for.msg, default = {
-        stop(.ThisPathNotExistsError(
-            "site-wide startup profile file was not found",
-            call = sys.call()
-        ))
+        stop(.ThisPathNotExistsError("site-wide startup profile file was not found"))
     })
     if (verbose) cat("Source: site-wide startup profile file\n")
     value
@@ -119,17 +116,14 @@
     if (contents && .startup_info[["has_init_file"]])
         for.msg <- FALSE
     value <- init.file(original, for.msg, default = {
-        stop(.ThisPathNotExistsError(
-            "user profile was not found",
-            call = sys.call()
-        ))
+        stop(.ThisPathNotExistsError("user profile was not found"))
     })
     if (verbose) cat("Source: user profile\n")
     value
 }
 
 
-.RStudio_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
+.RStudio_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     indx <- match("tools:rstudio", search(), 0L)
     if (!indx) {
@@ -161,10 +155,7 @@
     if (is.null(context)) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError(
-            "R is running from RStudio with no documents open\n",
-            " (or source document has no path)"
-        ))
+        else stop(.ThisPathNotExistsError("R is running from RStudio with no documents open\n (or source document has no path)"))
     }
     else if (contents) {
         if (verbose)
@@ -174,10 +165,7 @@
                 else
                     "Source: source document in RStudio\n"
             )
-        x <- .External2(.C_remove_trailing_blank_string, context[["contents"]])
-        if (list_contents)
-            list(x)
-        else x
+        .External2(.C_remove_trailing_blank_string, context[["contents"]])
     }
     else if (nzchar(path <- context[["path"]])) {
         if (.OS_windows)
@@ -198,19 +186,21 @@
     }
     else if (for.msg)
         gettext("Untitled", domain = "RGui", trim = FALSE)
-    else stop(.ThisPathNotFoundError(
-        if (verbose) {
-            if (active)
-                "active document in RStudio does not exist"
-            else
-                "source document in RStudio does not exist"
-        }
-        else "document in RStudio does not exist"
-    ))
+    else {
+        stop(.ThisPathNotFoundError(
+            if (verbose) {
+                if (active)
+                    "active document in RStudio does not exist"
+                else
+                    "source document in RStudio does not exist"
+            }
+            else "document in RStudio does not exist"
+        ))
+    }
 }
 
 
-.Positron_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
+.Positron_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     indx <- match("tools:positron", search(), 0L)
     if (!indx) {
@@ -231,19 +221,13 @@
     if (is.null(context)) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError(
-            "R is running from Positron with no documents open\n",
-            " (or document has no path)"
-        ))
+        else stop(.ThisPathNotExistsError("R is running from Positron with no documents open\n (or document has no path)"))
     }
     else if (contents) {
         if (verbose) cat("Source: document in Positron\n")
         x <- context[["contents"]]
         storage.mode(x) <- "character"
-        x <- .External2(.C_remove_trailing_blank_string, x)
-        if (list_contents)
-            list(x)
-        else x
+        .External2(.C_remove_trailing_blank_string, x)
     }
     else if (context[["document"]][["is_untitled"]]) {
         if (for.msg)
@@ -298,7 +282,7 @@
             response_file
         })
     })
-                function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
+                function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     ## read the previous request time stamp before making a new request
     response_time_stamp <- readLines(response_lock_file)
@@ -323,17 +307,11 @@
     if (is.null(context)) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError(
-            "R is running from VSCode with no documents open\n",
-            " (or document has no path)"
-        ))
+        else stop(.ThisPathNotExistsError("R is running from VSCode with no documents open\n (or document has no path)"))
     }
     else if (contents) {
         if (verbose) cat("Source: document in VSCode\n")
-        x <- .External2(.C_splitlines, context[["contents"]])
-        if (list_contents)
-            list(x)
-        else x
+        .External2(.C_splitlines, context[["contents"]])
     }
     else if (context[["id"]][["scheme"]] == "untitled") {
         if (for.msg)
@@ -364,17 +342,16 @@
     delayedAssign("ofile", { NA_character_ })
     ofile
     delayedAssign("file" , { .normalizePath(ofile) })
-                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
+                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (!is.na(ofile))
-        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents, list_contents))
+        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
 
 
     if (is.null(initwd)) {
         if (for.msg)
             return(NA_character_)
-        else stop(.ThisPathNotFoundError(
-            "R is running from Jupyter but the initial working directory is unknown"))
+        else stop(.ThisPathNotFoundError("R is running from Jupyter but the initial working directory is unknown"))
     }
 
 
@@ -408,7 +385,7 @@
                 for (expr in exprs) {
                     if (.identical(expr, call)) {
                         .External2(.C_set_jupyter_path, file, skipCheck = TRUE)
-                        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents, list_contents))
+                        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
                     }
                 }
             }
@@ -418,13 +395,16 @@
 
     if (for.msg)
         NA_character_
-    else stop(.ThisPathNotFoundError(
-        sprintf("R is running from Jupyter with initial working directory '%s'\n", encodeString(initwd)),
-        " but could not find a file with contents matching:\n",
-        {
-            t <- attr(ocall, "srcref", exact = TRUE)
-            paste(if (is.integer(t)) as.character(t) else deparse(ocall), collapse = "\n")
-        }))
+    else {
+        stop(.ThisPathNotFoundError(
+            sprintf("R is running from Jupyter with initial working directory '%s'\n", encodeString(initwd)),
+            " but could not find a file with contents matching:\n",
+            {
+                t <- attr(ocall, "srcref", exact = TRUE)
+                paste(if (is.integer(t)) as.character(t) else deparse(ocall), collapse = "\n")
+            }
+        ))
+    }
 }
 })
 
@@ -432,15 +412,12 @@
 set.jupyter.path <- function (...)
 {
     if (!.GUI_jupyter)
-        stop(gettextf("'%s' can only be called in Jupyter",
-            "set.jupyter.path"))
+        stop(gettextf("'%s' can only be called in Jupyter", "set.jupyter.path"))
     if (!.is_jupyter_loaded())
-        stop(gettextf("'%s' can only be called after Jupyter has finished loading",
-            "set.jupyter.path"))
+        stop(gettextf("'%s' can only be called after Jupyter has finished loading", "set.jupyter.path"))
     n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
     if (sys.nframe() != n)
-        stop(gettextf("'%s' can only be called from a top-level context",
-            "set.jupyter.path"))
+        stop(gettextf("'%s' can only be called from a top-level context", "set.jupyter.path"))
     path <- if (missing(...) || ...length() == 1L && (is.null(..1) || is.atomic(..1) && length(..1) == 1L && is.na(..1)))
         NA_character_
     else if (is.null(initwd))
@@ -588,7 +565,7 @@ set.jupyter.path <- function (...)
     expr <- gsub("[ \t\n]+", " ", expr)
     expr <- gsub("( ", "(", expr, fixed = TRUE)
     expr <- gsub(" )", ")", expr, fixed = TRUE)
-               function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
+               function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     # exe <- Sys.which("emacsclient"); contents <- TRUE; Sys.getpid <- function() 0L; stop("comment this out later")
 
@@ -625,12 +602,8 @@ set.jupyter.path <- function (...)
     if (.scalar_streql(rval, "success-active")) {
         x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
         if (verbose) cat("Source: active document in Emacs\n")
-        if (contents) {
-            x <- .External2(.C_splitlines, x)
-            if (list_contents)
-                list(x)
-            else x
-        }
+        if (contents)
+            .External2(.C_splitlines, x)
         else if (.isfalse(original))
             .normalizePath(x)
         else x
@@ -638,12 +611,8 @@ set.jupyter.path <- function (...)
     else if (.scalar_streql(rval, "success-source")) {
         x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
         if (verbose) cat("Source: source document in Emacs\n")
-        if (contents) {
-            x <- .External2(.C_splitlines, x)
-            if (list_contents)
-                list(x)
-            else x
-        }
+        if (contents)
+            .External2(.C_splitlines, x)
         else if (.isfalse(original))
             .normalizePath(x)
         else x
@@ -666,9 +635,15 @@ set.jupyter.path <- function (...)
     else if (.scalar_streql(rval, "no-matching-pid")) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotFoundError(sprintf(
-            "R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions in Emacs, do not run multiple\n Emacs sessions, one R session each. instead run one Emacs session with\n multiple frames, one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
-            Sys.getpid()), domain = NA))
+        else {
+            stop(.ThisPathNotFoundError(
+                sprintf(
+                    "R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions in Emacs, do not run multiple\n Emacs sessions, one R session each. instead run one Emacs session with\n multiple frames, one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
+                    Sys.getpid()
+                ),
+                domain = NA
+            ))
+        }
     }
     else stop("invalid 'emacsclient' return value")
 }
@@ -714,29 +689,31 @@ set.jupyter.path <- function (...)
 
 
 delayedAssign(".r_editor", {
-    if (.GUI_Rgui) local({
-        x <- .r_editor_info$`r-editor`
+    if (.OS_windows) local({
+        x <- .r_editor_info[[1L]]
         i <- match(TRUE, x$crt == (if (.ucrt) "ucrt" else "msvcrt") &
                          x$vrsn <= getRversion())
         if (is.na(i))
             " - R Editor"
         else x[[i, "matches"]]
     })
+    else NULL
 })
 delayedAssign(".untitled", {
-    if (.GUI_Rgui) local({
-        x <- .r_editor_info$untitled
+    if (.OS_windows) local({
+        x <- .r_editor_info[[2L]]
         i <- match(TRUE, x$crt == (if (.ucrt) "ucrt" else "msvcrt") &
                          x$vrsn <= getRversion())
         if (is.na(i))
             "Untitled - R Editor"
         else x[[i, "matches"]]
     })
+    else NULL
 })
 
 
-.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
-.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor, list_contents)
+.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
 
 
 .gui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
@@ -745,42 +722,40 @@ delayedAssign(".untitled", {
         if (contents && .has_shFILE)
             for.msg <- FALSE
         value <- shFILE(original, for.msg, default = {
-            stop(.ThisPathNotExistsError(
-                "R is running from a shell and argument 'FILE' is missing",
-                call = sys.call()))
+            stop(.ThisPathNotExistsError("R is running from a shell and argument 'FILE' is missing"))
         })
         if (verbose) cat("Source: shell argument 'FILE'\n")
-        value
+        if (contents) {
+            if (is.na(value))
+                NULL
+            else .get_contents(value)
+        }
+        else value
     }
     else if (.GUI_RStudio) {
-        .RStudio_path(verbose, original, for.msg, contents, TRUE)
+        .RStudio_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_Positron) {
-        .Positron_path(verbose, original, for.msg, contents, TRUE)
+        .Positron_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_vscode) {
-        .vscode_path(verbose, original, for.msg, contents, TRUE)
+        .vscode_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_jupyter) {
-        .jupyter_path(verbose, original, for.msg, contents, TRUE)
+        .jupyter_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_emacs) {
-        .emacs_path(verbose, original, for.msg, contents, TRUE)
+        .emacs_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_powerbi) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotFoundError(
-            "R is running from Power BI for which 'this.path' is unimplemented\n",
-            " you should not need to use this.path() in Power BI since you can import data directly"))
+        else stop(.ThisPathNotFoundError("R is running from Power BI for which 'this.path' is unimplemented\n you should not need to use this.path() in Power BI since you can import data directly"))
     }
     else if (.in_callr) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotFoundError(
-            "R is running from 'package:callr' for which 'this.path' is unimplemented\n",
-            " 'package:callr' calls a function in a separate session,\n",
-            " you should not need the path of the script where it was written"))
+        else stop(.ThisPathNotFoundError("R is running from 'package:callr' for which 'this.path' is unimplemented\n 'package:callr' calls a function in a separate session,\n you should not need the path of the script where it was written"))
     }
     else if (.GUI_Rgui) {
         .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
@@ -794,8 +769,7 @@ delayedAssign(".untitled", {
     else if (.GUI_Tk) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError(
-            "R is running from Tk which does not make use of its -f FILE, --file=FILE arguments"))
+        else stop(.ThisPathNotExistsError("R is running from Tk which does not make use of its -f FILE, --file=FILE arguments"))
     }
     ## running R in another manner
     else {

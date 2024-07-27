@@ -224,8 +224,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"fixNewlines"       , (DL_FUNC) &do_fixNewlines       ,  1},
 {"splitlines"        , (DL_FUNC) &do_splitlines        ,  1},
 {"remove_trailing_blank_string", (DL_FUNC) &do_remove_trailing_blank_string, 1},
-{"Rgui_path"         , (DL_FUNC) &do_Rgui_path         , -1},
-{"jupyter_path"      , (DL_FUNC) &do_jupyter_path      ,  5},
+{"Rgui_path"         , (DL_FUNC) &do_Rgui_path         ,  6},
+{"jupyter_path"      , (DL_FUNC) &do_jupyter_path      ,  4},
 {"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1}, // R_Visible off
 {"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0}, // R_Visible off
 {"sys_path"          , (DL_FUNC) &do_sys_path          , -1},
