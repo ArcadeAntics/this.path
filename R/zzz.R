@@ -225,6 +225,7 @@ if (getRversion() < "3.0.0") {
     ## error.R      ----
 
 
+    fix_External2(.getCurrentCall)
     fix_External2(.ThisPathInAQUAError)
     fix_External2(.ThisPathInZipFileError)
     fix_External2(.ThisPathNotExistsError)

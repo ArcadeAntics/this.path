@@ -129,7 +129,7 @@
 }
 
 
-.RStudio_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.RStudio_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
 {
     indx <- match("tools:rstudio", search(), 0L)
     if (!indx) {
@@ -174,7 +174,10 @@
                 else
                     "Source: source document in RStudio\n"
             )
-        list(.External2(.C_remove_trailing_blank_string, context[["contents"]]))
+        x <- .External2(.C_remove_trailing_blank_string, context[["contents"]])
+        if (list_contents)
+            list(x)
+        else x
     }
     else if (nzchar(path <- context[["path"]])) {
         if (.OS_windows)
@@ -207,7 +210,7 @@
 }
 
 
-.Positron_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+.Positron_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
 {
     indx <- match("tools:positron", search(), 0L)
     if (!indx) {
@@ -238,7 +241,9 @@
         x <- context[["contents"]]
         storage.mode(x) <- "character"
         x <- .External2(.C_remove_trailing_blank_string, x)
-        list(x)
+        if (list_contents)
+            list(x)
+        else x
     }
     else if (context[["document"]][["is_untitled"]]) {
         if (for.msg)
@@ -293,7 +298,7 @@
             response_file
         })
     })
-                function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+                function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
 {
     ## read the previous request time stamp before making a new request
     response_time_stamp <- readLines(response_lock_file)
@@ -325,7 +330,10 @@
     }
     else if (contents) {
         if (verbose) cat("Source: document in VSCode\n")
-        list(.External2(.C_splitlines, context[["contents"]]))
+        x <- .External2(.C_splitlines, context[["contents"]])
+        if (list_contents)
+            list(x)
+        else x
     }
     else if (context[["id"]][["scheme"]] == "untitled") {
         if (for.msg)
@@ -356,10 +364,10 @@
     delayedAssign("ofile", { NA_character_ })
     ofile
     delayedAssign("file" , { .normalizePath(ofile) })
-                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+                 function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
 {
     if (!is.na(ofile))
-        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
+        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents, list_contents))
 
 
     if (is.null(initwd)) {
@@ -400,7 +408,7 @@
                 for (expr in exprs) {
                     if (.identical(expr, call)) {
                         .External2(.C_set_jupyter_path, file, skipCheck = TRUE)
-                        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents))
+                        return(.External2(.C_jupyter_path, verbose, original, for.msg, contents, list_contents))
                     }
                 }
             }
@@ -580,7 +588,7 @@ set.jupyter.path <- function (...)
     expr <- gsub("[ \t\n]+", " ", expr)
     expr <- gsub("( ", "(", expr, fixed = TRUE)
     expr <- gsub(" )", ")", expr, fixed = TRUE)
-               function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+               function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
 {
     # exe <- Sys.which("emacsclient"); contents <- TRUE; Sys.getpid <- function() 0L; stop("comment this out later")
 
@@ -617,8 +625,12 @@ set.jupyter.path <- function (...)
     if (.scalar_streql(rval, "success-active")) {
         x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
         if (verbose) cat("Source: active document in Emacs\n")
-        if (contents)
-            list(.External2(.C_splitlines, x))
+        if (contents) {
+            x <- .External2(.C_splitlines, x)
+            if (list_contents)
+                list(x)
+            else x
+        }
         else if (.isfalse(original))
             .normalizePath(x)
         else x
@@ -626,8 +638,12 @@ set.jupyter.path <- function (...)
     else if (.scalar_streql(rval, "success-source")) {
         x <- readChar(file, nchars = file.size(file), useBytes = TRUE)
         if (verbose) cat("Source: source document in Emacs\n")
-        if (contents)
-            list(.External2(.C_splitlines, x))
+        if (contents) {
+            x <- .External2(.C_splitlines, x)
+            if (list_contents)
+                list(x)
+            else x
+        }
         else if (.isfalse(original))
             .normalizePath(x)
         else x
@@ -719,8 +735,8 @@ delayedAssign(".untitled", {
 })
 
 
-.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
-.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
+.Rgui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE, list_contents = FALSE)
+.External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor, list_contents)
 
 
 .gui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
@@ -737,19 +753,19 @@ delayedAssign(".untitled", {
         value
     }
     else if (.GUI_RStudio) {
-        .RStudio_path(verbose, original, for.msg, contents)
+        .RStudio_path(verbose, original, for.msg, contents, TRUE)
     }
     else if (.GUI_Positron) {
-        .Positron_path(verbose, original, for.msg, contents)
+        .Positron_path(verbose, original, for.msg, contents, TRUE)
     }
     else if (.GUI_vscode) {
-        .vscode_path(verbose, original, for.msg, contents)
+        .vscode_path(verbose, original, for.msg, contents, TRUE)
     }
     else if (.GUI_jupyter) {
-        .jupyter_path(verbose, original, for.msg, contents)
+        .jupyter_path(verbose, original, for.msg, contents, TRUE)
     }
     else if (.GUI_emacs) {
-        .emacs_path(verbose, original, for.msg, contents)
+        .emacs_path(verbose, original, for.msg, contents, TRUE)
     }
     else if (.GUI_powerbi) {
         if (for.msg)

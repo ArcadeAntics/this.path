@@ -17,36 +17,12 @@
 }
 
 
-.getCurrentCall <- function (n = 3L)
+.getCurrentCall <- function (n = 2L, which = sys.parent(n))
 {
-    ## find the call that stop() would have also found
-    ##
-    ## look down the calling stack, picking the
-    ## most recent closure besides `stop`
-    ##
-    ## this is intended to be used as such:
-    ## stop(errorMakingFunction())
-    ##
-    ## where errorMakingFunction calls .getCurrentCall()
-
-
-    n <- sys.nframe() - n
-    if (n <= 0L)
-        return(NULL)
-    n <- sys.parents()[[n]]
-    if (n <= 0L)
-        return(NULL)
-    skip_stop <- TRUE
-    for (n in seq.int(to = 1L, by = -1L, length.out = n)) {
-        if (typeof(fun <- sys.function(n)) == "closure") {
-            if (skip_stop && .identical(fun, stop)) {
-                skip_stop <- FALSE
-                next
-            }
-            return(sys.call(n))
-        }
-    }
-    NULL
+    n <- .External2(.C_asIntegerGE0, n)
+    if (which)
+        sys.call(which)
+    else NULL
 }
 
 

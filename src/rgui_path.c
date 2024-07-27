@@ -31,6 +31,7 @@ static SEXP          EnumResult;
 static HWND          EnumHandle;
 static PROTECT_INDEX EnumIndex;
 static DWORD         EnumProcessId;
+static Rboolean      EnumListContents;
 
 
 static BOOL CALLBACK EnumGetOnlyChildProc(HWND handle, LPARAM param)
@@ -61,11 +62,19 @@ static void HWND_lines(HWND handle, const char *title)
     else return;
 
 
-    R_Reprotect(EnumResult = Rf_allocVector(VECSXP, 1), EnumIndex);
+    if (EnumListContents)
+        R_Reprotect(EnumResult = Rf_allocVector(VECSXP, 1), EnumIndex);
+#define set_result(v)                                          \
+    do {                                                       \
+        if (EnumListContents)                                  \
+            SET_VECTOR_ELT(EnumResult, 0, (v));                \
+        else                                                   \
+            R_Reprotect(EnumResult = (v), EnumIndex);          \
+    } while (0)
     LRESULT len = SendMessage(EnumHandle, WM_GETTEXTLENGTH, 0, (LPARAM) 0);
-    /* if there is no text to get, then return list(character(0)) */
+    /* if there is no text to get, then set_result(character(0)) */
     if (!len) {
-        SET_VECTOR_ELT(EnumResult, 0, Rf_allocVector(STRSXP, 0));
+        set_result(Rf_allocVector(STRSXP, 0));
         return;
     }
     char buf[len + 1];
@@ -76,7 +85,7 @@ static void HWND_lines(HWND handle, const char *title)
     const char *p = strstr(str, "\r\n");
     /* if there are no newlines in the text, just return as is */
     if (!p) {
-        SET_VECTOR_ELT(EnumResult, 0, Rf_mkString(buf));
+        set_result(Rf_mkString(buf));
         return;
     }
     /* count how many strings need to be allocated, then allocate them */
@@ -90,7 +99,7 @@ static void HWND_lines(HWND handle, const char *title)
         else break;
     } while (p);
     SEXP x = Rf_allocVector(STRSXP, n_strings);
-    SET_VECTOR_ELT(EnumResult, 0, x);
+    set_result(x);
     /* set the strings in the string vector */
     R_xlen_t i = 0;
     str = buf;
@@ -229,7 +238,8 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
 
 
 SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
+               Rboolean contents, SEXP untitled, SEXP r_editor,
+               Rboolean list_contents, SEXP rho)
 {
     if (!RConsole)
         Rf_error("attempt to use 'Rgui_path' while not in RGui");
@@ -245,6 +255,7 @@ SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     EnumContents = contents;
     EnumUntitled = untitled;
     EnumREditor = r_editor;
+    EnumListContents = list_contents;
     EnumActive = TRUE;
     /* works better for older versions of R */
     EnumNUntitled = ((EnumUntitled == R_NilValue) ? 0 : LENGTH(EnumUntitled));
@@ -302,7 +313,8 @@ SEXP do_RConsole do_formals
 
 
 SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
+               Rboolean contents, SEXP untitled, SEXP r_editor,
+               Rboolean list_contents, SEXP rho)
 {
     Rf_error("Rgui_path() is implemented only on Windows");
     return R_NilValue;

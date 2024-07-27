@@ -1,10 +1,8 @@
-local({
+{
     if (!file.exists(this.path::here("tools", "maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
     essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(  ## this.path
-        # special = TRUE,
-
         build_opts = list(
             user = "iris"
         ),
@@ -24,7 +22,18 @@ local({
 
         chdir = TRUE
     )
-})
+}
+
+
+{
+    essentials:::.check_this(
+        special = TRUE,
+        build_opts = list(user = "iris"),
+        INSTALL = FALSE,
+        check = FALSE,
+        chdir = TRUE
+    )
+}
 
 
 local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder/submit.html
