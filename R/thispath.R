@@ -638,7 +638,7 @@ set.jupyter.path <- function (...)
         else {
             stop(.ThisPathNotFoundError(
                 sprintf(
-                    "R process %d not found in primary Emacs sesion\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions in Emacs, do not run multiple\n Emacs sessions, one R session each. instead run one Emacs session with\n multiple frames, one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
+                    "R process %d not found in primary Emacs session\n this.path() only works in primary Emacs session\n\n if you want to run multiple R sessions, do not run\n multiple Emacs sessions, one R session each.\n\n instead run one Emacs session with multiple frames,\n one R session each. this gives the same appearance\n while allowing this.path() to work across all R sessions.",
                     Sys.getpid()
                 ),
                 domain = NA
