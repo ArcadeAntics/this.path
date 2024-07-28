@@ -18,7 +18,7 @@
     \itemize{
       \item{\code{this.path(contents = TRUE)} in \sQuote{Rgui} in which the
         source document contains no text now returns \code{character(0)}
-        instead of the previously incorrect \code{""}.}
+        instead of the previously incorrect \blankstring.}
 
       \item{\code{this.path()} in \sQuote{\RStudio} and \sQuote{\VSCode} will
         now declare a \string{UTF-8} file path encoding only on Windows.}
