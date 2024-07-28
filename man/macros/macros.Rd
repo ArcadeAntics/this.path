@@ -23,7 +23,7 @@
 \newcommand{\Positron}{\href{https://github.com/posit-dev/positron}{Positron}}
 \newcommand{\Python}{\href{https://www.python.org/}{Python}}
 \newcommand{\radian}{\href{https://github.com/randy3k/radian}{radian}}
-\newcommand{\REditorSupport}{\href{https://code.visualstudio.com/docs/languages/r#:~:text=Install the R extension for Visual Studio Code.}{REditorSupport}}
+\newcommand{\REditorSupport}{\href{https://code.visualstudio.com/docs/languages/r}{REditorSupport}}
 \newcommand{\RStudio}{\href{https://posit.co/products/open-source/rstudio/}{RStudio}}
 \newcommand{\VSCode}{\href{https://code.visualstudio.com/}{VSCode}}
 
