@@ -747,6 +747,11 @@ delayedAssign(".untitled", {
     else if (.GUI_emacs) {
         .emacs_path(verbose, original, for.msg, contents)
     }
+    else if (.GUI_rkward) {
+        if (for.msg)
+            NA_character_
+        else stop(.ThisPathNotFoundError("R is running from RKWard for which 'this.path' is currently unimplemented\n consider using RStudio, Positron, VSCode, or Emacs until such a time when this is implemented"))
+    }
     else if (.GUI_powerbi) {
         if (for.msg)
             NA_character_

@@ -73,7 +73,7 @@ SEXP simpleError(const char *msg, SEXP call)
 SEXP ThisPathInAQUAError(SEXP call)
 {
     const char *msg = "R is running from AQUA for which 'this.path' is currently unimplemented\n"
-                      " consider using RStudio, VSCode, or Emacs until such a time when this is implemented";
+                      " consider using RStudio, Positron, VSCode, or Emacs until such a time when this is implemented";
     return errorCondition(msg, call, 0, ThisPathInAQUAErrorClass);
 }
 

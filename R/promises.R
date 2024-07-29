@@ -248,6 +248,7 @@ delayedAssign(".GUI_RStudio", {
 
 
 delayedAssign(".GUI_Positron", {
+    interactive() &&
     .scalar_streql(Sys.getenv("POSITRON"), "1") &&
     Sys.getenv("POSITRON_VERSION") != "" &&
 
@@ -320,6 +321,9 @@ delayedAssign(".GUI_emacs", {
 })
 
 
+delayedAssign(".GUI_rkward", { commandArgs()[[1L]] == "rkward" })
+
+
 delayedAssign(".GUI_powerbi", {
     !interactive() &&
 
@@ -350,9 +354,9 @@ delayedAssign(".in_callr", {
 })
 
 
-delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
-delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
-delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_rkward && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_rkward && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
+delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_rkward && !.GUI_powerbi && !.in_callr                            })
 
 
 delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
@@ -367,6 +371,7 @@ delayedAssign(".unrecognized_manner", {
     !.GUI_vscode &&
     !.GUI_jupyter &&
     !.GUI_emacs &&
+    !.GUI_rkward &&
     !.GUI_powerbi &&
     !.in_callr &&
     !.GUI_Rgui &&
@@ -383,6 +388,7 @@ delayedAssign(".GUI", {
     else if (.GUI_vscode) "vscode"
     else if (.GUI_jupyter) "jupyter"
     else if (.GUI_emacs) "emacs"
+    else if (.GUI_rkward) "rkward"
     else if (.GUI_powerbi) "powerbi"
     # else if (.GUI_Rgui) "Rgui"
     # else if (.GUI_AQUA) "AQUA"

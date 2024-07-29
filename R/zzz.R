@@ -49,6 +49,7 @@ tmp(
     .GUI_vscode,
     .GUI_jupyter,
     .GUI_emacs,
+    .GUI_rkward,
     .GUI_powerbi,
     .in_callr,
     .GUI_AQUA, .GUI_Rgui, .GUI_Tk,
