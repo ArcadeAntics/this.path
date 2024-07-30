@@ -238,13 +238,9 @@ delayedAssign(".OS_windows", { .Platform$OS.type == "windows" })
 ## have been run (see ?Startup).
 ##
 ## as such, I've made my own ways of determining the type of GUI in use
-delayedAssign(".GUI_RStudio", {
-    commandArgs()[[1L]] == "RStudio" &&
-    ## fails if the process id cannot be converted to string:
-    # isTRUE(Sys.getpid() == Sys.getenv("RSTUDIO_SESSION_PID"))
-    ## use this instead:
-    identical(Sys.getenv("RSTUDIO"), "1")
-})
+
+
+delayedAssign(".GUI_RStudio", { commandArgs()[[1L]] == "RStudio" })
 
 
 delayedAssign(".GUI_Positron", {
@@ -268,9 +264,7 @@ delayedAssign(".maybe_unembedded_shell", { .OS_unix_maybe_unembedded_shell || .O
 delayedAssign(".shINFO", { .External2(.C_shINFO) })
 
 
-delayedAssign(".OS_unix_console_radian"   , { .OS_unix    && .Platform$GUI %in% c("X11"  , "unknown", "none") && commandArgs()[[1L]] == "radian" })
-delayedAssign(".OS_windows_console_radian", { .OS_windows && .Platform$GUI %in% c("RTerm", "unknown"        ) && commandArgs()[[1L]] == "radian" })
-delayedAssign(".console_radian", { .OS_unix_console_radian || .OS_windows_console_radian })
+delayedAssign(".console_radian", { commandArgs()[[1L]] == "radian" })
 
 
 delayedAssign(".GUI_vscode", {

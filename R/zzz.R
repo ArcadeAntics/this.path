@@ -45,7 +45,7 @@ tmp(
     .GUI_Positron,
     .OS_unix_maybe_unembedded_shell, .OS_windows_maybe_unembedded_shell, .maybe_unembedded_shell,
     .shINFO,
-    .OS_unix_console_radian, .OS_windows_console_radian, .console_radian,
+    .console_radian,
     .GUI_vscode,
     .GUI_jupyter,
     .GUI_emacs,
