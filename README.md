@@ -14,8 +14,10 @@ install.packages("this.path")
 
 Install the development version from GitHub:
 ```R
-install.packages("this.path",
-    repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES")
+install.packages(
+    "this.path",
+    repos = "https://raw.githubusercontent.com/ArcadeAntics/PACKAGES"
+)
 
 ## or:
 
