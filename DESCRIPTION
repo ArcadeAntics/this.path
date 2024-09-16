@@ -1,6 +1,6 @@
 Package: this.path
-Version: 2.5.0.26
-Date: 2024-08-30
+Version: 2.5.0.27
+Date: 2024-09-16
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
 Description: Determine the path of the executing script. Compatible

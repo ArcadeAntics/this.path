@@ -650,47 +650,51 @@ set.jupyter.path <- function (...)
 })
 
 
-.r_editor_info <- lapply(c("r-editor", "untitled"), function(name) {
-    ## for R 2.15, avoid forcing .C_mapply promise
-    assign(
-        ".mapply",
-        function(FUN, dots, MoreArgs) {
-            do.call(
-                "mapply",
-                c(list(FUN = FUN), dots, list(MoreArgs = MoreArgs, SIMPLIFY = FALSE, USE.NAMES = FALSE)),
-                quote = TRUE
-            )
-        },
-        envir = environment(.read_C_strings) <- new.env(parent = environment(.read_C_strings))
-    )
-    assign(
-        ".read_C_strings",
-        .read_C_strings,
-        envir = environment(.read_C_strings_with_encoding) <- new.env(parent = environment(.read_C_strings_with_encoding))
-    )
+.r_editor_info <- sapply(
+    c("r-editor", "untitled"),
+    function(name) {
+        ## for R 2.15, avoid forcing .C_mapply promise
+        assign(
+            ".mapply",
+            function(FUN, dots, MoreArgs) {
+                do.call(
+                    "mapply",
+                    c(list(FUN = FUN), dots, list(MoreArgs = MoreArgs, SIMPLIFY = FALSE, USE.NAMES = FALSE)),
+                    quote = TRUE
+                )
+            },
+            envir = environment(.read_C_strings) <- new.env(parent = environment(.read_C_strings))
+        )
+        assign(
+            ".read_C_strings",
+            .read_C_strings,
+            envir = environment(.read_C_strings_with_encoding) <- new.env(parent = environment(.read_C_strings_with_encoding))
+        )
 
 
-    dir <- "./inst/extdata"
-    pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
-    files <- .BaseNamespaceEnv$list.files(dir, pattern)
-    matches <- regmatches(files, regexec(pattern, files))
-    info <- data.frame(
-        crt = vapply(matches, `[[`, "", 2L),
-        vrsn = R_system_version(sprintf(
-            "%s.%s.0",
-            vapply(matches, `[[`, "", 3L),
-            vapply(matches, `[[`, "", 4L)
-        )),
-        as.data.frame.vector(lapply(file.path(dir, files), .read_C_strings_with_encoding), nm = "matches")
-    )
-    info <- info[order(info$vrsn, decreasing = TRUE), , drop = FALSE]
-    info
-})
+        dir <- "./inst/extdata"
+        pattern <- sprintf("^%s_(msvcrt|ucrt)_([[:digit:]]+)_([[:digit:]]+)\\.dat$", name)
+        files <- .BaseNamespaceEnv$list.files(dir, pattern)
+        matches <- regmatches(files, regexec(pattern, files))
+        info <- data.frame(
+            crt = vapply(matches, `[[`, "", 2L),
+            vrsn = R_system_version(sprintf(
+                "%s.%s.0",
+                vapply(matches, `[[`, "", 3L),
+                vapply(matches, `[[`, "", 4L)
+            )),
+            as.data.frame.vector(lapply(file.path(dir, files), .read_C_strings_with_encoding), nm = "matches")
+        )
+        info <- info[order(info$vrsn, decreasing = TRUE), , drop = FALSE]
+        info
+    },
+    simplify = FALSE
+)
 
 
 delayedAssign(".r_editor", {
     if (.OS_windows) local({
-        x <- .r_editor_info[[1L]]
+        x <- .r_editor_info$`r-editor`
         i <- match(TRUE, x$crt == (if (.ucrt) "ucrt" else "msvcrt") &
                          x$vrsn <= getRversion())
         if (is.na(i))
@@ -701,7 +705,7 @@ delayedAssign(".r_editor", {
 })
 delayedAssign(".untitled", {
     if (.OS_windows) local({
-        x <- .r_editor_info[[2L]]
+        x <- .r_editor_info$untitled
         i <- match(TRUE, x$crt == (if (.ucrt) "ucrt" else "msvcrt") &
                          x$vrsn <= getRversion())
         if (is.na(i))
