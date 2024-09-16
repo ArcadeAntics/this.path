@@ -55,7 +55,7 @@ int vsnprintf_mbcs(char *buf, size_t size, const char *format, va_list ap)
 
 int snprintf_mbcs(char *buf, size_t size, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     int value = vsnprintf_mbcs(buf, size, format, ap);
     va_end(ap);
@@ -101,7 +101,7 @@ SEXP make_error_condition(SEXP call, SEXP rho,
                           SEXP Class,
                           int nextra, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition(call, rho, Class,
                                        nextra, format, ap);
@@ -140,7 +140,7 @@ SEXP make_error_condition_strings(SEXP call, SEXP rho,
                                   const char **Class,
                                   int nextra, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition_strings(call, rho, Class, nextra, format, ap);
     va_end(ap);
@@ -171,7 +171,7 @@ SEXP make_error_condition_string(SEXP call, SEXP rho,
                                  const char *Class,
                                  int nextra, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition_string(call, rho, Class, nextra, format, ap);
     va_end(ap);
@@ -181,7 +181,7 @@ SEXP make_error_condition_string(SEXP call, SEXP rho,
 
 SEXP simpleError(SEXP call, SEXP rho, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition_string(call, rho, "simpleError", 0, format, ap);
     va_end(ap);
@@ -217,7 +217,7 @@ SEXP ThisPathInZipFileError(SEXP call, SEXP rho, SEXP description)
 
 SEXP ThisPathNotExistsError(SEXP call, SEXP rho, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition(call, rho, ThisPathNotExistsErrorClass, 0, format, ap);
     va_end(ap);
@@ -227,7 +227,7 @@ SEXP ThisPathNotExistsError(SEXP call, SEXP rho, const char *format, ...)
 
 SEXP ThisPathNotFoundError(SEXP call, SEXP rho, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition(call, rho, ThisPathNotFoundErrorClass, 0, format, ap);
     va_end(ap);
@@ -237,7 +237,7 @@ SEXP ThisPathNotFoundError(SEXP call, SEXP rho, const char *format, ...)
 
 SEXP ThisPathNotImplementedError(SEXP call, SEXP rho, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     SEXP value = vmake_error_condition(call, rho, ThisPathNotImplementedErrorClass, 0, format, ap);
     va_end(ap);
