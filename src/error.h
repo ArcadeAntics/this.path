@@ -28,4 +28,8 @@ extern SEXP ThisPathUnrecognizedMannerError         (SEXP call);
 extern void stop(SEXP cond);
 
 
+extern void MissingArgError_c(const char *arg, SEXP call, SEXP rho, const char *subclass);
+extern void MissingArgError(SEXP symbol, SEXP call, SEXP rho, const char *subclass);
+
+
 #endif

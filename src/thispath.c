@@ -547,7 +547,8 @@ SEXP do_set_gui_path do_formals
 
     SEXP dd1 = CAR(dots);
     if (dd1 == R_MissingArg)
-        Rf_errorcall(call, _("argument is missing, with no default"));
+        // Rf_errorcall(call, _("argument is missing, with no default"));
+        MissingArgError_c("", call, rho, "evalError");
     dd1 = Rf_eval(dd1, R_EmptyEnv);
 
 
@@ -605,7 +606,8 @@ SEXP do_set_gui_path do_formals
         case DOTSXP:
             path = CADR(dots);
             if (path == R_MissingArg)
-                Rf_errorcall(call, _("argument is missing, with no default"));
+                // Rf_errorcall(call, _("argument is missing, with no default"));
+                MissingArgError_c("", call, rho, "evalError");
             path = Rf_eval(path, R_EmptyEnv);
             Rf_protect(path); nprotect++;
             break;

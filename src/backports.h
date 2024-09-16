@@ -163,7 +163,16 @@ extern SEXP R_BlankScalarString;
 
 
 #if R_version_less_than(3,4,0)
-#define R_CurrentExpression R_NilValue
+#define R_CurrentExpression NULL
+#define my_errorcall(call, ...) do {                           \
+        SEXP call2 = (call);                                   \
+        if (call2 == R_CurrentExpression)                      \
+            Rf_error(__VA_ARGS__);                             \
+        else                                                   \
+            Rf_errorcall(call2, __VA_ARGS__);                  \
+    } while (0)
+#else
+#define my_errorcall Rf_errorcall
 #endif
 
 

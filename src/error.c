@@ -154,6 +154,71 @@ void stop(SEXP cond)
 }
 
 
+#define BUFSIZE 8192
+static char emsg_buf[BUFSIZE];
+
+
+#if R_version_less_than(4,5,0)
+void MissingArgError_c(const char *arg, SEXP call, SEXP rho, const char *subclass)
+{
+    if (call == R_CurrentExpression) {
+        if (*arg)
+            Rf_error(_("argument \"%s\" is missing, with no default"), arg);
+        else
+            Rf_error(_("argument is missing, with no default"));
+    }
+    else {
+        SEXP cond;
+        if (*arg) {
+            snprintf(emsg_buf, BUFSIZE,
+                     _("argument \"%s\" is missing, with no default"), arg);
+            cond = simpleError(emsg_buf, call);
+        }
+        else
+            cond = simpleError(_("argument is missing, with no default"), call);
+        Rf_protect(cond);
+        stop(cond);
+        Rf_unprotect(2);
+    }
+}
+#else
+void MissingArgError_c(const char *arg, SEXP call, SEXP rho, const char *subclass)
+{
+    if (call == R_CurrentExpression)
+        call = getCurrentCall(rho);
+    Rf_protect(call);
+    const char *Class[3];
+    if (subclass == NULL) {
+        Class[0] = "missingArgError";
+        Class[1] = NULL;
+    }
+    else {
+        Class[0] = subclass;
+        Class[1] = "missingArgError";
+        Class[2] = NULL;
+    }
+    SEXP cond;
+    if (*arg) {
+        snprintf(emsg_buf, BUFSIZE,
+                 _("argument \"%s\" is missing, with no default"), arg);
+        cond = errorCondition_strings(emsg_buf, call, 0, Class);
+    }
+    else
+        cond = errorCondition_strings(_("argument is missing, with no default"),
+                                      call, 0, Class);
+    Rf_protect(cond);
+    stop(cond);
+    Rf_unprotect(2);
+}
+#endif
+
+
+void MissingArgError(SEXP symbol, SEXP call, SEXP rho, const char *subclass)
+{
+    MissingArgError_c(R_CHAR(PRINTNAME(symbol)), call, rho, subclass);
+}
+
+
 
 
 

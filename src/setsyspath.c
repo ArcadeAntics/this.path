@@ -23,7 +23,8 @@ SEXP do_wrap_source do_formals
     if (promise == R_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));
     if (promise == R_MissingArg)
-        Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
+        // Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
+        MissingArgError(exprSymbol, R_CurrentExpression, rho, "evalError");
     if (TYPEOF(promise) != PROMSXP)
         Rf_error("invalid '%s', must be a promise; should never happen, please report!",
               R_CHAR(PRINTNAME(exprSymbol)));
@@ -132,7 +133,8 @@ SEXP do_wrap_source do_formals
 
 
     if (expr == R_MissingArg)
-        Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
+        // Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
+        MissingArgError(exprSymbol, R_CurrentExpression, rho, "evalError");
     if (TYPEOF(expr) != LANGSXP)
         Rf_error("invalid '%s', must be a call", R_CHAR(PRINTNAME(exprSymbol)));
 

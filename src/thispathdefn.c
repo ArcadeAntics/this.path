@@ -180,12 +180,15 @@ SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call)
                 return vl;
             }
             if (vl == R_MissingArg)
-                Rf_errorcall(call,
-                    _("argument \"%s\" is missing, with no default"),
-                    EncodeChar(PRINTNAME(symbol)));
+                // my_errorcall(call,
+                //     _("argument \"%s\" is missing, with no default"),
+                //     EncodeChar(PRINTNAME(symbol)));
+                MissingArgError_c(EncodeChar(PRINTNAME(symbol)),
+                                  call, rho, "getMissingError");
+
         }
     }
-    Rf_errorcall(call,
+    my_errorcall(call,
         _("could not find function \"%s\""),
         EncodeChar(PRINTNAME(symbol)));
     return R_UnboundValue;
