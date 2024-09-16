@@ -346,7 +346,7 @@ SEXP do_Rgui_path do_formals
 
 SEXP do_jupyter_path do_formals
 {
-    do_start_no_op_rho("jupyter_path", 4);
+    do_start_no_call_op_rho("jupyter_path", 4);
 
 
     Rboolean verbose, original, for_msg, contents;

@@ -86,9 +86,9 @@ main <- function ()
             ## we know a package is being installed by 'R CMD build'
             ## if the working directory matches the following pattern
             pattern <- sprintf("/Rtmp[\001-\056\060-\177]{6}/Rbuild[0123456789abcdef]+/%s$", regexQuote(desc["Package"]))
-            ##                   ^^^^^^^^^^^^^^^^^^^^^^^                                 6 ASCII characters excluding \0 and /
-            ##                                                 ^^^^^^^^^^^^^^^^^^^       at least 1 hex digit
-            ##                                                                     ^^^   ends with the package name
+            ##                       ^^^^^^^^^^^^^^^^^^^^^^^                                 6 ASCII characters excluding \0 and /
+            ##                                                     ^^^^^^^^^^^^^^^^^^^       at least 1 hex digit
+            ##                                                                         ^^^   ends with the package name
             grepl(pattern, wd, useBytes = TRUE)
         }
     })
