@@ -735,13 +735,7 @@ void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
 static R_INLINE
 SEXP error_no_associated_path(SEXP rho)
 {
-    const char *msg = "no associated path";
-    SEXP call = getCurrentCall(rho);
-    Rf_protect(call);
-    SEXP cond = ThisPathNotExistsError(msg, call);
-    Rf_protect(cond);
-    stop(cond);
-    Rf_unprotect(2);
+    stop(ThisPathNotExistsError(R_CurrentExpression, rho, "no associated path"));
     return R_NilValue;
 }
 

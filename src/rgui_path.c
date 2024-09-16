@@ -264,11 +264,10 @@ SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     if (EnumActive) Rf_error("no windows in Rgui; should never happen, please report!");
 
 
-    const char *msg = "R is running from Rgui with no documents open";
-    SEXP cond = ThisPathNotExistsError(msg, Rf_protect(getCurrentCall(rho)));
-    Rf_protect(cond);
-    stop(cond);
-    Rf_unprotect(2);
+    stop(ThisPathNotExistsError(
+        R_CurrentExpression, rho,
+        "R is running from Rgui with no documents open"
+    ));
     return R_NilValue;  /* should not be reached */
 }
 

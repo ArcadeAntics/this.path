@@ -157,15 +157,12 @@ extern SEXP get_debugSource(void);
             description = STRING_ELT(VECTOR_ELT(summary, 0), 0);\
             klass = R_CHAR(STRING_ELT(VECTOR_ELT(summary, 1), 0));\
             if (streql(klass, "gzcon")) {                      \
-                const char *msg = "'this.path' cannot be used within a 'gzcon()'";\
-                SEXP call = getCurrentCall(rho);               \
-                Rf_protect(call);                              \
-                SEXP cond = ThisPathNotFoundError(msg, call);  \
-                Rf_protect(cond);                              \
-                stop(cond);                                    \
-                Rf_unprotect(2);                               \
+                stop(ThisPathNotFoundError(                    \
+                    R_CurrentExpression, rho,                  \
+                    "'this.path' cannot be used within a 'gzcon()'"\
+                ));                                            \
             }
-#define UnrecognizedConnectionClassError_SEXP ThisPathUnrecognizedConnectionClassError(R_NilValue, summary)
+#define UnrecognizedConnectionClassError_SEXP ThisPathUnrecognizedConnectionClassError(R_NilValue, R_EmptyEnv, summary)
 #if defined(R_CONNECTIONS_VERSION_1)
 #define get_description_and_class                              \
             Rconnection Rcon = NULL;                           \
@@ -182,7 +179,7 @@ extern SEXP get_debugSource(void);
             } else {                                           \
                 get_description_and_class_SEXP;                \
             }
-#define UnrecognizedConnectionClassError (Rcon ? ThisPathUnrecognizedConnectionClassError_Rcon_V1(R_NilValue, Rcon) : UnrecognizedConnectionClassError_SEXP)
+#define UnrecognizedConnectionClassError (Rcon ? ThisPathUnrecognizedConnectionClassError_Rcon_V1(R_NilValue, R_EmptyEnv, Rcon) : UnrecognizedConnectionClassError_SEXP)
 #else
 #define get_description_and_class                              \
             get_description_and_class_declarations;            \
@@ -389,9 +386,9 @@ do {                                                           \
                  represented by a single string)               \
                  */                                            \
                 if (allow_unz) {                               \
-                    INCREMENT_NAMED_defineVar(errcndSymbol              , ThisPathInZipFileError(R_NilValue, description), documentcontext);\
-                    INCREMENT_NAMED_defineVar(for_msgSymbol             , Rf_ScalarString(description)                   , documentcontext);\
-                                 Rf_defineVar(associated_with_fileSymbol, R_TrueValue                                    , documentcontext);\
+                    INCREMENT_NAMED_defineVar(errcndSymbol              , ThisPathInZipFileError(R_NilValue, R_EmptyEnv, description), documentcontext);\
+                    INCREMENT_NAMED_defineVar(for_msgSymbol             , Rf_ScalarString(description)                               , documentcontext);\
+                                 Rf_defineVar(associated_with_fileSymbol, R_TrueValue                                                , documentcontext);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
