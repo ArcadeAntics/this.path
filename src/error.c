@@ -316,8 +316,6 @@ void MissingArgError_c(const char *arg, SEXP call, SEXP rho, const char *subclas
 #else
 void MissingArgError_c(const char *arg, SEXP call, SEXP rho, const char *subclass)
 {
-    if (call == R_CurrentExpression)
-        call = getCurrentCall(rho);
     Rf_protect(call);
     const char *Class[3];
     if (subclass == NULL) {
