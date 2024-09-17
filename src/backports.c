@@ -778,14 +778,14 @@ void R_removeVarFromFrame(SEXP name, SEXP env)
     if (TYPEOF(name) != SYMSXP)
         Rf_error(_("not a symbol"));
 
-    /* remove(symbol, envir = env, inherits = FALSE) */
+    /* remove(name, envir = env, inherits = FALSE) */
     SEXP expr;
     PROTECT_INDEX indx;
     R_ProtectWithIndex(expr = Rf_cons(R_FalseValue, R_NilValue), &indx);
     SET_TAG(expr, inheritsSymbol);
     R_Reprotect(expr = Rf_cons(env, expr), indx);
     SET_TAG(expr, envirSymbol);
-    R_Reprotect(expr = Rf_lcons(removeSymbol, Rf_cons(Rf_ScalarString(PRINTNAME(symbol)), expr)), indx);
+    R_Reprotect(expr = Rf_lcons(removeSymbol, Rf_cons(Rf_ScalarString(PRINTNAME(name)), expr)), indx);
     Rf_eval(expr, R_BaseEnv);
     Rf_unprotect(1);
 }
