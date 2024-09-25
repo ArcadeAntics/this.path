@@ -415,9 +415,6 @@ set.jupyter.path <- function (...)
         stop(gettextf("'%s' can only be called in Jupyter", "set.jupyter.path"))
     if (!.is_jupyter_loaded())
         stop(gettextf("'%s' can only be called after Jupyter has finished loading", "set.jupyter.path"))
-    n <- sys.frame(1L)[["kernel"]][["executor"]][["nframe"]] + 2L
-    if (sys.nframe() != n)
-        stop(gettextf("'%s' can only be called from a top-level context", "set.jupyter.path"))
     path <- if (missing(...) || ...length() == 1L && (is.null(..1) || is.atomic(..1) && length(..1) == 1L && is.na(..1)))
         NA_character_
     else if (is.null(initwd))
