@@ -220,6 +220,8 @@ extern0 SEXP0
     AssignSymbol                           INI_as(Rf_install("<-")),
     ifnotfoundSymbol                       INI_as(Rf_install("ifnotfound")),
 
+    _utf8localeSymbol                      INI_as(Rf_install(".utf8locale")),
+
     withVisibleSymbol                      INI_as(Rf_install("withVisible"));
 
 

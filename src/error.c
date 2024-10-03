@@ -5,7 +5,6 @@
 
 
 LibExtern Rboolean mbcslocale;
-LibExtern Rboolean utf8locale;
 
 
 char *mbcsTruncateToValid(char *s)
@@ -19,7 +18,7 @@ char *mbcsTruncateToValid(char *s)
 
     mbsinit(&mb_st);
 
-    if (utf8locale) {
+    if (my_utf8locale) {
         goodlen = slen - 1;
         /*
          * check that the first two binary digits are 10

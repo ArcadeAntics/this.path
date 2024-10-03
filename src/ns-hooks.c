@@ -110,6 +110,9 @@ Rconnection (*ptr_R_GetConnection)(SEXP sConn);
 #if defined(HAVE_SET_R_VISIBLE)
 void (*ptr_set_R_Visible)(Rboolean x);
 #endif
+#if defined(HAVE_GET_UTF8LOCALE)
+Rboolean (*ptr_get_utf8locale)(void);
+#endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
 SEXP (*ptr_PRCODE)(SEXP x);
 SEXP (*ptr_PRENV)(SEXP x);
@@ -131,6 +134,17 @@ Rconnection R_GetConnection(SEXP sConn)
 }
         #endif
     #endif
+#endif
+
+
+#if defined(HAVE_GET_UTF8LOCALE)
+Rboolean ptr_get_utf8locale_default(void)
+{
+    int value = Rf_asLogical(getFromMyNS(_utf8localeSymbol));
+    if (value == NA_INTEGER)
+        Rf_error(_("missing value where TRUE/FALSE needed"));
+    return value ? TRUE : FALSE;
+}
 #endif
 
 
@@ -179,6 +193,10 @@ SEXP do_get_ptrs do_formals
 #if defined(HAVE_SET_R_VISIBLE)
     ptr_set_R_Visible = (void(*)(Rboolean))
         R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
+#endif
+#if defined(HAVE_GET_UTF8LOCALE)
+    ptr_get_utf8locale = (Rboolean(*)(void))
+        R_GetCCallable("this_path_reg_ptrs", "get_utf8locale");
 #endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
     ptr_PRCODE = (SEXP(*)(SEXP))
@@ -261,6 +279,11 @@ SEXP do_onLoad do_formals
             Rf_error(_("object '%s' of mode '%s' was not found"), EncodeChar(PRINTNAME(sym)), "function");\
         R_LockEnvironment(CLOENV(tmp), (bindings));            \
     } while (0)
+
+
+#if defined(HAVE_GET_UTF8LOCALE)
+    ptr_get_utf8locale = ptr_get_utf8locale_default;
+#endif
 
 
 #if defined(NEED_R_4_5_0_FUNCTIONS)
@@ -549,7 +572,7 @@ SEXP do_onLoad do_formals
 
     /* ./R/ns-hooks.R */
     convertclosure2activebinding(Rf_install(".mbcslocale"));
-    convertclosure2activebinding(Rf_install(".utf8locale"));
+    convertclosure2activebinding(_utf8localeSymbol);
     convertclosure2activebinding(Rf_install(".latin1locale"));
     convertclosure2activebinding(Rf_install(".R_MB_CUR_MAX"));
     /* ./R/startup.R */

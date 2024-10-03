@@ -46,6 +46,13 @@ void set_R_Visible(Rboolean x)
 #endif
 
 
+LibExtern Rboolean utf8locale;
+Rboolean get_utf8locale(void)
+{
+    return utf8locale;
+}
+
+
 attribute_visible
 void R_init_this_path_reg_ptrs(DllInfo *dll)
 {
@@ -64,6 +71,9 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
 #if defined(HAVE_SET_R_VISIBLE)
     R_RegisterCCallable("this_path_reg_ptrs", "set_R_Visible", (DL_FUNC) set_R_Visible);
 #endif
+
+
+    R_RegisterCCallable("this_path_reg_ptrs", "get_utf8locale", (DL_FUNC) get_utf8locale);
 
 
 #if defined(R_VERSION) && R_VERSION >= R_Version(4,5,0)
