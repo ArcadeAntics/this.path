@@ -2392,7 +2392,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                                 {
                                     Rf_protect(documentcontext = DocumentContext());
                                     Rf_protect(ofile = Rf_ScalarString(STRING_ELT(path, 0)));
-                                    assign_default(NULL, NULL, ofile, ofile, documentcontext, NA_DEFAULT);
+                                    assign_default(NULL, NULL, ofile, STRING_ELT(ofile, 0), documentcontext, NA_DEFAULT);
                                     INCREMENT_NAMED_defineVar(sourceSymbol, Rf_mkChar(source_char), documentcontext);
                                     Rf_setAttrib(env, documentcontextSymbol, documentcontext);
                                     Rf_unprotect(2);
