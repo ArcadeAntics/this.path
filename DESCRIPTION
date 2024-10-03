@@ -1,5 +1,5 @@
 Package: this.path
-Version: 2.5.0.38
+Version: 2.5.0.39
 Date: 2024-10-03
 License: MIT + file LICENSE
 Title: Get Executing Script's Path
@@ -11,11 +11,11 @@ Description: Determine the path of the executing script. Compatible
         'compiler::loadcmp()', 'utils::Sweave()', 'box::use()',
         'knitr::knit()', 'plumber::plumb()', 'shiny::runApp()',
         'package:targets', and 'testthat::source_file()'.
-Authors@R: utils::person(given = "Iris",
-                         family = "Simmons",
-                         role = c("aut", "cre"),
-                         email = "ikwsimmo@gmail.com")
-Author: Iris Simmons
+Authors@R: person(given = "Iris",
+                  family = "Simmons",
+                  role = c("aut", "cre"),
+                  email = "ikwsimmo@gmail.com")
+Author: Iris Simmons [aut, cre]
 Maintainer: Iris Simmons <ikwsimmo@gmail.com>
 Depends: R (>= 2.15.0)
 Suggests: utils, jsonlite, microbenchmark, rprojroot
