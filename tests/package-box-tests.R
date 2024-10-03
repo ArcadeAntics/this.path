@@ -1,7 +1,4 @@
 if (requireNamespace("box")) {
-    box::purge_cache()
-
-
     ## tests for "tests/package-box-supp/startsWith-NULL.R"     ----
 
 
@@ -56,6 +53,9 @@ if (requireNamespace("box")) {
     stopifnot(!identical(doc_cntxt, doc_cntxt_2))
 
 
+    box::unload(mod)
+
+
     ## tests for "tests/package-box-supp/startsWith-sys-path.R" ----
 
 
@@ -86,6 +86,9 @@ if (requireNamespace("box")) {
     stopifnot(!is.null(namespace))
     ## we expect the document context to be identical to that of sys.path()
     stopifnot(identical(mod$doc_cntxt, attr(namespace, ".@R_PACKAGE_NAME@::document.context")))
+
+
+    box::unload(mod)
 
 
     ## tests for "tests/package-box-supp/startsWith-env-path.R" ----
@@ -119,6 +122,9 @@ if (requireNamespace("box")) {
     stopifnot(identical(mod$doc_cntxt, attr(namespace, ".@R_PACKAGE_NAME@::document.context")))
 
 
+    box::unload(mod)
+
+
     ## tests for "tests/package-box-supp/startsWith-src-path.R" ----
 
 
@@ -148,4 +154,7 @@ if (requireNamespace("box")) {
     stopifnot(!is.null(namespace))
     ## we expect the document context to be identical to that of src.path()
     stopifnot(identical(mod$doc_cntxt, attr(namespace, ".@R_PACKAGE_NAME@::document.context")))
+
+
+    box::unload(mod)
 }
