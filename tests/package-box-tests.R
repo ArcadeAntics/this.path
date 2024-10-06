@@ -1,4 +1,4 @@
-if (requireNamespace("box")) {
+if (requireNamespace("box", quietly = TRUE)) {
     ## tests for "tests/package-box-supp/startsWith-NULL.R"     ----
 
 
@@ -157,4 +157,4 @@ if (requireNamespace("box")) {
 
 
     box::unload(mod)
-}
+} else cat("\n'package:box' is not available :(\n")

@@ -2,7 +2,7 @@ local({
     FILE.R <- tempfile(fileext = ".R")
     on.exit(unlink(FILE.R), add = TRUE)
     @R_PACKAGE_NAME@:::.writeCode(file = FILE.R, {
-        if (requireNamespace("microbenchmark")) {
+        if (requireNamespace("microbenchmark", quietly = TRUE)) {
             print(@R_PACKAGE_NAME@:::.faster_subsequent_times_test())
         } else cat("\n'package:microbenchmark' is not available :(\n")
     })
