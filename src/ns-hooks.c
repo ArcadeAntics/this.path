@@ -149,34 +149,58 @@ Rboolean ptr_get_utf8locale_default(void)
 
 
 #if defined(NEED_R_4_5_0_FUNCTIONS)
-/* create default values for the function pointers */
+/* create default values for the function pointers
+ *
+ * this works exclusively because listsxp_struct and promsxp_struct have the
+ * same structure and so the promise members can be get/set using the list
+ * member getters/setters
+ *
+ * struct listsxp_struct {
+ *     struct SEXPREC *carval;
+ *     struct SEXPREC *cdrval;
+ *     struct SEXPREC *tagval;
+ * };
+ *
+ * struct promsxp_struct {
+ *     struct SEXPREC *value;
+ *     struct SEXPREC *expr;
+ *     struct SEXPREC *env;
+ * };
+ *
+ * carval (CAR/SETCAR ) <--> value (PRVALUE/SET_PRVALUE)
+ * cdrval (CDR/SETCDR ) <--> expr  (PRCODE /SET_PRCODE )
+ * tagval (TAG/SET_TAG) <--> env   (PRENV  /SET_PRENV  )
+ */
 SEXP ptr_PRCODE_default(SEXP x)
 {
-    Rf_error("'%s' is not available", "PRCODE");
+    return CDR(x);
 }
 SEXP ptr_PRENV_default(SEXP x)
 {
-    Rf_error("'%s' is not available", "PRENV");
+    return TAG(x);
 }
 SEXP ptr_R_PromiseExpr_default(SEXP x)
 {
-    Rf_error("'%s' is not available", "R_PromiseExpr");
+    return R_BytecodeExpr(CDR(x));
 }
 SEXP ptr_PRVALUE_default(SEXP x)
 {
-    Rf_error("'%s' is not available", "PRVALUE");
+    return CAR(x);
 }
 void ptr_SET_PRCODE_default(SEXP x, SEXP v)
 {
-    Rf_error("'%s' is not available", "SET_PRCODE");
+    SETCDR(x, v);
+    return;
 }
 void ptr_SET_PRENV_default(SEXP x, SEXP v)
 {
-    Rf_error("'%s' is not available", "SET_PRENV");
+    SET_TAG(x, v);
+    return;
 }
 void ptr_SET_PRVALUE_default(SEXP x, SEXP v)
 {
-    Rf_error("'%s' is not available", "SET_PRVALUE");
+    SETCAR(x, v);
+    return;
 }
 #endif
 
