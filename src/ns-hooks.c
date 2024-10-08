@@ -483,40 +483,6 @@ SEXP do_onLoad do_formals
     R_PreserveObject(last_condition);
 
 
-    _custom_gui_path_character_environment =
-        R_NewEnv(/* enclos */ mynamespace, /* hash */ TRUE, /* size */ 10);
-    R_PreserveObject(_custom_gui_path_character_environment);
-    Rf_defineVar(guinameSymbol, R_MissingArg, _custom_gui_path_character_environment);
-    {
-        SEXP na = Rf_ScalarString(NA_STRING);
-        Rf_protect(na);
-        ENSURE_NAMEDMAX(na);
-        Rf_defineVar(ofileSymbol, makeEVPROMISE(na, na), _custom_gui_path_character_environment);
-        R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
-        Rf_unprotect(1);
-    }
-    {
-        SEXP expr = Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue));
-        Rf_protect(expr);
-        Rf_defineVar(
-            fileSymbol,
-            makePROMISE(expr, _custom_gui_path_character_environment),
-            _custom_gui_path_character_environment
-        );
-        R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
-        Rf_unprotect(1);
-    }
-    Rf_defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
-    R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
-
-
-    _custom_gui_path_function_environment =
-        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
-    R_PreserveObject(_custom_gui_path_function_environment);
-    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
-    R_LockEnvironment(_custom_gui_path_function_environment, FALSE);
-
-
     makePROMISE_environment =
         R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
     R_PreserveObject(makePROMISE_environment);
@@ -982,6 +948,40 @@ SEXP do_onLoad do_formals
         Rf_eval(expr, mynamespace);
         Rf_unprotect(1);
     }
+
+
+    _custom_gui_path_character_environment =
+        R_NewEnv(/* enclos */ mynamespace, /* hash */ TRUE, /* size */ 10);
+    R_PreserveObject(_custom_gui_path_character_environment);
+    Rf_defineVar(guinameSymbol, R_MissingArg, _custom_gui_path_character_environment);
+    {
+        SEXP na = Rf_ScalarString(NA_STRING);
+        Rf_protect(na);
+        ENSURE_NAMEDMAX(na);
+        Rf_defineVar(ofileSymbol, makeEVPROMISE(na, na), _custom_gui_path_character_environment);
+        R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
+        Rf_unprotect(1);
+    }
+    {
+        SEXP expr = Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue));
+        Rf_protect(expr);
+        Rf_defineVar(
+            fileSymbol,
+            makePROMISE(expr, _custom_gui_path_character_environment),
+            _custom_gui_path_character_environment
+        );
+        R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
+        Rf_unprotect(1);
+    }
+    Rf_defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
+    R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
+
+
+    _custom_gui_path_function_environment =
+        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
+    R_PreserveObject(_custom_gui_path_function_environment);
+    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
+    R_LockEnvironment(_custom_gui_path_function_environment, FALSE);
 
 
 #if R_version_less_than(3,4,0)
