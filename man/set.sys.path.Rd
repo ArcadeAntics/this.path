@@ -215,7 +215,15 @@ wrap.source(expr,
     sourcelike(file)
 }}
 
-  for \code{wrap.source()}, the result of evaluating \code{expr}.
+  for \code{set.env.path()}, \code{envir} invisibly.
+
+  for \code{set.src.path()}, \code{srcfile} invisibly.
+
+  for \code{unset.sys.path()} and \code{set.sys.path.function()}, \code{NULL}
+  invisibly.
+
+  for \code{with_sys.path()} and \code{wrap.source()}, the result of evaluating
+  \code{expr}.
 }
 \section{Using 'ofile'}{
   \code{ofile} can be used when the \code{file} argument supplied to
