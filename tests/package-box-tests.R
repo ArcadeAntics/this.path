@@ -1,4 +1,29 @@
 if (requireNamespace("box", quietly = TRUE)) {
+    ## tests for with_script_path                               ----
+
+
+    oscript_path <- box::script_path()
+    @R_PACKAGE_NAME@::with_script_path(box::script_path())
+    ## the script_path must be restored to its original value
+    stopifnot(identical(oscript_path, box::script_path()))
+
+
+    ## check the namespace is never loaded if the user did not request it so
+    unloadNamespace("box")
+    stopifnot(!isNamespaceLoaded("box"))
+    @R_PACKAGE_NAME@::with_script_path(stopifnot(!isNamespaceLoaded("box")))
+    stopifnot(!isNamespaceLoaded("box"))
+
+
+    ## check the namespace hooks are not changed (except while in the function)
+    hooks <- getHook(packageEvent("box"))
+    @R_PACKAGE_NAME@::with_script_path({
+        stopifnot(length(hooks) + 1L == length(getHook(packageEvent("box"))))
+        stopifnot(identical(hooks, getHook(packageEvent("box"))[seq_along(hooks)]))
+    })
+    stopifnot(identical(hooks, getHook(packageEvent("box"))))
+
+
     ## tests for "tests/package-box-supp/startsWith-NULL.R"     ----
 
 
