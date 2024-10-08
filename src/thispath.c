@@ -1037,14 +1037,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (documentcontext != R_UnboundValue) {
 
 
-#define check_documentcontext_env                              \
+#define stopifnot_documentcontext_env                          \
                 if (TYPEOF(documentcontext) != ENVSXP)         \
                     Rf_error("invalid '%s' value; expected an object of class \"environment\", found \"%s\"",\
                         R_CHAR(PRINTNAME(documentcontextSymbol)), Rf_type2char(TYPEOF(documentcontext)))
 
 
 /* not used here but used later */
-#define check_documentcontext_not_emptyenv                     \
+#define stopif_documentcontext_emptyenv                        \
                 if (documentcontext == R_EmptyEnv)             \
                     Rf_error("invalid '%s' value; expected non-empty document context",\
                         R_CHAR(PRINTNAME(documentcontextSymbol)))
@@ -1101,7 +1101,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 }
 
 
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
                 maybe_overwrite_srcfile_documentcontext;
             }
             else if (srcfile &&
@@ -1115,7 +1115,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 R_LockBinding(documentcontextSymbol, frame)
 
 
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
                 define_frame_documentcontext;
             }
             else {
@@ -1307,14 +1307,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = env_or_NULL(Rf_findVarInFrame(frame, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 ifndef_srcfile_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
 
 
-#define check_path_only do {                                   \
+#define stopifnot_is_path do {                                 \
                 ofile = getInFrame(fileSymbol, frame, FALSE);  \
                 if (!IS_SCALAR(ofile, STRSXP))                 \
                     Rf_error(_("'%s' must be a character string"), R_CHAR(PRINTNAME(fileSymbol)));\
@@ -1333,9 +1333,9 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                         } while (0)
 
 
-                check_documentcontext_env;
-                check_path_only;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopifnot_is_path;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
             }
             else {
@@ -1383,7 +1383,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (documentcontext == R_UnboundValue)
                 Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(documentcontextSymbol)));
             if (documentcontext == R_EmptyEnv) continue;
-            check_documentcontext_env;
+            stopifnot_documentcontext_env;
             SEXP n = Rf_findVarInFrame(documentcontext, nSymbol);
             if (!IS_SCALAR(n, INTSXP))
                 Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(nSymbol)));
@@ -1397,7 +1397,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
             }
             else {
                 ofile = Rf_findVarInFrame(frame, fileNameSymbol);
@@ -1440,11 +1440,11 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     srcfile = env_or_NULL(Rf_getAttrib(statements, srcfileSymbol));
             }
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
                 ifndef_srcfile_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
                 define_frame_documentcontext;
             }
             else {
@@ -1485,8 +1485,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
             }
             else {
                 ofile = Rf_findVarInFrame(frame, fileSymbol);
@@ -1592,8 +1592,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 SET_VECTOR_ELT(documentcontexts, indx, documentcontext);
             }
             else {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
             }
             returnfile(which, source_char);
         }
@@ -1624,20 +1624,20 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 }
 
 
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 ifndef_srcfile_documentcontext_then_define;
                 ifndef_mod_ns_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
                 ifndef_mod_ns_documentcontext_then_define;
             }
             else if (mod_ns && !ISNULL(documentcontext = Rf_getAttrib(mod_ns, documentcontextSymbol))) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
                 if_srcfile_then_define_documentcontext;
             }
@@ -1679,7 +1679,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
             }
             else {
                 if (!R_existsVarInFrame(frame, oenvirSymbol)) continue;
@@ -1724,13 +1724,13 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (exprs != R_UnboundValue && TYPEOF(exprs) == EXPRSXP)
                 srcfile = env_or_NULL(Rf_getAttrib(exprs, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 ifndef_srcfile_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
             }
             else {
@@ -1769,13 +1769,13 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = env_or_NULL(Rf_findVarInFrame(frame, srcSymbol));
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 ifndef_srcfile_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
             }
             else {
@@ -1820,8 +1820,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
             }
             else {
                 SEXP ofile = Rf_findVarInFrame(frame, scriptSymbol);
@@ -1857,8 +1857,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
             }
             else {
                 SEXP ofile = Rf_findVarInFrame(frame, scriptSymbol);
@@ -1902,13 +1902,13 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             if (expr != R_UnboundValue && TYPEOF(expr) == EXPRSXP)
                 srcfile = env_or_NULL(Rf_getAttrib(expr, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 ifndef_srcfile_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
                 Rf_defineVar(setsyspathwashereSymbol, R_FalseValue, documentcontext);
             }
@@ -1953,8 +1953,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = NULL;
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
             }
             else {
                 {
@@ -1999,15 +1999,15 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             srcfile = env_or_NULL(Rf_findVarInFrame(frame, srcfileSymbol));
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 maybe_overwrite_srcfile_documentcontext;
             }
             else if (srcfile &&
                      !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol)) &&
                      documentcontext != R_EmptyEnv)
             {
-                check_documentcontext_env;
+                stopifnot_documentcontext_env;
                 define_frame_documentcontext;
             }
             else {
@@ -2059,14 +2059,14 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 }
             }
             if (documentcontext != R_UnboundValue) {
-                check_documentcontext_env;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopif_documentcontext_emptyenv;
                 ifndef_srcfile_documentcontext_then_define;
             }
             else if (srcfile && !ISUNBOUND(documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol))) {
-                check_documentcontext_env;
-                check_path_only;
-                check_documentcontext_not_emptyenv;
+                stopifnot_documentcontext_env;
+                stopifnot_is_path;
+                stopif_documentcontext_emptyenv;
                 define_frame_documentcontext;
             }
             else {
@@ -2104,7 +2104,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         /* this condition must be last */
         else if (!ISUNBOUND(documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol))) {
             if (documentcontext == R_EmptyEnv) continue;
-            check_documentcontext_env;
+            stopifnot_documentcontext_env;
 
 
             {
@@ -2375,7 +2375,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 #define source_char "path of a 'package:box' namespace"
         documentcontext = Rf_getAttrib(env, documentcontextSymbol);
         if (documentcontext != R_NilValue) {
-            check_documentcontext_env;
+            stopifnot_documentcontext_env;
         }
         else {
             SEXP info = Rf_findVarInFrame(env, moduleSymbol);
@@ -2414,7 +2414,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     {
 #undef source_char
 #define source_char "path of top level environment"
-        check_documentcontext_env;
+        stopifnot_documentcontext_env;
         returnfile;
     }
     else if (Rf_isString(path = Rf_getAttrib(env, pathSymbol)) && XLENGTH(path) > 0)
@@ -2686,7 +2686,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     if (srcfile) {
         SEXP documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol);
         if (documentcontext != R_UnboundValue) {
-            check_documentcontext_env;
+            stopifnot_documentcontext_env;
         }
         else if (Rf_inherits(srcfile, "srcfilecopy") &&
                  Rf_asLogical(Rf_findVarInFrame(srcfile, isFileSymbol)) != TRUE)
@@ -2711,7 +2711,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                 // declare this as a new SEXP so as to not overwrite it in the previous context
                 SEXP documentcontext = Rf_findVarInFrame(srcfile, documentcontextSymbol);
                 if (documentcontext != R_UnboundValue) {
-                    check_documentcontext_env;
+                    stopifnot_documentcontext_env;
                 }
                 else if (Rf_inherits(srcfile, "srcfilecopy") &&
                          Rf_asLogical(Rf_findVarInFrame(srcfile, isFileSymbol)) != TRUE)
