@@ -147,11 +147,15 @@ if (getRversion() < "3.0.0") {
                 if (identical(e[[1L]], quote(.External2))) {
                     # e <- body(this.path:::print.ThisPathDocumentContext)
                     e[[1L]] <- quote(.External)
-                    e <- append(as.list(e), after = 2L, list(
-                        call("quote", e),
-                        quote(.External),
-                        call("environment")
-                    ))
+                    e <- append(
+                        as.list(e),
+                        after = 2L,
+                        list(
+                            call("quote", e),
+                            quote(.External),
+                            call("environment")
+                        )
+                    )
                     e <- as.call(e)
                     m <- match(as.character(e[[2L]]), names(R_Visible), 0L)
                     if (m) {
@@ -407,12 +411,14 @@ if (getRversion() < "3.0.0") {
 
 
     fix_External2(.fixNewlines)
-    fix_External2(.Rgui_path)
+    fix_External2(.RStudio_path)
+    fix_External2(.Positron_path)
     fix_External2(.vscode_path)
     fix_External2(.jupyter_path)
-    fix_External2(.emacs_path)
-    fix_External2(.gui_path)
     fix_External2(set.jupyter.path)
+    fix_External2(.emacs_path)
+    fix_External2(.Rgui_path)
+    fix_External2(.gui_path)
     fix_External2(set.gui.path)
     fix_External2(sys.path)
     fix_External2(.getframenumber)
