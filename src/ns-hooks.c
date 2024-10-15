@@ -112,6 +112,7 @@ void (*ptr_set_R_Visible)(Rboolean x);
 #endif
 #if defined(HAVE_GET_UTF8LOCALE)
 Rboolean (*ptr_get_utf8locale)(void);
+Rboolean (*ptr_get_latin1locale)(void);
 #endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
 SEXP (*ptr_PRCODE)(SEXP x);
@@ -141,6 +142,13 @@ Rconnection R_GetConnection(SEXP sConn)
 Rboolean ptr_get_utf8locale_default(void)
 {
     int value = Rf_asLogical(getFromMyNS(_utf8localeSymbol));
+    if (value == NA_INTEGER)
+        Rf_error(_("missing value where TRUE/FALSE needed"));
+    return value ? TRUE : FALSE;
+}
+Rboolean ptr_get_latin1locale_default(void)
+{
+    int value = Rf_asLogical(getFromMyNS(_latin1localeSymbol));
     if (value == NA_INTEGER)
         Rf_error(_("missing value where TRUE/FALSE needed"));
     return value ? TRUE : FALSE;
@@ -221,6 +229,8 @@ SEXP do_get_ptrs do_formals
 #if defined(HAVE_GET_UTF8LOCALE)
     ptr_get_utf8locale = (Rboolean(*)(void))
         R_GetCCallable("this_path_reg_ptrs", "get_utf8locale");
+    ptr_get_latin1locale = (Rboolean(*)(void))
+        R_GetCCallable("this_path_reg_ptrs", "get_latin1locale");
 #endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
     ptr_PRCODE = (SEXP(*)(SEXP))
@@ -307,6 +317,7 @@ SEXP do_onLoad do_formals
 
 #if defined(HAVE_GET_UTF8LOCALE)
     ptr_get_utf8locale = ptr_get_utf8locale_default;
+    ptr_get_latin1locale = ptr_get_latin1locale_default;
 #endif
 
 
