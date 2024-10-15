@@ -15,12 +15,11 @@ with_script_path <- function (expr, local = FALSE, n = 0L, envir = parent.frame(
     })
 
 
-    ## this makes R CMD check happy
-    set_script_path_expr <- NULL
     ## a function that will make and evaluate a promise when called
     eval.env <- environment()
     first_time <- TRUE
     set_script_path_fun <- function(pkgname, pkgpath) {
+        set_script_path_expr <- NULL  ## this makes R CMD check happy
         delayedAssign(
             "set_script_path_expr",
             {
