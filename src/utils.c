@@ -154,3 +154,35 @@ SEXP do_toupper_ASCII do_formals
     Rf_unprotect(1);
     return value;
 }
+
+
+SEXP do_str_equal_useBytes do_formals
+{
+    do_start_no_call_op_rho("str_equal_useBytes", 2);
+
+
+    SEXP e1 = CAR(args),
+         e2 = CADR(args);
+    if (TYPEOF(e1) != STRSXP)
+        Rf_error(_("invalid '%s' argument"), "e1");
+    if (TYPEOF(e2) != STRSXP)
+        Rf_error(_("invalid '%s' argument"), "e2");
+
+
+    R_xlen_t n1 = XLENGTH(e1),
+             n2 = XLENGTH(e2);
+    if (n1 == 0 || n2 == 0) return Rf_allocVector(LGLSXP, 0);
+
+
+    R_xlen_t n = (n1 > n2) ? n1 : n2;
+    SEXP value = Rf_allocVector(LGLSXP, n);
+    int *lvalue = LOGICAL(value);
+    Rf_protect(value);
+    for (R_xlen_t i = 0; i < n; i++) {
+        const char *s1 = R_CHAR(STRING_ELT(e1, i % n1));
+        const char *s2 = R_CHAR(STRING_ELT(e2, i % n2));
+        lvalue[i] = (strcmp(s1, s2) == 0);
+    }
+    Rf_unprotect(1);
+    return value;
+}

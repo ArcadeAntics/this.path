@@ -297,6 +297,7 @@ extern SEXP do_AS_SCALAR_STR do_formals;
 extern SEXP do_scalar_streql do_formals;
 extern SEXP do_tolower_ASCII do_formals;
 extern SEXP do_toupper_ASCII do_formals;
+extern SEXP do_str_equal_useBytes do_formals;
 
 
 #endif  /* R_THISPATH_THISPATH_H */

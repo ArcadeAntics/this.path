@@ -249,6 +249,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"scalar_streql", (DL_FUNC) &do_scalar_streql, 2},
 {"tolower_ASCII", (DL_FUNC) &do_tolower_ASCII, 1},
 {"toupper_ASCII", (DL_FUNC) &do_toupper_ASCII, 1},
+{"str_equal_useBytes", (DL_FUNC) &do_str_equal_useBytes, 2},
 
 
 {NULL, NULL, 0}

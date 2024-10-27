@@ -350,6 +350,7 @@ if (getRversion() < "3.0.0") {
 
     fix_External2(.tolower_ASCII)
     fix_External2(.toupper_ASCII)
+    fix_External2(.str_equal_useBytes)
     fix_External2(rel2sys.dir)
     fix_External2(rel2sys.proj)
     fix_External2(rel2env.dir)

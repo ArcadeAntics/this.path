@@ -6,6 +6,10 @@
 .External2(.C_toupper_ASCII, x)
 
 
+.str_equal_useBytes <- function (e1, e2)
+.External2(.C_str_equal_useBytes, e1, e2)
+
+
 .casefold_ASCII <- function (x, upper = FALSE)
 if (upper) .toupper_ASCII(x) else .tolower_ASCII(x)
 
@@ -49,7 +53,7 @@ delayedAssign(".net_USE_command", {
 
                 ## get the first element of each path, the drive,
                 ## and then keep all the unique ones
-                u <- unique(vapply(p, `[[`, 1L, FUN.VALUE = ""))
+                u <- unique(vapply(p, `[[`, "", 1L))
                 no_convert_local <- if (length(u) == 1L) {
                     TRUE
                 } else if (!any(j <- u %in% .all_drives)) {
@@ -91,7 +95,7 @@ delayedAssign(".net_USE_command", {
                 r <- p[[1L]]
                 p <- p[-1L]
                 r <- fix_local(r)
-                ignore_case <- !grepl("^(http|https)://", r[[1L]])
+                ignore_case <- !grepl("^(http|https)://", r[[1L]], useBytes = TRUE)
                 fix_case <- if (ignore_case) .tolower_ASCII else identity
                 r <- fix_case(r)
                 len <- length(r)
