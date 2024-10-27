@@ -102,7 +102,7 @@ delayedAssign(".net_USE_command", {
                 path.unsplit(lapply(p, function(p) {
                     n <- min(len, length(p))
                     q <- fix_case(fix_local(p))
-                    n <- match(FALSE, q[seq_len(n)] == r[seq_len(n)], n + 1L) - 1L
+                    n <- match(FALSE, .str_equal_useBytes(q[seq_len(n)], r[seq_len(n)]), n + 1L) - 1L
                     if (n == 0L) {
                         p
                     } else {
