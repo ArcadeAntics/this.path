@@ -1,9 +1,9 @@
 .tolower_ASCII <- function (x)
-chartr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", x)
+.External2(.C_tolower_ASCII, x)
 
 
 .toupper_ASCII <- function (x)
-chartr("abcdefghijklmnopqrstuvwxyz", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", x)
+.External2(.C_toupper_ASCII, x)
 
 
 .casefold_ASCII <- function (x, upper = FALSE)

@@ -84,3 +84,73 @@ SEXP do_scalar_streql do_formals
         return R_FalseValue;
     return t_or_f(streql(R_CHAR(e1), R_CHAR(e2)));
 }
+
+
+SEXP do_tolower_ASCII do_formals
+{
+    do_start_no_call_op_rho("tolower_ASCII", 1);
+
+
+    SEXP x = CAR(args);
+    if (TYPEOF(x) != STRSXP)
+        Rf_error(_("invalid '%s' argument"), "x");
+
+
+    R_xlen_t n = XLENGTH(x);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
+    for (R_xlen_t i = 0; i < n; i++) {
+        SEXP cs = STRING_ELT(x, i);
+        const char *s = R_CHAR(cs);
+        int nchar = (int) strlen(s);
+        if (nchar == 0) continue;
+        char _buf[nchar + 1];
+        char *buf = _buf;
+        for (int j = 0; j < nchar; j++) {
+            if (s[j] >= 'A' && s[j] <= 'Z')
+                *buf = s[j] + 32;
+            else
+                *buf = s[j];
+            buf++;
+        }
+        *buf = '\0';
+        SET_STRING_ELT(value, i, Rf_mkCharLenCE(_buf, nchar, Rf_getCharCE(cs)));
+    }
+    Rf_unprotect(1);
+    return value;
+}
+
+
+SEXP do_toupper_ASCII do_formals
+{
+    do_start_no_call_op_rho("toupper_ASCII", 1);
+
+
+    SEXP x = CAR(args);
+    if (TYPEOF(x) != STRSXP)
+        Rf_error(_("invalid '%s' argument"), "x");
+
+
+    R_xlen_t n = XLENGTH(x);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
+    for (R_xlen_t i = 0; i < n; i++) {
+        SEXP cs = STRING_ELT(x, i);
+        const char *s = R_CHAR(cs);
+        int nchar = (int) strlen(s);
+        if (nchar == 0) continue;
+        char _buf[nchar + 1];
+        char *buf = _buf;
+        for (int j = 0; j < nchar; j++) {
+            if (s[j] >= 'a' && s[j] <= 'z')
+                *buf = s[j] - 32;
+            else
+                *buf = s[j];
+            buf++;
+        }
+        *buf = '\0';
+        SET_STRING_ELT(value, i, Rf_mkCharLenCE(_buf, nchar, Rf_getCharCE(cs)));
+    }
+    Rf_unprotect(1);
+    return value;
+}

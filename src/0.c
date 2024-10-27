@@ -247,6 +247,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"IS_SCALAR_STR", (DL_FUNC) &do_IS_SCALAR_STR, 1},
 {"AS_SCALAR_STR", (DL_FUNC) &do_AS_SCALAR_STR, 1},
 {"scalar_streql", (DL_FUNC) &do_scalar_streql, 2},
+{"tolower_ASCII", (DL_FUNC) &do_tolower_ASCII, 1},
+{"toupper_ASCII", (DL_FUNC) &do_toupper_ASCII, 1},
 
 
 {NULL, NULL, 0}
