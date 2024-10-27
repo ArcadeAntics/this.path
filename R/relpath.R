@@ -64,19 +64,21 @@ delayedAssign(".net_USE_command", {
                     fix_local <- identity
                 } else {
                     x <- system(.net_USE_command, intern = TRUE)
-                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Web Client Network|Microsoft Windows Network)?$", x)
+                    m <- regexec(" ([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz]:) +(.*?) *(?:Web Client Network|Microsoft Windows Network)?$",
+                        x, useBytes = TRUE)
                     ## one for the whole match, another two for the parenthesized sub-expressions
                     if (any(keep <- lengths(m) == 3L)) {
                         x <- regmatches(x[keep], m[keep])
-                        local <- vapply(x, `[[`, 2L, FUN.VALUE = "")
+                        local <- vapply(x, `[[`, "", 2L)
                         local <- .tolower_ASCII(local)
                         local <- paste0(local, "/")
-                        remote <- vapply(x, `[[`, 3L, FUN.VALUE = "")
+                        remote <- vapply(x, `[[`, "", 3L)
                         if (any(j <- grepl("^[/\\\\]{2}", remote)))
-                            remote[j] <- chartr("\\", "/", remote[j])
+                            remote[j] <- gsub("\\", "/", remote[j], fixed = TRUE)
                         remote <- paste0(remote, "/")
                         remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
                             "\\1:/", remote)
+                        Encoding(remote) <- "unknown"
                         fix_local <- function(p) {
                             if (indx <- match(.tolower_ASCII(p[[1L]]), local, 0L)) {
                                 c(remote[[indx]], p[-1L])
