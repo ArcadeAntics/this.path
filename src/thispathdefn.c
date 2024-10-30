@@ -326,9 +326,11 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
 #endif
 
 
-    if (is_abs_path(url)) {
-        /* assign 'wd' but do not use it programatically */
-        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+    if ((srcfile_original || owd) && is_abs_path(url)) {
+        if (owd) {
+            /* assign 'wd' but do not use it programatically */
+            INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+        }
         srcfile_original = NULL;
         owd = NULL;
     }
@@ -369,9 +371,11 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 #endif
 
 
-    if (is_abs_path(url + nh)) {
-        /* assign 'wd' but do not use it programatically */
-        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+    if ((srcfile_original || owd) && is_abs_path(url + nh)) {
+        if (owd) {
+            /* assign 'wd' but do not use it programatically */
+            INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+        }
         srcfile_original = NULL;
         owd = NULL;
     }
@@ -405,9 +409,11 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
     _assign(ofile, documentcontext);
 
 
-    if (is_abs_path(url)) {
-        /* assign 'wd' but do not use it programatically */
-        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+    if ((srcfile_original || owd) && is_abs_path(url)) {
+        if (owd) {
+            /* assign 'wd' but do not use it programatically */
+            INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+        }
         srcfile_original = NULL;
         owd = NULL;
     }
