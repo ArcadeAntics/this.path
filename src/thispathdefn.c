@@ -327,6 +327,8 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
 
 
     if (is_abs_path(url)) {
+        /* assign 'wd' but do not use it programatically */
+        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
         srcfile_original = NULL;
         owd = NULL;
     }
@@ -368,6 +370,8 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 
 
     if (is_abs_path(url + nh)) {
+        /* assign 'wd' but do not use it programatically */
+        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
         srcfile_original = NULL;
         owd = NULL;
     }
@@ -397,14 +401,18 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
 #endif
 
 
+    SEXP ofile = Rf_ScalarString(Rf_mkCharCE(_buf, Rf_getCharCE(description)));
+    _assign(ofile, documentcontext);
+
+
     if (is_abs_path(url)) {
+        /* assign 'wd' but do not use it programatically */
+        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
         srcfile_original = NULL;
         owd = NULL;
     }
 
 
-    SEXP ofile = Rf_ScalarString(Rf_mkCharCE(_buf, Rf_getCharCE(description)));
-    _assign(ofile, documentcontext);
     _assign_default(srcfile_original, owd, Rf_ScalarString(description), documentcontext, na);
     Rf_unprotect(1);
 }
