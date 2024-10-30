@@ -20,7 +20,7 @@
 }
 
 
-.build.this <- function (chdir = FALSE, file = here(), which = "tar")
+.build.this <- function (chdir = FALSE, file = here(.. = 1L), which = "tar")
 {
     ## .build.this               package:this.path               R Documentation
     ##
@@ -37,7 +37,7 @@
     ##
     ## Usage:
     ##
-    ## .build.this(chdir = FALSE, file = here(), which = "tar")
+    ## .build.this(chdir = FALSE, file = here(.. = 1), which = "tar")
     ##
     ##
     ##
