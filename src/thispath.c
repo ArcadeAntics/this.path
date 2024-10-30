@@ -719,9 +719,7 @@ void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
                 Rf_unprotect(1);
             }
             else {
-                SEXP lines = Rf_findVarInFrame(srcfile, linesSymbol);
-                if (lines == R_UnboundValue)
-                    Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(linesSymbol)));
+                SEXP lines = getInFrame(linesSymbol, srcfile, FALSE);
                 if (TYPEOF(lines) != STRSXP)
                     Rf_error(_("object '%s' of mode '%s' was not found"),
                         R_CHAR(PRINTNAME(linesSymbol)), "character");
