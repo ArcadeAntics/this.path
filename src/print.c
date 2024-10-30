@@ -197,6 +197,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
     SEXP sym;
+#define print_invalid_C_NULL    Rprintf("%s: <invalid, C NULL> \n", R_CHAR(PRINTNAME(sym)))
 #define print_invalid_unbound   Rprintf("%s: <invalid, R_UnboundValue>\n", R_CHAR(PRINTNAME(sym)))
 #define print_null              Rprintf("%s: NULL\n", R_CHAR(PRINTNAME(sym)))
 #define print_invalid_null      Rprintf("%s: <invalid, NULL>\n", R_CHAR(PRINTNAME(sym)))
@@ -215,7 +216,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
     SEXP errcnd = Rf_findVarInFrame(x, sym = errcndSymbol);
     Rf_protect(errcnd);
-    if (errcnd != R_UnboundValue) {
+    if (!errcnd)
+        print_invalid_C_NULL;
+    else if (errcnd != R_UnboundValue) {
         if (errcnd == R_NilValue)
             print_invalid_null;
         else if (TYPEOF(errcnd) == VECSXP &&
@@ -230,7 +233,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
         SEXP for_msg = Rf_findVarInFrame(x, sym = for_msgSymbol);
         Rf_protect(for_msg);
-        if (for_msg == R_UnboundValue)
+        if (!for_msg)
+            print_invalid_C_NULL;
+        else if (for_msg == R_UnboundValue)
             print_invalid_unbound;
         else if (for_msg == R_NilValue)
             print_invalid_null;
@@ -243,7 +248,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
         SEXP associated_with_file = Rf_findVarInFrame(x, sym = associated_with_fileSymbol);
         Rf_protect(associated_with_file);
-        if (associated_with_file == R_UnboundValue);
+        if (!associated_with_file)
+            print_invalid_C_NULL;
+        else if (associated_with_file == R_UnboundValue);
         else if (associated_with_file == R_NilValue)
             print_null;
         else if (IS_SCALAR(associated_with_file, LGLSXP)) {
@@ -257,7 +264,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
     else {
         SEXP ofile = Rf_findVarInFrame(x, sym = ofileSymbol);
         Rf_protect(ofile);
-        if (ofile == R_UnboundValue)
+        if (!ofile)
+            print_invalid_C_NULL;
+        else if (ofile == R_UnboundValue)
             print_invalid_unbound;
         else if (ofile == R_NilValue)
             print_invalid_null;
@@ -270,7 +279,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
         SEXP wd = Rf_findVarInFrame(x, sym = wdSymbol);
         Rf_protect(wd);
-        if (wd == R_UnboundValue);
+        if (!wd)
+            print_invalid_C_NULL;
+        else if (wd == R_UnboundValue);
         else if (wd == R_NilValue)
             print_null;
         else if (IS_SCALAR(wd, STRSXP))
@@ -282,7 +293,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
         SEXP file = Rf_findVarInFrame(x, sym = fileSymbol);
         Rf_protect(file);
-        if (file == R_UnboundValue)
+        if (!file)
+            print_invalid_C_NULL;
+        else if (file == R_UnboundValue)
             print_invalid_unbound;
         else if (file == R_NilValue)
             print_invalid_null;
@@ -306,7 +319,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
         SEXP lines = Rf_findVarInFrame(x, sym = linesSymbol);
         Rf_protect(lines);
-        if (lines == R_UnboundValue);
+        if (!lines)
+            print_invalid_C_NULL;
+        else if (lines == R_UnboundValue);
         else if (lines == R_NilValue)
             print_invalid_null;
         else if (TYPEOF(lines) == PROMSXP) {
@@ -333,7 +348,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
     SEXP source = Rf_findVarInFrame(x, sym = sourceSymbol);
     Rf_protect(source);
-    if (source == R_UnboundValue)
+    if (!source)
+        print_invalid_C_NULL;
+    else if (source == R_UnboundValue)
         print_invalid_unbound;
     else if (source == R_NilValue)
         print_invalid_null;
@@ -345,7 +362,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
     SEXP setsyspathwashere = Rf_findVarInFrame(x, sym = setsyspathwashereSymbol);
     Rf_protect(setsyspathwashere);
-    if (setsyspathwashere != R_UnboundValue) {
+    if (!setsyspathwashere)
+        print_invalid_C_NULL;
+    else if (setsyspathwashere != R_UnboundValue) {
         if (setsyspathwashere == R_NilValue)
             print_null;
         else if (IS_SCALAR(setsyspathwashere, LGLSXP)) {
@@ -359,7 +378,9 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
     SEXP n = Rf_findVarInFrame(x, sym = nSymbol);
     Rf_protect(n);
-    if (n == R_UnboundValue) {
+    if (!n)
+        print_invalid_C_NULL;
+    else if (n == R_UnboundValue) {
         if (setsyspathwashere != R_UnboundValue)
             print_invalid_unbound;
     }
