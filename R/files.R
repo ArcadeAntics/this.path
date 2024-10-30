@@ -156,27 +156,7 @@ path.unsplit <- function (...)
 
 
 .file_URL_path <- function (path)
-{
-    ## remove the leading "file://" from a file URL
-    ##
-    ## but specifically on Windows, where file URLs may look like
-    ## "file:///c:", remove the leading "file:///"
-    if (.OS_windows && any(i <- grepl("^file:///.:", path, useBytes = TRUE))) {
-        path[ i] <- substr(path[ i], 9L, 1000000L)
-        path[!i] <- substr(path[!i], 8L, 1000000L)
-        path
-    }
-    else substr(path, 8L, 1000000L)
-}
-
-
-.file_URL_path_1 <- function (path)
-{
-    ## do .file_URL_path but a little bit faster when path is length 1
-    if (.OS_windows && grepl("^file:///.:", path, useBytes = TRUE))
-        substr(path, 9L, 1000000L)
-    else substr(path, 8L, 1000000L)
-}
+.External2(.C_file_URL_path, path)
 
 
 .normalizeURL <- function (path)
@@ -248,7 +228,7 @@ normalizePath(path = if (.OS_windows) path else .abspath(path), ...)
 .normalize_abspath_and_URL_1 <- function (path, ...)
 {
     if (startsWith(path, "file://"))
-        .normalize_abspath(path = .file_URL_path_1(path), ...)
+        .normalize_abspath(path = .file_URL_path(path), ...)
     else if (grepl("^(ftp|ftps|http|https)://", path))
         .normalizeURL_1(path)
     else .normalize_abspath(path = path, ...)

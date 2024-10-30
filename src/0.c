@@ -107,6 +107,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"is_abs_path"        , (DL_FUNC) &do_is_abs_path        , 1},
 {"fixslash"           , (DL_FUNC) &do_fixslash           , 1},
 {"fixbackslash"       , (DL_FUNC) &do_fixbackslash       , 1},
+{"file_URL_path"      , (DL_FUNC) &do_file_URL_path      , 1},
 
 
 /* ns-hooks.c */

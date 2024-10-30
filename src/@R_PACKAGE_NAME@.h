@@ -155,6 +155,7 @@ extern SEXP do_unix_is_abs_path    do_formals;
 extern SEXP do_is_abs_path         do_formals;
 extern SEXP do_fixslash            do_formals;
 extern SEXP do_fixbackslash        do_formals;
+extern SEXP do_file_URL_path       do_formals;
 
 
 /* ns-hooks.c */

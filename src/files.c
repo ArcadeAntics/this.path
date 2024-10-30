@@ -456,8 +456,8 @@ SEXP do_fixslash do_formals
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value);
     for (int i = 0; i < n; i++) {
-#if defined(_WIN32)
         SEXP cs = STRING_ELT(file, i);
+#if defined(_WIN32)
         const char *s = R_CHAR(cs);
         int nchar = (int) strlen(s);
         char buf[nchar + 1];
@@ -468,7 +468,7 @@ SEXP do_fixslash do_formals
         if (buf[0] == '/' && buf[1] == '/') buf[0] = buf[1] = '\\';
         SET_STRING_ELT(value, i, Rf_mkCharLenCE(buf, nchar, Rf_getCharCE(cs)));
 #else
-        SET_STRING_ELT(value, i, STRING_ELT(file, i));
+        SET_STRING_ELT(value, i, cs);
 #endif
     }
     Rf_unprotect(1);
@@ -490,8 +490,8 @@ SEXP do_fixbackslash do_formals
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value);
     for (int i = 0; i < n; i++) {
-#if defined(_WIN32)
         SEXP cs = STRING_ELT(file, i);
+#if defined(_WIN32)
         const char *s = R_CHAR(cs);
         int nchar = (int) strlen(s);
         char buf[nchar + 1];
@@ -500,8 +500,39 @@ SEXP do_fixbackslash do_formals
         for (; *p; p++) if (*p == '/') *p = '\\';
         SET_STRING_ELT(value, i, Rf_mkCharLenCE(buf, nchar, Rf_getCharCE(cs)));
 #else
-        SET_STRING_ELT(value, i, STRING_ELT(file, i));
+        SET_STRING_ELT(value, i, cs);
 #endif
+    }
+    Rf_unprotect(1);
+    return value;
+}
+
+
+SEXP do_file_URL_path do_formals
+{
+    do_start_no_call_op_rho("file_URL_path", 1);
+
+
+    SEXP path = CAR(args);
+    if (TYPEOF(path) != STRSXP)
+        Rf_error(_("a character vector argument expected"));
+
+
+    R_xlen_t n = XLENGTH(path);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
+    for (int i = 0; i < n; i++) {
+        SEXP cs = STRING_ELT(path, i);
+        const char *s = R_CHAR(cs);
+        if (strncmp(s, "file://", 7) == 0) {
+            int nh = 7;
+#if defined(_WIN32)
+            if (strlen(s) > 9 && s[7] == '/' && s[9] == ':') nh = 8;
+#endif
+            SET_STRING_ELT(value, i, Rf_mkCharCE(s + nh, Rf_getCharCE(cs)));
+        }
+        else
+            SET_STRING_ELT(value, i, cs);
     }
     Rf_unprotect(1);
     return value;
