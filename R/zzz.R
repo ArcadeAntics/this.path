@@ -281,6 +281,8 @@ if (getRversion() < "3.0.0") {
     fix_External2(path.unsplit)
     fix_External2(.is_abs_path)
     fix_External2(.is_clipboard)
+    fix_External2(.fixslash)
+    fix_External2(.fixbackslash)
     fix_External2(.normalizePath_srcfilealias)
     fix_External2(.here)
 

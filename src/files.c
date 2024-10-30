@@ -440,3 +440,69 @@ SEXP do_is_abs_path do_formals
     return isabspath(FALSE, args);
 #endif
 }
+
+
+SEXP do_fixslash do_formals
+{
+    do_start_no_call_op_rho("fixslash", 1);
+
+
+    SEXP file = CAR(args);
+    if (TYPEOF(file) != STRSXP)
+        Rf_error(_("a character vector argument expected"));
+
+
+    R_xlen_t n = XLENGTH(file);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
+    for (int i = 0; i < n; i++) {
+#if defined(_WIN32)
+        SEXP cs = STRING_ELT(file, i);
+        const char *s = R_CHAR(cs);
+        int nchar = (int) strlen(s);
+        char buf[nchar + 1];
+        char *p = buf;
+        strncpy(p, s, nchar + 1);
+        for (; *p; p++) if (*p == '\\') *p = '/';
+        /* preserve network shares */
+        if (buf[0] == '/' && buf[1] == '/') buf[0] = buf[1] = '\\';
+        SET_STRING_ELT(value, i, Rf_mkCharLenCE(buf, nchar, Rf_getCharCE(cs)));
+#else
+        SET_STRING_ELT(value, i, STRING_ELT(file, i));
+#endif
+    }
+    Rf_unprotect(1);
+    return value;
+}
+
+
+SEXP do_fixbackslash do_formals
+{
+    do_start_no_call_op_rho("fixbackslash", 1);
+
+
+    SEXP file = CAR(args);
+    if (TYPEOF(file) != STRSXP)
+        Rf_error(_("a character vector argument expected"));
+
+
+    R_xlen_t n = XLENGTH(file);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
+    for (int i = 0; i < n; i++) {
+#if defined(_WIN32)
+        SEXP cs = STRING_ELT(file, i);
+        const char *s = R_CHAR(cs);
+        int nchar = (int) strlen(s);
+        char buf[nchar + 1];
+        char *p = buf;
+        strncpy(p, s, nchar + 1);
+        for (; *p; p++) if (*p == '/') *p = '\\';
+        SET_STRING_ELT(value, i, Rf_mkCharLenCE(buf, nchar, Rf_getCharCE(cs)));
+#else
+        SET_STRING_ELT(value, i, STRING_ELT(file, i));
+#endif
+    }
+    Rf_unprotect(1);
+    return value;
+}

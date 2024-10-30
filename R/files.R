@@ -127,25 +127,11 @@ path.unsplit <- function (...)
 
 
 .fixslash <- function (s)
-{
-    if (.OS_windows) {
-        s <- chartr("\\", "/", s)
-        i <- startsWith(s, "//")
-        if (all(i))
-            substr(s, 1L, 2L) <- "\\\\"
-        else if (any(i))
-            substr(s[i], 1L, 2L) <- "\\\\"
-    }
-    s
-}
+.External2(.C_fixslash, s)
 
 
 .fixbackslash <- function (s)
-{
-    if (.OS_windows)
-        s <- chartr("/", "\\", s)
-    s
-}
+.External2(.C_fixbackslash, s)
 
 
 .as_file_URL <- function (path)
