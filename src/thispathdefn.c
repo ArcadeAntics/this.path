@@ -326,6 +326,9 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
 #endif
 
 
+    if (is_abs_path(url)) owd = NULL;
+
+
     _assign_default(srcfile_original, owd, Rf_ScalarString(Rf_mkCharCE(url, ienc)), documentcontext, na);
     Rf_unprotect(1);
 }
@@ -361,6 +364,9 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 #endif
 
 
+    if (is_abs_path(url + nh)) owd = NULL;
+
+
     _assign_default(srcfile_original, owd, Rf_ScalarString(Rf_mkCharCE(url + nh, ienc)), documentcontext, na);
     Rf_unprotect(1);
 }
@@ -384,6 +390,8 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
     strcpy(buf + 7, url);
 #endif
 
+
+    if (is_abs_path(url)) owd = NULL;
 
 
     SEXP ofile = Rf_ScalarString(Rf_mkCharCE(_buf, Rf_getCharCE(description)));
