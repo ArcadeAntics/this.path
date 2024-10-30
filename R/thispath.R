@@ -150,9 +150,10 @@
         if (!is.function(.rs.api.getActiveDocumentContext))
             stop(
                 simpleError(
-                    sprintf(
-                        gettext("could not find function \"%s\"", domain = "R"),
-                        ".rs.api.getActiveDocumentContext"
+                    gettextf(
+                        "could not find function \"%s\"",
+                        ".rs.api.getActiveDocumentContext",
+                        domain = "R"
                     ),
                     quote(.rs.api.getActiveDocumentContext())
                 )
@@ -167,9 +168,10 @@
         if (!is.function(.rs.api.getSourceEditorContext))
             stop(
                 simpleError(
-                    sprintf(
-                        gettext("could not find function \"%s\"", domain = "R"),
-                        ".rs.api.getSourceEditorContext"
+                    gettextf(
+                        "could not find function \"%s\"",
+                        ".rs.api.getSourceEditorContext",
+                        domain = "R"
                     ),
                     quote(.rs.api.getSourceEditorContext())
                 )
@@ -245,9 +247,10 @@
     if (!is.function(.ps.ui.LastActiveEditorContext))
         stop(
             simpleError(
-                sprintf(
-                    gettext("could not find function \"%s\"", domain = "R"),
-                    ".ps.ui.LastActiveEditorContext"
+                gettextf(
+                    "could not find function \"%s\"",
+                    ".ps.ui.LastActiveEditorContext",
+                    domain = "R"
                 ),
                 quote(.ps.ui.LastActiveEditorContext())
             )
