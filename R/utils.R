@@ -95,7 +95,7 @@
     ## check that 'file' is valid, and 'chdir' if required
     if (!.IS_SCALAR_STR(file)) {
         stop(gettextf("'%s' must be a character string", "file", domain = "R"), domain = NA)
-    } else if (grepl("^(ftp|ftps|http|https)://", file)) {
+    } else if (grepl("^(ftp|ftps|http|https)://", file, useBytes = TRUE)) {
         stop("cannot '.build.this' on a URL")
     } else if (chdir && (path <- file) != ".") {
         file <- "."
@@ -826,7 +826,7 @@ identical(x, y)
             cat("--> parsed", length(exprs), "expressions; now eval(.)ing them:\n")
         if (chdir) {
             if (is.character(ofile)) {
-                if (grepl("^(ftp|ftps|http|https|file)://", ofile))
+                if (grepl("^(ftp|ftps|http|https|file)://", ofile, useBytes = TRUE))
                   warning("'chdir = TRUE' makes no sense for a URL")
                 else if ((path <- dirname(ofile)) != ".") {
                   owd <- getwd()

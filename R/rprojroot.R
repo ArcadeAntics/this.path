@@ -132,7 +132,7 @@ tmp$make_fix_file <- .removeSource_from_inner_functions(
         stop("cannot '.find_root' as current directory is unknown")
     if (.OS_windows && missing(path))
         path <- .normalizePath(path)
-    else if (grepl("^(https|http|ftp|ftps)://", path))
+    else if (grepl("^(https|http|ftp|ftps)://", path, useBytes = TRUE))
         stop("this.proj() does not work for URL pathnames")
     if (!inherits(criterion, "root_criterion"))
         criterion <- rprojroot::as.root_criterion(criterion)

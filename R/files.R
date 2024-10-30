@@ -216,7 +216,7 @@ normalizePath(path = if (.OS_windows) path else .abspath(path), ...)
     ## a version of normalizePath that will also normalize URLs
     if (any(i <- startsWith(path, "file://")))
         path[i] <- .file_URL_path(path[i])
-    if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path))) {
+    if (any(i <- !i & grepl("^(https|http|ftp|ftps)://", path, useBytes = TRUE))) {
         path[i] <- .normalizeURL(path[i])
         path[!i] <- .normalize_abspath(path = path[!i], ...)
         path
@@ -229,7 +229,7 @@ normalizePath(path = if (.OS_windows) path else .abspath(path), ...)
 {
     if (startsWith(path, "file://"))
         .normalize_abspath(path = .file_URL_path(path), ...)
-    else if (grepl("^(ftp|ftps|http|https)://", path))
+    else if (grepl("^(ftp|ftps|http|https)://", path, useBytes = TRUE))
         .normalizeURL_1(path)
     else .normalize_abspath(path = path, ...)
 }
@@ -300,7 +300,7 @@ normalizePath(path, winslash, mustWork)
 {
     value <- .External2(.C_src_path, original)
     value <- .dir(value)
-    if (grepl("^(https|http|ftp|ftps)://", value)) {
+    if (grepl("^(https|http|ftp|ftps)://", value, useBytes = TRUE)) {
         ## do not use file.path(), on old versions of R it will convert text to native encoding
         .normalizeURL(paste(value, path, sep = "/"))
     }
@@ -317,7 +317,7 @@ normalizePath(path, winslash, mustWork)
 
 .dir <- function (path)
 {
-    if (grepl("^(https|http|ftp|ftps)://", path)) {
+    if (grepl("^(https|http|ftp|ftps)://", path, useBytes = TRUE)) {
         # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         p <- path.split.1(path)
         path.unsplit(if (length(p) >= 2L) p[-length(p)] else p)
@@ -328,7 +328,7 @@ normalizePath(path, winslash, mustWork)
 
 .here <- function (path, .. = 0L)
 {
-    if (grepl("^(https|http|ftp|ftps)://", path)) {
+    if (grepl("^(https|http|ftp|ftps)://", path, useBytes = TRUE)) {
         # path <- "https://raw.githubusercontent.com/ArcadeAntics/this.path/main/tests/this.path_w_URLs.R"
         # .. <- "2"
 

@@ -11,7 +11,7 @@
             }, error = function(e) FALSE)
             if (success) {
                 ## compare the filenames
-                if (path == value) {
+                if (.str_equal_useBytes(path, value)) {
                     # return(srcref[7L])
 
                     ## srcref[1L] is better, it respects #line directives
@@ -27,10 +27,10 @@
                 if (success) {
                     if (startsWith(value, "file://"))
                         value <- .fixslash(.file_URL_path(value))
-                    else if (grepl("^(https|http|ftp|ftps)://", value))
+                    else if (grepl("^(https|http|ftp|ftps)://", value, useBytes = TRUE))
                         value <- .normalizeURL(value)
                     else value <- .fixslash(value)
-                    if (path == value)
+                    if (.str_equal_useBytes(path, value))
                         return(srcref[1L])
                 }
             }

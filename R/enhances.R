@@ -71,7 +71,7 @@ make_fix_file <- function (criterion, local = FALSE, n = 0L, envir = parent.fram
     n <- .External2(.C_asIntegerGE0, n)
     path <- .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
     path <- .dir(path)
-    if (grepl("^(https|http|ftp|ftps)://", path))
+    if (grepl("^(https|http|ftp|ftps)://", path, useBytes = TRUE))
         stop("make_fix_file() does not work for URL pathnames")
     if (!inherits(criterion, "root_criterion"))
         criterion <- rprojroot::as.root_criterion(criterion)
