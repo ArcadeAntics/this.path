@@ -144,12 +144,38 @@
     ## element 'path' is a character string, the path of the document
 
 
+    context <- NULL
     if (verbose) {
-        context <- get(".rs.api.getActiveDocumentContext", envir = tools_rstudio, inherits = FALSE)()
+        .rs.api.getActiveDocumentContext <- get(".rs.api.getActiveDocumentContext", envir = tools_rstudio, inherits = FALSE)
+        if (!is.function(.rs.api.getActiveDocumentContext))
+            stop(
+                simpleError(
+                    sprintf(
+                        gettext("could not find function \"%s\"", domain = "R"),
+                        ".rs.api.getActiveDocumentContext"
+                    ),
+                    quote(.rs.api.getActiveDocumentContext())
+                )
+            )
+        context <- .rs.api.getActiveDocumentContext()
         active <- context[["id"]] != "#console"
         if (!active)
-            context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
-    } else context <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)()
+            context <- NULL
+    }
+    if (is.null(context)) {
+        .rs.api.getSourceEditorContext <- get(".rs.api.getSourceEditorContext", envir = tools_rstudio, inherits = FALSE)
+        if (!is.function(.rs.api.getSourceEditorContext))
+            stop(
+                simpleError(
+                    sprintf(
+                        gettext("could not find function \"%s\"", domain = "R"),
+                        ".rs.api.getSourceEditorContext"
+                    ),
+                    quote(.rs.api.getSourceEditorContext())
+                )
+            )
+        context <- .rs.api.getSourceEditorContext()
+    }
 
 
     if (is.null(context)) {
@@ -215,7 +241,18 @@
     ## list of information about the document open in the current tab
 
 
-    context <- get(".ps.ui.LastActiveEditorContext", envir = tools_positron, inherits = FALSE)()
+    .ps.ui.LastActiveEditorContext <- get(".ps.ui.LastActiveEditorContext", envir = tools_positron, inherits = FALSE)
+    if (!is.function(.ps.ui.LastActiveEditorContext))
+        stop(
+            simpleError(
+                sprintf(
+                    gettext("could not find function \"%s\"", domain = "R"),
+                    ".ps.ui.LastActiveEditorContext"
+                ),
+                quote(.ps.ui.LastActiveEditorContext())
+            )
+        )
+    context <- .ps.ui.LastActiveEditorContext()
 
 
     if (is.null(context)) {
