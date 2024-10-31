@@ -77,7 +77,7 @@ delayedAssign(".net_USE_command", {
                         local <- .tolower_ASCII(local)
                         local <- paste0(local, "/")
                         remote <- vapply(x, `[[`, "", 3L)
-                        if (any(j <- grepl("^[/\\\\]{2}", remote))) {
+                        if (any(j <- grepl("^[/\\\\]{2}", remote, useBytes = TRUE))) {
                             v <- remote[j]
                             enc <- Encoding(v)
                             v <- gsub("\\", "/", v, fixed = TRUE, useBytes = TRUE)
