@@ -78,8 +78,11 @@ main <- function ()
         if (is.null(wd <- getwd())) {
             FALSE
         } else {
-            if (.Platform$OS.type == "windows")
-                wd <- chartr("\\", "/", wd)
+            if (.Platform$OS.type == "windows") {
+                enc <- Encoding(wd)
+                wd <- gsub("\\", "/", wd, fixed = TRUE, useBytes = TRUE)
+                Encoding(wd) <- enc
+            }
             ## we need to know if the package is being installed by 'R CMD build'
             ## (i.e. "installing the package to process help pages")
             ##

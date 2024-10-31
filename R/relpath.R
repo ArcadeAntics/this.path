@@ -77,8 +77,13 @@ delayedAssign(".net_USE_command", {
                         local <- .tolower_ASCII(local)
                         local <- paste0(local, "/")
                         remote <- vapply(x, `[[`, "", 3L)
-                        if (any(j <- grepl("^[/\\\\]{2}", remote)))
-                            remote[j] <- gsub("\\", "/", remote[j], fixed = TRUE)
+                        if (any(j <- grepl("^[/\\\\]{2}", remote))) {
+                            v <- remote[j]
+                            enc <- Encoding(v)
+                            v <- gsub("\\", "/", v, fixed = TRUE, useBytes = TRUE)
+                            Encoding(v) <- enc
+                            remote[j] <- v
+                        }
                         remote <- paste0(remote, "/")
                         remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
                             "\\1:/", remote)
