@@ -72,22 +72,19 @@ delayedAssign(".net_USE_command", {
                         x, useBytes = TRUE)
                     ## one for the whole match, another two for the parenthesized sub-expressions
                     if (any(keep <- lengths(m) == 3L)) {
+                        enc <- Encoding(x)[keep]
                         x <- regmatches(x[keep], m[keep])
                         local <- vapply(x, `[[`, "", 2L)
                         local <- .tolower_ASCII(local)
                         local <- paste0(local, "/")
                         remote <- vapply(x, `[[`, "", 3L)
-                        if (any(j <- grepl("^[/\\\\]{2}", remote, useBytes = TRUE))) {
-                            v <- remote[j]
-                            enc <- Encoding(v)
-                            v <- gsub("\\", "/", v, fixed = TRUE, useBytes = TRUE)
-                            Encoding(v) <- enc
-                            remote[j] <- v
-                        }
+                        if (any(j <- grepl("^[/\\\\]{2}", remote, useBytes = TRUE)))
+                            remote[j] <- gsub("\\", "/", remote[j], fixed = TRUE, useBytes = TRUE)
                         remote <- paste0(remote, "/")
                         remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
                             "\\1:/", remote)
-                        Encoding(remote) <- "unknown"
+                        Encoding(local) <- enc
+                        Encoding(remote) <- enc
                         fix_local <- function(p) {
                             if (indx <- match(.tolower_ASCII(p[[1L]]), local, 0L)) {
                                 c(remote[[indx]], p[-1L])
