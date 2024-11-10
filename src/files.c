@@ -462,7 +462,8 @@ SEXP do_fixslash do_formals
         int nchar = (int) strlen(s);
         char buf[nchar + 1];
         char *p = buf;
-        strncpy(p, s, nchar + 1);
+        strncpy(p, s, nchar);
+        p[nchar] = '\0';
         for (; *p; p++) if (*p == '\\') *p = '/';
         /* preserve network shares */
         if (buf[0] == '/' && buf[1] == '/') buf[0] = buf[1] = '\\';
@@ -496,7 +497,8 @@ SEXP do_fixbackslash do_formals
         int nchar = (int) strlen(s);
         char buf[nchar + 1];
         char *p = buf;
-        strncpy(p, s, nchar + 1);
+        strncpy(p, s, nchar);
+        p[nchar] = '\0';
         for (; *p; p++) if (*p == '/') *p = '\\';
         SET_STRING_ELT(value, i, Rf_mkCharLenCE(buf, nchar, Rf_getCharCE(cs)));
 #else
