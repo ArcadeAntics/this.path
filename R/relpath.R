@@ -46,8 +46,10 @@ delayedAssign(".net_USE_command", {
                 ## replace //LOCALHOST/C$/
                 ## or      //127.0.0.1/C$/
                 ## with    C:/
+                enc <- Encoding(path)
                 path <- sub("(?i)^[/\\\\][/\\\\](?:LOCALHOST|127\\.0\\.0\\.1)[/\\\\]([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$([/\\\\]|$)",
-                            "\\1:/", path)
+                            "\\1:/", path, useBytes = TRUE)
+                Encoding(path) <- enc
                 p <- path.split(path)
 
 
@@ -82,7 +84,7 @@ delayedAssign(".net_USE_command", {
                             remote[j] <- gsub("\\", "/", remote[j], fixed = TRUE, useBytes = TRUE)
                         remote <- paste0(remote, "/")
                         remote <- sub("(?i)^//(?:LOCALHOST|127\\.0\\.0\\.1)/([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\\$/",
-                            "\\1:/", remote)
+                            "\\1:/", remote, useBytes = TRUE)
                         Encoding(local) <- enc
                         Encoding(remote) <- enc
                         fix_local <- function(p) {
