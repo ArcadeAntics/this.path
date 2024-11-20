@@ -250,21 +250,27 @@ SEXP ThisPathNotImplementedError(SEXP call, SEXP rho, const char *format, ...)
         "'this.path' not implemented when source()-ing a connection of class '%s'",\
         EncodeChar((connection_class_as_CHARSXP))              \
     );                                                         \
-    Rf_protect(cond);                                          \
+    Rf_protect(cond); nprotect++;                              \
     SEXP names = Rf_getAttrib(cond, R_NamesSymbol);            \
-    Rf_protect(names);                                         \
+    Rf_protect(names); nprotect++;                             \
     SET_STRING_ELT(names, 2, Rf_mkChar("summary"));            \
     SET_VECTOR_ELT(cond , 2, (summConn));                      \
-    Rf_unprotect(2);                                           \
+    Rf_unprotect(nprotect);                                    \
     return cond
 SEXP ThisPathUnrecognizedConnectionClassError(SEXP call, SEXP rho, SEXP summary)
 {
+    int nprotect = 0;
     funbody(STRING_ELT(VECTOR_ELT(summary, 1), 0), summary);
 }
 #if defined(R_CONNECTIONS_VERSION_1)
 SEXP ThisPathUnrecognizedConnectionClassError_Rcon_V1(SEXP call, SEXP rho, Rconnection Rcon)
 {
-    funbody(Rf_mkChar(Rcon->class), summary_connection_Rcon_V1(Rcon));
+    int nprotect = 0;
+    SEXP charsxp = Rf_mkChar(Rcon->class);
+    Rf_protect(charsxp); nprotect++;
+    SEXP summary = summary_connection_Rcon_V1(Rcon);
+    Rf_protect(summary); nprotect++;
+    funbody(charsxp, summary);
 }
 #endif
 #undef funbody

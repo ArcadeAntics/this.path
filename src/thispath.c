@@ -509,11 +509,12 @@ SEXP do_set_gui_path do_formals
         break;
     case GUIPATH_CHARACTER:
     {
+        /* need _getContents first before deciding how large to allocate value */
         SEXP _getContents = Rf_findVarInFrame(
             _custom_gui_path_character_environment,
             _get_contentsSymbol
         );
-        Rf_protect(_getContents);
+        Rf_protect(_getContents); nprotect++;
         value = Rf_allocVector(VECSXP, (_getContents != R_NilValue) ? 3 : 2);
         Rf_protect(value); nprotect++;
         SET_VECTOR_ELT(value, 0, Rf_ScalarString(Rf_findVarInFrame(
@@ -526,7 +527,6 @@ SEXP do_set_gui_path do_formals
         )));
         if (_getContents != R_NilValue)
             SET_VECTOR_ELT(value, 2, _getContents);
-        Rf_unprotect(1);
     }
         break;
     default:

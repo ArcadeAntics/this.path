@@ -57,7 +57,10 @@ SEXP do_asArgs do_formals
     int dots_length = (((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0) - n);
 
 
-    if (dots_length <= 0) return Rf_allocVector(STRSXP, 0);
+    if (dots_length <= 0) {
+        Rf_unprotect(nprotect);
+        return Rf_allocVector(STRSXP, 0);
+    }
 
 
     if (n) dots = Rf_nthcdr(dots, n);

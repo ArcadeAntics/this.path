@@ -289,14 +289,18 @@ SEXP do_path_split_1 do_formals
 static R_INLINE
 SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 {
+    int nprotect = 0;
+
+
     SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
-    Rf_protect(dots);
+    Rf_protect(dots); nprotect++;
     if (dots == R_UnboundValue)
         Rf_error(_("'...' used in an incorrect context"));
 
 
     int dots_length = ((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0);
     if (dots_length <= 0) {
+        Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);
     }
 
@@ -306,7 +310,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     if (dots_length == 1) {
         x = Rf_eval(CAR(dots), rho);
         if (Rf_isPairList(x)) {
-            Rf_protect(x);
+            Rf_protect(x); nprotect++;
             n = Rf_length(x);
             /* verify that each element is a character vector */
             SEXP xptr = x;
@@ -316,7 +320,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
             }
         }
         else if (Rf_isVectorList(x)) {
-            Rf_protect(x);
+            Rf_protect(x); nprotect++;
             n = LENGTH(x);
             /* verify that each element is a character vector */
             for (int i = 0; i < n; i++) {
@@ -326,17 +330,18 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
         }
         else if (TYPEOF(x) == STRSXP) {
             x = Rf_list1(x);
-            Rf_protect(x);
+            Rf_protect(x); nprotect++;
             n = 1;
         }
         else {
             UNIMPLEMENTED_TYPE("path.unsplit", x);
+            Rf_unprotect(nprotect);
             return R_NilValue;
         }
     } else {
         n = dots_length;
         x = Rf_allocVector(VECSXP, n);
-        Rf_protect(x);
+        Rf_protect(x); nprotect++;
         SEXP d = dots;
         for (int i = 0; i < n; i++, d = CDR(d)) {
             SET_VECTOR_ELT(x, i, Rf_eval(CAR(d), rho));
@@ -348,7 +353,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
     Rboolean ispairlist = Rf_isPairList(x);
     SEXP value = Rf_allocVector(STRSXP, n);
-    Rf_protect(value);
+    Rf_protect(value); nprotect++;
     for (int i = 0; i < n; i++) {
         SEXP x0;
         if (ispairlist) {
@@ -452,7 +457,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     }
 
 
-    Rf_unprotect(3);
+    Rf_unprotect(nprotect);
     return value;
 }
 

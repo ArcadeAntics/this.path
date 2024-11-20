@@ -595,7 +595,10 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     int dots_length = ((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0);
 
 
-    if (dots_length == 0) return Rf_allocVector(STRSXP, 0);
+    if (dots_length == 0) {
+        Rf_unprotect(nprotect);
+        return Rf_allocVector(STRSXP, 0);
+    }
 
 
     SEXP x = Rf_allocVector(VECSXP, dots_length);
