@@ -140,7 +140,9 @@ path.unsplit <- function (...)
         character(0)
     else if (.OS_windows) {
         ## on Windows we have file:///C:/path/to/file or similar
-        path <- .fixslash(path)
+        enc <- Encoding(path)
+        path <- gsub("\\", "/", path, fixed = TRUE, useBytes = TRUE)
+        Encoding(path) <- enc
         i <- grepl("^.:", path, useBytes = TRUE)
         if (all(i))
             paste0("file:///", path)
