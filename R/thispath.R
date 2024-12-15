@@ -123,6 +123,23 @@
 }
 
 
+.in_shell_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (contents && .has_shFILE)
+        for.msg <- FALSE
+    value <- shFILE(original, for.msg, default = {
+        stop(.ThisPathNotExistsError("R is running from a shell and argument 'FILE' is missing"))
+    })
+    if (verbose) cat("Source: shell argument 'FILE'\n")
+    if (contents) {
+        if (is.na(value))
+            NULL
+        else .get_contents(value)
+    }
+    else value
+}
+
+
 .RStudio_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     indx <- match("tools:rstudio", search(), 0L)
@@ -687,6 +704,30 @@ set.jupyter.path <- function (...)
 })
 
 
+.rkward_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (for.msg)
+        NA_character_
+    else stop(.ThisPathNotFoundError("R is running from RKWard for which 'this.path' is currently unimplemented\n consider using RStudio, Positron, VSCode, or Emacs until such a time when this is implemented"))
+}
+
+
+.powerbi_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (for.msg)
+        NA_character_
+    else stop(.ThisPathNotFoundError("R is running from Power BI for which 'this.path' is unimplemented\n you should not need to use this.path() in Power BI since you can import data directly"))
+}
+
+
+.in_callr_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (for.msg)
+        NA_character_
+    else stop(.ThisPathNotFoundError("R is running from 'package:callr' for which 'this.path' is unimplemented\n 'package:callr' calls a function in a separate session,\n you should not need the path of the script where it was written"))
+}
+
+
 .r_editor_info <- sapply(
     c("r-editor", "untitled"),
     function(name) {
@@ -757,21 +798,26 @@ delayedAssign(".untitled", {
 .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
 
 
+.AQUA_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (for.msg)
+        NA_character_
+    else stop(.ThisPathInAQUAError())
+}
+
+
+.Tk_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (for.msg)
+        NA_character_
+    else stop(.ThisPathNotExistsError("R is running from Tk which does not make use of its -f FILE, --file=FILE arguments"))
+}
+
+
 .gui_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (.in_shell) {
-        if (contents && .has_shFILE)
-            for.msg <- FALSE
-        value <- shFILE(original, for.msg, default = {
-            stop(.ThisPathNotExistsError("R is running from a shell and argument 'FILE' is missing"))
-        })
-        if (verbose) cat("Source: shell argument 'FILE'\n")
-        if (contents) {
-            if (is.na(value))
-                NULL
-            else .get_contents(value)
-        }
-        else value
+        .in_shell_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_RStudio) {
         .RStudio_path(verbose, original, for.msg, contents)
@@ -789,33 +835,25 @@ delayedAssign(".untitled", {
         .emacs_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_rkward) {
-        if (for.msg)
-            NA_character_
-        else stop(.ThisPathNotFoundError("R is running from RKWard for which 'this.path' is currently unimplemented\n consider using RStudio, Positron, VSCode, or Emacs until such a time when this is implemented"))
+        .rkward_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_powerbi) {
-        if (for.msg)
-            NA_character_
-        else stop(.ThisPathNotFoundError("R is running from Power BI for which 'this.path' is unimplemented\n you should not need to use this.path() in Power BI since you can import data directly"))
+        .powerbi_path(verbose, original, for.msg, contents)
     }
     else if (.in_callr) {
-        if (for.msg)
-            NA_character_
-        else stop(.ThisPathNotFoundError("R is running from 'package:callr' for which 'this.path' is unimplemented\n 'package:callr' calls a function in a separate session,\n you should not need the path of the script where it was written"))
+        .in_callr_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_Rgui) {
+        ## we could use .Rgui_path(verbose, original, for.msg, contents)
+        ## but it's slightly slower
         .External2(.C_Rgui_path, verbose, original, for.msg, contents, .untitled, .r_editor)
     }
     else if (.GUI_AQUA) {
-        if (for.msg)
-            NA_character_
-        else stop(.ThisPathInAQUAError())
+        .AQUA_path(verbose, original, for.msg, contents)
     }
     ## running from a shell under Unix-alikes with GUI 'Tk'
     else if (.GUI_Tk) {
-        if (for.msg)
-            NA_character_
-        else stop(.ThisPathNotExistsError("R is running from Tk which does not make use of its -f FILE, --file=FILE arguments"))
+        .Tk_path(verbose, original, for.msg, contents)
     }
     ## running R in another manner
     else {

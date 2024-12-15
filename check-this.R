@@ -1,5 +1,5 @@
 {
-    if (!file.exists(this.path::here("tools", "maintainers-copy")))
+    if (!file.exists(this.path::here("tools/maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
     essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(  ## this.path
@@ -53,7 +53,7 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
     upcoming_CRAN_version <- "2.6.0"
 
 
-    if (!file.exists(this.path::here("tools", "maintainers-copy")))
+    if (!file.exists(this.path::here("tools/maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
 
 
@@ -79,7 +79,7 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
     })
 
 
-    info_path <- this.path::here("tools", "info.dcf")
+    info_path <- this.path::here("tools/info.dcf")
     info <- read.dcf(info_path)
     if (nrow(info) != 1L)
         stop("contains a blank line", call. = FALSE)
