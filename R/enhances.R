@@ -75,5 +75,5 @@ make_fix_file <- function (criterion, local = FALSE, n = 0L, envir = parent.fram
         stop("make_fix_file() does not work for URL pathnames")
     if (!inherits(criterion, "root_criterion"))
         criterion <- rprojroot::as.root_criterion(criterion)
-    path.functions(criterion$find_file(path = path))$here
+    make_fix_funs(criterion$find_file(path = path))$here
 }

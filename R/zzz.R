@@ -306,6 +306,12 @@ if (getRversion() < "3.0.0") {
     fix_External2(LINE)
 
 
+    ## make_fix_funs.R ----
+
+
+    fix_External2(path.functions)
+
+
     ## ns-hooks.R   ----
 
 
@@ -317,12 +323,6 @@ if (getRversion() < "3.0.0") {
 
     fix_External2(.onLoad)
     fix_External2(.onUnload)
-
-
-    ## pathfuns.R   ----
-
-
-    fix_External2(path.functions)
 
 
     ## print.R      ----

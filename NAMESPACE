@@ -127,16 +127,16 @@ export(is.main   , from.shell)
 export(sys.LINENO, env.LINENO, src.LINENO, LINENO    , LINE      )
 
 
+## make_fix_funs.R ----
+
+
+export(path.functions, make_fix_funs)
+
+
 ## ns-hooks.R   ----
 
 
 export(OS.type)
-
-
-## pathfuns.R   ----
-
-
-export(path.functions)
 
 
 ## print.R      ----

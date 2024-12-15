@@ -1,11 +1,18 @@
-\name{path.functions}
+\name{make_fix_funs}
+\alias{make_fix_funs}
 \alias{path.functions}
 \title{Constructs Path Functions Similar to 'this.path()'}
 \description{
-  \code{path.functions()} accepts a pathname and constructs a set of
+  \code{make_fix_funs()} accepts a pathname and constructs a set of
   path-related functions, similar to \code{this.path()} and associated.
 }
 \usage{
+make_fix_funs(file, local = FALSE, n = 0,
+               envir = parent.frame(n + 1),
+               matchThisEnv = getOption("topLevelEnvironment"),
+               srcfile = if (n) sys.parent(n) else 0)
+
+## alias for 'make_fix_funs'
 path.functions(file, local = FALSE, n = 0,
                envir = parent.frame(n + 1),
                matchThisEnv = getOption("topLevelEnvironment"),
@@ -32,7 +39,7 @@ path.functions(file, local = FALSE, n = 0,
     \ifelse{html}{\codelink2{base:normalizePath}{normalized}}{normalized} file
     path.}
 
-  \item{here}{
+  \item{here, ici}{
 
     Function with formals \code{(..., .. = 0)} which constructs file paths,
     starting with the file's directory.}

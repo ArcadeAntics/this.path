@@ -36,6 +36,7 @@ path.functions <- .removeSource_from_inner_functions(
         base <- .here(file, ..)
         path.join(base, ...)
     }
+    delayedAssign("ici", { here })
     this.proj <- function(...) {
         base <- .proj(directory)
         path.join(base, ...)
@@ -48,3 +49,6 @@ path.functions <- .removeSource_from_inner_functions(
     environment()
 }
 )
+
+
+delayedAssign("make_fix_funs", { path.functions })
