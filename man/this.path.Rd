@@ -211,11 +211,10 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
 
     \item{\sQuote{AQUA}}{
 
-      then the executing script's path cannot be determined. Unlike
-      \sQuote{Rgui}, \sQuote{RStudio}, \sQuote{VSCode}, \sQuote{Jupyter}, and
-      \sQuote{Emacs}, there is currently no way to request the path of an open
-      document. Until such a time that there is a method for requesting the
-      path of an open document, consider using another GUI.}
+      then the executing script's path cannot be determined. Until such a time
+      that there is a method for requesting the path of an open document,
+      consider using \sQuote{RStudio}, \sQuote{Positron}, \sQuote{VSCode}, or
+      \sQuote{Emacs}.}
   }
 
   If \R is running in another manner, an error is thrown.
