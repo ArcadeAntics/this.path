@@ -528,20 +528,27 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         switch (op) {
         case TRYCATCHOP_2:
         {
+            /* formals <- pairlist(c = quote(expr = )) */
             SEXP formals = Rf_cons(R_MissingArg, R_NilValue);
             Rf_protect(formals);
             SET_TAG(formals, cSymbol);
 
+            /* body <- call("invisible") */
             SEXP body = Rf_lcons(invisibleSymbol, R_NilValue);
             Rf_protect(body);
 
+            /* fun <- function(c) invisible() */
             MARK_NOT_MUTABLE_defineVar(funSymbol, R_mkClosure(formals, body, rho), rho);
             Rf_unprotect(2);
 
+            /* expr0 <- fun */
             SEXP expr0 = funSymbol;
+            /* move backwards through the dots list,
+               building the condition handlers list */
             for (int i = dots_length - 1; i >= 0; i--) {
                 SEXP dot = Rf_nthcdr(dots, i);
                 if (CAR(dot) != R_MissingArg) {
+                    /* expr0 <- as.symbol(paste0("..", i + 1)) */
                     char buf[15];
                     snprintf(buf, 15, "..%d", i + 1);
                     expr0 = Rf_install(buf);
@@ -557,10 +564,12 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         {
             SEXP fun0, formals, assign_last_condition;
 
+            /* formals <- pairlist(c = quote(expr = )) */
             formals = Rf_cons(R_MissingArg, R_NilValue);
             Rf_protect(formals);
             SET_TAG(formals, cSymbol);
 
+            /* body <- call("{", NULL, call("invisible")) */
             SEXP body = Rf_lcons(
                 R_BraceSymbol,
                 Rf_cons(
@@ -573,6 +582,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
             );
             Rf_protect(body);
 
+            /* assign_last_condition <- body[[2L]] <- call(".last.condition", as.symbol("c")) */
             assign_last_condition = SETCADR(
                 body,
                 Rf_lcons(
@@ -581,10 +591,26 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
                 )
             );
 
+            /* fun0 <- function(c) { .last.condition(c); invisible() } */
             fun0 = R_mkClosure(formals, body, rho);
             MARK_NOT_MUTABLE(fun0);
             Rf_protect(fun0);
 
+            /* I don't remember exactly why we do this in such a way
+             *
+             * but basically, funs is a list of functions that look like this
+             *
+             * funs <- list(
+             *     function(c) { .last.condition(c); ..1 },
+             *     function(c) { .last.condition(c); ..2 },
+             *     function(c) { .last.condition(c); ..3 },
+             *     <...>
+             * )
+             *
+             * there are special cases, such as a missing condition handler
+             * refers to the next non-missing, or invisible() if there is no
+             * next non-missing
+             */
             SEXP funs = Rf_allocVector(VECSXP, dots_length);
             Rf_protect(funs);
             MARK_NOT_MUTABLE_defineVar(funsSymbol, funs, rho);
@@ -595,6 +621,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
                 else {
                     char buf[15];
                     snprintf(buf, 15, "..%d", i + 1);
+                    /* fun0 <- function(c) { .last.condition(c); ...elt(i + 1) } */
                     fun0 = R_mkClosure(
                         formals,
                         Rf_lcons(
@@ -610,6 +637,7 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
                 }
                 R_Reprotect(
                     expr = Rf_cons(
+                        /* call("[[", as.symbol("funs"), i + 1) */
                         Rf_lcons(
                             R_Bracket2Symbol,
                             Rf_cons(
@@ -657,6 +685,12 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
     }
     else {
         Rf_defineVar(do_elseSymbol, R_FalseValue, rho);
+        /* expr[[2L]] <- call(
+               "{",
+               as.symbol("expr"),
+               call("<-", as.symbol("do_else"), TRUE)
+           )
+         */
         SETCADR(
             expr,
             Rf_lcons(
