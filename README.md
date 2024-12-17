@@ -84,7 +84,62 @@ use `bug.report(package = "this.path")` to report your issue.
 If you are unhappy with the performance of `package:this.path`, or
 would like to know other solutions, here are some alternatives:
 
-### Alternative 1: Other Packages That Determine Current **R** Script
+### Alternative 1: Always Change Working Directory
+
+The working directory could always be changed to the directory of the
+executing script before running it. This would be:
+
+```bash
+cd /path/to
+Rscript ./file.R
+```
+
+or:
+
+```R
+source("/path/to/file.R", chdir = TRUE)
+```
+
+This fails for executable **R** scripts and it ignores the simple fact
+that it is sometimes legitimately desirable to have the working
+directory set elsewhere.
+
+### Alternative 2: Source References
+
+`utils::getSrcFilename()` provides the ability to retrieve the filename
+of a source reference. Everywhere `this.path()` would be used, replace
+it with `utils::getSrcFilename(function() NULL, full.names = TRUE)`.
+This comes with some issues such as:
+
+*   fails in interactive use since scripts must be run with `source()`
+
+*   fails when running **R** scripts from a shell
+
+*   option `keep.source` must be set to `TRUE`
+
+*   it returns the non-normalized source file's `filename`
+
+### Alternative 3: Absolute Paths
+
+Instead of changing the working directory to the directory of the
+executing script and referring to files with relative file paths, refer
+to files with absolute file paths. This would be:
+
+*   `"C:/path/to/file"` or `"//host/share/path/to/file"` on Windows
+
+*   `"/path/to/file"` under Unix-alikes
+
+This has some undesirable consequences:
+
+*   If the files are moved to a new location, or any of the file path
+    components are renamed, the file paths need to be updated for every
+    use for every script.
+
+*   If the files are hosted on a network share, users with differing
+    network drive mappings or even differing operating systems may not
+    have a common absolute file path to refer to the same location.
+
+### Alternative 4: Other Packages That Determine Current **R** Script
 
 There are a few other packages and functions that provide the ability
 to retrieve the path of the current **R** script:
@@ -201,7 +256,7 @@ as:
 
 *   changing global options without explicit user permission
 
-### Alternative 2: Packages That Determine Project Root
+### Alternative 5: Packages That Determine Project Root
 
 [`package:here`](https://CRAN.R-project.org/package=here) provides
 function `here::here()` with the ability to retrieve the project root,
@@ -253,10 +308,10 @@ your own using:
 
 `package:rprojroot` recommends using
 `<criterion>$find_file(path = whereami::thisfile())` for this purpose,
-but as mentioned in section **Alternative 1**, `whereami::thisfile()`
+but as mentioned in section **Alternative 4**, `whereami::thisfile()`
 is seriously lacking compared to `this.path::this.path()`.
 
-### Alternative 3: `package:box`
+### Alternative 6: `package:box`
 
 [`package:box`](https://CRAN.R-project.org/package=box) provides two
 related functions:
@@ -267,7 +322,7 @@ related functions:
 *   `box::use()` imports an **R** script as a module.
 
 These both lack the same functionality as the packages listed in
-**Alternative 1**. `box::file()` should not be used in favour of
+**Alternative 4**. `box::file()` should not be used in favour of
 `this.path::here()`. However, `box::use()` is still extremely useful,
 it just needs to be combined with `package:this.path` to get the best
 results:
@@ -284,41 +339,6 @@ box::use(
 
 This explicitly tells `package:box` the path of the current script so
 that relative imports will work correctly.
-
-### Alternative 4: Always Change Working Directory
-
-The working directory could always be changed to the directory of the
-executing script before running it. This would be:
-
-```bash
-cd /path/to
-Rscript ./file.R
-```
-
-or:
-
-```R
-source("/path/to/file.R", chdir = TRUE)
-```
-
-This fails when moving throughout files in different directories, it
-fails for executable **R** scripts, and it ignores the simple fact that
-it is sometimes convenient to have the working directory set elsewhere.
-
-### Alternative 5: Source References
-
-`utils::getSrcFilename()` provides the ability to retrieve the filename
-of a source reference. Everywhere `this.path()` would be used, replace
-it with `utils::getSrcFilename(function() NULL, full.names = TRUE)`.
-This comes with some issues such as:
-
-*   fails in interactive use since scripts must be run with `source()`
-
-*   fails when running **R** scripts from a shell
-
-*   option `keep.source` must be set to `TRUE`
-
-*   it returns the non-normalized source file's `filename`
 
 ## Closing
 
