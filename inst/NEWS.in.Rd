@@ -15,6 +15,8 @@
 
       \item{\code{with_script_path()} now accepts argument \codeorsQuote{file}
         specifying the pathname of the file.}
+
+      \item{Added \code{make_fix_funs()}, an alias of \code{path.functions()}.}
     }
   }
   \subsection{BUG FIXES}{
