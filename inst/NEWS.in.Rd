@@ -12,6 +12,9 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with GUI \sQuote{\Positron}.}
+
+      \item{\code{with_script_path()} now accepts argument \codeorsQuote{file}
+        specifying the pathname of the file.}
     }
   }
   \subsection{BUG FIXES}{

@@ -12,6 +12,9 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
     * this.path() is now compatible with GUI 'Positron'.
 
+    * with_script_path() now accepts argument 'file' specifying the
+      pathname of the file.
+
   BUG FIXES:
 
     * this.path(contents = TRUE) in 'Rgui' in which the source document

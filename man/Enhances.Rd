@@ -7,7 +7,7 @@
 }
 \usage{
 ## enchances 'package:box'
-with_script_path(expr, local = FALSE, n = 0, envir = parent.frame(n + 1),
+with_script_path(expr, file, local = FALSE, n = 0, envir = parent.frame(n + 1),
     matchThisEnv = getOption("topLevelEnvironment"),
     srcfile = if (n) sys.parent(n) else 0)
 
@@ -21,6 +21,8 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
     \pkg{package:box}; most commonly a call to
     \codelink3{box:use}{box::use}{()}.}
 
+  \item{file}{a character string giving the pathname of the file.}
+
   \item{criterion}{argument passed to
     \codelink3{rprojroot:find_root}{rprojroot::find_root}{()}.}
 
@@ -29,9 +31,10 @@ make_fix_file(criterion, local = FALSE, n = 0, envir = parent.frame(n + 1),
 }
 \details{
   \code{with_script_path()} improves the experience of \CRANpackage{box}; it
-  sets the current script in \pkg{package:box} to \code{\link{this.path}()}
-  using \codelink3{box:script_path}{box::set_script_path}{()}, then evaluates
-  its argument, most commonly a \pkg{package:box} import statement.
+  sets the current script in \pkg{package:box} to \code{file} or
+  \code{\link{this.path}()} using
+  \codelink3{box:script_path}{box::set_script_path}{()}, then evaluates its
+  argument, most commonly a \pkg{package:box} import statement.
 
   \code{make_fix_file()} improves the experience of \CRANpackage{rprojroot}; it
   looks for a project root starting with \code{\link{this.dir}()}, then makes a

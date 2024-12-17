@@ -1,18 +1,25 @@
-with_script_path <- function (expr, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
+with_script_path <- function (expr, file, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"), srcfile = if (n) sys.parent(n) else 0L)
 {
-    n <- .External2(.C_asIntegerGE0, n)
-    local
-    envir
-    matchThisEnv
-    srcfile
-    new_script_path <- tryCatch3({
-        .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
-    }, thisPathNotFoundError = {
-        if (is.null(wd <- getwd()))
-            "."
-        else path.join(wd, ".")
-    })
+    if (missing(file)) {
+        n <- .External2(.C_asIntegerGE0, n)
+        local
+        envir
+        matchThisEnv
+        srcfile
+        new_script_path <- tryCatch3({
+            .External2(.C_this_path, local, envir, matchThisEnv, srcfile)
+        }, thisPathNotFoundError = {
+            if (is.null(wd <- getwd()))
+                "."
+            else path.join(wd, ".")
+        })
+    }
+    else {
+        new_script_path <- set.sys.path(file, path.only = TRUE,
+            allow.file.uri = TRUE)
+        unset.sys.path()
+    }
 
 
     ## a function that will make and evaluate a promise when called
