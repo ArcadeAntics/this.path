@@ -33,7 +33,7 @@ check.proj(...)
   \code{this.dir()}, then \code{TRUE} invisibly, otherwise an error is thrown.
 }
 \examples{
-# ## I have a project called 'EOAdjusted'
+# ## I have a project called 'd_cead'
 # ##
 # ## Within this project, I have a folder called 'code'
 # ## where I place all of my scripts.
@@ -43,9 +43,9 @@ check.proj(...)
 # ## So, at the top of that R script, I could write:
 #
 #
-# @R_PACKAGE_NAME@::check.path("EOAdjusted", "code", "provrun.R")
+# @R_PACKAGE_NAME@::check.path("d_cead", "code", "provrun.R")
 #
 # ## or:
 #
-# @R_PACKAGE_NAME@::check.path("EOAdjusted/code/provrun.R")
+# @R_PACKAGE_NAME@::check.path("d_cead/code/provrun.R")
 }

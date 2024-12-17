@@ -223,7 +223,15 @@ this.dir(verbose = getOption("verbose"), local = FALSE,
   contact the package maintainer so that it can be implemented.
 }
 \value{
-  character string.
+  \code{default} if there is no executing script.
+
+  If \code{contents} is \code{TRUE}, there are a variety of return values. If a
+  custom GUI is implemented with \code{\link{set.gui.path}()}, any \R object.
+  If the executing script cannot be determined and \code{for.msg} is
+  \code{TRUE}, then \code{NULL}. In \Jupyter, a list of character vectors, the
+  contents separated into cells. Otherwise, a character vector.
+
+  Otherwise, a character string.
 }
 \section{Argument 'n'}{
   By default, \code{this.path()} will look for a path based on the
