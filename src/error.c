@@ -16,7 +16,7 @@ char *mbcsTruncateToValid(char *s)
     size_t slen = strlen(s);
     size_t goodlen = 0;
 
-    mbsinit(&mb_st);
+    memset(&mb_st, 0, sizeof(mbstate_t));
 
     if (my_utf8locale) {
         goodlen = slen - 1;
