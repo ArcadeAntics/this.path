@@ -81,16 +81,14 @@
 #if defined(R_THIS_PATH_DEVEL)
     #include <R_ext/Boolean.h>
     LibExtern Rboolean utf8locale;
-    LibExtern Rboolean latin1locale;
     #define my_utf8locale utf8locale
-    #define my_latin1locale latin1locale
 #else
     #define HAVE_GET_UTF8LOCALE
     extern Rboolean (*ptr_get_utf8locale)(void);
-    extern Rboolean (*ptr_get_latin1locale)(void);
     #define my_utf8locale ( ptr_get_utf8locale() )
-    #define my_latin1locale ( ptr_get_latin1locale() )
 #endif
+extern Rboolean (*ptr_get_latin1locale)(void);
+#define my_latin1locale ( ptr_get_latin1locale() )
 
 
 #endif

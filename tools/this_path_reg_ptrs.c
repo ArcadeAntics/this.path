@@ -47,14 +47,9 @@ void set_R_Visible(Rboolean x)
 
 
 LibExtern Rboolean utf8locale;
-LibExtern Rboolean latin1locale;
 Rboolean get_utf8locale(void)
 {
     return utf8locale;
-}
-Rboolean get_latin1locale(void)
-{
-    return latin1locale;
 }
 
 
@@ -79,7 +74,6 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
 
 
     R_RegisterCCallable("this_path_reg_ptrs", "get_utf8locale", (DL_FUNC) get_utf8locale);
-    R_RegisterCCallable("this_path_reg_ptrs", "get_latin1locale", (DL_FUNC) get_latin1locale);
 
 
 #if defined(R_VERSION) && R_VERSION >= R_Version(4,5,0)
