@@ -146,6 +146,7 @@ Rboolean ptr_get_utf8locale_default(void)
         Rf_error(_("missing value where TRUE/FALSE needed"));
     return value ? TRUE : FALSE;
 }
+#endif
 Rboolean ptr_get_latin1locale_default(void)
 {
     int value = Rf_asLogical(getFromMyNS(_latin1localeSymbol));
@@ -153,7 +154,6 @@ Rboolean ptr_get_latin1locale_default(void)
         Rf_error(_("missing value where TRUE/FALSE needed"));
     return value ? TRUE : FALSE;
 }
-#endif
 
 
 #if defined(NEED_R_4_5_0_FUNCTIONS)
