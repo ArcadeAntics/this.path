@@ -1,7 +1,7 @@
 useDynLib(@R_PACKAGE_NAME@, .registration = TRUE, .fixes = ".C_")
 
 
-## backports.R  ----
+## backports.R     ----
 
 
 if (getRversion() < "3.0.0") {
@@ -82,32 +82,32 @@ if (getRversion() < "4.2.0") {
 }
 
 
-## checkpath.R  ----
+## checkpath.R     ----
 
 
 export(check.path, check.dir , check.proj)
 
 
-## defunct.R    ----
+## defunct.R       ----
 
 
 export(set.sys.path.jupyter , fileArgs             )
 
 
-## enhances.R   ----
+## enhances.R      ----
 
 
 export(with_script_path, make_fix_file   )
 
 
-## error.R      ----
+## error.R         ----
 
 
 export(thisPathNotExistsError, thisPathNotFoundError , tryCatch2             ,
        last.condition        , tryCatch3             )
 
 
-## files.R      ----
+## files.R         ----
 
 
 export(basename2   , dirname2    , splitext    , removeext   ,
@@ -115,13 +115,13 @@ export(basename2   , dirname2    , splitext    , removeext   ,
        path.split.1, path.unsplit)
 
 
-## ismain.R     ----
+## ismain.R        ----
 
 
 export(is.main   , from.shell)
 
 
-## lineno.R     ----
+## lineno.R        ----
 
 
 export(sys.LINENO, env.LINENO, src.LINENO, LINENO    , LINE      )
@@ -133,13 +133,13 @@ export(sys.LINENO, env.LINENO, src.LINENO, LINENO    , LINE      )
 export(path.functions, make_fix_funs)
 
 
-## ns-hooks.R   ----
+## ns-hooks.R      ----
 
 
 export(OS.type)
 
 
-## print.R      ----
+## print.R         ----
 
 
 S3method(print       , ThisPathDocumentContext)
@@ -147,19 +147,19 @@ S3method(format      , ThisPathDocumentContext)
 S3method(as.character, ThisPathDocumentContext)
 
 
-## progargs.R   ----
+## progargs.R      ----
 
 
 export(asArgs  , progArgs, withArgs)
 
 
-## promises.R   ----
+## promises.R      ----
 
 
 export(initwd   , getinitwd)
 
 
-## relpath.R    ----
+## relpath.R       ----
 
 
 export(relpath     , rel2sys.dir , rel2sys.proj, rel2env.dir ,
@@ -167,13 +167,13 @@ export(relpath     , rel2sys.dir , rel2sys.proj, rel2env.dir ,
        rel2proj    )
 
 
-## rprojroot.R  ----
+## rprojroot.R     ----
 
 
 export(sys.proj  , env.proj  , src.proj  , this.proj , reset.proj)
 
 
-## setsyspath.R ----
+## setsyspath.R    ----
 
 
 export(wrap.source          , set.sys.path         , unset.sys.path       ,
@@ -181,31 +181,31 @@ export(wrap.source          , set.sys.path         , unset.sys.path       ,
        with_sys.path        )
 
 
-## shfile.R     ----
+## shfile.R        ----
 
 
 export(shFILE    , try.shFILE)
 
 
-## startup.R    ----
+## startup.R       ----
 
 
 export(site.file     , init.file     , with_site.file, with_init.file)
 
 
-## sys.R        ----
+## sys.R           ----
 
 
 export(sys.srcref , sys.whiches)
 
 
-## sysputenv.R  ----
+## sysputenv.R     ----
 
 
 export(Sys.putenv)
 
 
-## thispath.R   ----
+## thispath.R      ----
 
 
 export(set.jupyter.path, set.gui.path    , sys.path        ,
@@ -217,7 +217,7 @@ export(set.jupyter.path, set.gui.path    , sys.path        ,
        try.this.path   , FILE            )
 
 
-## utils.R      ----
+## utils.R         ----
 
 
 export(source.exprs)

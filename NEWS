@@ -2,6 +2,8 @@
 
 CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
+CHANGES IN this.path 2.6.0 (2024-12-18):
+
   SIGNIFICANT USER-VISIBLE CHANGES:
 
     * Previously defunct functions reset.this.proj(),

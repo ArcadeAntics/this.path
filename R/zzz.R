@@ -190,7 +190,7 @@ if (getRversion() < "3.0.0") {
     }
 
 
-    ## backports.R  ----
+    ## backports.R     ----
 
 
     fix_External2(anyNA)
@@ -212,7 +212,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(...elt)
 
 
-    ## checkpath.R  ----
+    ## checkpath.R     ----
 
 
     fix_External2(check.path)
@@ -220,14 +220,14 @@ if (getRversion() < "3.0.0") {
     fix_External2(check.proj)
 
 
-    ## enhances.R   ----
+    ## enhances.R      ----
 
 
     fix_External2(with_script_path)
     fix_External2(make_fix_file)
 
 
-    ## error.R      ----
+    ## error.R         ----
 
 
     fix_External2(.getCurrentCall)
@@ -246,7 +246,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(tryCatch3)
 
 
-    ## files.R      ----
+    ## files.R         ----
 
 
     fix_External2(.windows_basename2)
@@ -288,14 +288,14 @@ if (getRversion() < "3.0.0") {
     fix_External2(.here)
 
 
-    ## ismain.R     ----
+    ## ismain.R        ----
 
 
     fix_External2(is.main)
     fix_External2(from.shell)
 
 
-    ## lineno.R     ----
+    ## lineno.R        ----
 
 
     fix_External2(.LINENO)
@@ -312,7 +312,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(path.functions)
 
 
-    ## ns-hooks.R   ----
+    ## ns-hooks.R      ----
 
 
     fix_External2(.mbcslocale)
@@ -325,7 +325,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(.onUnload)
 
 
-    ## print.R      ----
+    ## print.R         ----
 
 
     fix_External2(.PrintValueEnv)
@@ -333,14 +333,14 @@ if (getRversion() < "3.0.0") {
     fix_External2(print.ThisPathDocumentContext)
 
 
-    ## progargs.R   ----
+    ## progargs.R      ----
 
 
     fix_External2(progArgs)
     fix_External2(withArgs)
 
 
-    ## promises.R   ----
+    ## promises.R      ----
 
 
     fix_External2(.OS_windows_maybe_unembedded_shell)
@@ -348,7 +348,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(.GUI_Rgui)
 
 
-    ## relpath.R    ----
+    ## relpath.R       ----
 
 
     fix_External2(.tolower_ASCII)
@@ -364,7 +364,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(rel2proj)
 
 
-    ## rprojroot.R  ----
+    ## rprojroot.R     ----
 
 
     fix_External2(sys.proj)
@@ -374,7 +374,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(reset.proj)
 
 
-    ## setsyspath.R ----
+    ## setsyspath.R    ----
 
 
     fix_External2(wrap.source)
@@ -385,13 +385,13 @@ if (getRversion() < "3.0.0") {
     fix_External2(set.sys.path.function)
 
 
-    ## shfile.R     ----
+    ## shfile.R        ----
 
 
     fix_External2(.shFILE)
 
 
-    ## startup.R    ----
+    ## startup.R       ----
 
 
     fix_External2(.site_file)
@@ -400,20 +400,20 @@ if (getRversion() < "3.0.0") {
     fix_External2(with_init.file)
 
 
-    ## sys.R        ----
+    ## sys.R           ----
 
 
     fix_External2(sys.srcref)
     fix_External2(sys.whiches)
 
 
-    ## tests.R      ----
+    ## tests.R         ----
 
 
     fix_External2(.faster_subsequent_times_test)
 
 
-    ## thispath.R   ----
+    ## thispath.R      ----
 
 
     fix_External2(.fixNewlines)
@@ -446,7 +446,7 @@ if (getRversion() < "3.0.0") {
     fix_External2(FILE)
 
 
-    ## utils.R      ----
+    ## utils.R         ----
 
 
     fix_External2(.istrue)
