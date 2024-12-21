@@ -10,9 +10,11 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
     SEXP promise = Rf_findVarInFrame(rho, exprSymbol);
     if (promise == R_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));
-    if (promise == R_MissingArg)
+    if (promise == R_MissingArg) {
         // Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
         MissingArgError(exprSymbol, R_CurrentExpression, rho, "evalError");
+        return R_NilValue;
+    }
     if (TYPEOF(promise) != PROMSXP)
         Rf_error("invalid '%s', is not a promise", R_CHAR(PRINTNAME(exprSymbol)));
 
