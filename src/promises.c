@@ -92,16 +92,16 @@ SEXP do_is_unevaluated_promise do_formals
 
     SEXP value;
 #if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
-#define if_DDVAL_ddfindVar                                     \
+#define if_DDVAL_then_ddfindVar                                \
     if (DDVAL(sym))                                            \
         value = ddfindVar(sym, env);
 #else
-#define if_DDVAL_ddfindVar                                     \
+#define if_DDVAL_then_ddfindVar                                \
     int i;                                                     \
     if ((i = ddVal(sym)))                                      \
         value = ddfind(i, env);
 #endif
-    if_DDVAL_ddfindVar
+    if_DDVAL_then_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
@@ -125,7 +125,7 @@ SEXP do_promise_is_unevaluated do_formals
 
 
     SEXP value;
-    if_DDVAL_ddfindVar
+    if_DDVAL_then_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
@@ -156,7 +156,7 @@ SEXP do_forcePromise_no_warn do_formals
 
 
     SEXP value;
-    if_DDVAL_ddfindVar
+    if_DDVAL_then_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
@@ -233,7 +233,7 @@ SEXP do_is_R_MissingArg do_formals
 
 
     SEXP value;
-    if_DDVAL_ddfindVar
+    if_DDVAL_then_ddfindVar
     else
         value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
     if (value == R_UnboundValue)
