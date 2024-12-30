@@ -20,21 +20,21 @@
   \pkg{@R_PACKAGE_NAME@} as they are no longer needed.
 }
 \usage{
-# Defunct in 1.1.0
+# Defunct in this.path 1.1.0 (2022-12-01)
 this.path2(...)
 this.dir2(...)
 this.dir3(...)
 normalized.shFILE(default, else.)
 
-# Defunct in 1.3.0
+# Defunct in this.path 1.3.0 (2023-04-09)
 as.rel.path(path)
 as.relative.path(path)
 
-# Defunct in 1.4.0
+# Defunct in this.path 1.4.0 (2023-04-18)
 local.path(verbose = getOption("verbose"), original = FALSE,
     for.msg = FALSE, contents = FALSE, default, else.)
 
-# Defunct in 2.0.0
+# Defunct in this.path 2.0.0 (2023-08-09)
 reset.this.proj()
 set.this.path.jupyter(...)
 inside.source(file, path.only = FALSE, character.only = path.only,
@@ -59,7 +59,7 @@ set.this.path(file, path.only = FALSE, character.only = path.only,
     Function = NULL, ofile)
 unset.this.path()
 
-# Defunct in 2.4.0
+# Defunct in this.path 2.4.0 (2024-02-16)
 set.sys.path.jupyter(...)
 fileArgs()
 }
