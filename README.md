@@ -100,7 +100,11 @@ or:
 source("/path/to/file.R", chdir = TRUE)
 ```
 
-This fails for executable **R** scripts and it ignores the simple fact
+This does not determine the executing script, only the executing
+script's directory, so it does not provide all the same functionality
+of `package:this.path`.
+
+It fails for executable **R** scripts and it ignores the simple fact
 that it is sometimes legitimately desirable to have the working
 directory set elsewhere.
 
@@ -138,6 +142,10 @@ This has some undesirable consequences:
 *   If the files are hosted on a network share, users with differing
     network drive mappings or even differing operating systems may not
     have a common absolute file path to refer to the same location.
+
+As with **Alternative 1**, it does not determine the executing script.
+It does not determine the executing script's directory, either. It
+provides none of the functionality of `package:this.path`.
 
 ### Alternative 4: Other Packages That Determine Current **R** Script
 
@@ -279,6 +287,10 @@ but it lacks functionality:
     project `A` and a project `B`. I would run a script in `B` which
     runs a script in `A`, but the project root is already set to the
     root of `B`, so the script in `A` fails.
+
+As with **Alternative 3**, it does not determine the executing script,
+nor the executing script's directory. It provides none of the same
+functionality of `package:this.path`.
 
 [`package:rprojroot`](https://CRAN.R-project.org/package=rprojroot) is
 the **R** package upon which `package:here` is built. It provides a
