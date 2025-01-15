@@ -143,9 +143,9 @@ This has some undesirable consequences:
     network drive mappings or even differing operating systems may not
     have a common absolute file path to refer to the same location.
 
-As with **Alternative 1**, it does not determine the executing script.
-It does not determine the executing script's directory, either. It
-provides none of the functionality of `package:this.path`.
+This does not determine the executing script, nor the executing
+script's directory. It provides none of the functionality of
+`package:this.path`.
 
 ### Alternative 4: Other Packages That Determine Current **R** Script
 
@@ -288,10 +288,6 @@ but it lacks functionality:
     runs a script in `A`, but the project root is already set to the
     root of `B`, so the script in `A` fails.
 
-As with **Alternative 3**, it does not determine the executing script,
-nor the executing script's directory. It provides none of the same
-functionality of `package:this.path`.
-
 [`package:rprojroot`](https://CRAN.R-project.org/package=rprojroot) is
 the **R** package upon which `package:here` is built. It provides a
 list of project root criteria `rprojroot::criteria`. It is not useful
@@ -322,6 +318,10 @@ your own using:
 `<criterion>$find_file(path = whereami::thisfile())` for this purpose,
 but as mentioned in section **Alternative 4**, `whereami::thisfile()`
 is seriously lacking compared to `this.path::this.path()`.
+
+These can not determine the executing script, nor the executing
+script's directory. They provides none of the same functionality of
+`package:this.path`.
 
 ### Alternative 6: `package:box`
 
