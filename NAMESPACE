@@ -91,9 +91,6 @@ export(check.path, check.dir , check.proj)
 ## defunct.R       ----
 
 
-export(set.sys.path.jupyter , fileArgs             )
-
-
 ## enhances.R      ----
 
 
