@@ -2,6 +2,20 @@
 
 CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * Previously defunct functions set.sys.path.jupyter() and
+      fileArgs() were removed entirely.
+
+    * path.join() now respects the declared encodings of its arguments
+      and appropriately marks the encodings of its output, similar to
+      paste().
+
+  NEW FEATURES:
+
+    * make_fix_funs() now accepts argument 'delayed' indicating whether
+      the normalization of 'file' should be delayed.
+
 CHANGES IN this.path 2.6.0 (2024-12-18):
 
   SIGNIFICANT USER-VISIBLE CHANGES:

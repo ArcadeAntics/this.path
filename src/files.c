@@ -4,7 +4,7 @@
 
 
 
-int drive_width_windows(const char *s, int nchar)
+int _drive_width_windows(const char *s, int consider_tilde)
 {
     /* there are three types of absolute paths on windows
      *
@@ -61,23 +61,21 @@ normalizePath("/path/to/file")
      * s
      *
      *     the string in which we are looking for a drivespec
-     *
-     * nchar
-     *
-     *     the length of the string. this argument exists purely so that you
-     *     don't have to calculate strlen(s) twice (assuming you're using nchar
-     *     somewhere else in your program)
      */
+
+
+    int nchar = (int) strlen(s);
 
 
     if (nchar <= 0) return 0;
 
 
     /* s starts with d: or similar */
-    if (nchar >= 2 && *s <= 0x7f && *(s + 1) == ':') return 2;
+    if (nchar > 1 && *s <= 0x7f && *(s + 1) == ':') return 2;
 
 
-    if (*s == '~' &&             /* s starts with ~ */
+    if (consider_tilde &&
+        *s == '~' &&             /* s starts with ~ */
         (
             nchar == 1       ||  /* s is exactly ~   */
             *(s + 1) == '/'  ||  /* s starts with ~/ */
@@ -166,11 +164,26 @@ normalizePath("/path/to/file")
 }
 
 
-int drive_width_unix(const char *s, int nchar)
+int drive_width_windows(const char *s)
+{
+    return _drive_width_windows(s, 1);
+}
+
+
+int drive_width_no_tilde_windows(const char *s)
+{
+    return _drive_width_windows(s, 0);
+}
+
+
+int drive_width_unix(const char *s)
 {
     /* similar to the above drive_width_windows() but specifically for
      * unix-alikes where a drivespec only really makes sense in terms of a
      * network share */
+
+
+    int nchar = (int) strlen(s);
 
 
     /* 5 characters is the minimum required for a network share
@@ -225,12 +238,12 @@ int drive_width_unix(const char *s, int nchar)
 
 int is_abs_path_windows(const char *s)
 {
-    int nchar = strlen(s);
+    int nchar = (int) strlen(s);
     if (nchar <= 0) return 0;
 
 
     /* s starts with d:/ or similar */
-    if (nchar >= 3 && *s <= 0x7f && *(s + 1) == ':' &&
+    if (nchar > 2 && *s <= 0x7f && *(s + 1) == ':' &&
         (*(s + 2) == '/' || *(s + 2) == '\\'))
     {
         return 1;
@@ -304,8 +317,7 @@ int is_abs_path_windows(const char *s)
 
 int is_abs_path_unix(const char *s)
 {
-    int nchar = strlen(s);
-    if (nchar <= 0) return 0;
+    if (*s == '\0') return 0;
 
 
     /* tests for absolute paths:
@@ -315,8 +327,8 @@ int is_abs_path_unix(const char *s)
      */
     if (*s == '/') return 1;  /* path starts with / */
     if (*s == '~') {
-        if (nchar == 1) return 1;  /* path equals ~ */
-        if (*(s + 1) == '/') return 1;  /* path starts with ~/ */
+        if (*(s + 1) == '\0') return 1;  /* path equals ~ */
+        if (*(s + 1) == '/' ) return 1;  /* path starts with ~/ */
         if (*R_ExpandFileName(s) == '/') return 1;  /* path expands to an absolute path, e.g. ~iris/foo might expand to /home/iris/foo */
     }
 
