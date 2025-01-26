@@ -26,8 +26,10 @@ path.functions <- .removeSource_from_inner_functions(
                     wd <- getwd()
                     fun <- function() {
                         owd <- getwd()
-                        on.exit(setwd(owd))
-                        setwd(wd)
+                        if (!is.null(owd) && !is.null(wd) && !identical(owd, wd)) {
+                            on.exit(setwd(owd))
+                            setwd(wd)
+                        }
                         (set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
                             allow.file.uri = TRUE))
                     }
