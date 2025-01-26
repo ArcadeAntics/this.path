@@ -7,19 +7,23 @@
   path-related functions, similar to \code{this.path()} and associated.
 }
 \usage{
-make_fix_funs(file, local = FALSE, n = 0,
-               envir = parent.frame(n + 1),
-               matchThisEnv = getOption("topLevelEnvironment"),
-               srcfile = if (n) sys.parent(n) else 0)
+make_fix_funs(file, delayed = FALSE, local = FALSE, n = 0,
+              envir = parent.frame(n + 1),
+              matchThisEnv = getOption("topLevelEnvironment"),
+              srcfile = if (n) sys.parent(n) else 0)
 
 ## alias for 'make_fix_funs'
-path.functions(file, local = FALSE, n = 0,
+path.functions(file, delayed = FALSE, local = FALSE, n = 0,
                envir = parent.frame(n + 1),
                matchThisEnv = getOption("topLevelEnvironment"),
                srcfile = if (n) sys.parent(n) else 0)
 }
 \arguments{
   \item{file}{a character string giving the pathname of the file or URL.}
+
+  \item{delayed}{\code{TRUE} or \code{FALSE}; should the
+    \ifelse{html}{\codelink2{base:normalizePath}{normalization}}{normalization}
+    of \code{file} be delayed?}
 
   \item{local, n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
