@@ -408,8 +408,10 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
                 str = Rf_translateCharUTF8(cs);
             else {
                 str = Rf_translateChar(cs);
-                allKnown = allKnown && (IS_ASCII(cs) || ENC_KNOWN(cs));
-                anyKnown = anyKnown || ENC_KNOWN(cs);
+                // allKnown = allKnown && (IS_ASCII(cs) || ENC_KNOWN(cs));
+                // anyKnown = anyKnown || ENC_KNOWN(cs);
+                allKnown = allKnown && (IS_ASCII(cs) || IS_LATIN1(cs));
+                anyKnown = anyKnown || IS_LATIN1(cs);
             }
             nchar = (int) strlen(str);
             if (!nchar);
@@ -492,8 +494,10 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
                     str = Rf_translateCharUTF8(cs);
                 else {
                     str = Rf_translateChar(cs);
-                    allKnown = allKnown && (IS_ASCII(cs) || ENC_KNOWN(cs));
-                    anyKnown = anyKnown || ENC_KNOWN(cs);
+                    // allKnown = allKnown && (IS_ASCII(cs) || ENC_KNOWN(cs));
+                    // anyKnown = anyKnown || ENC_KNOWN(cs);
+                    allKnown = allKnown && (IS_ASCII(cs) || IS_LATIN1(cs));
+                    anyKnown = anyKnown || IS_LATIN1(cs);
                 }
                 nchar = (int) strlen(str);
 
@@ -704,8 +708,10 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
                 str = Rf_translateCharUTF8(cs);
             else {
                 str = Rf_translateChar(cs);
-                allKnown = allKnown && (IS_ASCII(cs) || ENC_KNOWN(cs));
-                anyKnown = anyKnown || ENC_KNOWN(cs);
+                // allKnown = allKnown && (IS_ASCII(cs) || ENC_KNOWN(cs));
+                // anyKnown = anyKnown || ENC_KNOWN(cs);
+                allKnown = allKnown && (IS_ASCII(cs) || IS_LATIN1(cs));
+                anyKnown = anyKnown || IS_LATIN1(cs);
             }
             nchar = (int) strlen(str);
 
