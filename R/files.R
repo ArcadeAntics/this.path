@@ -6,8 +6,8 @@
 .External2(.C_unix_basename2, path)
 
 
-basename2 <- function (path)
-.External2(.C_basename2, path)
+basename2 <- function (path, expand = TRUE)
+.External2(.C_basename2, if (expand) path.expand(path) else path)
 
 
 .windows_dirname2 <- function (path)
@@ -18,8 +18,8 @@ basename2 <- function (path)
 .External2(.C_unix_dirname2, path)
 
 
-dirname2 <- function (path)
-.External2(.C_dirname2, path)
+dirname2 <- function (path, expand = TRUE)
+.External2(.C_dirname2, if (expand) path.expand(path) else path)
 
 
 .windows_splitext <- function (path, compression = FALSE)
@@ -344,5 +344,5 @@ normalizePath(path, winslash, mustWork)
     # path <- "//host/share/path/to/file"
     # path <- "C:/Users/iris/Documents/this.path/man/this.path.Rd"
     # .. <- "10"
-    else .External2(.C_dirname2, path, ..)
+    else .External2(.C_dirname2, path.expand(path), ..)
 }

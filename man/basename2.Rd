@@ -10,16 +10,16 @@
   last path separator, or \string{.} if there is no path separator.
 }
 \usage{
-basename2(path)
-dirname2(path)
+basename2(path, expand = TRUE)
+dirname2(path, expand = TRUE)
 }
 \arguments{
   \item{path}{character vector, containing path names.}
+
+  \item{expand}{logical. Should tilde (see \codelink2{base}{path.expand}) be
+    expanded?}
 }
 \details{
-  Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) of the path will
-  be performed.
-
   Trailing path separators are removed before dissecting the path, and for
   \code{dirname2()} any trailing file separators are removed from the result.
 }

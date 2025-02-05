@@ -11,37 +11,43 @@ SEXP basename2(int windows, SEXP args)
 
 
     SEXP path = CAR(args);
+    if (TYPEOF(path) != STRSXP)
+        Rf_error(_("a character vector argument expected"));
+    SEXP cs;
 
 
-    const char *ptr;
+    const char *str;
     char *buf, *last_char, *slash;
     int n, i, nchar, drivewidth;
 
 
-    if (TYPEOF(path) != STRSXP)
-        Rf_error(_("a character vector argument expected"));
     SEXP value = Rf_allocVector(STRSXP, n = LENGTH(path));
     Rf_protect(value); nprotect++;
     for (i = 0; i < n; i++) {
-        if (STRING_ELT(path, i) == NA_STRING) {
+        cs = STRING_ELT(path, i);
+        if (cs == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
             continue;
         }
-        ptr = R_ExpandFileName(Rf_translateCharUTF8(STRING_ELT(path, i)));
-        nchar = strlen(ptr);
+
+
+        str = R_CHAR(cs);
+        nchar = strlen(str);
         if (nchar == 0) {
             /* don't bother assigning an empty string, should already be empty
             SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
-        drivewidth = _drive_width(windows, ptr, nchar);
+
+
+        drivewidth = _drive_width_no_tilde(windows, str);
         nchar -= drivewidth;  /* number of characters in the pathspec */
         if (nchar == 0) {
             /* don't bother assigning an empty string, should already be empty
             SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
-        ptr += drivewidth;
+        str += drivewidth;
 
 
         /* allocate a buffer to hold the basename
@@ -49,7 +55,7 @@ SEXP basename2(int windows, SEXP args)
          */
         char _buf[nchar + 1];
         buf = _buf;
-        strcpy(buf, ptr);
+        strcpy(buf, str);
 
 
         /* point to the last character of 'buf' */
@@ -104,7 +110,7 @@ SEXP basename2(int windows, SEXP args)
         }
 
 
-        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
+        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
     }
 
 
@@ -182,9 +188,10 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         Rf_errorcall(call, wrong_nargs_to_External(Rf_length(args), name, "1 or 2"));
         return R_NilValue;
     }
+    SEXP cs;
 
 
-    const char *ptr;
+    const char *str;
     char *buf, *last_char, *slash, *pathspec;
     int n, i, nchar, drivewidth, skip;
 
@@ -192,31 +199,32 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
     SEXP value = Rf_allocVector(STRSXP, n = LENGTH(path));
     Rf_protect(value); nprotect++;
     for (i = 0; i < n; i++) {
-        if (STRING_ELT(path, i) == NA_STRING) {
+        cs = STRING_ELT(path, i);
+        if (cs == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
             continue;
         }
 
 
-        ptr = R_ExpandFileName(Rf_translateCharUTF8(STRING_ELT(path, i)));
-        nchar = strlen(ptr);
+        str = R_CHAR(cs);
+        nchar = strlen(str);
         if (nchar == 0) {
             continue;
         }
 
 
-        drivewidth = _drive_width(windows, ptr, nchar);
+        drivewidth = _drive_width_no_tilde(windows, str);
         if (drivewidth == nchar) {  /* pathspec is 0 bytes long */
             if ((windows) && drivewidth == 2) {
                 char _buf[4];
-                _buf[0] = ptr[0];
-                _buf[1] = ptr[1];
+                _buf[0] = str[0];
+                _buf[1] = str[1];
                 _buf[2] = '.';
                 _buf[3] = '\0';
-                SET_STRING_ELT(value, i, Rf_mkCharCE(_buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(_buf, Rf_getCharCE(cs)));
             }
             else {
-                SET_STRING_ELT(value, i, Rf_mkCharCE(ptr, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(str, Rf_getCharCE(cs)));
             }
             continue;
         }
@@ -224,7 +232,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
         char _buf[nchar + 1];  /* allocate a buffer to hold the dirname */
         buf = _buf;
-        strcpy(buf, ptr);
+        strcpy(buf, str);
 
 
         pathspec = buf + drivewidth;  /* point to the start of the pathspec */
@@ -266,7 +274,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
             /* if the pathspec was comprised solely of path separators */
             /* then the dirname is just the whole path                 */
             if (last_char < pathspec) {
-                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
                 skip = 1;
                 break;
             }
@@ -298,7 +306,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
                         if (drivewidth) {
                             *pathspec = '.';
                             *(pathspec + 1) = '\0';
-                            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
+                            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
                         }
                         else {
                             SET_STRING_ELT(value, i, Rf_mkChar("."));
@@ -352,7 +360,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         }
 
 
-        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, CE_UTF8));
+        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
     }
 
 
