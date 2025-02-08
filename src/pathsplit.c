@@ -13,28 +13,27 @@ SEXP path_split(int windows, int length1, SEXP args)
 
 
     int n = LENGTH(path);
-    if ((length1) && n != 1)
+    if (length1 && n != 1)
         Rf_error(_("'%s' must be a character string"), "path");
 
 
     SEXP value = Rf_allocVector(VECSXP, n);
     Rf_protect(value);
     for (int i = 0; i < n; i++) {
-        SEXP path0 = STRING_ELT(path, i);
-        if (path0 == NA_STRING) {
+        SEXP cs = STRING_ELT(path, i);
+        if (cs == NA_STRING) {
             SET_VECTOR_ELT(value, i, Rf_ScalarString(NA_STRING));
             continue;
         }
-        if (path0 == R_BlankString) {
+        if (cs == R_BlankString) {
             SET_VECTOR_ELT(value, i, Rf_allocVector(STRSXP, 0));
             continue;
         }
-        const char *str = R_CHAR(path0);
+        const char *str = R_CHAR(cs);
+        cetype_t enc = Rf_getCharCE(cs);
+        int nchar = (int) strlen(str);
         int nchar_scheme = is_url(str);
         if (nchar_scheme) {
-            str = Rf_translateCharUTF8(path0);
-            int nchar = (int) strlen(str);
-            cetype_t enc = CE_UTF8;
             const char *p = strchr(str + nchar_scheme, '/');
             if (p == NULL) {
                 SET_VECTOR_ELT(value, i, Rf_ScalarString(Rf_mkCharLenCE(str, nchar, enc)));
@@ -67,10 +66,7 @@ SEXP path_split(int windows, int length1, SEXP args)
             }
         }
         else {
-            str = Rf_translateChar(path0);
-            int nchar = (int) strlen(str);
-            cetype_t enc = CE_NATIVE;
-            int drivewidth = _drive_width(windows, str, nchar);
+            int drivewidth = _drive_width(windows, str);
             const char *p = str + drivewidth;
             const char *end = str + nchar;
             int nstrings = 0;
@@ -230,7 +226,7 @@ SEXP path_split(int windows, int length1, SEXP args)
     }
 
 
-    if ((length1)) value = VECTOR_ELT(value, 0);
+    if (length1) value = VECTOR_ELT(value, 0);
     Rf_unprotect(1);
     return value;
 }
@@ -316,7 +312,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
             SEXP xptr = x;
             for (int i = 0; i < n; i++, xptr = CDR(xptr)) {
                 if (TYPEOF(CAR(xptr)) != STRSXP)
-                    Rf_error("%s, elements must be character vectors", _("invalid first argument"));
+                    Rf_error("invalid first argument, elements must be character vectors");
             }
         }
         else if (Rf_isVectorList(x)) {
@@ -325,7 +321,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
             /* verify that each element is a character vector */
             for (int i = 0; i < n; i++) {
                 if (TYPEOF(VECTOR_ELT(x, i)) != STRSXP)
-                    Rf_error("%s, elements must be character vectors", _("invalid first argument"));
+                    Rf_error("invalid first argument, elements must be character vectors");
             }
         }
         else if (TYPEOF(x) == STRSXP) {
@@ -354,51 +350,79 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     Rboolean ispairlist = Rf_isPairList(x);
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value); nprotect++;
+
+
+    Rboolean allLatin1, anyLatin1, use_UTF8, use_Bytes;
+
+
     for (int i = 0; i < n; i++) {
-        SEXP x0;
+        SEXP path;
         if (ispairlist) {
-            x0 = CAR(x);
+            path = CAR(x);
             x = CDR(x);
         }
         else {
-            x0 = VECTOR_ELT(x, i);
+            path = VECTOR_ELT(x, i);
         }
 
 
-        int nstrings = LENGTH(x0);
+        int nstrings = LENGTH(path);
         if (nstrings == 0) {
             continue;
         }
         if (nstrings == 1) {
-            SET_STRING_ELT(value, i, STRING_ELT(x0, 0));
+            SET_STRING_ELT(value, i, STRING_ELT(path, 0));
             continue;
         }
 
 
-        unsigned int pwidth = 0;
-        SEXP x00 = STRING_ELT(x0, 0);
-        const char *str = R_CHAR(x00);
-        Rboolean translate2utf8 = is_url(str);
-        cetype_t enc = (translate2utf8 ? CE_UTF8 : CE_NATIVE);
+        anyLatin1 = FALSE; allLatin1 = TRUE; use_UTF8 = FALSE; use_Bytes = FALSE;
+        SEXP cs;
 
 
         for (int j = 0; j < nstrings; j++) {
-            x00 = STRING_ELT(x0, j);
-            str = (translate2utf8 ? Rf_translateCharUTF8(x00) :
-                                    Rf_translateChar(x00));
-            pwidth += (int) strlen(str);
+            cs = STRING_ELT(path, j);
+            if (IS_BYTES(cs)) { use_Bytes = TRUE; break; }
+            if (!use_UTF8) {
+                if (IS_UTF8(cs)) use_UTF8 = TRUE;
+                else {
+                    allLatin1 = allLatin1 && (IS_ASCII(cs) || IS_LATIN1(cs));
+                    anyLatin1 = anyLatin1 || IS_LATIN1(cs);
+                }
+            }
+        }
+
+
+        int pwidth = 0;
+        for (int j = 0; j < nstrings; j++) {
+            cs = STRING_ELT(path, j);
+            if (use_Bytes)
+                pwidth += (int) strlen(R_CHAR(cs));
+            else if (use_UTF8)
+                pwidth += (int) strlen(Rf_translateCharUTF8(cs));
+            else if (anyLatin1 && allLatin1)
+                pwidth += (int) strlen(R_CHAR(cs));
+            else
+                pwidth += (int) strlen(Rf_translateChar(cs));
         }
         /* a slash between each string plus a nul-terminating byte */
-        pwidth += nstrings;
+        pwidth += (int) nstrings;
 
 
         char _buf[pwidth];
         char *buf = _buf;
 
 
-        x00 = STRING_ELT(x0, 0);
-        str = (translate2utf8 ? Rf_translateCharUTF8(x00) :
-                                Rf_translateChar(x00));
+        cs = STRING_ELT(path, 0);
+        const char *str;
+        if (use_Bytes)
+            str = R_CHAR(cs);
+        else if (use_UTF8)
+            str = Rf_translateCharUTF8(cs);
+        else if (anyLatin1 && allLatin1)
+            str = R_CHAR(cs);
+        else
+            str = Rf_translateChar(cs);
         int nchar = (int) strlen(str);
 
 
@@ -437,9 +461,15 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
 
         for (int j = 1; j < nstrings; j++) {
-            x00 = STRING_ELT(x0, j);
-            str = (translate2utf8 ? Rf_translateCharUTF8(x00) :
-                                    Rf_translateChar(x00));
+            cs = STRING_ELT(path, j);
+            if (use_Bytes)
+                str = R_CHAR(cs);
+            else if (use_UTF8)
+                str = Rf_translateCharUTF8(cs);
+            else if (anyLatin1 && allLatin1)
+                str = R_CHAR(cs);
+            else
+                str = Rf_translateChar(cs);
             int nchar = (int) strlen(str);
 
 
@@ -453,6 +483,10 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
 
         *buf = '\0';
+        cetype_t enc = CE_NATIVE;
+        if (use_Bytes) enc = CE_BYTES;
+        else if (use_UTF8) enc = CE_UTF8;
+        else if (anyLatin1 && allLatin1) enc = CE_LATIN1;
         SET_STRING_ELT(value, i, Rf_mkCharCE(_buf, enc));
     }
 

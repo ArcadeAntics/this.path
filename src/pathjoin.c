@@ -94,10 +94,8 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
                  */
                 SET_USE(info[i]);
                 if (!use_Bytes) {
-                    if (IS_BYTES(cs)) { use_Bytes = TRUE; use_UTF8 = FALSE; }
-                    else if (!use_UTF8) {
-                        if (IS_UTF8(cs)) use_UTF8 = TRUE;
-                    }
+                    if (IS_BYTES(cs)) use_Bytes = TRUE;
+                    else if (!use_UTF8 && IS_UTF8(cs)) use_UTF8 = TRUE;
                 }
             }
 
@@ -223,10 +221,8 @@ void windows_path_join(SEXP x, int x_length, int commonLength, SEXP value)
                          */
                         SET_USE(info[i]);
                         if (!maybe_use_Bytes) {
-                            if (IS_BYTES(maybe_cs)) { maybe_use_Bytes = TRUE; maybe_use_UTF8 = FALSE; }
-                            else if (!maybe_use_UTF8) {
-                                if (IS_UTF8(maybe_cs)) maybe_use_UTF8 = TRUE;
-                            }
+                            if (IS_BYTES(maybe_cs)) maybe_use_Bytes = TRUE;
+                            else if (!maybe_use_UTF8 && IS_UTF8(maybe_cs)) maybe_use_UTF8 = TRUE;
                         }
 
 
@@ -611,10 +607,8 @@ void unix_path_join(SEXP x, int x_length, int commonLength, SEXP value)
             len = LENGTH(VECTOR_ELT(x, i));
             cs = STRING_ELT(VECTOR_ELT(x, i), j % len);
             if (!use_Bytes) {
-                if (IS_BYTES(cs)) { use_Bytes = TRUE; use_UTF8 = FALSE; }
-                else if (!use_UTF8) {
-                    if (IS_UTF8(cs)) use_UTF8 = TRUE;
-                }
+                if (IS_BYTES(cs)) use_Bytes = TRUE;
+                else if (!use_UTF8 && IS_UTF8(cs)) use_UTF8 = TRUE;
             }
 
 
