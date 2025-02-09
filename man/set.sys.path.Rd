@@ -64,7 +64,7 @@ set.sys.path(file,
     ignore.stdin = ignore.all,
     ignore.url = ignore.all,
     ignore.file.uri = ignore.all,
-    Function = NULL, ofile)
+    Function = NULL, ofile, delayed = FALSE)
 
 set.env.path(envir, matchThisEnv = getOption("topLevelEnvironment"))
 
@@ -161,6 +161,11 @@ wrap.source(expr,
     \ifelse{html}{\codelink2{base:connections}{connection}}{connection} or a
     character string specifying the original file argument. This overwrites the
     value returned by \code{\link{sys.path}(original = TRUE)}.}
+
+  \item{delayed}{\code{TRUE} or \code{FALSE}; should the
+    \ifelse{html}{\codelink2{base:normalizePath}{normalization}}{normalization}
+    of the path be delayed? Mostly for use with \code{\link{make_fix_funs}()}
+    and similar.}
 
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level

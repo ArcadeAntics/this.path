@@ -11,7 +11,14 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
       and appropriately marks the encodings of its output, similar to
       paste().
 
+    * path.split() and path.unsplit() now respect the declared
+      encodings of their arguments and appropriately mark the encodings
+      of their outputs.
+
   NEW FEATURES:
+
+    * set.sys.path() now accepts argument 'delayed' indicating whether
+      the normalization of the path should be delayed.
 
     * make_fix_funs() now accepts argument 'delayed' indicating whether
       the normalization of 'file' should be delayed.

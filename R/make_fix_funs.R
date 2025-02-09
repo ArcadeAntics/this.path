@@ -12,31 +12,10 @@ path.functions <- .removeSource_from_inner_functions(
     }
     else if (delayed) {
         ofile <- file
-        delayedAssign(
-            "file",
-            fun(),
-            evalq(envir = new.env(), {
-                if (.is_abs_path(ofile)) {
-                    fun <- function() {
-                        (set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
-                            allow.file.uri = TRUE))
-                    }
-                }
-                else {
-                    wd <- getwd()
-                    fun <- function() {
-                        owd <- getwd()
-                        if (!is.null(owd) && !is.null(wd) && !identical(owd, wd)) {
-                            on.exit(setwd(owd))
-                            setwd(wd)
-                        }
-                        (set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
-                            allow.file.uri = TRUE))
-                    }
-                }
-                environment()
-            })
-        )
+        file <- set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
+            allow.file.uri = TRUE, delayed = TRUE)
+        ## remove the variable(s) created by set.sys.path()
+        unset.sys.path()
         delayedAssign("directory", .dir(file))
         `attr<-`(environment(), "name", paste0("make_fix_funs:", ofile))
     }

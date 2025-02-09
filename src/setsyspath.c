@@ -659,6 +659,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
     flag_declarations;
     flag_definitions;
     SEXP Function = CAR(args); args = CDR(args);
+    int delayed = asFlag(CAR(args), "delayed"); args = CDR(args);
 
 
     SEXP source = NULL;
@@ -792,6 +793,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 
 
     SEXP returnvalue = R_NilValue;
+
     set_documentcontext(
         /* call                   */ R_CurrentExpression,
         /* sym                    */ fileSymbol,
@@ -799,11 +801,11 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         /* assign_here            */ frame,
         /* assign_as_binding      */ TRUE,
         /* normalize_action       */ NA_FIX_DIR,
-        /* forcepromise           */ TRUE,
+        /* forcepromise           */ (delayed ? FALSE : TRUE),
         /* assign_returnvalue     */ TRUE,
-        /* maybe_chdir            */ FALSE,
-        /* getowd                 */ NULL,
-        /* hasowd                 */ FALSE,
+        /* maybe_chdir            */ (delayed ? TRUE : FALSE),
+        /* getowd                 */ (delayed ? Rf_eval(expr_getwd, R_EmptyEnv) : NULL),
+        /* hasowd                 */ (delayed ? (owd) != R_NilValue : FALSE),
         /* ofilearg               */ ofilearg,
         character_only, conv2utf8, allow_blank_string,
         allow_clipboard, allow_stdin, allow_url, allow_file_uri,
@@ -833,7 +835,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 
 SEXP do_set_sys_path do_formals
 {
-    do_start_no_call_op("set_sys_path", 21);
+    do_start_no_call_op("set_sys_path", 22);
     return set_path(SPA_SET_SYS_PATH, args, rho);
 }
 

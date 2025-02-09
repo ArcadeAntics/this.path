@@ -24,28 +24,28 @@ set.sys.path <- function (file, path.only = FALSE, character.only = path.only,
     allow.servsockconn = !file.only, allow.customConnection = !file.only,
     ignore.all = FALSE, ignore.blank.string = ignore.all, ignore.clipboard = ignore.all,
     ignore.stdin = ignore.all, ignore.url = ignore.all, ignore.file.uri = ignore.all,
-    Function = NULL, ofile)
+    Function = NULL, ofile, delayed = FALSE)
 .External2(.C_set_sys_path, character.only, conv2utf8, allow.blank.string,
     allow.clipboard, allow.stdin, allow.url, allow.file.uri,
     allow.unz, allow.pipe, allow.terminal, allow.textConnection,
     allow.rawConnection, allow.sockconn, allow.servsockconn,
     allow.customConnection, ignore.blank.string, ignore.clipboard,
-    ignore.stdin, ignore.url, ignore.file.uri, Function)
+    ignore.stdin, ignore.url, ignore.file.uri, Function, delayed)
 
 
 local({
     f1 <- formals(wrap.source)
     f2 <- formals(set.sys.path)
     stopifnot(
-        length(f1) + 2L == length(f2),
-        identical(f1[-1L], f2[2L:(length(f2) - 2L)]),
+        length(f1) + 3L == length(f2),
+        identical(f1[-1L], f2[2L:(length(f2) - 3L)]),
         TRUE
     )
     b1 <- body(wrap.source)
     b2 <- body(set.sys.path)
     stopifnot(
-        length(b1) + 1L == length(b2),
-        identical(b1[-2L], b2[-c(2L, length(b2))])
+        length(b1) + 2L == length(b2),
+        identical(b1[-2L], b2[-c(2L, length(b2) - (1:0))])
     )
 })
 

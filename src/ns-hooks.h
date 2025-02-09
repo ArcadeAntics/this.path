@@ -39,7 +39,8 @@ extern SEXP expr_commandArgs                              ,
             expr__toplevel_nframe                         ,
             expr__isMethodsDispatchOn                     ,
             expr_UseMethod_lengths                        ,
-            expr_makePROMISE                              ;
+            expr_makePROMISE                              ,
+            expr_getwd                                    ;
 
 
 #endif /* R_THISPATH_NSHOOKS_H */

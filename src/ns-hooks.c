@@ -61,7 +61,9 @@ SEXP expr_commandArgs                               = NULL,
      /* UseMethod("lengths") */
      expr_UseMethod_lengths                         = NULL,
      /* delayedAssign("x", NULL, R_EmptyEnv, makePROMISE_environment) */
-     expr_makePROMISE                               = NULL;
+     expr_makePROMISE                               = NULL,
+     /* getwd() */
+     expr_getwd                                     = NULL;
 
 
 LibExtern Rboolean mbcslocale;
@@ -923,6 +925,13 @@ SEXP do_onLoad do_formals
         Rf_error(_("object '%s' of mode '%s' was not found"), "delayedAssign", "function");
 
 
+    expr_getwd = Rf_lcons(getFromBase(Rf_install("getwd")), R_NilValue);
+    R_PreserveObject(expr_getwd);
+    if (!Rf_isFunction(CAR(expr_getwd)))
+        Rf_error(_("object '%s' of mode '%s' was not found"),
+            "getwd", "function");
+
+
     {
         /* if package:utils is loaded, call '.fix_utils' */
         if (!ISUNBOUND(Rf_findVarInFrame(R_NamespaceRegistry, utilsSymbol))) {
@@ -1083,6 +1092,7 @@ SEXP do_onUnload do_formals
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
     maybe_release(expr_makePROMISE);
+    maybe_release(expr_getwd);
 
 
     return R_NilValue;

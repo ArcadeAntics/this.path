@@ -298,8 +298,12 @@ do {                                                           \
                 }                                              \
                 else assign_file_uri(NULL, NULL, ofile, file, documentcontext, normalize_action);\
                 if (assign_returnvalue) {                      \
-                    returnvalue = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
-                    SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
+                    if (forcepromise) {                        \
+                        returnvalue = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
+                        SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
+                    } else {                                   \
+                        returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
+                    }                                          \
                 }                                              \
                 else if (forcepromise)                         \
                     getInFrame(fileSymbol, documentcontext, FALSE);\
@@ -325,8 +329,12 @@ do {                                                           \
             }                                                  \
             else assign_default(NULL, NULL, ofile, file, documentcontext, normalize_action);\
             if (assign_returnvalue) {                          \
-                returnvalue = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
-                SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
+                if (forcepromise) {                            \
+                    returnvalue = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
+                    SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
+                } else {                                       \
+                    returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
+                }                                              \
             }                                                  \
             else if (forcepromise)                             \
                 getInFrame(fileSymbol, documentcontext, FALSE);\
@@ -349,7 +357,16 @@ do {                                                           \
             get_description_and_class;                         \
             if (streql(klass, "file")) {                       \
                 assign_file_uri2(NULL, NULL, description, documentcontext, normalize_action);\
-                if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
+                if (assign_returnvalue) {                      \
+                    if (forcepromise) {                        \
+                        getInFrame(fileSymbol, documentcontext, FALSE);\
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    } else {                                   \
+                        returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
+                    }                                          \
+                }                                              \
+                else if (forcepromise)                         \
+                    getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
             else if (streql(klass, "gzfile") ||                \
                      streql(klass, "bzfile") ||                \
@@ -357,14 +374,25 @@ do {                                                           \
                      streql(klass, "fifo"  ))                  \
             {                                                  \
                 assign_default(NULL, NULL, Rf_ScalarString(description), description, documentcontext, normalize_action);\
-                if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
+                if (assign_returnvalue) {                      \
+                    if (forcepromise) {                        \
+                        getInFrame(fileSymbol, documentcontext, FALSE);\
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    } else {                                   \
+                        returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
+                    }                                          \
+                }                                              \
+                else if (forcepromise)                         \
+                    getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
                      streql(klass, "url-wininet"))             \
             {                                                  \
                 if (allow_url) {                               \
                     assign_url(Rf_ScalarString(description), description, documentcontext);\
-                    if (forcepromise) getInFrame(fileSymbol, documentcontext, FALSE);\
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a URL connection", EncodeChar(PRINTNAME(sym)));\
@@ -389,49 +417,80 @@ do {                                                           \
                     INCREMENT_NAMED_defineVar(errcndSymbol              , ThisPathInZipFileError(R_NilValue, R_EmptyEnv, description), documentcontext);\
                     INCREMENT_NAMED_defineVar(for_msgSymbol             , Rf_ScalarString(description)                               , documentcontext);\
                                  Rf_defineVar(associated_with_fileSymbol, R_TrueValue                                                , documentcontext);\
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (is_clipboard(klass)) {                    \
-                if (allow_clipboard)                           \
+                if (allow_clipboard) {                         \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a clipboard connection", EncodeChar(PRINTNAME(sym)));\
             }                                                  \
             else if (streql(klass, "pipe")) {                  \
-                if (allow_pipe)                                \
+                if (allow_pipe) {                              \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "terminal")) {              \
-                if (allow_terminal)                            \
+                if (allow_terminal) {                          \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "textConnection")) {        \
-                if (allow_textConnection)                      \
+                if (allow_textConnection) {                    \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "rawConnection")) {         \
-                if (allow_rawConnection)                       \
+                if (allow_rawConnection) {                     \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "sockconn")) {              \
-                if (allow_sockconn)                            \
+                if (allow_sockconn) {                          \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
             else if (streql(klass, "servsockconn")) {          \
-                if (allow_servsockconn)                        \
+                if (allow_servsockconn) {                      \
                     documentcontext = R_EmptyEnv;              \
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
+                }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
             }                                                  \
@@ -448,14 +507,14 @@ do {                                                           \
                      */                                        \
                     INCREMENT_NAMED_defineVar(errcndSymbol , UnrecognizedConnectionClassError, documentcontext);\
                     INCREMENT_NAMED_defineVar(for_msgSymbol, Rf_ScalarString(description)    , documentcontext);\
+                    if (assign_returnvalue) {                  \
+                        returnvalue = Rf_protect(ofile); nprotect++;\
+                    }                                          \
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\
                         EncodeChar(PRINTNAME(sym)), EncodeChar(Rf_mkChar(klass)));\
             }                                                  \
-        }                                                      \
-        if (assign_returnvalue) {                              \
-            returnvalue = Rf_protect(ofile); nprotect++;       \
         }                                                      \
     }                                                          \
     if (documentcontext != R_EmptyEnv) {                       \
