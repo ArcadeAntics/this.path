@@ -793,7 +793,6 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 
 
     SEXP returnvalue = R_NilValue;
-
     set_documentcontext(
         /* call                   */ R_CurrentExpression,
         /* sym                    */ fileSymbol,
