@@ -14,10 +14,10 @@
   \code{ext<-()} sets the extension of a path.
 }
 \usage{
-splitext(path, compression = FALSE)
-removeext(path, compression = FALSE)
-ext(path, compression = FALSE)
-ext(path, compression = FALSE) <- value
+splitext(path, compression = FALSE, expand = TRUE)
+removeext(path, compression = FALSE, expand = TRUE)
+ext(path, compression = FALSE, expand = TRUE)
+ext(path, compression = FALSE, expand = TRUE) <- value
 }
 \arguments{
   \item{path}{character vector, containing path names.}
@@ -26,13 +26,13 @@ ext(path, compression = FALSE) <- value
     and \string{.xz} be taken into account when removing / / getting an
     extension?}
 
+  \item{expand}{logical. Should tilde (see \codelink2{base}{path.expand}) be
+    expanded?}
+
   \item{value}{a character vector, typically of length
     \ifelse{text}{1}{\code{1}} or \code{length(path)}, or \code{NULL}.}
 }
 \details{
-  Tilde-expansion (see \codelink4{?}{base}{path.expand}{()}) of the path will
-  be performed.
-
   Trailing path separators are removed before dissecting the path.
 
   Except for \code{path <- NA_character_}, it will always be true that

@@ -30,8 +30,8 @@ dirname2 <- function (path, expand = TRUE)
 .External2(.C_unix_splitext, path, compression)
 
 
-splitext <- function (path, compression = FALSE)
-.External2(.C_splitext, path, compression)
+splitext <- function (path, compression = FALSE, expand = TRUE)
+.External2(.C_splitext, if (expand) path.expand(path) else path, compression)
 
 
 .windows_removeext <- function (path, compression = FALSE)
@@ -42,8 +42,8 @@ splitext <- function (path, compression = FALSE)
 .External2(.C_unix_removeext, path, compression)
 
 
-removeext <- function (path, compression = FALSE)
-.External2(.C_removeext, path, compression)
+removeext <- function (path, compression = FALSE, expand = TRUE)
+.External2(.C_removeext, if (expand) path.expand(path) else path, compression)
 
 
 .windows_ext <- function (path, compression = FALSE)
@@ -54,8 +54,8 @@ removeext <- function (path, compression = FALSE)
 .External2(.C_unix_ext, path, compression)
 
 
-ext <- function (path, compression = FALSE)
-.External2(.C_ext, path, compression)
+ext <- function (path, compression = FALSE, expand = TRUE)
+.External2(.C_ext, if (expand) path.expand(path) else path, compression)
 
 
 `.windows_ext<-` <- function (path, compression = FALSE, value)
@@ -66,8 +66,12 @@ ext <- function (path, compression = FALSE)
 .External2(`.C_unix_ext<-`, path, compression, value)
 
 
-`ext<-` <- function (path, compression = FALSE, value)
-.External2(`.C_ext<-`, path, compression, value)
+`ext<-` <- function (path, compression = FALSE, expand = TRUE, value)
+{
+    if (expand)
+        path[] <- path.expand(path)
+    .External2(`.C_ext<-`, path, compression, value)
+}
 
 
 .windows_path_join <- function (...)
