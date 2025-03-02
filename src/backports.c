@@ -853,7 +853,7 @@ SEXP R_NewEnv(SEXP enclos, int hash, int size)
 #endif
 
 
-#if defined(IS_ASCII)
+#if defined(R_THIS_PATH_NEED_IS_ASCII)
 
 
 int IS_ASCII(SEXP x)

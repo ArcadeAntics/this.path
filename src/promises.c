@@ -199,7 +199,7 @@ SEXP makePROMISE(SEXP expr, SEXP env)
     ptr_SET_PRENV(s, env);
     ptr_SET_PRVALUE(s, R_UnboundValue);
     SET_PRSEEN(s, 0);
-    SET_ATTRIB(s, R_NilValue);
+    CLEAR_ATTRIB(s);
     return s;
 #else
     Rf_eval(expr_makePROMISE, R_EmptyEnv);

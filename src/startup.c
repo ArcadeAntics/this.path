@@ -28,7 +28,7 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
 
     if (check_is_valid_init_file_expr) {
         if (already_set_init_file) return R_FalseValue;
-        return Rf_ScalarLogical(ATTRIB(code) == R_NilValue &&
+        return Rf_ScalarLogical(NO_ATTRIB(code) &&
                                 ptr_PRENV(promise) == R_GlobalEnv
 #if defined(R_THIS_PATH_HAS_PRSEEN)
                                 && PRSEEN(promise) == 0

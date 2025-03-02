@@ -24,10 +24,15 @@ extern SEXP Rf_installTrChar(SEXP x);
 extern void R_removeVarFromFrame(SEXP name, SEXP env);
 
 extern SEXP R_NewEnv(SEXP enclos, int hash, int size);
-#if R_version_less_than(4,1,0) || (!defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0))
-#define IS_ASCII my_IS_ASCII
-#endif
+#if R_version_at_least(4,1,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
 extern int IS_ASCII(SEXP x);
+#elif R_version_at_least(4,5,0)
+#define IS_ASCII Rf_charIsASCII
+#else
+#define R_THIS_PATH_NEED_IS_ASCII
+#define IS_ASCII my_IS_ASCII
+extern int IS_ASCII(SEXP x);
+#endif
 
 extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 
@@ -199,9 +204,6 @@ extern int IS_LATIN1(SEXP x);
 #endif
 
 
-#define ENC_KNOWN(x) (IS_LATIN1((x)) || IS_UTF8((x)))
-
-
 #if R_version_less_than(4,5,0)
 extern SEXP Rf_allocLang(int n);
 extern SEXP R_mkClosure(SEXP formals, SEXP body, SEXP rho);
@@ -211,6 +213,34 @@ extern SEXP R_mkClosure(SEXP formals, SEXP body, SEXP rho);
 #if !defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0)
 #define Rf_isValidStringF my_Rf_isValidStringF
 extern Rboolean Rf_isValidStringF(SEXP);
+#endif
+
+
+#if !defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0)
+#define OBJECT Rf_isObject
+#define IS_S4_OBJECT Rf_isS4
+#endif
+
+
+#if !defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0)
+#define BODY R_ClosureBody
+#define FORMALS R_ClosureFormals
+#define CLOENV R_ClosureEnv
+#endif
+
+
+#if !defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0)
+#define ENCLOS R_ParentEnv
+#endif
+
+
+#if R_version_less_than(4,5,0)
+#define NO_ATTRIB(x) (ATTRIB((x)) == R_NilValue)
+#endif
+
+
+#if R_version_less_than(4,5,0)
+#define CLEAR_ATTRIB(x) (SET_ATTRIB((x), R_NilValue))
 #endif
 
 
