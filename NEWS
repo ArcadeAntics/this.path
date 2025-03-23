@@ -18,10 +18,10 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
   NEW FEATURES:
 
     * set.sys.path() now accepts argument 'delayed' indicating whether
-      the normalization of the path should be delayed.
+      the normalizing of the path should be delayed.
 
     * make_fix_funs() now accepts argument 'delayed' indicating whether
-      the normalization of 'file' should be delayed.
+      the normalizing of 'file' should be delayed.
 
 CHANGES IN this.path 2.6.0 (2024-12-18):
 

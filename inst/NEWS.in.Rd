@@ -18,10 +18,10 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{set.sys.path()} now accepts argument \codeorsQuote{delayed}
-        indicating whether the normalization of the path should be delayed.}
+        indicating whether the normalizing of the path should be delayed.}
 
       \item{\code{make_fix_funs()} now accepts argument \codeorsQuote{delayed}
-        indicating whether the normalization of \codeorsQuote{file} should be
+        indicating whether the normalizing of \codeorsQuote{file} should be
         delayed.}
     }
   }

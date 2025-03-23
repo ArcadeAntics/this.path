@@ -163,9 +163,9 @@ wrap.source(expr,
     value returned by \code{\link{sys.path}(original = TRUE)}.}
 
   \item{delayed}{\code{TRUE} or \code{FALSE}; should the
-    \ifelse{html}{\codelink2{base:normalizePath}{normalization}}{normalization}
-    of the path be delayed? Mostly for use with \code{\link{make_fix_funs}()}
-    and similar.}
+    \ifelse{html}{\codelink2{base:normalizePath}{normalizing}}{normalizing} of
+    the path be delayed? Mostly for use with \code{\link{make_fix_funs}()} and
+    similar.}
 
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level

@@ -22,8 +22,8 @@ path.functions(file, delayed = FALSE, local = FALSE, n = 0,
   \item{file}{a character string giving the pathname of the file or URL.}
 
   \item{delayed}{\code{TRUE} or \code{FALSE}; should the
-    \ifelse{html}{\codelink2{base:normalizePath}{normalization}}{normalization}
-    of \code{file} be delayed?}
+    \ifelse{html}{\codelink2{base:normalizePath}{normalizing}}{normalizing} of
+    \code{file} be delayed?}
 
   \item{local, n, envir, matchThisEnv, srcfile}{See \code{?\link{this.path}()}.}
 }
