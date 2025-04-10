@@ -15,7 +15,7 @@
 
         check = FALSE,
         check_opts = list(
-            ## R CMD check this.path_.tar.gz --no-stop-on-test-error --as-cran
+            ## R CMD check --no-stop-on-test-error --as-cran this.path_
             no_stop_on_test_error = TRUE,
             as_cran = TRUE
         ),
