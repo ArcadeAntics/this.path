@@ -15,6 +15,7 @@
 
         check = FALSE,
         check_opts = list(
+            ## R CMD check this.path_.tar.gz --no-stop-on-test-error --as-cran
             no_stop_on_test_error = TRUE,
             as_cran = TRUE
         ),
@@ -50,7 +51,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming_CRAN_version <- "2.6.0"
+    upcoming_CRAN_version <- "2.7.0"
 
 
     if (!file.exists(this.path::here("tools/maintainers-copy")))
