@@ -1,6 +1,8 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+}
+\section{CHANGES IN VERSION 2.7.0 (2025-04-10)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item{Previously defunct functions \code{set.sys.path.jupyter()} and

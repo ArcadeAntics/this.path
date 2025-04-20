@@ -4,11 +4,13 @@
     essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(  ## this.path
         build_opts = list(
+            ## R CMD build --user=iris .
             user = "iris"
         ),
 
         # INSTALL = FALSE,
         INSTALL_opts = list(
+            ## R CMD INSTALL this.path_
             # html = TRUE, latex = TRUE,
             # with_keep.source = TRUE
         ),
@@ -51,7 +53,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming_CRAN_version <- "2.7.0"
+    upcoming_CRAN_version <- "2.7.1"
 
 
     if (!file.exists(this.path::here("tools/maintainers-copy")))
@@ -288,3 +290,8 @@ local({
 #
 #
 # all(grepl(paste0("^(", .regexps$hexadecimal, ")$"), choices))
+
+
+source("~/PACKAGES/src/repos.R", repos_R <- new.env(parent = baseenv(), hash = TRUE), verbose = FALSE, keep.source = TRUE)
+repos <- repos_R$make_repos("~/PACKAGES")
+# repos$copy_tarball("~/this.path/this.path_2.7.0.1.tar.gz")

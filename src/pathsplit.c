@@ -367,7 +367,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
 
         int nstrings = LENGTH(path);
-        if (nstrings == 0) {
+        if (nstrings <= 0) {
             continue;
         }
         if (nstrings == 1) {

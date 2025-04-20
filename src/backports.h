@@ -197,11 +197,9 @@ extern int IS_UTF8(SEXP x);
 #endif
 
 
-#if R_version_less_than(4,1,0) || R_version_at_least(4,4,0) || !defined(R_THIS_PATH_DEVEL)
+/* has never been defined for use, what was I thinking???
+extern int IS_LATIN1(SEXP x); */
 #define IS_LATIN1(x) (Rf_getCharCE((x)) == CE_LATIN1)
-#else
-extern int IS_LATIN1(SEXP x);
-#endif
 
 
 #if R_version_less_than(4,5,0)

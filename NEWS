@@ -2,6 +2,8 @@
 
 CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
+CHANGES IN this.path 2.7.0 (2025-04-10):
+
   SIGNIFICANT USER-VISIBLE CHANGES:
 
     * Previously defunct functions set.sys.path.jupyter() and
