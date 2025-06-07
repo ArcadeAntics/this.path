@@ -200,7 +200,7 @@
     if (is.null(context)) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError("R is running from RStudio with no documents open\n (or source document has no path)"))
+        else stop(.ThisPathNotExistsError("R is running from RStudio with no documents open\n (or source document has no associated path)"))
     }
     else if (contents) {
         if (verbose)
@@ -235,11 +235,11 @@
         stop(.ThisPathNotFoundError(
             if (verbose) {
                 if (active)
-                    "active document in RStudio does not exist"
+                    "active document in RStudio has no associated path (has yet to be saved)"
                 else
-                    "source document in RStudio does not exist"
+                    "source document in RStudio has no associated path (has yet to be saved)"
             }
-            else "document in RStudio does not exist"
+            else "document in RStudio has no associated path (has yet to be saved)"
         ))
     }
 }
@@ -278,7 +278,7 @@
     if (is.null(context)) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError("R is running from Positron with no documents open\n (or document has no path)"))
+        else stop(.ThisPathNotExistsError("R is running from Positron with no documents open\n (or document has no associated path)"))
     }
     else if (contents) {
         if (verbose) cat("Source: document in Positron\n")
@@ -289,7 +289,7 @@
     else if (context[["document"]][["is_untitled"]]) {
         if (for.msg)
             context[["document"]][["path"]]
-        else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+        else stop(.ThisPathNotFoundError("document in Positron has no associated path (has yet to be saved)"))
     }
     else if (nzchar(path <- context[["document"]][["path"]])) {
         if (.OS_windows)
@@ -301,7 +301,7 @@
     }
     else if (for.msg)
         gettext("Untitled", domain = "RGui", trim = FALSE)
-    else stop(.ThisPathNotFoundError("document in Positron does not exist"))
+    else stop(.ThisPathNotFoundError("document in Positron has no associated path (has yet to be saved)"))
 }
 
 
@@ -364,7 +364,7 @@
     if (is.null(context)) {
         if (for.msg)
             NA_character_
-        else stop(.ThisPathNotExistsError("R is running from VSCode with no documents open\n (or document has no path)"))
+        else stop(.ThisPathNotExistsError("R is running from VSCode with no documents open\n (or document has no associated path)"))
     }
     else if (contents) {
         if (verbose) cat("Source: document in VSCode\n")
@@ -373,7 +373,7 @@
     else if (context[["id"]][["scheme"]] == "untitled") {
         if (for.msg)
             context[["path"]]
-        else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
+        else stop(.ThisPathNotFoundError("document in VSCode has no associated path (has yet to be saved)"))
     }
     else if (nzchar(path <- context[["path"]])) {
         if (.OS_windows)
@@ -385,7 +385,7 @@
     }
     else if (for.msg)
         gettext("Untitled", domain = "RGui", trim = FALSE)
-    else stop(.ThisPathNotFoundError("document in VSCode does not exist"))
+    else stop(.ThisPathNotFoundError("document in VSCode has no associated path (has yet to be saved)"))
 }
 })
 
@@ -674,12 +674,12 @@ set.jupyter.path <- function (...)
     else if (.scalar_streql(rval, "untitled-active")) {
         if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop(.ThisPathNotFoundError("active document in Emacs does not exist"))
+        else stop(.ThisPathNotFoundError("active document in Emacs has no associated path (has yet to be saved)"))
     }
     else if (.scalar_streql(rval, "untitled-source")) {
         if (for.msg)
             gettext("Untitled", domain = "RGui", trim = FALSE)
-        else stop(.ThisPathNotFoundError("source document in Emacs does not exist"))
+        else stop(.ThisPathNotFoundError("source document in Emacs has no associated path (has yet to be saved)"))
     }
     else if (.scalar_streql(rval, "nil")) {
         if (for.msg)

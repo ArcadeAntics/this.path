@@ -169,8 +169,8 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
                 RprintRguiMessage;
                 return FALSE;
             }
-            Rf_error(EnumActive ? "active document in Rgui does not exist" :
-                                  "source document in Rgui does not exist");
+            Rf_error(EnumActive ? "active document in Rgui has no associated path (has yet to be saved)" :
+                                  "source document in Rgui has no associated path (has yet to be saved)");
         }
     }
 
