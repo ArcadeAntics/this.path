@@ -127,9 +127,8 @@
 ## they are identical.
 ##
 ## notice that "PRENV" is set to `NULL` once the promise has been evaluated,
-## it's not very important right now to understand why, this has to do with
-## garbage collection. this allows the garbage collector to collect
-## environments which are no longer in use.
+## this has to do with garbage collection. it allows the garbage collector to
+## collect environments which are no longer in use.
 ##
 ## "PRSEEN" was mentioned earlier, it is an integer used to determine if a
 ## promise leads to infinite recursion or has been interrupted and is being
