@@ -79,10 +79,45 @@ l10n_info()[[3L]]
 }
 
 
+.fix_utils_makeRweaveLatexCodeRunner <- function (pkgname, pkgpath)
+{
+    ## the arguments are unused, they only exist to match the arguments
+    ## provided to a user hook (see loadNamespace, specifically runUserHook)
+    nsname <- "utils"
+    ns <- .getNamespace(nsname)
+    sym <- "makeRweaveLatexCodeRunner"
+    fun <- ns[[sym]]
+    if (typeof(fun) == "closure" &&
+        is.call(b <- body(fun)) && length(b) == 2L &&
+        is.call(b_2 <- b[[2L]]) && length(b_2) >= 3L &&
+        is.call(b_2_3 <- b_2[[3L]]) && length(b_2_3) >= 34L &&
+        is.call(b_2_3_33 <- b_2_3[[indx33 <- 33L + identical(b_2_3[[29L]], quote(refline <- NA))]]) && length(b_2_3_33) >= 4L &&
+        is.call(b_2_3_33_4 <- b_2_3_33[[4L]]) && length(b_2_3_33_4) >= 6L &&
+        is.call(b_2_3_33_4_6 <- b_2_3_33_4[[6L]]) && length(b_2_3_33_4_6) >= 3L &&
+        is.call(b_2_3_33_4_6_3 <- b_2_3_33_4_6[[3L]]) && length(b_2_3_33_4_6_3) >= 4L &&
+        is.call(b_2_3_33_4_6_3_4 <- b_2_3_33_4_6_3[[4L]]) && length(b_2_3_33_4_6_3_4) >= 3L &&
+        is.call(b_2_3_33_4_6_3_4_3 <- b_2_3_33_4_6_3_4[[3L]]) && length(b_2_3_33_4_6_3_4_3) >= 2L &&
+        is.call(b_2_3_33_4_6_3_4_3_2 <- b_2_3_33_4_6_3_4_3[[2L]]) && length(b_2_3_33_4_6_3_4_3_2) >= 2L &&
+        identical(b_2_3_33_4_6_3_4_3_2[[2L]], quote(ce)))
+    {
+        b[[c(2L, 3L, indx33, 4L, 6L, 3L, 4L, 3L, 2L, 2L)]] <- quote(chunkexps[nce])
+        body(fun) <- b
+        if (bindingIsLocked(sym, ns)) {
+            (unlockBinding)(sym, ns)
+            assign(sym, fun, envir = ns, inherits = FALSE)
+            lockBinding(sym, ns)
+        }
+        else assign(sym, fun, envir = ns, inherits = FALSE)
+    }
+    invisible()
+}
+
+
 .fix_utils <- function (pkgname, pkgpath)
 {
     .fix_utils_Sweave(pkgname, pkgpath)
     .fix_utils_RweaveLatexRuncode(pkgname, pkgpath)
+    .fix_utils_makeRweaveLatexCodeRunner(pkgname, pkgpath)
 }
 
 
@@ -115,7 +150,7 @@ l10n_info()[[3L]]
 {
     hookName <- packageEvent("utils")
     old <- getHook(hookName)
-    new <- list(.fix_utils_Sweave, .fix_utils_RweaveLatexRuncode)
+    new <- list(.fix_utils_Sweave, .fix_utils_RweaveLatexRuncode, .fix_utils_makeRweaveLatexCodeRunner)
     if (!length(old))
         setHook(hookName, new, "prepend")
     else if (any(i <- !(new %in% old)))
