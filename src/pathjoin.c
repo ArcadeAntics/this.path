@@ -5,8 +5,8 @@
 #define debug 0
 
 
-#define NEED_TRAILING_SLASH_MASK   (1<<1)
-#define USE_MASK                   (1<<2)
+#define NEED_TRAILING_SLASH_MASK   (1<<0)
+#define USE_MASK                   (1<<1)
 #define NEED_TRAILING_SLASH(x)     ((x) & NEED_TRAILING_SLASH_MASK)
 #define SET_NEED_TRAILING_SLASH(x) ((x) |= NEED_TRAILING_SLASH_MASK)
 #define IS_USE(x)                  ((x) & USE_MASK)
