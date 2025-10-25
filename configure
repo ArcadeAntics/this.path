@@ -1,1 +1,1 @@
-"${R_HOME}/bin/Rscript" --default-packages=NULL --vanilla ./tools/configure.R
+"${R_HOME}/bin/Rscript" --default-packages=NULL --no-save --no-restore ./tools/configure.R
