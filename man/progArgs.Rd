@@ -98,11 +98,15 @@ FILE.R <- tempfile(fileext = ".R")
     source(FILE.R, local = TRUE, verbose = FALSE),
     letters[6:10], pi, exp(1)
 )
-@R_PACKAGE_NAME@:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE.R,
-    @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())))
-@R_PACKAGE_NAME@:::.Rscript(c("--default-packages=NULL", "--vanilla",
+@R_PACKAGE_NAME@:::.Rscript(c(
+    "--default-packages=NULL", "--no-save", "--no-restore", FILE.R,
+    @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())
+))
+@R_PACKAGE_NAME@:::.Rscript(c(
+    "--default-packages=NULL", "--no-save", "--no-restore",
     rbind("-e", readLines(FILE.R)[-2L]),
-    @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())))
+    @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())
+))
 
 
 # ## with R >= 4.1.0, use the forward pipe operator '|>' to

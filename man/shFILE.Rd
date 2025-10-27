@@ -42,16 +42,16 @@ shFILE(original = FALSE, for.msg = FALSE, default, else.)
 FILE.R <- tempfile(fileext = ".R")
 @R_PACKAGE_NAME@:::.writeCode({
     @R_PACKAGE_NAME@:::.withAutoprint({
-        shFILE(original = TRUE)
-        shFILE()
-        shFILE(default = {
+        @R_PACKAGE_NAME@::shFILE(original = TRUE)
+        @R_PACKAGE_NAME@::shFILE()
+        @R_PACKAGE_NAME@::shFILE(default = {
             stop("since 'FILE.R' will be found,\\n",
                  "this error will not be thrown")
         })
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE.R)
 @R_PACKAGE_NAME@:::.Rscript(
-    c("--default-packages=@R_PACKAGE_NAME@", "--vanilla", FILE.R)
+    c("--default-packages=NULL", "--no-save", "--no-restore", FILE.R)
 )
 unlink(FILE.R)
 
@@ -63,7 +63,7 @@ for (expr in c("shFILE(original = TRUE)",
 {
     cat("\\n\\n")
     @R_PACKAGE_NAME@:::.Rscript(
-        c("--default-packages=@R_PACKAGE_NAME@", "--vanilla", "-e", expr)
+        c("--default-packages=NULL", "--no-save", "--no-restore", "-e", expr)
     )
 }
 }

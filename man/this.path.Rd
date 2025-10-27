@@ -341,7 +341,9 @@ if (requireNamespace("compiler")) {
 }
 
 ## 'this.path()' works with 'Rscript'
-@R_PACKAGE_NAME@:::.Rscript(c("--default-packages=NULL", "--vanilla", FILE1.R))
+@R_PACKAGE_NAME@:::.Rscript(c(
+    "--default-packages=NULL", "--no-save", "--no-restore", FILE1.R
+))
 
 ## 'this.path()' also works when 'source()'-ing a URL
 ## (included tryCatch in case an internet connection is not available)
