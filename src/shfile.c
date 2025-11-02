@@ -191,15 +191,18 @@ static char *unescape_arg(char *p, const char *avp)
     /* Undo the escaping done in the front end */
     const char *q;
     for (q = avp; *q; q++) {
+        /* replace "~+~" with space */
         if (*q == '~' && *(q+1) == '+' && *(q+2) == '~') {
             q += 2;
             *p++ = ' ';
 #if R_version_at_least(3,6,0)
+        /* replace "~n~" with newline */
         } else if (*q == '~' && *(q+1) == 'n' && *(q+2) == '~') {
             q += 2;
             *p++ = '\n';
 #endif
 #if R_version_at_least(4,1,0)
+        /* replace "~t~" with tab */
         } else if (*q == '~' && *(q+1) == 't' && *(q+2) == '~') {
             q += 2;
             *p++ = '\t';
