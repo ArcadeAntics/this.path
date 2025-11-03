@@ -57,23 +57,37 @@ l10n_info()[[3L]]
     fun <- ns[[sym]]
     if (typeof(fun) == "closure" &&
         is.call(b <- body(fun)) && length(b) >= 34L &&
+        # is.call(b_33 <- b[[33L]]) && length(b_33) >= 4L &&
+        ## compatibility with R < 3.1
         is.call(b_33 <- b[[indx33 <- 33L + identical(b[[29L]], quote(refline <- NA))]]) && length(b_33) >= 4L &&
         is.call(b_33_4 <- b_33[[4L]]) && length(b_33_4) >= 6L &&
         is.call(b_33_4_6 <- b_33_4[[6L]]) && length(b_33_4_6) >= 3L &&
         is.call(b_33_4_6_3 <- b_33_4_6[[3L]]) && length(b_33_4_6_3) >= 4L &&
         is.call(b_33_4_6_3_4 <- b_33_4_6_3[[4L]]) && length(b_33_4_6_3_4) >= 3L &&
-        is.call(b_33_4_6_3_4_3 <- b_33_4_6_3_4[[3L]]) && length(b_33_4_6_3_4_3) >= 2L &&
-        is.call(b_33_4_6_3_4_3_2 <- b_33_4_6_3_4_3[[2L]]) && length(b_33_4_6_3_4_3_2) >= 2L &&
-        identical(b_33_4_6_3_4_3_2[[2L]], quote(ce)))
+        is.call(b_33_4_6_3_4_3 <- b_33_4_6_3_4[[3L]]) && length(b_33_4_6_3_4_3) >= 2L)
     {
-        b[[c(indx33, 4L, 6L, 3L, 4L, 3L, 2L, 2L)]] <- quote(chunkexps[nce])
-        body(fun) <- b
-        if (bindingIsLocked(sym, ns)) {
-            (unlockBinding)(sym, ns)
-            assign(sym, fun, envir = ns, inherits = FALSE)
-            lockBinding(sym, ns)
+        i <- NULL
+        if (is.call(b_33_4_6_3_4_3_2 <- b_33_4_6_3_4_3[[2L]])) {
+            if (length(b_33_4_6_3_4_3_2) >= 2L &&
+                identical(b_33_4_6_3_4_3_2[[2L]], quote(ce)))
+            {
+                i <- c(indx33, 4L, 6L, 3L, 4L, 3L, 2L, 2L)
+            }
         }
-        else assign(sym, fun, envir = ns, inherits = FALSE)
+        ## compatibility with R < 3.0
+        else if (identical(b_33_4_6_3_4_3_2, quote(ce))) {
+            i <- c(indx33, 4L, 6L, 3L, 4L, 3L, 2L)
+        }
+        if (!is.null(i)) {
+            b[[i]] <- quote(chunkexps[nce])
+            body(fun) <- b
+            if (bindingIsLocked(sym, ns)) {
+                (unlockBinding)(sym, ns)
+                assign(sym, fun, envir = ns, inherits = FALSE)
+                lockBinding(sym, ns)
+            }
+            else assign(sym, fun, envir = ns, inherits = FALSE)
+        }
     }
     invisible()
 }
@@ -91,23 +105,37 @@ l10n_info()[[3L]]
         is.call(b <- body(fun)) && length(b) == 2L &&
         is.call(b_2 <- b[[2L]]) && length(b_2) >= 3L &&
         is.call(b_2_3 <- b_2[[3L]]) && length(b_2_3) >= 34L &&
+        # is.call(b_2_3_33 <- b_2_3[[33L]]) && length(b_2_3_33) >= 4L &&
+        ## compatibility with R < 3.1
         is.call(b_2_3_33 <- b_2_3[[indx33 <- 33L + identical(b_2_3[[29L]], quote(refline <- NA))]]) && length(b_2_3_33) >= 4L &&
         is.call(b_2_3_33_4 <- b_2_3_33[[4L]]) && length(b_2_3_33_4) >= 6L &&
         is.call(b_2_3_33_4_6 <- b_2_3_33_4[[6L]]) && length(b_2_3_33_4_6) >= 3L &&
         is.call(b_2_3_33_4_6_3 <- b_2_3_33_4_6[[3L]]) && length(b_2_3_33_4_6_3) >= 4L &&
         is.call(b_2_3_33_4_6_3_4 <- b_2_3_33_4_6_3[[4L]]) && length(b_2_3_33_4_6_3_4) >= 3L &&
-        is.call(b_2_3_33_4_6_3_4_3 <- b_2_3_33_4_6_3_4[[3L]]) && length(b_2_3_33_4_6_3_4_3) >= 2L &&
-        is.call(b_2_3_33_4_6_3_4_3_2 <- b_2_3_33_4_6_3_4_3[[2L]]) && length(b_2_3_33_4_6_3_4_3_2) >= 2L &&
-        identical(b_2_3_33_4_6_3_4_3_2[[2L]], quote(ce)))
+        is.call(b_2_3_33_4_6_3_4_3 <- b_2_3_33_4_6_3_4[[3L]]) && length(b_2_3_33_4_6_3_4_3) >= 2L)
     {
-        b[[c(2L, 3L, indx33, 4L, 6L, 3L, 4L, 3L, 2L, 2L)]] <- quote(chunkexps[nce])
-        body(fun) <- b
-        if (bindingIsLocked(sym, ns)) {
-            (unlockBinding)(sym, ns)
-            assign(sym, fun, envir = ns, inherits = FALSE)
-            lockBinding(sym, ns)
+        i <- NULL
+        if (is.call(b_2_3_33_4_6_3_4_3_2 <- b_2_3_33_4_6_3_4_3[[2L]])) {
+            if (length(b_2_3_33_4_6_3_4_3_2) >= 2L &&
+                identical(b_2_3_33_4_6_3_4_3_2[[2L]], quote(ce)))
+            {
+                i <- c(2L, 3L, indx33, 4L, 6L, 3L, 4L, 3L, 2L, 2L)
+            }
         }
-        else assign(sym, fun, envir = ns, inherits = FALSE)
+        ## compatibility with R < 3.0
+        else if (identical(b_2_3_33_4_6_3_4_3_2, quote(ce))) {
+            i <- c(2L, 3L, indx33, 4L, 6L, 3L, 4L, 3L, 2L)
+        }
+        if (!is.null(i)) {
+            b[[i]] <- quote(chunkexps[nce])
+            body(fun) <- b
+            if (bindingIsLocked(sym, ns)) {
+                (unlockBinding)(sym, ns)
+                assign(sym, fun, envir = ns, inherits = FALSE)
+                lockBinding(sym, ns)
+            }
+            else assign(sym, fun, envir = ns, inherits = FALSE)
+        }
     }
     invisible()
 }
