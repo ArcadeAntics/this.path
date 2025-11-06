@@ -33,7 +33,7 @@ FILE.R <- tempfile(fileext = ".R")
 }, FILE.R)
 
 @R_PACKAGE_NAME@:::.Rscript(
-    c("--default-packages=NULL", "--no-save", "--no-restore", FILE.R),
+    c("--default-packages=NULL", "--no-save", FILE.R),
     show.command = FALSE,
     show.output.on.console = TRUE
 )
@@ -42,7 +42,7 @@ source(FILE.R, verbose = FALSE)
 
 @R_PACKAGE_NAME@:::.Rscript(
     c(
-        "--default-packages=NULL", "--no-save", "--no-restore",
+        "--default-packages=NULL", "--no-save",
         "-e", "cat(\\"\\n> @R_PACKAGE_NAME@::from.shell()\\\\n\\")",
         "-e", "@R_PACKAGE_NAME@::from.shell()",
         "-e", "cat(\\"\\n> @R_PACKAGE_NAME@::is.main()\\\\n\\")",

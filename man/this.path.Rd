@@ -342,7 +342,7 @@ if (requireNamespace("compiler")) {
 
 ## 'this.path()' works with 'Rscript'
 @R_PACKAGE_NAME@:::.Rscript(c(
-    "--default-packages=NULL", "--no-save", "--no-restore", FILE1.R
+    "--default-packages=NULL", "--no-save", FILE1.R
 ))
 
 ## 'this.path()' also works when 'source()'-ing a URL

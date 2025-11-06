@@ -51,7 +51,7 @@ FILE.R <- tempfile(fileext = ".R")
     }, spaced = TRUE, verbose = FALSE, width.cutoff = 60L)
 }, FILE.R)
 @R_PACKAGE_NAME@:::.Rscript(
-    c("--default-packages=NULL", "--no-save", "--no-restore", FILE.R)
+    c("--default-packages=NULL", "--no-save", FILE.R)
 )
 unlink(FILE.R)
 
@@ -63,7 +63,7 @@ for (expr in c("shFILE(original = TRUE)",
 {
     cat("\\n\\n")
     @R_PACKAGE_NAME@:::.Rscript(
-        c("--default-packages=NULL", "--no-save", "--no-restore", "-e", expr)
+        c("--default-packages=NULL", "--no-save", "-e", expr)
     )
 }
 }

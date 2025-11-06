@@ -99,11 +99,11 @@ FILE.R <- tempfile(fileext = ".R")
     letters[6:10], pi, exp(1)
 )
 @R_PACKAGE_NAME@:::.Rscript(c(
-    "--default-packages=NULL", "--no-save", "--no-restore", FILE.R,
+    "--default-packages=NULL", "--no-save", FILE.R,
     @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())
 ))
 @R_PACKAGE_NAME@:::.Rscript(c(
-    "--default-packages=NULL", "--no-save", "--no-restore",
+    "--default-packages=NULL", "--no-save",
     rbind("-e", readLines(FILE.R)[-2L]),
     @R_PACKAGE_NAME@::asArgs(letters[16:20], pi, Sys.time())
 ))

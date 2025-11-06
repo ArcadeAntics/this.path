@@ -8,7 +8,7 @@ local({
     })
     cat("\n")
     @R_PACKAGE_NAME@:::.Rscript(c(
-        "--default-packages=NULL", "--no-save", "--no-restore", FILE.R
+        "--default-packages=NULL", "--no-save", FILE.R
     ))
 
 
