@@ -2,6 +2,18 @@
 
 CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
+  BUG FIXES:
+
+    * In this.path(), improved error messages when the document in the
+      GUI has no associated path (has yet to be saved).
+
+    * Replaced uses of '--vanilla' with '--no-save' to allow for the
+      processing of site and user files for setting environment
+      variables, the site-wide startup profile file, and a user
+      profile.
+
+    * Removed calls to non-API entry points in R.
+
 CHANGES IN this.path 2.7.0 (2025-04-10):
 
   SIGNIFICANT USER-VISIBLE CHANGES:

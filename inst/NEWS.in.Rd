@@ -1,6 +1,18 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{In \code{this.path()}, improved error messages when the document in
+        the GUI has no associated path (has yet to be saved).}
+
+      \item{Replaced uses of \option{--vanilla} with \option{--no-save} to
+        allow for the processing of site and user files for setting environment
+        variables, the site-wide startup profile file, and a user profile.}
+
+      \item{Removed calls to non-API entry points in R.}
+    }
+  }
 }
 \section{CHANGES IN VERSION 2.7.0 (2025-04-10)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
