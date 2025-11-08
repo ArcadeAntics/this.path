@@ -292,6 +292,11 @@ local({
 # all(grepl(paste0("^(", .regexps$hexadecimal, ")$"), choices))
 
 
-source("~/PACKAGES/src/repos.R", repos_R <- new.env(parent = baseenv(), hash = TRUE), verbose = FALSE, keep.source = TRUE)
+source(
+    "~/PACKAGES/src/repos.R",
+    repos_R <- new.env(parent = baseenv(), hash = TRUE),
+    verbose = FALSE,
+    keep.source = TRUE
+)
 repos <- repos_R$make_repos("~/PACKAGES")
-# repos$copy_tarball("~/this.path/this.path_2.7.0.1.tar.gz")
+# repos$copy_tarball("~/this.path/this.path_2.7.1.tar.gz")
