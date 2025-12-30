@@ -368,10 +368,11 @@ do {                                                           \
                 else if (forcepromise)                         \
                     getInFrame(fileSymbol, documentcontext, FALSE);\
             }                                                  \
-            else if (streql(klass, "gzfile") ||                \
-                     streql(klass, "bzfile") ||                \
-                     streql(klass, "xzfile") ||                \
-                     streql(klass, "fifo"  ))                  \
+            else if (streql(klass, "gzfile"  ) ||              \
+                     streql(klass, "bzfile"  ) ||              \
+                     streql(klass, "xzfile"  ) ||              \
+                     streql(klass, "zstdfile") ||              \
+                     streql(klass, "fifo"    ))                \
             {                                                  \
                 assign_default(NULL, NULL, Rf_ScalarString(description), description, documentcontext, normalize_action);\
                 if (assign_returnvalue) {                      \

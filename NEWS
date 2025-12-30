@@ -2,6 +2,13 @@
 
 CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
+  NEW FEATURES:
+
+    * this.path() is now compatible with the "zstdfile" connection
+      introduced in R 4.5.0
+
+CHANGES IN this.path 2.7.1 (2025-11-07):
+
   BUG FIXES:
 
     * In this.path(), improved error messages when the document in the

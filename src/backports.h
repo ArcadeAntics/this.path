@@ -8,7 +8,7 @@
 #include "rversiondefines.h"  /* need definition of R_version_less_than */
 
 
-#if R_version_at_least(4,6,0)
+#if R_version_at_least(4,6,0) && !defined(R_THIS_PATH_DEVEL)
 #define Rf_lazy_duplicate(s) (s)
 #else
 extern SEXP Rf_lazy_duplicate(SEXP s);

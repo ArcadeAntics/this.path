@@ -1,6 +1,14 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{\code{this.path()} is now compatible with the \string{zstdfile}
+        connection introduced in R 4.5.0}
+    }
+  }
+}
+\section{CHANGES IN VERSION 2.7.1 (2025-11-07)}{
   \subsection{BUG FIXES}{
     \itemize{
       \item{In \code{this.path()}, improved error messages when the document in
