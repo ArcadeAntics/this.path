@@ -25,8 +25,8 @@ path.unsplit(...)
 \note{
   \code{path.unsplit()} is \strong{NOT} the same as \code{\link{path.join}()}.
 }
-#ifdef windows
 \examples{
+#ifdef windows
 path <- c(
     NA,
     "",
@@ -46,10 +46,8 @@ path <- c(
 )
 print(x <- path.split(path))
 print(path.unsplit(x))
-}
 #endif
 #ifdef unix
-\examples{
 path <- c(
     NA,
     "",
@@ -67,5 +65,5 @@ path <- c(
 )
 print(x <- path.split(path))
 print(path.unsplit(x))
-}
 #endif
+}
