@@ -4,7 +4,7 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with the \string{zstdfile}
-        connection introduced in R 4.5.0}
+        connection introduced in \R 4.5.0}
     }
   }
 }
