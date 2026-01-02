@@ -1,5 +1,5 @@
 devel: TRUE
 renamed_files: FALSE
 substituted_file_contents: FALSE
-dedented_NEWS_subsections: FALSE
+reindented_NEWS: FALSE
 replaced_CRLF_with_LF: FALSE

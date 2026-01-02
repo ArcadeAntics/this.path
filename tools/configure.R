@@ -310,13 +310,20 @@ main <- function ()
         text <- gsub_from_DESCRIPTION(text)
         info[["substituted_file_contents"]] <- "TRUE"
     }
-    if (info[["dedented_NEWS_subsections"]]) {
+    if (info[["reindented_NEWS"]]) {
     } else {
         local({
             if (!devel)
                 if (i <- match("./NEWS", names(text), 0L)) {
-                    text[i] <<- gsub("(?<=^|\r\n|[\r\n])  (?! )", "", text[i], perl = TRUE)
-                    info[["dedented_NEWS_subsections"]] <<- "TRUE"
+                    m <- gregexpr("(?<=^|\r\n|[\r\n])(  )?(?![ \r\n])", text[i], perl = TRUE)
+                    regmatches(text[i], m) <<- lapply(regmatches(text[i], m), function(x) {
+                        i <- nzchar(x)
+                        x[!i] <- "                 "  ## indent sections by 17
+                        x[ i] <- ""                   ## do not indent subsections
+                        x[1L] <- ""                   ## do not indent title
+                        x
+                    })
+                    info[["reindented_NEWS"]] <<- "TRUE"
                 }
         })
     }
