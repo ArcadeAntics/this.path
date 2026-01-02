@@ -62,7 +62,6 @@ extern0 SEXP0
     existsSymbol                           INI_as(Rf_install("exists")),
 #endif
     documentcontextSymbol                  INI_as(Rf_install(".@R_PACKAGE_NAME@::document.context")),
-    documentcontextsSymbol                 INI_as(Rf_install(".@R_PACKAGE_NAME@::document.contexts")),
     errcndSymbol                           INI_as(Rf_install("errcnd")),
     associated_with_fileSymbol             INI_as(Rf_install("associated.with.file")),
     setsyspathwashereSymbol                INI_as(Rf_install("set.sys.path.was.here")),

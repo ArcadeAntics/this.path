@@ -1519,9 +1519,9 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         else if (utils_loaded && identical(function, Sweave)) {
 #undef source_char
 #define source_char "call to function 'Sweave' from package 'utils'"
-            SEXP documentcontexts = Rf_findVarInFrame(frame, documentcontextsSymbol);
+            SEXP vec_of_documentcontext = Rf_findVarInFrame(frame, documentcontextSymbol);
             SEXP names;
-            if (documentcontexts == R_UnboundValue) {
+            if (vec_of_documentcontext == R_UnboundValue) {
                 SEXP srcFilenames = Rf_findVarInFrame(frame, srcFilenamesSymbol);
                 if (srcFilenames == R_UnboundValue)
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(srcFilenamesSymbol)));
@@ -1533,22 +1533,22 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 R_xlen_t n = XLENGTH(srcFilenames);
 
 
-                documentcontexts = Rf_allocVector(VECSXP, n);
-                INCREMENT_NAMED_defineVar(documentcontextsSymbol, documentcontexts, frame);
-                R_LockBinding(documentcontextsSymbol, frame);
+                vec_of_documentcontext = Rf_allocVector(VECSXP, n);
+                INCREMENT_NAMED_defineVar(documentcontextSymbol, vec_of_documentcontext, frame);
+                R_LockBinding(documentcontextSymbol, frame);
 
 
                 /* copy names to new object */
                 names = Rf_allocVector(STRSXP, n);
-                Rf_setAttrib(documentcontexts, R_NamesSymbol, names);
+                Rf_setAttrib(vec_of_documentcontext, R_NamesSymbol, names);
                 for (R_xlen_t i = 0; i < n; i++)
                     SET_STRING_ELT(names, i, STRING_ELT(srcFilenames, i));
             }
             else {
-                if (TYPEOF(documentcontexts) != VECSXP)
+                if (TYPEOF(vec_of_documentcontext) != VECSXP)
                     Rf_error("invalid '%s' value; expected an object of class \"list\", found \"%s\"",
-                        R_CHAR(PRINTNAME(documentcontextsSymbol)), Rf_type2char(TYPEOF(documentcontexts)));
-                names = Rf_getAttrib(documentcontexts, R_NamesSymbol);
+                        R_CHAR(PRINTNAME(documentcontextSymbol)), Rf_type2char(TYPEOF(vec_of_documentcontext)));
+                names = Rf_getAttrib(vec_of_documentcontext, R_NamesSymbol);
                 if (TYPEOF(names) != STRSXP)
                     Rf_error("invalid '%s' value; expected an object of class \"character\", found \"%s\"",
                         R_CHAR(PRINTNAME(R_NamesSymbol)), Rf_type2char(TYPEOF(names)));
@@ -1564,8 +1564,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 }
             }
             if (indx < 0)
-                Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(documentcontextsSymbol)));
-            documentcontext = VECTOR_ELT(documentcontexts, indx);
+                Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(documentcontextSymbol)));
+            documentcontext = VECTOR_ELT(vec_of_documentcontext, indx);
             if (documentcontext == R_NilValue) {
                 set_documentcontext2(
                     /* call                   */ sys_call(which, rho),
@@ -1587,7 +1587,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* ignore_all             */ FALSE,
                     /* srcfile_original       */ NULL
                 );
-                SET_VECTOR_ELT(documentcontexts, indx, documentcontext);
+                SET_VECTOR_ELT(vec_of_documentcontext, indx, documentcontext);
             }
             else {
                 stopifnot_documentcontext_env;

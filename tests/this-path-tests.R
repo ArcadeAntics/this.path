@@ -17,8 +17,6 @@ local({
         if (is.na(n) || n < 1L) stop("invalid traceback")
         sym <- ".@R_PACKAGE_NAME@::document.context"
         frame <- sys.frame(n)
-        if (!exists(sym, envir = frame, inherits = FALSE))
-            sym <- ".@R_PACKAGE_NAME@::document.contexts"
         stopifnot(bindingIsLocked(sym, frame))
         cat("\n> getwd()\n")
         print(getwd())
