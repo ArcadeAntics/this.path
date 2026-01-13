@@ -248,8 +248,8 @@ delayedAssign(".GUI_Positron", {
     Sys.getenv("POSITRON_VERSION") != "" &&
 
     (
-        ( .OS_unix    && .Platform$GUI %in% c("X11", "unknown", "none") ) ||
-        ( .OS_windows && .Platform$GUI == "Rgui"                        )
+        ( .OS_unix    && .Platform$GUI %in% c("Positron", "X11", "unknown", "none") ) ||
+        ( .OS_windows && .Platform$GUI %in% c("Positron", "Rgui"                  ) )
     )
 })
 
