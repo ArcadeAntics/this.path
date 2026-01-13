@@ -7,6 +7,12 @@
         connection introduced in \R 4.5.0}
     }
   }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{\code{this.path()} once again works in \sQuote{\Positron} after
+        update 2026.01.0-147}
+    }
+  }
 }
 \section{CHANGES IN VERSION 2.7.1 (2025-11-07)}{
   \subsection{BUG FIXES}{

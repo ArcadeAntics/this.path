@@ -7,6 +7,11 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
     * this.path() is now compatible with the "zstdfile" connection
       introduced in R 4.5.0
 
+  BUG FIXES:
+
+    * this.path() once again works in 'Positron' after update
+      2026.01.0-147
+
 CHANGES IN this.path 2.7.1 (2025-11-07):
 
   BUG FIXES:
