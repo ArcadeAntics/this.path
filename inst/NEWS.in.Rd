@@ -191,7 +191,7 @@
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with GUI \sQuote{\Emacs} +
-        package \sQuote{\ESS}.}
+        \sQuote{\ESS}.}
     }
   }
 }

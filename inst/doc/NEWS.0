@@ -31,7 +31,8 @@ CHANGES IN this.path 0.9.0 (2022-07-15):
 
   NEW FEATURES:
 
-    * this.path() is now compatible with GUI 'VSCode'.
+    * this.path() is now compatible with GUI 'VSCode' +
+      'REditorSupport'.
 
   BUG FIXES:
 
