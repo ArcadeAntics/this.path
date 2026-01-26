@@ -172,9 +172,12 @@ local({
             ## remove expressions starting with 'cat'
             {
                 exprs <- parse(abs_path_R)
-                exprs <- exprs[!vapply(exprs, function(expr) {
-                    is.call(expr) && identical(expr[[1L]], as.symbol("cat"))
-                }, NA, USE.NAMES = FALSE)]
+                exprs <- exprs[!vapply(
+                    exprs,
+                    function(x) is.call(x) && identical(x[[1L]], as.symbol("cat")),
+                    NA,
+                    USE.NAMES = FALSE
+                )]
                 @R_PACKAGE_NAME@:::.writeCode(exprs, NULL)
             },
             "@",
@@ -235,9 +238,12 @@ local({
             ## remove expressions starting with 'cat'
             {
                 exprs <- parse(abs_path_R)
-                exprs <- exprs[!vapply(exprs, function(expr) {
-                    is.call(expr) && identical(expr[[1L]], as.symbol("cat"))
-                }, NA, USE.NAMES = FALSE)]
+                exprs <- exprs[!vapply(
+                    exprs,
+                    function(x) is.call(x) && identical(x[[1L]], as.symbol("cat")),
+                    NA,
+                    USE.NAMES = FALSE
+                )]
                 @R_PACKAGE_NAME@:::.writeCode(exprs, NULL)
             },
             "```"

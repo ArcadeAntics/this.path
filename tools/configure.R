@@ -212,13 +212,17 @@ main <- function ()
                     "}",
                     "\\usage{",
                     paste(
-                        vapply(seq_len(nrow(backports)), function(ind) {
-                            value <- c(
-            sprintf("# Introduced in R %s", backports[[ind, "version"]]),
-                    backports[[ind, "usage"]]
-                            )
-                            paste(value, collapse = "\n")
-                        }, ""),
+                        vapply(
+                            seq_len(nrow(backports)),
+                            function(i) {
+                                value <- c(
+            sprintf("# Introduced in R %s", backports[[i, "version"]]),
+                    backports[[i, "usage"]]
+                                )
+                                paste(value, collapse = "\n")
+                            },
+                            ""
+                        ),
                         collapse = "\n\n"
                     ),
                     "}",
@@ -300,9 +304,11 @@ main <- function ()
     }
 
 
-    text <- vapply(files, function(file) {
-        readChar(file, file.size(file), useBytes = TRUE)
-    }, "")
+    text <- vapply(
+        files,
+        function(x) readChar(x, file.size(x), useBytes = TRUE),
+        ""
+    )
     Encoding(text) <- "bytes"
     o <- text
     if (info[["substituted_file_contents"]]) {
