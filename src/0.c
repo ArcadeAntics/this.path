@@ -1,3 +1,9 @@
+/*
+this.path : Get Executing Script's Path
+Copyright (C) 2022-2025   Iris Simmons
+ */
+
+
 #define R_NO_REMAP
 #include <R_ext/Rdynload.h>    /* need definition of 'R_ExternalMethodDef' */
 #include <R_ext/Visibility.h>  /* need definition of 'attribute_visible' */

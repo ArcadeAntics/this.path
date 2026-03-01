@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2024   Iris Simmons
+##
+
+
 .defunctError <- function (new, package = NULL, msg, old = as.character(sys.call(sys.parent()))[1L])
 {
     msg <- if (missing(msg)) {

@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2023-2024   Iris Simmons
+%%
+
+
 \name{set.jupyter.path}
 \alias{set.jupyter.path}
 \title{Declare Executing 'Jupyter' Notebook's Filename}

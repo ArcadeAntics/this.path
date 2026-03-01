@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2025   Iris Simmons
+##
+
+
 path.functions <- .removeSource_from_inner_functions(
                   function (file, delayed = FALSE, local = FALSE, n = 0L, envir = parent.frame(n + 1L),
     matchThisEnv = getOption("topLevelEnvironment"),

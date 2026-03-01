@@ -1,3 +1,9 @@
+/*
+this.path : Get Executing Script's Path
+Copyright (C) 2022-2026   Iris Simmons
+ */
+
+
 #include "thispathdefn.h"
 
 

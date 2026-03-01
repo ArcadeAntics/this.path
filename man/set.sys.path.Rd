@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2022-2025   Iris Simmons
+%%
+
+
 \name{set.sys.path}
 \alias{set.sys.path}
 \alias{set.env.path}

@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2022-2024   Iris Simmons
+##
+
+
 .LINENO <- function (path, to = 1L)
 {
     for (which in seq.int(to = to, by = -1L, length.out = sys.nframe() - to)) {

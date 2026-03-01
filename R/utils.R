@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2022-2024   Iris Simmons
+##
+
+
 .Rscript <- function (options = NULL, trailing = character(), dry.run = FALSE,
     show.command = TRUE, intern = TRUE, show.output.on.console = show.command,
     ...)

@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2022-2025   Iris Simmons
+%%
+
+
 \name{basename2}
 \alias{basename2}
 \alias{dirname2}

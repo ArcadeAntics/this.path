@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2023-2025   Iris Simmons
+%%
+
+
 \name{make_fix_funs}
 \alias{make_fix_funs}
 \alias{path.functions}

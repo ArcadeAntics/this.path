@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2024   Iris Simmons
+##
+
+
 @R_PACKAGE_NAME@::sys.path(verbose = FALSE)
 
 

@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2022-2024   Iris Simmons
+##
+
+
 .tolower_ASCII <- function (x)
 .External2(.C_tolower_ASCII, x)
 

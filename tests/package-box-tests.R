@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2024   Iris Simmons
+##
+
+
 if (requireNamespace("box", quietly = TRUE)) {
     ## tests for with_script_path                               ----
 

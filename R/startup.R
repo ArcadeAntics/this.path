@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2024   Iris Simmons
+##
+
+
 .site_file <- evalq(envir = new.env(), {
     delayedAssign("file_info", {
         local({

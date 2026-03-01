@@ -1,2 +1,8 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2024   Iris Simmons
+##
+
+
 /src/symbols.h linguist-language=C
 /inst/doc/NEWS.1 linguist-language=Text

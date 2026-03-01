@@ -1,3 +1,9 @@
+/*
+this.path : Get Executing Script's Path
+Copyright (C) 2023-2025   Iris Simmons
+ */
+
+
 #ifndef R_THISPATH_NSHOOKS_H
 #define R_THISPATH_NSHOOKS_H
 

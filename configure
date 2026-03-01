@@ -1,1 +1,7 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2022-2025   Iris Simmons
+##
+
+
 "${R_HOME}/bin/Rscript" --default-packages=NULL --no-save ./tools/configure.R

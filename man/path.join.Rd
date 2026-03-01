@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2022-2024   Iris Simmons
+%%
+
+
 \name{path.join}
 \alias{path.join}
 \title{Construct Path to File}

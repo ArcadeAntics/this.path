@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2024   Iris Simmons
+##
+
+
 .PrintValueEnv <- function (x, envir = parent.frame())
 .External2(.C_PrintValueEnv, x, envir)
 

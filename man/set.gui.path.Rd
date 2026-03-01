@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2023-2025   Iris Simmons
+%%
+
+
 \name{set.gui.path}
 \alias{set.gui.path}
 \alias{thisPathNotExistsError}

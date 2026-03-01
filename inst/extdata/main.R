@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2024   Iris Simmons
+##
+
+
 .languages <- matrix(dimnames = list(NULL, c(
     "LANGUAGE", "Format: (* Custom Locale)"    , "locale.codepage"                                , "locale.utf8"                      )), data = c(
     "da"      , "Danish (Denmark)"             , "Danish_Denmark.865"                             , "Danish_Denmark.utf8"              ,

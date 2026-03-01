@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2021-2024   Iris Simmons
+%%
+
+
 \name{@R_PACKAGE_NAME@-package}
 \alias{@R_PACKAGE_NAME@-package}
 \docType{package}

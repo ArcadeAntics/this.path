@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2024   Iris Simmons
+##
+
+
 .asArgs <- function (x)
 {
     if (!length(x)) return(character())

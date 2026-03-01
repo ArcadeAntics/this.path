@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2022-2024   Iris Simmons
+%%
+
+
 \name{LINENO}
 \alias{LINENO}
 \title{Line Number of Executing Expression}

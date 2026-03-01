@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2025   Iris Simmons
+##
+
+
 ## functions to be converted to active bindings from '.onLoad' ----
 
 

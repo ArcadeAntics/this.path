@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2023   Iris Simmons
+##
+
+
 cat("\nexecuting script's path:\n")
 cat(sQuote(this.path::this.path(verbose = TRUE)), "\n\n", sep = "")
 

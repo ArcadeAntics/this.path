@@ -1,3 +1,9 @@
+/*
+this.path : Get Executing Script's Path
+Copyright (C) 2022-2026   Iris Simmons
+ */
+
+
 #define R_NO_REMAP
 #include <Rinternals.h>       /* need definition of SEXP */
 #include "devel.h"

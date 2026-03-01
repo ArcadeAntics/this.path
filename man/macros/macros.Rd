@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2022-2024   Iris Simmons
+%%
+
+
 %% used in ./inst/NEWS.Rd
 \newcommand{\codeorsQuote}{\ifelse{text}{\sQuote{#1}}{\code{#1}}}
 \newcommand{\commandorsQuote}{\ifelse{text}{\sQuote{#1}}{\command{#1}}}

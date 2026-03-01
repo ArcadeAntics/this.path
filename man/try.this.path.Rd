@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2023-2024   Iris Simmons
+%%
+
+
 \name{try.this.path}
 \alias{try.this.path}
 \alias{try.shFILE}

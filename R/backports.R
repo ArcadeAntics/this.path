@@ -1,3 +1,7 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2024   Iris Simmons
+##
 
 
 if (getRversion() < "3.0.0") {

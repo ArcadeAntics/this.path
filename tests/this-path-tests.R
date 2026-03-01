@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2026   Iris Simmons
+##
+
+
 local({
     owd <- getwd()
     if (is.null(owd)) {

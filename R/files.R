@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2025   Iris Simmons
+##
+
+
 .windows_basename2 <- function (path)
 .External2(.C_windows_basename2, path)
 

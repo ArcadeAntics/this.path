@@ -1,3 +1,9 @@
+%%
+%% this.path : Get Executing Script's Path
+%% Copyright (C) 2023-2026   Iris Simmons
+%%
+
+
 \name{path.split}
 \alias{path.split}
 \alias{path.split.1}

@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2026   Iris Simmons
+##
+
+
 main <- function ()
 {
     if (getRversion() < "3.2.0") {

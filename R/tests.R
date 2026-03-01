@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2024   Iris Simmons
+##
+
+
 .faster_subsequent_times_test <- function ()
 {
     first_time <- microbenchmark::microbenchmark(

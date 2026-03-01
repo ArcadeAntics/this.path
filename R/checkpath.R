@@ -1,3 +1,7 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2024   Iris Simmons
+##
 
 
 # URL_pattern <- "^((?:ftp|ftps|http|https)://[^/]+)(?:/+(.*))?$"

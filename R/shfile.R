@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2024   Iris Simmons
+##
+
+
 .shFILE <- evalq(envir = new.env(), {
     delayedAssign("ofile", { if (.in_shell) .shINFO[["FILE"]] else NA_character_ })
     delayedAssign("file" , { .normalizePath(ofile) })

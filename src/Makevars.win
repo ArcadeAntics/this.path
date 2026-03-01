@@ -1,1 +1,7 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023   Iris Simmons
+##
+
+
 PKG_LIBS=$(GRAPHAPP_LIB)

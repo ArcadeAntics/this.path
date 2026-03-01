@@ -1,3 +1,9 @@
+/*
+this.path : Get Executing Script's Path
+Copyright (C) 2023-2025   Iris Simmons
+ */
+
+
 /* keep all the static shit for RGui in this separate file */
 
 

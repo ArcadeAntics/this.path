@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2024   Iris Simmons
+##
+
+
 if (getRversion() >= "3.4.0") {
     sys.source(
         "./inst/extdata/main.R", environment(),

@@ -1,4 +1,10 @@
 /*
+this.path : Get Executing Script's Path
+Copyright (C) 2022-2024   Iris Simmons
+ */
+
+
+/*
 My C code is stylized much the same as R's C code. See
 
 https://github.com/wch/r-source/blob/trunk/src/main/names.c#L51

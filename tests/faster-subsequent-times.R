@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2025   Iris Simmons
+##
+
+
 local({
     FILE.R <- tempfile(fileext = ".R")
     on.exit(unlink(FILE.R), add = TRUE)

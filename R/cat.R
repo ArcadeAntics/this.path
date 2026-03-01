@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2023-2024   Iris Simmons
+##
+
+
 .cat_condition <- function (c, outfile = stderr())
 {
     # c <- simpleError("testing th\U{0001D11E}s\n out", quote(5 + 6)); warning("comment out this later")

@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2021-2025   Iris Simmons
+##
+
+
 ## add copyrights to each file
 ##
 ## add variant of .read_C_strings() that does not use .mapply()

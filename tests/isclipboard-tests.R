@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2022-2024   Iris Simmons
+##
+
+
 stopifnot(identical(
     @R_PACKAGE_NAME@:::.is_clipboard(c("clipboard", "clipboard-128", "X11_primary", "X11_secondary", "X11_clipboard")),
     if (.Platform$OS.type == "windows")

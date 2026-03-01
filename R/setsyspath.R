@@ -1,3 +1,9 @@
+##
+## this.path : Get Executing Script's Path
+## Copyright (C) 2022-2025   Iris Simmons
+##
+
+
 wrap.source <- function (expr, path.only = FALSE, character.only = path.only,
     file.only = path.only, conv2utf8 = FALSE, allow.blank.string = FALSE,
     allow.clipboard = !file.only, allow.stdin = !file.only, allow.url = !file.only,
