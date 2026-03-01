@@ -1,3 +1,10 @@
+## add copyrights to each file
+##
+## add variant of .read_C_strings() that does not use .mapply()
+##
+## remove restriction in with_sys.path()
+
+
 {
     if (!file.exists(this.path::here("tools/maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
