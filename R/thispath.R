@@ -102,6 +102,10 @@
 }
 
 
+.splitlines <- function (x)
+.External2(.C_splitlines, x)
+
+
 ## path of active file in GUI          ----
 
 

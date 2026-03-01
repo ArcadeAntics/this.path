@@ -1,6 +1,6 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2022-2024   Iris Simmons
+## Copyright (C) 2022-2026   Iris Simmons
 ##
 
 
@@ -423,6 +423,7 @@ if (getRversion() < "3.0.0") {
 
 
     fix_External2(.fixNewlines)
+    fix_External2(.splitlines)
     fix_External2(.RStudio_path)
     fix_External2(.Positron_path)
     fix_External2(.vscode_path)

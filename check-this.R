@@ -4,9 +4,6 @@
 ##
 
 
-## add .splitlines()
-
-
 {
     if (!file.exists(this.path::here("tools/maintainers-copy")))
         stop("unable to '.check_this()', not the maintainer's copy")
