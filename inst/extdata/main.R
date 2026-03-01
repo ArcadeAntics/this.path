@@ -1,6 +1,6 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2021-2024   Iris Simmons
+## Copyright (C) 2021-2026   Iris Simmons
 ##
 
 
