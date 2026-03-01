@@ -11,12 +11,12 @@ Copyright (C) 2021-2026   Iris Simmons
   * [Details](#details)
   * [Note](#note)
   * [Alternatives](#alternatives)
-     1. [Alternative 1: Always Change Working Directory](#alternative-1-always-change-working-directory)
-     2. [Alternative 2: Source References](#alternative-2-source-references)
-     3. [Alternative 3: Absolute Paths](#alternative-3-absolute-paths)
-     4. [Alternative 4: Other Packages That Determine Current **R** Script](#alternative-4-other-packages-that-determine-current-r-script)
-     5. [Alternative 5: Packages That Determine Project Root](#alternative-5-packages-that-determine-project-root)
-     6. [Alternative 6: `package:box`](#alternative-6-packagebox)
+     1. [Always Change Working Directory](#alternative-1-always-change-working-directory)
+     2. [Source References](#alternative-2-source-references)
+     3. [Absolute Paths](#alternative-3-absolute-paths)
+     4. [Other Packages That Determine Current **R** Script](#alternative-4-other-packages-that-determine-current-r-script)
+     5. [Packages That Determine Project Root](#alternative-5-packages-that-determine-project-root)
+     6. [`package:box`](#alternative-6-packagebox)
   * [Closing](#closing)
 
 ## Description
