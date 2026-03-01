@@ -74,8 +74,6 @@ set.sys.path.function <- function (fun)
 
 with_sys.path <- function (file, expr, ...)
 {
-    if ((n <- sys.parent()) && typeof(sys.function(n)) == "closure")
-        stop("'with_sys.path' cannot be used within a function, use 'set.sys.path' instead")
     set.sys.path(file = file, ..., Function = c("with_sys.path", "@R_PACKAGE_NAME@"))
     expr
 }

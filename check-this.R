@@ -4,8 +4,6 @@
 ##
 
 
-## remove restriction in with_sys.path()
-##
 ## add table of contents to README.md
 ##
 ## add .splitlines()
