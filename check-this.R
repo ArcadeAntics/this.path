@@ -4,8 +4,6 @@
 ##
 
 
-## add variant of .read_C_strings() that does not use .mapply()
-##
 ## remove restriction in with_sys.path()
 ##
 ## add table of contents to README.md

@@ -103,16 +103,11 @@ Sys.putenv <- function (x)
         stop(sprintf("incomplete final string found on '%s'", path))
     if (length(nul <- which(x == as.raw(0L))) %% divisor)
         stop(sprintf("expected a multiple of %s strings on '%s'", divisor, path))
-    x <- .mapply(
-        function(to, length.out) {
-            rawToChar(x[seq.int(to = to, length.out = length.out)])
-        },
-        list(
-            to = nul - 1L,
-            length.out = diff(c(0L, nul)) - 1L
-        ),
-        NULL
-    )
+    to <- nul - 1L
+    length.out <- diff(c(0L, nul)) - 1L
+    x <- lapply(seq_along(nul), function(i) {
+        rawToChar(x[seq.int(to = to[[i]], length.out = length.out[[i]])])
+    })
     as.character(x)
 }
 
