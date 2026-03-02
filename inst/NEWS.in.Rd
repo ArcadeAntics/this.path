@@ -17,6 +17,9 @@
     \itemize{
       \item{\code{this.path()} once again works in \sQuote{\Positron} after
         update 2026.01.0-147}
+
+      \item{Removed the restriction that \code{with_sys.path()} could not be
+        used within a function.}
     }
   }
 }
