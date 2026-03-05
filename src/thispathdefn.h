@@ -11,6 +11,10 @@ Copyright (C) 2022-2025   Iris Simmons
 #define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
+extern SEXP (INTERNAL)(SEXP x);
+extern int  (DDVAL)(SEXP x);
+extern int  (PRSEEN)(SEXP x);
+extern Rboolean Rf_isValidStringF(SEXP);
 #include "devel.h"
 
 #include "backports.h"
