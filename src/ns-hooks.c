@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2022-2025   Iris Simmons
+Copyright (C) 2022-2026   Iris Simmons
  */
 
 
@@ -98,13 +98,13 @@ SEXP do_mbcslocale do_formals
 // }
 
 
-#if R_version_at_least(4,2,0)
-LibExtern int R_MB_CUR_MAX;
-#endif
 SEXP do_R_MB_CUR_MAX do_formals
 {
     do_start_no_call_op_rho("R_MB_CUR_MAX", 0);
-#if R_version_at_least(4,2,0)
+#if R_version_at_least(4,6,0)
+    return Rf_ScalarInteger(MB_CUR_MAX);
+#elif R_version_at_least(4,2,0)
+    LibExtern int R_MB_CUR_MAX;
     return Rf_ScalarInteger(R_MB_CUR_MAX);
 #else
     return Rf_ScalarInteger(MB_CUR_MAX);
