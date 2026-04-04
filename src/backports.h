@@ -181,6 +181,9 @@ extern SEXP R_BlankScalarString;
 #endif
 
 
+#if R_version_at_least(4,6,0)
+#define R_CurrentExpression NULL
+#endif
 #if R_version_less_than(3,4,0)
 #define R_CurrentExpression NULL
 #define my_errorcall(call, ...) do {                           \
