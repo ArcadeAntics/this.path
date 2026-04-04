@@ -71,6 +71,11 @@ extern const char *EncodeChar(SEXP);
 #define ISUNBOUND(x) ((x) == R_UnboundValue)
 
 
+SEXP my_getRegisteredNamespace_c(const char *x);
+SEXP my_getRegisteredNamespace_sym(SEXP sym);
+SEXP my_getRegisteredNamespace(const char *x, SEXP sym);
+
+
 extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
 #define getFromBase(sym) (getInFrame((sym), R_BaseEnv, FALSE))
 #define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))

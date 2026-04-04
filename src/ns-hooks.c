@@ -302,7 +302,7 @@ SEXP do_onLoad do_formals
 
 
     /* get my namespace from the namespace registry */
-    mynamespace = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("@R_PACKAGE_NAME@"));
+    mynamespace = my_getRegisteredNamespace_c("@R_PACKAGE_NAME@");
     if (TYPEOF(mynamespace) != ENVSXP)
         Rf_error(_("not an environment"));
     R_PreserveObject(mynamespace);
@@ -940,7 +940,7 @@ SEXP do_onLoad do_formals
 
     {
         /* if package:utils is loaded, call '.fix_utils' */
-        if (!ISUNBOUND(Rf_findVarInFrame(R_NamespaceRegistry, utilsSymbol))) {
+        if (my_getRegisteredNamespace("utils", utilsSymbol) != R_NilValue) {
             SEXP expr = Rf_lcons(Rf_install(".fix_utils"), R_NilValue);
             Rf_protect(expr);
             Rf_eval(expr, mynamespace);
@@ -958,7 +958,7 @@ SEXP do_onLoad do_formals
 
     {
         /* if package:plumber is loaded, call '.fix_plumber_parseUTF8' */
-        if (!ISUNBOUND(Rf_findVarInFrame(R_NamespaceRegistry, plumberSymbol))) {
+        if (my_getRegisteredNamespace("plumber", plumberSymbol) != R_NilValue) {
             SEXP expr = Rf_lcons(Rf_install(".fix_plumber_parseUTF8"), R_NilValue);
             Rf_protect(expr);
             Rf_eval(expr, mynamespace);

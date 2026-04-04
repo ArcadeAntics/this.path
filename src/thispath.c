@@ -923,28 +923,28 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     Rboolean testthat_loaded; SEXP source_file;
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, compilerSymbol);
-    compiler_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("compiler", compilerSymbol);
+    compiler_loaded = (ns != R_NilValue);
     loadcmp = (compiler_loaded ? getInFrame(loadcmpSymbol, ns, FALSE) : R_UnboundValue);
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, utilsSymbol);
-    utils_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("utils", utilsSymbol);
+    utils_loaded = (ns != R_NilValue);
     Sweave = (utils_loaded ? getInFrame(SweaveSymbol, ns, FALSE) : R_UnboundValue);
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, boxSymbol);
-    box_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("box", boxSymbol);
+    box_loaded = (ns != R_NilValue);
     load_from_source = (box_loaded ? getInFrame(load_from_sourceSymbol, ns, FALSE) : R_UnboundValue);
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, knitrSymbol);
-    knitr_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("knitr", knitrSymbol);
+    knitr_loaded = (ns != R_NilValue);
     knit = (knitr_loaded ? getInFrame(knitSymbol, ns, FALSE) : R_UnboundValue);
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, plumberSymbol);
-    plumber_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("plumber", plumberSymbol);
+    plumber_loaded = (ns != R_NilValue);
     plumber_sourceUTF8 = (plumber_loaded ? getInFrame(sourceUTF8Symbol, ns, FALSE) : R_UnboundValue);
     Plumber_public_methods_initialize = R_UnboundValue;
     if (plumber_loaded) {
@@ -960,13 +960,13 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     }
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, shinySymbol);
-    shiny_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("shiny", shinySymbol);
+    shiny_loaded = (ns != R_NilValue);
     shiny_sourceUTF8 = (shiny_loaded ? getInFrame(sourceUTF8Symbol, ns, FALSE) : R_UnboundValue);
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, targetsSymbol);
-    targets_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("targets", targetsSymbol);
+    targets_loaded = (ns != R_NilValue);
     if (targets_loaded) {
         tar_callr_inner_try = getInFrame(tar_callr_inner_trySymbol, ns, FALSE);
         tar_load_globals    = getInFrame(tar_load_globalsSymbol   , ns, FALSE);
@@ -980,8 +980,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     }
 
 
-    ns = Rf_findVarInFrame(R_NamespaceRegistry, testthatSymbol);
-    testthat_loaded = (ns != R_UnboundValue);
+    ns = my_getRegisteredNamespace("testthat", testthatSymbol);
+    testthat_loaded = (ns != R_NilValue);
     source_file = (testthat_loaded ? getInFrame(source_fileSymbol, ns, FALSE) : R_UnboundValue);
 
 

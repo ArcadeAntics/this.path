@@ -117,6 +117,52 @@ const char *EncodeChar(SEXP x)
 }
 
 
+#if R_version_at_least(4,6,0)
+
+
+SEXP my_getRegisteredNamespace_c(const char *x)
+{
+    return R_getRegisteredNamespace(x);
+}
+
+
+SEXP my_getRegisteredNamespace_sym(SEXP sym)
+{
+    return my_getRegisteredNamespace_c(R_CHAR(PRINTNAME(sym)));
+}
+
+
+SEXP my_getRegisteredNamespace(const char *x, SEXP sym)
+{
+    return my_getRegisteredNamespace_c(x);
+}
+
+
+#else
+
+
+SEXP my_getRegisteredNamespace_c(const char *x)
+{
+    return my_getRegisteredNamespace_sym(Rf_install(x));
+}
+
+
+SEXP my_getRegisteredNamespace_sym(SEXP sym)
+{
+    SEXP val = Rf_findVarInFrame(R_NamespaceRegistry, sym);
+    return val == R_UnboundValue ? R_NilValue : val;
+}
+
+
+SEXP my_getRegisteredNamespace(const char *x, SEXP sym)
+{
+    return my_getRegisteredNamespace_sym(sym);
+}
+
+
+#endif
+
+
 SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 {
     SEXP value = Rf_findVarInFrame(env, sym);

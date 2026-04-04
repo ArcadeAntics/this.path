@@ -21,9 +21,9 @@ void my_PrintObjectS4(SEXP s, SEXP env)
     int nprotect = 0;
 
 
-    SEXP methods = Rf_findVarInFrame(R_NamespaceRegistry, methodsSymbol);
+    SEXP methods = my_getRegisteredNamespace("methods", methodsSymbol);
     Rf_protect(methods); nprotect++;
-    if (methods == R_UnboundValue)
+    if (methods == R_NilValue)
         Rf_error("missing methods namespace: this should not happen");
 
 
