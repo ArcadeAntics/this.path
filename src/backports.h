@@ -145,7 +145,11 @@ extern SEXP ddfind(int i, SEXP rho);
 #endif
 
 
-#if R_version_at_least(3,1,0)
+#if R_version_at_least(4,6,0)
+#define R_TrueValue Rf_ScalarLogical(TRUE)
+#define R_FalseValue Rf_ScalarLogical(FALSE)
+#define R_LogicalNAValue Rf_ScalarLogical(NA_LOGICAL)
+#elif R_version_at_least(3,1,0)
 LibExtern SEXP R_TrueValue;
 LibExtern SEXP R_FalseValue;
 LibExtern SEXP R_LogicalNAValue;
