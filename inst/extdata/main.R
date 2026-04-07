@@ -4,8 +4,11 @@
 ##
 
 
-.languages <- matrix(dimnames = list(NULL, c(
-"LANGUAGE", "Format: (* Custom Locale)"    , "locale.codepage"                                , "locale.utf8"                      )), data = c(
+.languages <- matrix(
+    ncol = 4L,
+    byrow = TRUE,
+    dimnames = list(NULL, c(
+"LANGUAGE", "Format: (* Custom Locale)"    , "locale.codepage"                                , "locale.utf8"                      )), c(
 "da"      , "Danish (Denmark)"             , "Danish_Denmark.865"                             , "Danish_Denmark.utf8"              ,
 "de"      , "German (Germany)"             , "German_Germany.1252"                            , "German_Germany.utf8"              ,
 "en"      , "English (World)"              , "English_World.1252"                             , "English_World.utf8"               ,
@@ -25,7 +28,8 @@
 "tr"      , "Turkish (T\u00FCrkiye)"       , `Encoding<-`("Turkish_T\xFCrkiye.1254", "latin1"), "Turkish_T\u00FCrkiye.utf8"        ,
 "zh_CN"   , "Chinese (Simplified, China)"  , "Chinese (Simplified)_China.936"                 , "Chinese (Simplified)_China.utf8"  ,
 "zh_TW"   , "Chinese (Traditional, Taiwan)", "Chinese (Traditional)_Taiwan.950"               , "Chinese (Traditional)_Taiwan.utf8"
-), ncol = 4L, byrow = TRUE)
+    )
+)
 rownames(.languages) <- .languages[, "LANGUAGE"]
 
 
