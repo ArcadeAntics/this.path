@@ -7,6 +7,10 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
     * this.path() is now compatible with the "zstdfile" connection
       introduced in R 4.5.0
 
+    * this.path() now works in 'Rgui' running in the following locales:
+      Arabic, Bengali, Catalan, Hindi, Hungarian, Indonesian, Nepali,
+      Albanian, and Urdu.
+
   BUG FIXES:
 
     * this.path() once again works in 'Positron' after update

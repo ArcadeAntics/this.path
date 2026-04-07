@@ -11,6 +11,10 @@
     \itemize{
       \item{\code{this.path()} is now compatible with the \string{zstdfile}
         connection introduced in \R 4.5.0}
+
+      \item{\code{this.path()} now works in \sQuote{Rgui} running in the
+        following locales: Arabic, Bengali, Catalan, Hindi, Hungarian,
+        Indonesian, Nepali, Albanian, and Urdu.}
     }
   }
   \subsection{BUG FIXES}{
