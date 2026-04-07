@@ -9,6 +9,9 @@
     byrow = TRUE,
     dimnames = list(NULL, c(
 "LANGUAGE", "Format: (* Custom Locale)"    , "locale.codepage"                                , "locale.utf8"                      )), c(
+# "ar"      ,
+# "bn"      ,
+# "ca"      ,
 "da"      , "Danish (Denmark)"             , "Danish_Denmark.865"                             , "Danish_Denmark.utf8"              ,
 "de"      , "German (Germany)"             , "German_Germany.1252"                            , "German_Germany.utf8"              ,
 "en"      , "English (World)"              , "English_World.1252"                             , "English_World.utf8"               ,
@@ -17,15 +20,21 @@
 "es"      , "Spanish (Spain)"              , "Spanish_Spain.1252"                             , "Spanish_Spain.utf8"               ,
 "fa"      , "Persian (Iran)"               , "Persian_Iran.1256"                              , "Persian_Iran.utf8"                ,
 "fr"      , "French (France)"              , "French_France.1252"                             , "French_France.utf8"               ,
+# "hi"      ,
+# "hu"      ,
+# "id"      ,
 "it"      , "Italian (Italy)"              , "Italian_Italy.1252"                             , "Italian_Italy.utf8"               ,
 "ja"      , "Japanese (Japan)"             , "Japanese_Japan.932"                             , "Japanese_Japan.utf8"              ,
 "ko"      , "Korean (Korea)"               , "Korean_Korea.949"                               , "Korean_Korea.utf8"                ,
 "lt"      , "Lithuanian (Lithuania)"       , "Lithuanian_Lithuania.1257"                      , "Lithuanian_Lithuania.utf8"        ,
+# "ne"      ,
 "nn"      , "Norwegian Nynorsk (Norway)"   , "Norwegian-Nynorsk_Norway.865"                   , "Norwegian Nynorsk_Norway.utf8"    ,
 "pl"      , "Polish (Poland)"              , "Polish_Poland.1250"                             , "Polish_Poland.utf8"               ,
 "pt_BR"   , "Portuguese (Brazil)"          , "Portuguese_Brazil.850"                          , "Portuguese_Brazil.utf8"           ,
 "ru"      , "Russian (Russia)"             , "Russian_Russia.1251"                            , "Russian_Russia.utf8"              ,
+# "sq"      ,
 "tr"      , "Turkish (T\u00FCrkiye)"       , `Encoding<-`("Turkish_T\xFCrkiye.1254", "latin1"), "Turkish_T\u00FCrkiye.utf8"        ,
+# "ur"      ,
 "zh_CN"   , "Chinese (Simplified, China)"  , "Chinese (Simplified)_China.936"                 , "Chinese (Simplified)_China.utf8"  ,
 "zh_TW"   , "Chinese (Traditional, Taiwan)", "Chinese (Traditional)_Taiwan.950"               , "Chinese (Traditional)_Taiwan.utf8"
     )
