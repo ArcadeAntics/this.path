@@ -4,6 +4,16 @@
 ##
 
 
+## these languages can be listed with this:
+##
+## dirname(grep('/LC_MESSAGES$',list.dirs(system.file(package='translations'),full.names=FALSE),perl=TRUE,value=TRUE))
+##
+## or written more plainly:
+##
+## system.file(package = "translations") |>
+##     list.dirs(full.names = FALSE) |>
+##     grep(pattern = "/LC_MESSAGES$", perl = TRUE, value = TRUE) |>
+##     this.path::dirname2()
 .languages <- matrix(
     ncol = 4L,
     byrow = TRUE,
