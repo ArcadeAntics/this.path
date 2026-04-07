@@ -18,7 +18,6 @@
     "ja"      , "Japanese (Japan)"             , "Japanese_Japan.932"                             , "Japanese_Japan.utf8"              ,
     "ko"      , "Korean (Korea)"               , "Korean_Korea.949"                               , "Korean_Korea.utf8"                ,
     "lt"      , "Lithuanian (Lithuania)"       , "Lithuanian_Lithuania.1257"                      , "Lithuanian_Lithuania.utf8"        ,
-    "Meta"    , ""                             , ""                                               , ""                                 ,
     "nn"      , "Norwegian Nynorsk (Norway)"   , "Norwegian-Nynorsk_Norway.865"                   , "Norwegian Nynorsk_Norway.utf8"    ,
     "pl"      , "Polish (Poland)"              , "Polish_Poland.1250"                             , "Polish_Poland.utf8"               ,
     "pt_BR"   , "Portuguese (Brazil)"          , "Portuguese_Brazil.850"                          , "Portuguese_Brazil.utf8"           ,
