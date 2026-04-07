@@ -4,16 +4,20 @@
 ##
 
 
-## these languages can be listed with this:
-##
-## dirname(grep('/LC_MESSAGES$',list.dirs(system.file(package='translations'),full.names=FALSE),perl=TRUE,value=TRUE))
-##
-## or written more plainly:
-##
-## system.file(package = "translations") |>
-##     list.dirs(full.names = FALSE) |>
-##     grep(pattern = "/LC_MESSAGES$", perl = TRUE, value = TRUE) |>
-##     this.path::dirname2()
+.package_translations_languages <- function ()
+{
+    ## the languages supported by R can be listed using this:
+    ##
+    ## dirname(grep('/LC_MESSAGES$',list.dirs(system.file(package='translations'),full.names=FALSE),perl=TRUE,value=TRUE))
+    ##
+    ## or, written more plainly, using this:
+    x <- system.file(package = "translations")
+    x <- list.dirs(x, full.names = FALSE)
+    x <- grep("/LC_MESSAGES$", x, perl = TRUE, value = TRUE)
+    dirname(x)
+}
+
+
 .languages <- matrix(
     ncol = 4L,
     byrow = TRUE,
@@ -50,6 +54,10 @@
     )
 )
 rownames(.languages) <- .languages[, "LANGUAGE"]
+
+
+.my_unsupported_languages <- function ()
+setdiff(.package_translations_languages(), rownames(.languages))
 
 
 .language_envvars_list <- sapply(
