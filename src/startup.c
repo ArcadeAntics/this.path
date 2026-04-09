@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2024-2025   Iris Simmons
+Copyright (C) 2024-2026   Iris Simmons
  */
 
 
@@ -13,73 +13,66 @@ Rboolean already_set_init_file = FALSE;
 
 SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
 {
-    SEXP promise = Rf_findVarInFrame(rho, exprSymbol);
-    if (promise == R_UnboundValue)
+    int nprotect = 0;
+
+
+    binding_info_t promise; my_findVarInFrame(rho, exprSymbol, &promise);
+    Rf_protect(promise.value); nprotect++;
+    if (promise.value == my_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));
-    if (promise == R_MissingArg) {
+    if (promise.value == R_MissingArg) {
         // Rf_error(_("argument \"%s\" is missing, with no default"), R_CHAR(PRINTNAME(exprSymbol)));
         MissingArgError(exprSymbol, R_CurrentExpression, rho, "evalError");
+        Rf_unprotect(nprotect);
         return R_NilValue;
     }
-    if (TYPEOF(promise) != PROMSXP)
+    if (my_TYPEOF(promise) != PROMSXP)
         Rf_error("invalid '%s', is not a promise", R_CHAR(PRINTNAME(exprSymbol)));
 
 
-    SEXP code = ptr_PRCODE(promise);
+    SEXP code = my_PREXPR(promise);
     if (TYPEOF(code) != LANGSXP || CAR(code) != R_BraceSymbol)
         Rf_error("invalid '%s', expected a braced expression", R_CHAR(PRINTNAME(exprSymbol)));
-    if (ptr_PRVALUE(promise) != R_UnboundValue)
+    if (my_PRVALUE(promise) != my_UnboundValue)
         Rf_error("invalid '%s', must be an unevaluated call", R_CHAR(PRINTNAME(exprSymbol)));
 
 
     if (check_is_valid_init_file_expr) {
-        if (already_set_init_file) return R_FalseValue;
-        return Rf_ScalarLogical(NO_ATTRIB(code) &&
-                                ptr_PRENV(promise) == R_GlobalEnv
+        SEXP value;
+        if (already_set_init_file) value = R_FalseValue;
+        else value = Rf_ScalarLogical(NO_ATTRIB(code) &&
+                                      my_PRENV(promise) == R_GlobalEnv
 #if defined(R_THIS_PATH_HAS_PRSEEN)
-                                && PRSEEN(promise) == 0
+                                      && PRSEEN(promise.value) == 0
 #endif
-                                );
+                                      );
+        Rf_unprotect(nprotect);
+        return value;
     }
 
 
-    int nprotect = 0;
-
-
-    Rf_protect(promise); nprotect++;
-
-
     code = CDR(code);
-    SEXP env = ptr_PRENV(promise);
+    SEXP env = my_PRENV(promise);
     SEXP withVisible = getFromBase(withVisibleSymbol);
     Rf_protect(withVisible); nprotect++;
 
 
-    SEXP expr, value;
-    PROTECT_INDEX expr_indx, value_indx;
-    R_ProtectWithIndex(expr = R_NilValue, &expr_indx); nprotect++;
-    R_ProtectWithIndex(value = R_NilValue, &value_indx); nprotect++;
+    SEXP x;
+    PROTECT_INDEX indx;
+    R_ProtectWithIndex(x = R_NilValue, &indx); nprotect++;
 
 
     for (; code != R_NilValue; code = CDR(code)) {
-        R_Reprotect(expr = Rf_lcons(withVisible, Rf_cons(CAR(code), R_NilValue)), expr_indx);
-        R_Reprotect(value = Rf_eval(expr, env), value_indx);
-        if (Rf_asLogical(VECTOR_ELT(value, 1)))
-            my_PrintValueEnv(VECTOR_ELT(value, 0), env);
+        R_Reprotect(x = Rf_lcons(withVisible, Rf_cons(CAR(code), R_NilValue)), indx);
+        R_Reprotect(x = Rf_eval(x, env), indx);
+        if (Rf_asLogical(VECTOR_ELT(x, 1)))
+            my_PrintValueEnv(VECTOR_ELT(x, 0), env);
     }
 
 
-#if defined(R_THIS_PATH_HAS_PRSEEN)
-        SET_PRSEEN (promise, 0);
-#endif
-    ptr_SET_PRVALUE(promise, value);
-    ptr_SET_PRENV  (promise, R_NilValue);
-
-
+    set_R_Visible(FALSE);
     Rf_unprotect(nprotect);
-
-
-    return R_NilValue;
+    return x == R_NilValue ? R_NilValue : VECTOR_ELT(x, 0);
 }
 
 

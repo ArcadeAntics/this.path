@@ -117,11 +117,216 @@ const char *EncodeChar(SEXP x)
 }
 
 
+int length_DOTS(SEXP x)
+{
+    return (x && TYPEOF(x) == DOTSXP) ? Rf_length(x) : 0;
+}
+
+
+Rboolean isUnbound(SEXP x)
+{
+    return TYPEOF(x) == SYMSXP && PRINTNAME(x) == R_NilValue;
+}
+
+
+SEXP my_UnboundValue = NULL;
+
+
 #if R_version_at_least(4,6,0)
+
+
+extern R_BindingType_t R_GetBindingType(SEXP sym, SEXP env);
+
+
+void init_UnboundValue(void)
+{
+    int nprotect = 0;
+
+
+    SEXP formals = Rf_allocList(1);
+    Rf_protect(formals); nprotect++;
+    SET_TAG(formals, R_DotsSymbol);
+    SETCAR (formals, R_MissingArg);
+
+    SEXP body = Rf_allocLang(2);
+    Rf_protect(body); nprotect++;
+    SETCAR (body, Rf_install("get"));
+    SETCADR(body, Rf_mkString("..."));
+
+    SEXP fun = R_mkClosure(formals, body, R_BaseEnv);
+    Rf_protect(fun); nprotect++;
+
+    SEXP expr = Rf_lcons(fun, Rf_cons(R_NilValue, R_NilValue));
+    Rf_protect(expr); nprotect++;
+
+    SEXP value = Rf_eval(expr, R_EmptyEnv);
+    Rf_protect(value); nprotect++;
+    if (length_DOTS(value) != 1)
+        Rf_error("invalid ... list");
+    value = CAR(value);
+    if (TYPEOF(value) != PROMSXP)
+        Rf_error("invalid ... list");
+    if      (isUnbound(CAR(value))) my_UnboundValue = CAR(value);
+    else if (isUnbound(CDR(value))) my_UnboundValue = CDR(value);
+    else if (isUnbound(TAG(value))) my_UnboundValue = TAG(value);
+    else Rf_error("invalid ... list");
+
+
+    Rf_unprotect(nprotect);
+}
+
+
+int is_delayed(binding_info_t x) { return x.type == R_BindingTypeDelayed; }
+int is_forced (binding_info_t x) { return x.type == R_BindingTypeForced ; }
+int is_promise(binding_info_t x) { return is_delayed(x) || is_forced(x); }
+int my_TYPEOF (binding_info_t x) { return is_promise(x) ? PROMSXP : TYPEOF(x.value); }
+
+
+binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
+{
+    x->env = env;
+    x->sym = sym;
+    switch (x->type = R_GetBindingType(sym, env)) {
+    case R_BindingTypeUnbound: x->value = my_UnboundValue          ; break;
+    /* make no distinction between active and inactive bindings */
+    case R_BindingTypeValue  :
+    case R_BindingTypeActive : x->value = R_getVar(sym, env, FALSE); break;
+    case R_BindingTypeMissing: x->value = R_MissingArg             ; break;
+    case R_BindingTypeDelayed:
+    case R_BindingTypeForced : x->value = NULL                     ; break;
+    default: Rf_error("invalid binding type");
+    }
+    return x;
+}
+
+
+binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x)
+{
+    x->env = env;
+    x->sym = sym;
+    for (; env != R_EmptyEnv; env = ENCLOS(env)) {
+        x->env = env;
+        switch (x->type = R_GetBindingType(sym, env)) {
+        case R_BindingTypeUnbound: break;
+        /* make no distinction between active and inactive bindings */
+        case R_BindingTypeValue  :
+        case R_BindingTypeActive : x->value = R_getVar(sym, env, FALSE); return x;
+        case R_BindingTypeMissing: x->value = R_MissingArg             ; return x;
+        case R_BindingTypeDelayed:
+        case R_BindingTypeForced : x->value = NULL                     ; return x;
+        default: Rf_error("invalid binding type");
+        }
+    }
+    if (env != R_EmptyEnv)
+        Rf_error("should not happen, please report! (from %s#%d)", __FILE__, __LINE__);
+    x->type = R_BindingTypeUnbound;
+    x->value = my_UnboundValue;
+    return x;
+}
+
+
+SEXP my_findValInFrame(SEXP env, SEXP sym)
+{
+    binding_info_t x; my_findVarInFrame(env, sym, &x);
+    return is_promise(x) ? R_NilValue : x.value;
+}
+
+
+SEXP my_findVal(SEXP env, SEXP sym)
+{
+    binding_info_t x; my_findVar(env, sym, &x);
+    return is_promise(x) ? R_NilValue : x.value;
+}
+
+
+SEXP force(binding_info_t *x)
+{
+    if (is_promise(*x)) {
+        SEXP value = R_getVar(x->sym, x->env, FALSE);
+        /* assign type AFTER 'R_getVar' in case an error is thrown */
+        x->type = R_BindingTypeForced;
+        return value;
+    }
+    /* as possibly returned by an active binding */
+    else if (TYPEOF(x->value) == PROMSXP) {
+        if (ptr_PRVALUE(x->value) == my_UnboundValue) {
+            Rf_protect(x->value);
+            SEXP value = Rf_eval(x->value, R_EmptyEnv);
+            Rf_unprotect(1);
+            return value;
+        }
+        else return ptr_PRVALUE(x->value);
+    }
+    else return x->value;
+}
+
+
+void forceInFrame(SEXP env, SEXP sym)
+{
+    switch (R_GetBindingType(sym, env)) {
+    case R_BindingTypeUnbound:
+        Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        break;
+    case R_BindingTypeValue:
+        break;
+    case R_BindingTypeMissing:
+        break;
+    case R_BindingTypeDelayed:
+        R_getVar(sym, env, FALSE);
+        break;
+    case R_BindingTypeForced:
+        break;
+    case R_BindingTypeActive:
+        break;
+    }
+}
+
+
+SEXP my_PREXPR(binding_info_t x)
+{
+    if (is_promise(x)) {
+        if (is_delayed(x))
+            return R_DelayedBindingExpression(x.sym, x.env);
+        else
+            return R_ForcedBindingExpression(x.sym, x.env);
+    }
+    else if (TYPEOF(x.value) == PROMSXP)
+        return ptr_R_PromiseExpr(x.value);
+    else Rf_error("not a promise");
+}
+
+
+SEXP my_PRENV(binding_info_t x)
+{
+    if (is_promise(x)) {
+        if (is_delayed(x))
+            return R_DelayedBindingEnvironment(x.sym, x.env);
+        else
+            return R_NilValue;
+    }
+    else if (TYPEOF(x.value) == PROMSXP)
+        return ptr_PRENV(x.value);
+    else Rf_error("not a promise");
+}
+
+
+SEXP my_PRVALUE(binding_info_t x)
+{
+    if (is_promise(x)) {
+        if (is_delayed(x))
+            return my_UnboundValue;
+        else
+            return R_getVar(x.sym, x.env, FALSE);
+    }
+    else if (TYPEOF(x.value) == PROMSXP)
+        return ptr_PRVALUE(x.value);
+    else Rf_error("not a promise");
+}
 
 
 SEXP my_getRegisteredNamespace_c(const char *x)
 {
+    extern SEXP R_getRegisteredNamespace(const char *name);
     return R_getRegisteredNamespace(x);
 }
 
@@ -141,6 +346,107 @@ SEXP my_getRegisteredNamespace(const char *x, SEXP sym)
 #else
 
 
+void init_UnboundValue(void)
+{
+    my_UnboundValue = R_UnboundValue;
+}
+
+
+int is_delayed(binding_info_t x) { return ptr_PRVALUE(x.value) == my_UnboundValue; }
+int is_forced (binding_info_t x) { return ptr_PRVALUE(x.value) != my_UnboundValue; }
+int is_promise(binding_info_t x) { return TYPEOF(x.value) == PROMSXP; }
+int my_TYPEOF (binding_info_t x) { return TYPEOF(x.value); }
+
+
+binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
+{
+    x->env = env;
+    x->sym = sym;
+    x->value = Rf_findVarInFrame(env, sym);
+    return x;
+}
+
+
+binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x)
+{
+    x->env = env;
+    x->sym = sym;
+    x->value = Rf_findVar(sym, env);
+    return x;
+}
+
+
+SEXP my_findValInFrame(SEXP env, SEXP sym)
+{
+    return Rf_findVarInFrame(env, sym);
+}
+
+
+SEXP my_findVal(SEXP env, SEXP sym)
+{
+    return Rf_findVar(sym, env);
+}
+
+
+SEXP force(binding_info_t *x)
+{
+    if (is_promise(*x)) {
+        if (is_delayed(*x)) {
+            Rf_protect(x->value);
+            SEXP value = Rf_eval(x->value, R_EmptyEnv);
+            Rf_unprotect(1);
+            return value;
+        }
+        else return ptr_PRVALUE(x->value);
+    }
+    else return x->value;
+}
+
+
+void forceInFrame(SEXP env, SEXP sym)
+{
+    SEXP value = Rf_findVarInFrame(env, sym);
+    if (TYPEOF(value) == PROMSXP && ptr_PRVALUE(value) == my_UnboundValue) {
+        Rf_protect(value);
+        Rf_eval(value, R_EmptyEnv);
+        Rf_unprotect(1);
+    }
+}
+
+
+SEXP my_PREXPR(binding_info_t x)
+{
+    if (is_promise(x))
+        return ptr_R_PromiseExpr(x.value);
+    else {
+        Rf_error("not a promise");
+        return R_NilValue;
+    }
+}
+
+
+SEXP my_PRENV(binding_info_t x)
+{
+    if (is_promise(x))
+        return ptr_PRENV(x.value);
+    else {
+        Rf_error("not a promise");
+        return R_NilValue;
+    }
+}
+
+
+SEXP my_PRVALUE(binding_info_t x)
+{
+    if (is_promise(x))
+        return ptr_PRVALUE(x.value);
+    else {
+        Rf_error("not a promise");
+        return R_NilValue;
+    }
+}
+
+
 SEXP my_getRegisteredNamespace_c(const char *x)
 {
     return my_getRegisteredNamespace_sym(Rf_install(x));
@@ -150,7 +456,7 @@ SEXP my_getRegisteredNamespace_c(const char *x)
 SEXP my_getRegisteredNamespace_sym(SEXP sym)
 {
     SEXP val = Rf_findVarInFrame(R_NamespaceRegistry, sym);
-    return val == R_UnboundValue ? R_NilValue : val;
+    return val == my_UnboundValue ? R_NilValue : val;
 }
 
 
@@ -160,23 +466,124 @@ SEXP my_getRegisteredNamespace(const char *x, SEXP sym)
 }
 
 
+SEXP promiseUnwrap(SEXP x)
+{
+    /* uses Floyd's cycle detection */
+    SEXP y = x;
+    Rboolean advance = FALSE;
+    while (TRUE) {
+        SEXP tmp = ptr_PRCODE(x);
+        if (TYPEOF(tmp) != PROMSXP)
+            return x;
+        x = tmp;
+
+        if (x == y)
+            Rf_error(_("cycle detected in promise chain"));
+
+        if (advance)
+            y = ptr_PRCODE(y);
+        advance = !advance;
+    }
+}
+
+
+SEXP R_DelayedBindingExpression(SEXP sym, SEXP env)
+{
+    SEXP x = Rf_findVarInFrame(env, sym);
+    if (TYPEOF(x) != PROMSXP)
+        Rf_error("not a promise");
+    x = promiseUnwrap(x);
+    return ptr_R_PromiseExpr(x);
+}
+
+
+SEXP R_ForcedBindingExpression(SEXP sym, SEXP env)
+{
+    return R_DelayedBindingExpression(sym, env);
+}
+
+
+SEXP R_DelayedBindingEnvironment(SEXP sym, SEXP env)
+{
+    SEXP x = Rf_findVarInFrame(env, sym);
+    if (TYPEOF(x) != PROMSXP)
+        Rf_error("not a promise");
+    x = promiseUnwrap(x);
+    return ptr_PRENV(x);
+}
+
+
+SEXP makePROMISE(SEXP expr, SEXP env)
+{
+#if defined(R_THIS_PATH_HAS_PRSEEN)
+    ENSURE_NAMEDMAX(expr);
+    SEXP s = Rf_allocSExp(PROMSXP);
+    ptr_SET_PRCODE(s, expr);
+    ptr_SET_PRENV(s, env);
+    ptr_SET_PRVALUE(s, my_UnboundValue);
+    SET_PRSEEN(s, 0);
+    CLEAR_ATTRIB(s);
+    return s;
+#else
+    Rf_eval(expr_makePROMISE, R_EmptyEnv);
+    SEXP s = Rf_findVarInFrame(makePROMISE_environment, xSymbol);
+    Rf_protect(s);
+    /* undefine the promise so that it can be garbage collected when needed */
+    Rf_defineVar(xSymbol, R_NilValue, makePROMISE_environment);
+    ptr_SET_PRCODE(s, expr);
+    ptr_SET_PRENV(s, env);
+    Rf_unprotect(1);
+    return s;
+#endif
+}
+
+
+SEXP makeEVPROMISE(SEXP expr, SEXP value)
+{
+    SEXP prom = makePROMISE(expr, R_NilValue);
+    ptr_SET_PRVALUE(prom, value);
+    return prom;
+}
+
+
+void R_MakeDelayedBinding(SEXP sym, SEXP expr, SEXP eval_env, SEXP assign_env)
+{
+    Rf_defineVar(sym, makePROMISE(expr, eval_env), assign_env);
+}
+
+
+void R_MakeForcedBinding(SEXP sym, SEXP expr, SEXP value, SEXP assign_env)
+{
+    Rf_defineVar(sym, makeEVPROMISE(expr, value), assign_env);
+}
+
+
 #endif
 
 
 SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 {
-    SEXP value = Rf_findVarInFrame(env, sym);
-    if (!unbound_ok && value == R_UnboundValue)
+    return my_getVarInFrame(env, sym, unbound_ok);
+}
+
+
+SEXP my_getVarInFrame(SEXP env, SEXP sym, int unbound_ok)
+{
+    binding_info_t x;
+    my_findVarInFrame(env, sym, &x);
+    if (!unbound_ok && x.value == my_UnboundValue)
         Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
-    if (TYPEOF(value) == PROMSXP) {
-        if (ptr_PRVALUE(value) == R_UnboundValue) {
-            Rf_protect(value);
-            value = Rf_eval(value, R_EmptyEnv);
-            Rf_unprotect(1);
-        }
-        else value = ptr_PRVALUE(value);
-    }
-    return value;
+    return force(&x);
+}
+
+
+SEXP my_getVar(SEXP env, SEXP sym, int unbound_ok)
+{
+    binding_info_t x;
+    my_findVar(env, sym, &x);
+    if (!unbound_ok && x.value == my_UnboundValue)
+        Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+    return force(&x);
 }
 
 
@@ -215,16 +622,8 @@ SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call)
 {
     SEXP vl;
     for (; rho != R_EmptyEnv; rho = ENCLOS(rho)) {
-        vl = Rf_findVarInFrame(rho, symbol);
-        if (vl != R_UnboundValue) {
-            if (TYPEOF(vl) == PROMSXP) {
-                if (ptr_PRVALUE(vl) == R_UnboundValue) {
-                    Rf_protect(vl);
-                    vl = Rf_eval(vl, R_EmptyEnv);
-                    Rf_unprotect(1);
-                }
-                else vl = ptr_PRVALUE(vl);
-            }
+        vl = my_getVarInFrame(rho, symbol, /* unbound_ok */ TRUE);
+        if (vl != my_UnboundValue) {
             if (TYPEOF(vl) == CLOSXP ||
                 TYPEOF(vl) == BUILTINSXP ||
                 TYPEOF(vl) == SPECIALSXP)
@@ -243,7 +642,7 @@ SEXP findFunction3(SEXP symbol, SEXP rho, SEXP call)
     my_errorcall(call,
         _("could not find function \"%s\""),
         EncodeChar(PRINTNAME(symbol)));
-    return R_UnboundValue;
+    return my_UnboundValue;
 }
 
 
@@ -302,7 +701,8 @@ SEXP DocumentContext(void)
 }
 
 
-/* we used to do:
+/*
+ * we used to do:
  * document.context$ofile <- NULL
  * to indicate that a document context does not refer to a file, now we do:
  * document.context <- emptyenv()
@@ -310,56 +710,73 @@ SEXP DocumentContext(void)
  */
 
 
-#define _assign(ofile, documentcontext)                        \
-    INCREMENT_NAMED_defineVar(ofileSymbol, (ofile), (documentcontext));\
-    SEXP e = makePROMISE(R_NilValue, (documentcontext));       \
-    Rf_protect(e);                                             \
-    Rf_defineVar(fileSymbol, e, (documentcontext))
+void _assign_ofile(SEXP ofile, SEXP documentcontext)
+{
+    INCREMENT_NAMED_defineVar(ofileSymbol, ofile, documentcontext);
+}
 
 
-#define _assign_default(srcfile_original, owd, trans, documentcontext, na)\
-    if (srcfile_original) {                                    \
-        ptr_SET_PRCODE(                                        \
-            e,                                                 \
-            Rf_lcons(                                          \
-                _normalizePath_srcfilealiasSymbol,             \
-                Rf_cons(                                       \
-                    srcfile_original,                          \
-                    Rf_cons(trans, R_NilValue)                 \
-                )                                              \
-            )                                                  \
-        );                                                     \
-    }                                                          \
-    else if (owd) {                                            \
-        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);\
-        SEXP sym;                                              \
-        switch (na) {                                          \
-        case NA_DEFAULT: sym = _normalizePath_againstSymbol        ; break;\
-        case NA_NOT_DIR: sym = _normalizePath_not_dir_againstSymbol; break;\
-        case NA_FIX_DIR: sym = _normalizePath_fix_dir_againstSymbol; break;\
-        default:                                               \
-            Rf_errorcall(R_NilValue, _("invalid '%s' value"), "na");\
-            sym = R_NilValue;                                  \
-        }                                                      \
-        ptr_SET_PRCODE(e, Rf_lcons(sym, Rf_cons(wdSymbol, Rf_cons(trans, R_NilValue))));\
-    }                                                          \
-    else {                                                     \
-        SEXP sym;                                              \
-        switch (na) {                                          \
-        case NA_DEFAULT: sym = _normalizePathSymbol        ; break;\
-        case NA_NOT_DIR: sym = _normalizePath_not_dirSymbol; break;\
-        case NA_FIX_DIR: sym = _normalizePath_fix_dirSymbol; break;\
-        default:                                               \
-            Rf_errorcall(R_NilValue, _("invalid '%s' value"), "na");\
-            sym = R_NilValue;                                  \
-        }                                                      \
-        ptr_SET_PRCODE(e, Rf_lcons(sym, Rf_cons(trans, R_NilValue)));\
+void _assign_file(SEXP expr, SEXP documentcontext)
+{
+    Rf_protect(expr);
+    R_MakeDelayedBinding(fileSymbol, expr, documentcontext, documentcontext);
+    Rf_unprotect(1);
+}
+
+
+void _assign_default(SEXP srcfile_original, SEXP owd, SEXP trans_rights, SEXP documentcontext, NORMALIZE_ACTION na)
+{
+    Rf_protect(trans_rights);
+    if (srcfile_original) {
+        _assign_file(
+            Rf_lcons(
+                _normalizePath_srcfilealiasSymbol,
+                Rf_cons(
+                    srcfile_original,
+                    Rf_cons(trans_rights, R_NilValue)
+                )
+            ),
+            documentcontext
+        );
     }
+    else if (owd) {
+        INCREMENT_NAMED_defineVar(wdSymbol, owd, documentcontext);
+        SEXP sym;
+        switch (na) {
+        case NA_DEFAULT: sym = _normalizePath_againstSymbol        ; break;
+        case NA_NOT_DIR: sym = _normalizePath_not_dir_againstSymbol; break;
+        case NA_FIX_DIR: sym = _normalizePath_fix_dir_againstSymbol; break;
+        default:
+            Rf_errorcall(R_NilValue, _("invalid '%s' value"), "na");
+            sym = R_NilValue;
+        }
+        _assign_file(
+            Rf_lcons(sym, Rf_cons(wdSymbol, Rf_cons(trans_rights, R_NilValue))),
+            documentcontext
+        );
+    }
+    else {
+        SEXP sym;
+        switch (na) {
+        case NA_DEFAULT: sym = _normalizePathSymbol        ; break;
+        case NA_NOT_DIR: sym = _normalizePath_not_dirSymbol; break;
+        case NA_FIX_DIR: sym = _normalizePath_fix_dirSymbol; break;
+        default:
+            Rf_errorcall(R_NilValue, _("invalid '%s' value"), "na");
+            sym = R_NilValue;
+        }
+        _assign_file(
+            Rf_lcons(sym, Rf_cons(trans_rights, R_NilValue)),
+            documentcontext
+        );
+    }
+    Rf_unprotect(1);
+}
 
 
 void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na)
 {
-    _assign(ofile, documentcontext);
+    _assign_ofile(ofile, documentcontext);
 
 
     const char *url;
@@ -389,13 +806,12 @@ void assign_default(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP
 
 
     _assign_default(srcfile_original, owd, Rf_ScalarString(Rf_mkCharCE(url, ienc)), documentcontext, na);
-    Rf_unprotect(1);
 }
 
 
 void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEXP documentcontext, NORMALIZE_ACTION na)
 {
-    _assign(ofile, documentcontext);
+    _assign_ofile(ofile, documentcontext);
 
 
     /* translate the string, then extract the string after file://
@@ -434,7 +850,6 @@ void assign_file_uri(SEXP srcfile_original, SEXP owd, SEXP ofile, SEXP file, SEX
 
 
     _assign_default(srcfile_original, owd, Rf_ScalarString(Rf_mkCharCE(url + nh, ienc)), documentcontext, na);
-    Rf_unprotect(1);
 }
 
 
@@ -458,7 +873,7 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
 
 
     SEXP ofile = Rf_ScalarString(Rf_mkCharCE(_buf, Rf_getCharCE(description)));
-    _assign(ofile, documentcontext);
+    _assign_ofile(ofile, documentcontext);
 
 
     if ((srcfile_original || owd) && is_abs_path(url)) {
@@ -472,13 +887,12 @@ void assign_file_uri2(SEXP srcfile_original, SEXP owd, SEXP description, SEXP do
 
 
     _assign_default(srcfile_original, owd, Rf_ScalarString(description), documentcontext, na);
-    Rf_unprotect(1);
 }
 
 
 void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 {
-    _assign(ofile, documentcontext);
+    _assign_ofile(ofile, documentcontext);
 
 
     const char *url;
@@ -497,18 +911,13 @@ void assign_url(SEXP ofile, SEXP file, SEXP documentcontext)
 #endif
 
 
-    ptr_SET_PRCODE(
-        e,
+    _assign_file(
         Rf_lcons(_normalizeURL_1Symbol,
-            Rf_cons(Rf_ScalarString(Rf_mkCharCE(url, ienc)), R_NilValue))
+            Rf_cons(Rf_ScalarString(Rf_mkCharCE(url, ienc)), R_NilValue)),
+        documentcontext
     );
-    Rf_eval(e, R_EmptyEnv);  /* force the promise */
-    Rf_unprotect(1);
+    forceInFrame(documentcontext, fileSymbol);
 }
-
-
-#undef _assign_default
-#undef _assign
 
 
 void overwrite_ofile(SEXP ofilearg, SEXP documentcontext)
@@ -523,7 +932,7 @@ Rboolean _in_site_file = TRUE;
 Rboolean _in_init_file = FALSE;
 SEXP get_debugSource(void)
 {
-    if (!gui_rstudio) return R_UnboundValue;
+    if (!gui_rstudio) return my_UnboundValue;
 
 
     const char *what = "tools:rstudio";
@@ -536,12 +945,25 @@ SEXP get_debugSource(void)
             Rf_length(name) > 0 &&
             !strcmp(Rf_translateChar(STRING_ELT(name, 0)), what))
         {
-            return getInFrame(debugSourceSymbol, t, TRUE);
+            return my_getVarInFrame(t, debugSourceSymbol, TRUE);
         }
     }
 
 
-    return R_UnboundValue;
+    return my_UnboundValue;
+}
+
+
+SEXP call_path_join(SEXP x, SEXP y)
+{
+    static SEXP path_join_symbol = NULL;
+    if (path_join_symbol == NULL)
+        path_join_symbol = Rf_install("path.join");
+    SEXP expr = Rf_lcons(path_join_symbol, Rf_cons(x, Rf_cons(y, R_NilValue)));
+    Rf_protect(expr);
+    SEXP value = Rf_eval(expr, mynamespace);
+    Rf_unprotect(1);
+    return value;
 }
 
 
@@ -578,12 +1000,56 @@ SEXP duplicateEnv(SEXP env)
     Rf_protect(names);
     for (int i = LENGTH(names) - 1; i >= 0; i--) {
         SEXP sym = Rf_installTrChar(STRING_ELT(names, i));
+#if R_version_at_least(4,6,0)
+        switch (R_GetBindingType(sym, env)) {
+        case R_BindingTypeUnbound:
+            Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+            break;
+        case R_BindingTypeValue:
+            INCREMENT_NAMED_defineVar(sym, my_getVarInFrame(env, sym, FALSE), value);
+            break;
+        case R_BindingTypeMissing:
+            INCREMENT_NAMED_defineVar(sym, R_MissingArg, value);
+            break;
+        case R_BindingTypeDelayed:
+            R_MakeDelayedBinding(
+                /* sym        */ sym,
+                /* expr       */ sym,
+                /* eval_env   */ env,
+                /* assign_env */ value
+            );
+            break;
+        case R_BindingTypeForced:
+            R_MakeForcedBinding(
+                /* sym        */ sym,
+                /* expr       */ R_ForcedBindingExpression(sym, env),
+                /* value      */ my_getVarInFrame(env, sym, FALSE),
+                /* assign_env */ value
+            );
+            break;
+        case R_BindingTypeActive:
+            R_MakeActiveBinding(sym, R_ActiveBindingFunction(sym, env), value);
+            break;
+        }
+#else
 #if R_version_at_least(4,0,0)
         if (R_BindingIsActive(sym, env))
             R_MakeActiveBinding(sym, R_ActiveBindingFunction(sym, env), value);
         else
 #endif
-            INCREMENT_NAMED_defineVar(sym, Rf_findVarInFrame(env, sym), value);
+        {
+            binding_info_t x; my_findVarInFrame(env, sym, &x);
+            if (x.value == my_UnboundValue)
+                Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+            if (my_TYPEOF(x) == PROMSXP) {
+                if (my_PRVALUE(x) == my_UnboundValue)
+                    R_MakeDelayedBinding(sym, sym, env, value);
+                else
+                    R_MakeForcedBinding(sym, ptr_PRCODE(x.value), my_PRVALUE(x), value);
+            }
+            else INCREMENT_NAMED_defineVar(sym, x.value, value);
+        }
+#endif
         if (R_BindingIsLocked(sym, env))
             R_LockBinding(sym, value);
     }

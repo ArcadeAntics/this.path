@@ -1,6 +1,6 @@
 %%
 %% this.path : Get Executing Script's Path
-%% Copyright (C) 2022-2025   Iris Simmons
+%% Copyright (C) 2022-2026   Iris Simmons
 %%
 
 
@@ -18,7 +18,8 @@
   packages: \syspathcompatiblelinks
 
   \code{set.sys.path()} can be used to implement \code{sys.path()} for any
-  other \sourcenolink-like functions.
+  other \sourcenolink-like functions. Please note that it can only be used
+  within a function.
 
   \code{set.env.path()} and \code{set.src.path()} can be used alongside
   \code{set.sys.path()} to implement \code{\link{env.path}()} and
@@ -35,8 +36,7 @@
   \ifelse{html}{\codelink2{base:srcfile}{srcref}}{\code{srcref}}.
 
   \code{with_sys.path()} is a convenient way to evaluate code within the
-  context of a file. Whereas \code{set.sys.path()} can only be used within a
-  function, \code{with_sys.path()} can only be used outside a function.
+  context of a file.
 
   See \code{?\link{sys.path}(local = TRUE)} which returns the path of the
   executing script, confining the search to the local environment in which
@@ -70,7 +70,7 @@ set.sys.path(file,
     ignore.stdin = ignore.all,
     ignore.url = ignore.all,
     ignore.file.uri = ignore.all,
-    Function = NULL, ofile, delayed = FALSE)
+    Function = NULL, ofile, delayed = FALSE, assign_to = NULL)
 
 set.env.path(envir, matchThisEnv = getOption("topLevelEnvironment"))
 
@@ -173,6 +173,10 @@ wrap.source(expr,
     the path be delayed? Mostly for use with \code{\link{make_fix_funs}()} and
     similar.}
 
+  \item{assign_to}{\code{NULL} or a character string or a symbol; the variable
+    name for which to assign the return value in the currently active
+    environment.}
+
   \item{envir, matchThisEnv}{arguments passed to
     \codelink3{base:ns-topenv}{topenv}{()} to determine the top level
     environment in which to assign an associated path.}
@@ -219,12 +223,9 @@ wrap.source(expr,
 }
 \value{
   for \code{set.sys.path()}, if \code{file} is a path, then the normalized
-  path with the same attributes, otherwise \code{file} itself. The return value
-  of \code{set.sys.path()} should be assigned to a variable before use,
-  something like: \preformatted{{
-    file <- set.sys.path(file, ...)
-    sourcelike(file)
-}}
+  path with the same attributes, otherwise \code{file} itself. Please note that
+  if \code{delayed = TRUE}, the return value will be an absolute path, but not
+  the normalized path.
 
   for \code{set.env.path()}, \code{envir} invisibly.
 

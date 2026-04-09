@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2024   Iris Simmons
+Copyright (C) 2024-2026   Iris Simmons
  */
 
 
@@ -82,7 +82,7 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
     R_RegisterCCallable("this_path_reg_ptrs", "get_utf8locale", (DL_FUNC) get_utf8locale);
 
 
-#if defined(R_VERSION) && R_VERSION >= R_Version(4,5,0)
+#if defined(R_VERSION) && R_VERSION >= R_Version(4,5,0) && R_VERSION < R_Version(4,6,0)
     R_RegisterCCallable("this_path_reg_ptrs", "PRCODE", (DL_FUNC) PRCODE);
     R_RegisterCCallable("this_path_reg_ptrs", "PRENV", (DL_FUNC) PRENV);
     R_RegisterCCallable("this_path_reg_ptrs", "R_PromiseExpr", (DL_FUNC) R_PromiseExpr);

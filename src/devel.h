@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2024-2025   Iris Simmons
+Copyright (C) 2024-2026   Iris Simmons
  */
 
 
@@ -60,7 +60,17 @@ Copyright (C) 2024-2025   Iris Simmons
 #endif
 
 
-#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+#if R_version_at_least(4,6,0)
+    #define NEED_PROMISE_FUNCTION_POINTERS
+    #include <Rinternals.h> /* need SEXP */
+    extern SEXP (*ptr_PRCODE)(SEXP x);
+    extern SEXP (*ptr_PRENV)(SEXP x);
+    extern SEXP (*ptr_R_PromiseExpr)(SEXP x);
+    extern SEXP (*ptr_PRVALUE)(SEXP x);
+    extern void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
+    extern void (*ptr_SET_PRENV)(SEXP x, SEXP v);
+    extern void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
+#elif defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
     #define ptr_PRCODE PRCODE
     #define ptr_PRENV PRENV
     #define ptr_R_PromiseExpr R_PromiseExpr
@@ -72,6 +82,7 @@ Copyright (C) 2024-2025   Iris Simmons
     #define ptr_SET_PRENV SET_PRENV
     #define ptr_SET_PRVALUE SET_PRVALUE
 #else
+    #define NEED_PROMISE_FUNCTION_POINTERS
     #define NEED_R_4_5_0_FUNCTIONS
     #include <Rinternals.h> /* need SEXP */
     extern SEXP (*ptr_PRCODE)(SEXP x);

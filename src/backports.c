@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2023-2025   Iris Simmons
+Copyright (C) 2023-2026   Iris Simmons
  */
 
 
@@ -283,6 +283,7 @@ SEXP do_anyNA_default do_formals
 
 int IS_SCALAR(SEXP x, int type)
 {
+    if (!x) return 0;
     switch (type) {
     case LGLSXP:
     case INTSXP:
@@ -503,8 +504,8 @@ SEXP do_isRegisteredNamespace do_formals
 
     SEXP name = checkNSname(call, Rf_protect(Rf_coerceVector(CAR(args), SYMSXP)));
     Rf_unprotect(1);
-    SEXP val = Rf_findVarInFrame(R_NamespaceRegistry, name);
-    return val == R_UnboundValue ? R_FalseValue : R_TrueValue;
+    SEXP val = my_getRegisteredNamespace_sym(name);
+    return val == R_NilValue ? R_FalseValue : R_TrueValue;
 }
 
 
@@ -707,9 +708,6 @@ SEXP do_endsWith do_formals
 #endif
 
 
-#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? Rf_length(_v_) : 0)
-
-
 #if R_version_less_than(3,5,0)
 
 
@@ -719,8 +717,8 @@ SEXP do_dotslength do_formals
 
 
     SEXP env = Rf_eval(expr_parent_frame, rho);
-    SEXP vl = Rf_findVar(R_DotsSymbol, env);
-    if (vl == R_UnboundValue)
+    SEXP vl = my_findVal(env, R_DotsSymbol);
+    if (vl == my_UnboundValue)
         Rf_error(_("incorrect context: the current call has no '...' to look in"));
     return Rf_ScalarInteger(length_DOTS(vl));
 }
@@ -736,8 +734,8 @@ SEXP ddfind(int i, SEXP rho)
 {
     if (i <= 0)
         Rf_error(_("indexing '...' with non-positive index %d"), i);
-    SEXP vl = Rf_findVar(R_DotsSymbol, rho);
-    if (vl != R_UnboundValue) {
+    SEXP vl = my_findVal(rho, R_DotsSymbol);
+    if (vl != my_UnboundValue) {
         if (length_DOTS(vl) >= i) {
             vl = Rf_nthcdr(vl, i - 1);
             return CAR(vl);
@@ -753,9 +751,6 @@ SEXP ddfind(int i, SEXP rho)
 
 
 #endif
-
-
-#undef length_DOTS
 
 
 #if R_version_less_than(3,6,0)

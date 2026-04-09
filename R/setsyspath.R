@@ -30,28 +30,30 @@ set.sys.path <- function (file, path.only = FALSE, character.only = path.only,
     allow.servsockconn = !file.only, allow.customConnection = !file.only,
     ignore.all = FALSE, ignore.blank.string = ignore.all, ignore.clipboard = ignore.all,
     ignore.stdin = ignore.all, ignore.url = ignore.all, ignore.file.uri = ignore.all,
-    Function = NULL, ofile, delayed = FALSE)
+    Function = NULL, ofile, delayed = FALSE, assign_to = NULL)
 .External2(.C_set_sys_path, character.only, conv2utf8, allow.blank.string,
     allow.clipboard, allow.stdin, allow.url, allow.file.uri,
     allow.unz, allow.pipe, allow.terminal, allow.textConnection,
     allow.rawConnection, allow.sockconn, allow.servsockconn,
     allow.customConnection, ignore.blank.string, ignore.clipboard,
-    ignore.stdin, ignore.url, ignore.file.uri, Function, delayed)
+    ignore.stdin, ignore.url, ignore.file.uri, Function, delayed,
+    assign_to)
 
 
 local({
     f1 <- formals(wrap.source)
     f2 <- formals(set.sys.path)
+    i <- 4L
     stopifnot(
-        length(f1) + 3L == length(f2),
-        identical(f1[-1L], f2[2L:(length(f2) - 3L)]),
+        length(f1) + i == length(f2),
+        identical(f1[-1L], f2[2L:(length(f2) - i)]),
         TRUE
     )
     b1 <- body(wrap.source)
     b2 <- body(set.sys.path)
     stopifnot(
-        length(b1) + 2L == length(b2),
-        identical(b1[-2L], b2[-c(2L, length(b2) - (1:0))])
+        length(b1) + (i - 1L) == length(b2),
+        identical(b1[-2L], b2[-c(2L, length(b2) - ((i - 2L):0L))])
     )
 })
 
@@ -74,6 +76,6 @@ set.sys.path.function <- function (fun)
 
 with_sys.path <- function (file, expr, ...)
 {
-    set.sys.path(file = file, ..., Function = c("with_sys.path", "@R_PACKAGE_NAME@"))
+    set.sys.path(file = file, ..., Function = c("with_sys.path", "@R_PACKAGE_NAME@"), assign_to = NULL)
     expr
 }

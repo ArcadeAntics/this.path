@@ -22,7 +22,6 @@ extern Rboolean Rf_isValidStringF(SEXP);
 #include "files.h"
 #include "ns-hooks.h"
 #include "print.h"
-#include "promises.h"
 #include "rversiondefines.h"
 #include "symbols.h"
 #include "sys.h"
@@ -35,7 +34,7 @@ extern Rboolean Rf_isValidStringF(SEXP);
 extern Rboolean Rf_pmatch(SEXP, SEXP, Rboolean);
 
 
-#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+#if R_version_less_than(4,6,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
 #define R_THIS_PATH_HAS_PRSEEN
 extern void SET_PRSEEN(SEXP x, int v);
 #endif
@@ -67,18 +66,54 @@ extern void UNIMPLEMENTED_TYPE(const char *s, SEXP x);
 extern const char *EncodeChar(SEXP);
 
 
+int length_DOTS(SEXP x);
+
+
 #define ISNULL(x) ((x) == R_NilValue)
-#define ISUNBOUND(x) ((x) == R_UnboundValue)
+#define ISUNBOUND(x) ((x) == my_UnboundValue)
 
 
+extern SEXP my_UnboundValue;
+extern void init_UnboundValue(void);
+
+
+extern SEXP R_DelayedBindingExpression(SEXP sym, SEXP env);
+extern SEXP R_ForcedBindingExpression(SEXP sym, SEXP env);
+extern SEXP R_DelayedBindingEnvironment(SEXP sym, SEXP env);
+extern void R_MakeDelayedBinding(SEXP sym, SEXP expr, SEXP eval_env, SEXP assign_env);
+extern void R_MakeForcedBinding(SEXP sym, SEXP expr, SEXP value, SEXP assign_env);
+
+
+typedef struct {
+    SEXP env;
+    SEXP sym;
+    SEXP value;
+#if R_version_at_least(4,6,0)
+    R_BindingType_t type;
+#endif
+} binding_info_t;
+int is_delayed(binding_info_t x);
+int is_forced (binding_info_t x);
+int is_promise(binding_info_t x);
+int my_TYPEOF (binding_info_t x);
+binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x);
+binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x);
+SEXP my_findValInFrame(SEXP env, SEXP sym);
+SEXP my_findVal(SEXP env, SEXP sym);
+SEXP force(binding_info_t *x);
+void forceInFrame(SEXP env, SEXP sym);
+SEXP my_PREXPR(binding_info_t x);
+SEXP my_PRENV(binding_info_t x);
+SEXP my_PRVALUE(binding_info_t x);
 SEXP my_getRegisteredNamespace_c(const char *x);
 SEXP my_getRegisteredNamespace_sym(SEXP sym);
 SEXP my_getRegisteredNamespace(const char *x, SEXP sym);
 
 
-extern SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok);
-#define getFromBase(sym) (getInFrame((sym), R_BaseEnv, FALSE))
-#define getFromMyNS(sym) (getInFrame((sym), mynamespace, FALSE))
+SEXP my_getVarInFrame(SEXP env, SEXP sym, int unbound_ok);
+SEXP my_getVar(SEXP env, SEXP sym, int unbound_ok);
+#define getFromBase(sym) (my_getVarInFrame(R_BaseEnv  , (sym), FALSE))
+#define getFromMyNS(sym) (my_getVarInFrame(mynamespace, (sym), FALSE))
 extern SEXP getInList(SEXP sym, SEXP list, int NULL_ok);
 
 
@@ -203,6 +238,9 @@ extern SEXP get_debugSource(void);
 #endif
 
 
+SEXP call_path_join(SEXP x, SEXP y);
+
+
 /* it is undesirable to have this as a #define but we also cannot
    evaluate all the arguments. used in:
 
@@ -218,7 +256,7 @@ extern SEXP get_debugSource(void);
      * _src_path()
  */
 #define set_documentcontext(call, sym, ofile, assign_here, assign_as_binding,\
-    normalize_action, forcepromise, assign_returnvalue,        \
+    normalize_action, forcepromise, assign_returnvalue, assign_to,\
     maybe_chdir, getowd, hasowd, ofilearg,                     \
     character_only, conv2utf8, allow_blank_string,             \
     allow_clipboard, allow_stdin, allow_url, allow_file_uri,   \
@@ -244,7 +282,7 @@ do {                                                           \
         }                                                      \
         const char *url;                                       \
         if (conv2utf8) {                                       \
-            /* https://github.com/wch/r-source/blob/trunk/src/main/util.c#L2257 */\
+            /* https://github.com/wch/r-source/blob/trunk/src/main/util.c#L2335 */\
             if (IS_UTF8(file) || IS_ASCII(file) || IS_BYTES(file))\
                 url = R_CHAR(file);                            \
             else {                                             \
@@ -260,6 +298,8 @@ do {                                                           \
                 if (assign_returnvalue) {                      \
                     returnvalue = Rf_protect(ofile); nprotect++;\
                 }                                              \
+                if (assign_to)                                 \
+                    INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
             }                                                  \
             else                                               \
                 my_errorcall(call, "invalid '%s', must not be \"\"", EncodeChar(PRINTNAME(sym)));\
@@ -270,6 +310,8 @@ do {                                                           \
                 if (assign_returnvalue) {                      \
                     returnvalue = Rf_protect(ofile); nprotect++;\
                 }                                              \
+                if (assign_to)                                 \
+                    INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
             }                                                  \
             else                                               \
                 my_errorcall(call, "invalid '%s', %s", EncodeChar(PRINTNAME(sym)), must_not_be_clipboard_message);\
@@ -280,6 +322,8 @@ do {                                                           \
                 if (assign_returnvalue) {                      \
                     returnvalue = Rf_protect(ofile); nprotect++;\
                 }                                              \
+                if (assign_to)                                 \
+                    INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
             }                                                  \
             else                                               \
                 my_errorcall(call, "invalid '%s', must not be \"stdin\"", EncodeChar(PRINTNAME(sym)));\
@@ -290,6 +334,8 @@ do {                                                           \
                 if (assign_returnvalue) {                      \
                     returnvalue = Rf_protect(ofile); nprotect++;\
                 }                                              \
+                if (assign_to)                                 \
+                    INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 if (ofilearg != NULL)                          \
                     overwrite_ofile(ofilearg, documentcontext);\
             }                                                  \
@@ -312,16 +358,28 @@ do {                                                           \
                     else assign_file_uri(NULL, NULL, ofile, file, documentcontext, normalize_action);\
                 }                                              \
                 else assign_file_uri(NULL, NULL, ofile, file, documentcontext, normalize_action);\
-                if (assign_returnvalue) {                      \
+                if (assign_returnvalue || assign_to) {         \
                     if (forcepromise) {                        \
-                        returnvalue = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
-                        SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
+                        SEXP tmp = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
+                        SET_STRING_ELT(tmp, 0, STRING_ELT(my_getVarInFrame(documentcontext, fileSymbol, FALSE), 0));\
+                        if (assign_returnvalue)                \
+                            returnvalue = tmp;                 \
+                        if (assign_to)                         \
+                            INCREMENT_NAMED_defineVar(assign_to, tmp, assign_here);\
                     } else {                                   \
-                        returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
+                        if (assign_returnvalue) {              \
+                            SEXP owd = my_findValInFrame(documentcontext, wdSymbol);\
+                            if (owd == my_UnboundValue || owd == R_NilValue)\
+                                owd = Rf_mkString(".");        \
+                            Rf_protect(owd); nprotect++;       \
+                            returnvalue = Rf_protect(call_path_join(owd, ofile)); nprotect++;\
+                        }                                      \
+                        if (assign_to)                         \
+                            R_MakeDelayedBinding(assign_to, fileSymbol, documentcontext, assign_here);\
                     }                                          \
                 }                                              \
                 else if (forcepromise)                         \
-                    getInFrame(fileSymbol, documentcontext, FALSE);\
+                    forceInFrame(documentcontext, fileSymbol); \
                 if (ofilearg != NULL)                          \
                     overwrite_ofile(ofilearg, documentcontext);\
             }                                                  \
@@ -343,16 +401,28 @@ do {                                                           \
                 else assign_default(NULL, NULL, ofile, file, documentcontext, normalize_action);\
             }                                                  \
             else assign_default(NULL, NULL, ofile, file, documentcontext, normalize_action);\
-            if (assign_returnvalue) {                          \
+            if (assign_returnvalue || assign_to) {             \
                 if (forcepromise) {                            \
-                    returnvalue = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
-                    SET_STRING_ELT(returnvalue, 0, STRING_ELT(getInFrame(fileSymbol, documentcontext, FALSE), 0));\
+                    SEXP tmp = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
+                    SET_STRING_ELT(tmp, 0, STRING_ELT(my_getVarInFrame(documentcontext, fileSymbol, FALSE), 0));\
+                    if (assign_returnvalue)                    \
+                        returnvalue = tmp;                     \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, tmp, assign_here);\
                 } else {                                       \
-                    returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
+                    if (assign_returnvalue) {                  \
+                        SEXP owd = my_findValInFrame(documentcontext, wdSymbol);\
+                        if (owd == my_UnboundValue || owd == R_NilValue)\
+                            owd = Rf_mkString(".");            \
+                        Rf_protect(owd); nprotect++;           \
+                        returnvalue = Rf_protect(call_path_join(owd, ofile)); nprotect++;\
+                    }                                          \
+                    if (assign_to)                             \
+                        R_MakeDelayedBinding(assign_to, fileSymbol, documentcontext, assign_here);\
                 }                                              \
             }                                                  \
             else if (forcepromise)                             \
-                getInFrame(fileSymbol, documentcontext, FALSE);\
+                forceInFrame(documentcontext, fileSymbol);     \
             if (ofilearg != NULL)                              \
                 overwrite_ofile(ofilearg, documentcontext);    \
         }                                                      \
@@ -372,16 +442,12 @@ do {                                                           \
             get_description_and_class;                         \
             if (streql(klass, "file")) {                       \
                 assign_file_uri2(NULL, NULL, description, documentcontext, normalize_action);\
-                if (assign_returnvalue) {                      \
-                    if (forcepromise) {                        \
-                        getInFrame(fileSymbol, documentcontext, FALSE);\
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    } else {                                   \
-                        returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
-                    }                                          \
-                }                                              \
-                else if (forcepromise)                         \
-                    getInFrame(fileSymbol, documentcontext, FALSE);\
+                if (forcepromise)                              \
+                    forceInFrame(documentcontext, fileSymbol); \
+                if (assign_returnvalue)                        \
+                    returnvalue = ofile;                       \
+                if (assign_to)                                 \
+                    INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
             }                                                  \
             else if (streql(klass, "gzfile"  ) ||              \
                      streql(klass, "bzfile"  ) ||              \
@@ -390,25 +456,22 @@ do {                                                           \
                      streql(klass, "fifo"    ))                \
             {                                                  \
                 assign_default(NULL, NULL, Rf_ScalarString(description), description, documentcontext, normalize_action);\
-                if (assign_returnvalue) {                      \
-                    if (forcepromise) {                        \
-                        getInFrame(fileSymbol, documentcontext, FALSE);\
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    } else {                                   \
-                        returnvalue = Rf_findVarInFrame(documentcontext, fileSymbol);\
-                    }                                          \
-                }                                              \
-                else if (forcepromise)                         \
-                    getInFrame(fileSymbol, documentcontext, FALSE);\
+                if (forcepromise)                              \
+                    forceInFrame(documentcontext, fileSymbol); \
+                if (assign_returnvalue)                        \
+                    returnvalue = ofile;                       \
+                if (assign_to)                                 \
+                    INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
             }                                                  \
             else if (streql(klass, "url-libcurl") ||           \
                      streql(klass, "url-wininet"))             \
             {                                                  \
                 if (allow_url) {                               \
                     assign_url(Rf_ScalarString(description), description, documentcontext);\
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a URL connection", EncodeChar(PRINTNAME(sym)));\
@@ -433,9 +496,10 @@ do {                                                           \
                     INCREMENT_NAMED_defineVar(errcndSymbol              , ThisPathInZipFileError(R_NilValue, R_EmptyEnv, description), documentcontext);\
                     INCREMENT_NAMED_defineVar(for_msgSymbol             , Rf_ScalarString(description)                               , documentcontext);\
                                  Rf_defineVar(associated_with_fileSymbol, R_TrueValue                                                , documentcontext);\
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
@@ -443,9 +507,10 @@ do {                                                           \
             else if (is_clipboard(klass)) {                    \
                 if (allow_clipboard) {                         \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a clipboard connection", EncodeChar(PRINTNAME(sym)));\
@@ -453,9 +518,10 @@ do {                                                           \
             else if (streql(klass, "pipe")) {                  \
                 if (allow_pipe) {                              \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
@@ -463,9 +529,10 @@ do {                                                           \
             else if (streql(klass, "terminal")) {              \
                 if (allow_terminal) {                          \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s connection", EncodeChar(PRINTNAME(sym)), klass);\
@@ -473,9 +540,10 @@ do {                                                           \
             else if (streql(klass, "textConnection")) {        \
                 if (allow_textConnection) {                    \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
@@ -483,9 +551,10 @@ do {                                                           \
             else if (streql(klass, "rawConnection")) {         \
                 if (allow_rawConnection) {                     \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
@@ -493,9 +562,10 @@ do {                                                           \
             else if (streql(klass, "sockconn")) {              \
                 if (allow_sockconn) {                          \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
@@ -503,9 +573,10 @@ do {                                                           \
             else if (streql(klass, "servsockconn")) {          \
                 if (allow_servsockconn) {                      \
                     documentcontext = R_EmptyEnv;              \
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a %s", EncodeChar(PRINTNAME(sym)), klass);\
@@ -523,9 +594,10 @@ do {                                                           \
                      */                                        \
                     INCREMENT_NAMED_defineVar(errcndSymbol , UnrecognizedConnectionClassError, documentcontext);\
                     INCREMENT_NAMED_defineVar(for_msgSymbol, Rf_ScalarString(description)    , documentcontext);\
-                    if (assign_returnvalue) {                  \
-                        returnvalue = Rf_protect(ofile); nprotect++;\
-                    }                                          \
+                    if (assign_returnvalue)                    \
+                        returnvalue = ofile;                   \
+                    if (assign_to)                             \
+                        INCREMENT_NAMED_defineVar(assign_to, ofile, assign_here);\
                 }                                              \
                 else                                           \
                     my_errorcall(call, "invalid '%s', cannot be a connection of class '%s'",\

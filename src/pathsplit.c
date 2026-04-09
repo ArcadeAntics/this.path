@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2023-2025   Iris Simmons
+Copyright (C) 2023-2026   Iris Simmons
  */
 
 
@@ -294,13 +294,13 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     int nprotect = 0;
 
 
-    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    SEXP dots = my_findValInFrame(rho, R_DotsSymbol);
     Rf_protect(dots); nprotect++;
-    if (dots == R_UnboundValue)
+    if (dots == my_UnboundValue)
         Rf_error(_("'...' used in an incorrect context"));
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0);
+    int dots_length = length_DOTS(dots);
     if (dots_length <= 0) {
         Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);

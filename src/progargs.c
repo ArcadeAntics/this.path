@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2022-2024   Iris Simmons
+Copyright (C) 2022-2026   Iris Simmons
  */
 
 
@@ -54,13 +54,13 @@ SEXP do_asArgs do_formals
     }
 
 
-    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    SEXP dots = my_findValInFrame(rho, R_DotsSymbol);
     Rf_protect(dots); nprotect++;
-    if (dots == R_UnboundValue)
+    if (dots == my_UnboundValue)
         Rf_error("could not find the ... list; should never happen, please report!");
 
 
-    int dots_length = (((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0) - n);
+    int dots_length = (length_DOTS(dots) - n);
 
 
     if (dots_length <= 0) {

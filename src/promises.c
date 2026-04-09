@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2022-2025   Iris Simmons
+Copyright (C) 2022-2026   Iris Simmons
  */
 
 
@@ -96,26 +96,22 @@ SEXP do_is_unevaluated_promise do_formals
     handles_nargs(rho, ".C_is_unevaluated_promise");
 
 
-    SEXP value;
-#if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
-#define if_DDVAL_then_ddfindVar                                \
-    if (DDVAL(sym))                                            \
-        value = ddfindVar(sym, env);
-#else
-#define if_DDVAL_then_ddfindVar                                \
-    int i;                                                     \
-    if ((i = ddVal(sym)))                                      \
-        value = ddfind(i, env);
-#endif
-    if_DDVAL_then_ddfindVar
-    else
-        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
-    if (value == R_UnboundValue)
+    int i;
+    if ((i = ddVal(sym))) {
+        SEXP value = ddfind(i, env);
+        if (value == my_UnboundValue)
+            Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        return Rf_ScalarLogical(TYPEOF(value) == PROMSXP &&
+                                ptr_PRVALUE(value) == my_UnboundValue);
+    }
+    binding_info_t value; (inherits ? my_findVar(env, sym, &value) :
+                                      my_findVarInFrame(env, sym, &value));
+    if (value.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
-    return Rf_ScalarLogical(TYPEOF(value) == PROMSXP &&
-                            ptr_PRVALUE(value) == R_UnboundValue);
+    return Rf_ScalarLogical(my_TYPEOF(value) == PROMSXP &&
+                            my_PRVALUE(value) == my_UnboundValue);
 }
 
 
@@ -130,19 +126,26 @@ SEXP do_promise_is_unevaluated do_formals
     handles_nargs(ENCLOS(rho), ".C_promise_is_unevaluated");
 
 
-    SEXP value;
-    if_DDVAL_then_ddfindVar
-    else
-        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
-    if (value == R_UnboundValue)
+    int i;
+    if ((i = ddVal(sym))) {
+        SEXP value = ddfind(i, env);
+        if (value == my_UnboundValue)
+            Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        if (TYPEOF(value) != PROMSXP)
+            Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+        return Rf_ScalarLogical(ptr_PRVALUE(value) == my_UnboundValue);
+    }
+    binding_info_t value; (inherits ? my_findVar(env, sym, &value) :
+                                      my_findVarInFrame(env, sym, &value));
+    if (value.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
-    if (TYPEOF(value) != PROMSXP)
+    if (my_TYPEOF(value) != PROMSXP)
         Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
-    return Rf_ScalarLogical(ptr_PRVALUE(value) == R_UnboundValue);
+    return Rf_ScalarLogical(my_PRVALUE(value) == my_UnboundValue);
 }
 
 
@@ -156,16 +159,23 @@ SEXP do_forcePromise_no_warn do_formals
 
 
     do_start_no_op("forcePromise_no_warn", -1);
-
-
+#if R_version_at_least(4,6,0)
+    Rf_error("forcePromise_no_warn does not work on R >= 4.6.0");
+    return R_NilValue;
+#else
     handles_nargs(ENCLOS(rho), ".C_forcePromise_no_warn");
 
 
     SEXP value;
-    if_DDVAL_then_ddfindVar
-    else
-        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
-    if (value == R_UnboundValue)
+    int i;
+    if ((i = ddVal(sym)))
+        value = ddfind(i, env);
+    else {
+        binding_info_t tmp; (inherits ? my_findVar(sym, env, &tmp) :
+                                        my_findVarInFrame(env, sym, &tmp));
+        value = tmp.value;
+    }
+    if (value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 
@@ -173,7 +183,7 @@ SEXP do_forcePromise_no_warn do_formals
         Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
 
 
-    if (ptr_PRVALUE(value) == R_UnboundValue) {
+    if (ptr_PRVALUE(value) == my_UnboundValue) {
         Rf_protect(value);
 #if defined(R_THIS_PATH_HAS_PRSEEN)
         if (PRSEEN(value)) {
@@ -190,44 +200,8 @@ SEXP do_forcePromise_no_warn do_formals
         Rf_unprotect(1);
     }
     return ptr_PRVALUE(value);
-}
-
-
-
-
-
-SEXP makePROMISE(SEXP expr, SEXP env)
-{
-#if defined(R_THIS_PATH_HAS_PRSEEN)
-    ENSURE_NAMEDMAX(expr);
-    SEXP s = Rf_allocSExp(PROMSXP);
-    ptr_SET_PRCODE(s, expr);
-    ptr_SET_PRENV(s, env);
-    ptr_SET_PRVALUE(s, R_UnboundValue);
-    SET_PRSEEN(s, 0);
-    CLEAR_ATTRIB(s);
-    return s;
-#else
-    Rf_eval(expr_makePROMISE, R_EmptyEnv);
-    SEXP s = Rf_findVarInFrame(makePROMISE_environment, xSymbol);
-    Rf_protect(s);
-    ptr_SET_PRCODE(s, expr);
-    ptr_SET_PRENV(s, env);
-    Rf_unprotect(1);
-    return s;
 #endif
 }
-
-
-SEXP makeEVPROMISE(SEXP expr, SEXP value)
-{
-    SEXP prom = makePROMISE(expr, R_NilValue);
-    ptr_SET_PRVALUE(prom, value);
-    return prom;
-}
-
-
-
 
 
 SEXP do_is_R_MissingArg do_formals
@@ -239,10 +213,12 @@ SEXP do_is_R_MissingArg do_formals
 
 
     SEXP value;
-    if_DDVAL_then_ddfindVar
+    int i;
+    if ((i = ddVal(sym)))
+        value = ddfind(i, env);
     else
-        value = (inherits ? Rf_findVar(sym, env) : Rf_findVarInFrame(env, sym));
-    if (value == R_UnboundValue)
+        value = (inherits ? my_findVal(env, sym) : my_findValInFrame(env, sym));
+    if (value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
 

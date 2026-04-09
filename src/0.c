@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2022-2025   Iris Simmons
+Copyright (C) 2022-2026   Iris Simmons
  */
 
 
@@ -195,7 +195,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
 {"wrap_source"          , (DL_FUNC) &do_wrap_source          , 20}, // R_Visible updatable
-{"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 22},
+{"set_sys_path"         , (DL_FUNC) &do_set_sys_path         , 23},
 {"unset_sys_path"       , (DL_FUNC) &do_unset_sys_path       ,  0}, // R_Visible off
 {"set_env_path"         , (DL_FUNC) &do_set_env_path         ,  2}, // R_Visible off
 {"set_src_path"         , (DL_FUNC) &do_set_src_path         ,  1}, // R_Visible off
@@ -214,7 +214,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* startup.c */
 
 
-{"with_startup_file"      , (DL_FUNC) &do_with_startup_file      , 0},
+{"with_startup_file"      , (DL_FUNC) &do_with_startup_file      , 0}, // R_Visible off
 {"is_valid_init_file_expr", (DL_FUNC) &do_is_valid_init_file_expr, 0},
 {"set_init_file"          , (DL_FUNC) &do_set_init_file          , 0},
 {"unset_init_file"        , (DL_FUNC) &do_unset_init_file        , 0},
@@ -275,8 +275,8 @@ void R_init_@R_PACKAGE_LIB@(DllInfo *dll)
 #endif
 
 
-    extern SEXP makePROMISE(SEXP expr, SEXP env);
-    extern SEXP makeEVPROMISE(SEXP expr, SEXP value);
-    R_RegisterCCallable("this.path", "makePROMISE", (DL_FUNC) makePROMISE);
-    R_RegisterCCallable("this.path", "makeEVPROMISE", (DL_FUNC) makeEVPROMISE);
+    extern void R_MakeDelayedBinding(SEXP sym, SEXP expr, SEXP eval_env, SEXP assign_env);
+    extern void R_MakeForcedBinding (SEXP sym, SEXP expr, SEXP value   , SEXP assign_env);
+    R_RegisterCCallable("this.path", "R_MakeDelayedBinding", (DL_FUNC) R_MakeDelayedBinding);
+    R_RegisterCCallable("this.path", "R_MakeForcedBinding" , (DL_FUNC) R_MakeForcedBinding );
 }

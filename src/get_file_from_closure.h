@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2023-2024   Iris Simmons
+Copyright (C) 2023-2026   Iris Simmons
  */
 
 
@@ -50,52 +50,39 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
 
 
 #define get_and_check(var, sym)                                \
-        SEXP var = Rf_findVarInFrame(env, (sym));              \
-        if (var == R_UnboundValue)                             \
+        binding_info_t var; my_findVarInFrame(env, (sym), &var);\
+        if (var.value == my_UnboundValue)                      \
             Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
-        if (TYPEOF(var) != PROMSXP)                            \
+        if (my_TYPEOF(var) != PROMSXP)                         \
             Rf_error("invalid '%s', must be a promise", EncodeChar(PRINTNAME((sym))))
 
 
         get_and_check(file, fileSymbol);
         /* if the promise has not already been forced, just get the original */
-        if (ptr_PRVALUE(file) == R_UnboundValue)
+        if (my_PRVALUE(file) == my_UnboundValue)
             original = TRUE;
         else
-            return ptr_PRVALUE(file);
+            return my_PRVALUE(file);
     }
     if (original) {
 #if defined(R_THIS_PATH_HAS_PRSEEN)
 #define get_and_return(var, sym)                               \
         get_and_check(var, sym);                               \
-        if (ptr_PRVALUE(var) == R_UnboundValue) {              \
+        if (my_PRVALUE(var) == my_UnboundValue) {              \
             /* unlike a normal promise, we DO NOT want to */   \
             /* throw a warning if var is re-evaluated     */   \
-            if (PRSEEN(var)) {                                 \
-                if (PRSEEN(var) == 1);                         \
-                else SET_PRSEEN(var, 0);                       \
+            if (PRSEEN(var.value)) {                           \
+                if (PRSEEN(var.value) == 1);                   \
+                else SET_PRSEEN(var.value, 0);                 \
             }                                                  \
-            Rf_protect(var);                                   \
-            var = Rf_eval(var, R_EmptyEnv);                    \
-            Rf_unprotect(1);                                   \
-            return var;                                        \
+            return force(&var);                                \
         }                                                      \
         else                                                   \
-            return ptr_PRVALUE(var)
+            return force(&var)
 #else
 #define get_and_return(var, sym)                               \
         get_and_check(var, sym);                               \
-        if (ptr_PRVALUE(var) == R_UnboundValue) {              \
-            Rf_protect(var);                                   \
-            SEXP x = Rf_eval(ptr_PRCODE(var), ptr_PRENV(var)); \
-            ptr_SET_PRVALUE(var, x);                           \
-            ENSURE_NAMEDMAX(x);                                \
-            ptr_SET_PRENV(var, R_NilValue);                    \
-            Rf_unprotect(1);                                   \
-            return x;                                          \
-        }                                                      \
-        else                                                   \
-            return ptr_PRVALUE(var)
+        return force(&var)
 #endif
 
 

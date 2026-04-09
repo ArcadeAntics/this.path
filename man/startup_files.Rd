@@ -1,6 +1,6 @@
 %%
 %% this.path : Get Executing Script's Path
-%% Copyright (C) 2024   Iris Simmons
+%% Copyright (C) 2024-2026   Iris Simmons
 %%
 
 
@@ -36,7 +36,7 @@ with_init.file(expr)
   for \code{site.file()} and \code{init.file()}, a character string, or
   \code{default} if it was not found.
 
-  for \code{with_site.file()} and \code{with_init.file()}, \code{NULL}
+  for \code{with_site.file()} and \code{with_init.file()}, \code{expr}
   invisibly.
 }
 \note{

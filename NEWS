@@ -2,6 +2,21 @@
 
 CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
+  SIGNIFICANT USER-VISIBLE CHANGES:
+
+    * Due to changes in the API entry points in R, the behaviour of
+      set.sys.path() with argument 'delayed=TRUE' has changed.
+
+      set.sys.path() previously would occasionally return a promise,
+      which is no longer allowed. Now, where it previously would have
+      returned a promise to the normalized path, it returns an absolute
+      path instead.
+
+      Additionally, set.sys.path() now accepts argument 'assign_to'
+      specifying a variable name for which to assign the return value
+      in the currently active environment, including if such a return
+      value is a promise.
+
   NEW FEATURES:
 
     * this.path() is now compatible with the "zstdfile" connection
@@ -18,6 +33,8 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
     * Removed the restriction that with_sys.path() could not be used
       within a function.
+
+    * Removed calls to non-API entry points in R.
 
 CHANGES IN this.path 2.7.1 (2025-11-07):
 

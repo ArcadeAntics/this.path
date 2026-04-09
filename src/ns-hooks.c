@@ -122,7 +122,7 @@ void (*ptr_set_R_Visible)(Rboolean x);
 Rboolean (*ptr_get_utf8locale)(void);
 #endif
 Rboolean (*ptr_get_latin1locale)(void);
-#if defined(NEED_R_4_5_0_FUNCTIONS)
+#if defined(NEED_PROMISE_FUNCTION_POINTERS)
 SEXP (*ptr_PRCODE)(SEXP x);
 SEXP (*ptr_PRENV)(SEXP x);
 SEXP (*ptr_R_PromiseExpr)(SEXP x);
@@ -164,7 +164,7 @@ Rboolean ptr_get_latin1locale_default(void)
 }
 
 
-#if defined(NEED_R_4_5_0_FUNCTIONS)
+#if defined(NEED_PROMISE_FUNCTION_POINTERS)
 /* create default values for the function pointers
  *
  * this works exclusively because listsxp_struct and promsxp_struct have the
@@ -297,6 +297,9 @@ SEXP do_onLoad do_formals
 #endif
 
 
+    init_UnboundValue();
+
+
 #define R_THIS_PATH_DEFINE_SYMBOLS
 #include "symbols.h"
 
@@ -327,7 +330,7 @@ SEXP do_onLoad do_formals
     ptr_get_latin1locale = ptr_get_latin1locale_default;
 
 
-#if defined(NEED_R_4_5_0_FUNCTIONS)
+#if defined(NEED_PROMISE_FUNCTION_POINTERS)
     ptr_PRCODE = ptr_PRCODE_default;
     ptr_PRENV = ptr_PRENV_default;
     ptr_R_PromiseExpr = ptr_R_PromiseExpr_default;
@@ -982,16 +985,16 @@ SEXP do_onLoad do_formals
         SEXP na = Rf_ScalarString(NA_STRING);
         Rf_protect(na);
         ENSURE_NAMEDMAX(na);
-        Rf_defineVar(ofileSymbol, makeEVPROMISE(na, na), _custom_gui_path_character_environment);
+        R_MakeForcedBinding(ofileSymbol, na, na, _custom_gui_path_character_environment);
         R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
         Rf_unprotect(1);
     }
     {
         SEXP expr = Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue));
         Rf_protect(expr);
-        Rf_defineVar(
+        R_MakeDelayedBinding(
             fileSymbol,
-            makePROMISE(expr, _custom_gui_path_character_environment),
+            expr, _custom_gui_path_character_environment,
             _custom_gui_path_character_environment
         );
         R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
@@ -1011,10 +1014,10 @@ SEXP do_onLoad do_formals
 #if R_version_less_than(3,4,0)
     {
         SEXP sym = Rf_install("print.connection");
-        SEXP val = Rf_findVarInFrame(mynamespace, sym);
-        if (val != R_UnboundValue) {
+        binding_info_t val; my_findVarInFrame(mynamespace, sym, &val);
+        if (val.value != my_UnboundValue) {
             R_unLockBinding(sym, R_BaseEnv);
-            Rf_defineVar(sym, val, R_BaseEnv);
+            Rf_defineVar(sym, force(&val), R_BaseEnv);
             R_LockBinding(sym, R_BaseEnv);
         }
     }

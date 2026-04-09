@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2022-2025   Iris Simmons
+Copyright (C) 2022-2026   Iris Simmons
  */
 
 
@@ -773,13 +773,13 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     /* we don't pass the ... list directly because we want to
        avoid an accidental argument name match to PACKAGE
      */
-    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    SEXP dots = my_findValInFrame(rho, R_DotsSymbol);
     Rf_protect(dots); nprotect++;
-    if (dots == R_UnboundValue)
+    if (dots == my_UnboundValue)
         Rf_error(_("object '%s' not found"), "...");
 
 
-    int dots_length = ((TYPEOF(dots) == DOTSXP) ? Rf_length(dots) : 0);
+    int dots_length = length_DOTS(dots);
 
 
     if (dots_length == 0) {

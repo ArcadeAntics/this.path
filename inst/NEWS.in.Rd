@@ -7,6 +7,22 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item{Due to changes in the API entry points in \R, the behaviour of
+        \code{set.sys.path()} with argument \code{delayed=TRUE} has changed.
+
+        \code{set.sys.path()} previously would occasionally return a promise,
+        which is no longer allowed. Now, where it previously would have
+        returned a promise to the normalized path, it returns an absolute path
+        instead.
+
+        Additionally, \code{set.sys.path()} now accepts argument
+        \codeorsQuote{assign_to} specifying a variable name for which to assign
+        the return value in the currently active environment, including if such
+        a return value is a promise.}
+    }
+  }
   \subsection{NEW FEATURES}{
     \itemize{
       \item{\code{this.path()} is now compatible with the \string{zstdfile}
@@ -24,6 +40,8 @@
 
       \item{Removed the restriction that \code{with_sys.path()} could not be
         used within a function.}
+
+      \item{Removed calls to non-API entry points in \R.}
     }
   }
 }
@@ -37,7 +55,7 @@
         allow for the processing of site and user files for setting environment
         variables, the site-wide startup profile file, and a user profile.}
 
-      \item{Removed calls to non-API entry points in R.}
+      \item{Removed calls to non-API entry points in \R.}
     }
   }
 }

@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2024   Iris Simmons
+Copyright (C) 2024-2026   Iris Simmons
  */
 
 
@@ -499,8 +499,8 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
     int nprotect = 0;
 
 
-    SEXP finally = Rf_findVarInFrame(rho, finallySymbol);
-    if (finally == R_UnboundValue)
+    SEXP finally = my_findValInFrame(rho, finallySymbol);
+    if (finally == my_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(finallySymbol)));
     if (finally != R_MissingArg) {
         SEXP on_exit = Rf_lcons(on_exitSymbol, Rf_cons(finallySymbol, R_NilValue));
@@ -510,16 +510,16 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
     }
 
 
-    SEXP dots = Rf_findVarInFrame(rho, R_DotsSymbol);
+    SEXP dots = my_findValInFrame(rho, R_DotsSymbol);
     Rf_protect(dots); nprotect++;
-    if (dots == R_UnboundValue)
+    if (dots == my_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(R_DotsSymbol)));
-    int dots_length = (TYPEOF(dots) == DOTSXP ? Rf_length(dots) : 0);
+    int dots_length = length_DOTS(dots);
 
 
-    SEXP else_ = Rf_findVarInFrame(rho, else_Symbol);
+    SEXP else_ = my_findValInFrame(rho, else_Symbol);
     Rf_protect(else_); nprotect++;
-    if (else_ == R_UnboundValue)
+    if (else_ == my_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(else_Symbol)));
     if (else_ != R_MissingArg && dots_length <= 0)
         Rf_error("'tryCatch' with 'else.' but no condition handlers makes no sense");
@@ -723,8 +723,8 @@ SEXP tryCatch(TRYCATCHOP op, SEXP rho)
         value = Rf_eval(expr, rho);
 #endif
         Rf_protect(value); nprotect++;
-        SEXP do_else = Rf_findVarInFrame(rho, do_elseSymbol);
-        if (do_else == R_UnboundValue)
+        SEXP do_else = my_findValInFrame(rho, do_elseSymbol);
+        if (do_else == my_UnboundValue)
             Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(do_elseSymbol)));
         if (!IS_SCALAR(do_else, LGLSXP))
             Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(do_elseSymbol)));

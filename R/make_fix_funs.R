@@ -1,6 +1,6 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2023-2025   Iris Simmons
+## Copyright (C) 2023-2026   Iris Simmons
 ##
 
 
@@ -11,8 +11,8 @@ path.functions <- .removeSource_from_inner_functions(
 {
     if (delayed) {
         ofile <- file
-        file <- set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
-            allow.file.uri = TRUE, delayed = TRUE)
+        set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
+            allow.file.uri = TRUE, delayed = TRUE, assign_to = "file")
         ## remove the variable(s) created by set.sys.path()
         unset.sys.path()
         delayedAssign("directory", .dir(file))
