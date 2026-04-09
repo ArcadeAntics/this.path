@@ -1,6 +1,6 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2021-2025   Iris Simmons
+## Copyright (C) 2021-2026   Iris Simmons
 ##
 
 
@@ -59,7 +59,7 @@ local({  ## for submitting to R Mac Builder https://mac.r-project.org/macbuilder
 
 
 local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
-    upcoming_CRAN_version <- "2.7.1"
+    upcoming_CRAN_version <- NA
 
 
     if (!file.exists(this.path::here("tools/maintainers-copy")))
@@ -70,22 +70,24 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
     on.exit(options(oopt))
 
 
-    desc_path <- this.path::here("DESCRIPTION")
-    desc <- readChar(desc_path, file.size(desc_path), useBytes = TRUE)
-    Encoding(desc) <- "bytes"
-    desc <- sub("(?<=^|\r\n|[\r\n])Version:[^\r\n]*", sprintf("Version: %s", upcoming_CRAN_version), desc, perl = TRUE)
-    tmp_desc_path <- tempfile(fileext = ".dcf")
-    if (!file.copy(desc_path, tmp_desc_path, overwrite = TRUE, copy.date = TRUE))
-        stop(sprintf("unable to copy file '%s' to '%s'", desc_path, tmp_desc_path))
-    on.exit({
-        if (!file.copy(tmp_desc_path, desc_path, overwrite = TRUE, copy.date = TRUE))
-            stop(sprintf("unable to copy file '%s' to '%s'", tmp_desc_path, desc_path))
-    }, add = TRUE, after = FALSE)
-    local({
-        conn <- file(desc_path, "wb")
-        on.exit(close(conn))
-        writeLines(desc, conn, sep = "", useBytes = TRUE)
-    })
+    if (!is.na(upcoming_CRAN_version)) {
+        desc_path <- this.path::here("DESCRIPTION")
+        desc <- readChar(desc_path, file.size(desc_path), useBytes = TRUE)
+        Encoding(desc) <- "bytes"
+        desc <- sub("(?<=^|\r\n|[\r\n])Version:[^\r\n]*", sprintf("Version: %s", upcoming_CRAN_version), desc, perl = TRUE)
+        tmp_desc_path <- tempfile(fileext = ".dcf")
+        if (!file.copy(desc_path, tmp_desc_path, overwrite = TRUE, copy.date = TRUE))
+            stop(sprintf("unable to copy file '%s' to '%s'", desc_path, tmp_desc_path))
+        on.exit({
+            if (!file.copy(tmp_desc_path, desc_path, overwrite = TRUE, copy.date = TRUE))
+                stop(sprintf("unable to copy file '%s' to '%s'", tmp_desc_path, desc_path))
+        }, add = TRUE, after = FALSE)
+        local({
+            conn <- file(desc_path, "wb")
+            on.exit(close(conn))
+            writeLines(desc, conn, sep = "", useBytes = TRUE)
+        })
+    }
 
 
     info_path <- this.path::here("tools/info.dcf")
