@@ -6,7 +6,7 @@
 
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
-\section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+\section{CHANGES IN VERSION 2.8.0 (2026-04-09)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item{Due to changes in the API entry points in \R, the behaviour of
