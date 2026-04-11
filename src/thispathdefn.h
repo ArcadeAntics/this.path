@@ -360,8 +360,7 @@ do {                                                           \
                 else assign_file_uri(NULL, NULL, ofile, file, documentcontext, normalize_action);\
                 if (assign_returnvalue || assign_to) {         \
                     if (forcepromise) {                        \
-                        SEXP tmp = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
-                        SET_STRING_ELT(tmp, 0, STRING_ELT(my_getVarInFrame(documentcontext, fileSymbol, FALSE), 0));\
+                        SEXP tmp = my_getVarInFrame(documentcontext, fileSymbol, FALSE);\
                         if (assign_returnvalue)                \
                             returnvalue = tmp;                 \
                         if (assign_to)                         \
@@ -403,8 +402,7 @@ do {                                                           \
             else assign_default(NULL, NULL, ofile, file, documentcontext, normalize_action);\
             if (assign_returnvalue || assign_to) {             \
                 if (forcepromise) {                            \
-                    SEXP tmp = Rf_protect(Rf_shallow_duplicate(ofile)); nprotect++;\
-                    SET_STRING_ELT(tmp, 0, STRING_ELT(my_getVarInFrame(documentcontext, fileSymbol, FALSE), 0));\
+                    SEXP tmp = my_getVarInFrame(documentcontext, fileSymbol, FALSE);\
                     if (assign_returnvalue)                    \
                         returnvalue = tmp;                     \
                     if (assign_to)                             \

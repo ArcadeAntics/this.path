@@ -222,10 +222,9 @@ wrap.source(expr,
   \code{set.sys.path()} instead.
 }
 \value{
-  for \code{set.sys.path()}, if \code{file} is a path, then the normalized
-  path with the same attributes, otherwise \code{file} itself. Please note that
-  if \code{delayed = TRUE}, the return value will be an absolute path, but not
-  the normalized path.
+  for \code{set.sys.path()}, if \code{file} is a path, then the absolute path
+  (\code{delayed=TRUE}) or normalized path (\code{delayed=FALSE}), otherwise
+  \code{file} itself.
 
   for \code{set.env.path()}, \code{envir} invisibly.
 

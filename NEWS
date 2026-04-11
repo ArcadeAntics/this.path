@@ -8,9 +8,9 @@ CHANGES IN this.path 2.8.0 (2026-04-09):
       set.sys.path() with argument 'delayed=TRUE' has changed.
 
       set.sys.path() previously would occasionally return a promise,
-      which is no longer allowed. Now, where it previously would have
-      returned a promise to the normalized path, it returns an absolute
-      path instead.
+      which is no longer allowed. Where it previously would have
+      returned a promise to the normalized path, it now returns an
+      absolute path instead.
 
       Additionally, set.sys.path() now accepts argument 'assign_to'
       specifying a variable name for which to assign the return value
