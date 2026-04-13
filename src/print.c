@@ -10,12 +10,6 @@ Copyright (C) 2023-2026   Iris Simmons
 
 
 
-Rboolean my_isMethodDispatchOn(void)
-{
-    return Rf_asLogical(Rf_eval(expr__isMethodsDispatchOn, R_EmptyEnv));
-}
-
-
 void my_PrintObjectS4(SEXP s, SEXP env)
 {
     int nprotect = 0;
@@ -81,7 +75,7 @@ void my_PrintObjectS3(SEXP s, SEXP env)
 
 void my_PrintObject(SEXP s, SEXP env)
 {
-    if (my_isMethodDispatchOn() && IS_S4_OBJECT(s))
+    if (_isMethodsDispatchOn() && IS_S4_OBJECT(s))
         my_PrintObjectS4(s, env);
     else
         my_PrintObjectS3(s, env);

@@ -27,26 +27,26 @@ extern SEXP mynamespace,
             makePROMISE_environment;
 
 
-extern SEXP expr_commandArgs                              ,
-            expr_invisible                                ,
-            expr_parent_frame                             ,
-            expr_sys_call                                 ,
+extern int _isMethodsDispatchOn(void);
+extern int _toplevel_nframe(void);
+extern SEXP commandArgs(void);
+extern SEXP getwd(void);
+extern SEXP info_dollar_source_path(SEXP rho);
+extern void invisible(void);
+extern SEXP knitr_output_dir(void);
+extern int missing_file(SEXP rho);
+extern int missing_input(SEXP rho);
+extern int missing_ofile(SEXP rho);
+extern SEXP parent_frame(SEXP rho);
+extern int sys_nframe(SEXP rho);
+extern SEXP sys_parents(SEXP rho);
+extern int testthat_source_file_uses_brio_read_lines(void);
+extern SEXP UseMethod_lengths(SEXP rho);
+extern SEXP expr_sys_call                                 ,
             expr_sys_call_which                           ,
             expr_sys_function_which                       ,
             eval_op                                       ,
-            expr_sys_nframe                               ,
-            expr_sys_parents                              ,
-            expr_missing_file                             ,
-            expr_missing_input                            ,
-            expr_missing_ofile                            ,
-            expr_info_dollar_source_path                  ,
-            expr_knitr_output_dir                         ,
-            expr_testthat_source_file_uses_brio_read_lines,
-            expr__toplevel_nframe                         ,
-            expr__isMethodsDispatchOn                     ,
-            expr_UseMethod_lengths                        ,
-            expr_makePROMISE                              ,
-            expr_getwd                                    ;
+            expr_makePROMISE                              ;
 
 
 #endif /* R_THISPATH_NSHOOKS_H */

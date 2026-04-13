@@ -805,7 +805,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
         if (local)
             N = sys_parent(1, rho);
         else {
-            N = Rf_asInteger(Rf_eval(expr_sys_nframe, rho));
+            N = sys_nframe(rho);
             if (N) --N;
         }
         if (N == NA_INTEGER)
@@ -817,7 +817,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 
 
         if (N <= 0) Rf_error("%s cannot be used within the global environment", name);
-        SEXP frame = Rf_eval(expr_parent_frame, rho);
+        SEXP frame = parent_frame(rho);
 
 
         /* ensure 'this.path(local = TRUE)' isn't evaluated in an invalid environment */
@@ -1008,7 +1008,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
     SEXP frame, function;
 
 
-    int minimum_which = ((local) ? N : (1 + Rf_asInteger(Rf_eval(expr__toplevel_nframe, R_EmptyEnv))));
+    int minimum_which = ((local) ? N : (1 + _toplevel_nframe()));
 
 
 /* the number of objects protected in each iteration (that must be unprotected
@@ -1616,7 +1616,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                 if_srcfile_then_define_documentcontext;
             }
             else {
-                SEXP ofile = Rf_eval(expr_info_dollar_source_path, frame);
+                SEXP ofile = info_dollar_source_path(frame);
                 Rf_protect(ofile);
                 SEXP wd = srcfile ? my_getVarInFrame(srcfile, wdSymbol, TRUE) : my_UnboundValue;
                 set_documentcontext2(
@@ -1657,8 +1657,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 if (!R_existsVarInFrame(frame, oenvirSymbol)) continue;
-                int missing_input = Rf_asLogical(Rf_eval(expr_missing_input, frame));
-                if (missing_input) {
+                if (missing_input(frame)) {
                     documentcontext = R_EmptyEnv;
                     define_documentcontext_in_frame;
                     continue;
@@ -1672,7 +1671,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                     /* assign_as_binding      */ TRUE,
                     /* normalize_action       */ NA_DEFAULT,
                     /* maybe_chdir            */ TRUE,
-                    /* getowd                 */ Rf_eval(expr_knitr_output_dir, R_EmptyEnv),
+                    /* getowd                 */ knitr_output_dir(),
                     /* hasowd                 */ ((owd) != R_NilValue),
                     /* character_only         */ FALSE,
                     /* conv2utf8              */ FALSE,
@@ -1981,7 +1980,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
             }
             else {
                 get_ofile_if_delayed_continue(frame, pathSymbol);
-                int ignore_all = Rf_asLogical(Rf_eval(expr_testthat_source_file_uses_brio_read_lines, R_EmptyEnv));
+                int ignore_all = testthat_source_file_uses_brio_read_lines();
                 SEXP wd = my_getVarInFrame(frame, old_dirSymbol, TRUE);
                 if (srcfile && wd == my_UnboundValue)
                     wd = my_getVarInFrame(srcfile, wdSymbol, TRUE);
@@ -2316,7 +2315,7 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
     int nprotect = 0;
 
 
-    if (envir == NULL) envir = Rf_eval(expr_parent_frame, rho);
+    if (envir == NULL) envir = parent_frame(rho);
     if (TYPEOF(envir) != ENVSXP) envir = rho;
 
 

@@ -58,6 +58,19 @@ SEXP expr_commandArgs                               = NULL,
      expr_info_dollar_source_path                   = NULL,
      /* knitr::opts_knit[["get"]]("output.dir") */
      expr_knitr_output_dir                          = NULL,
+     /*
+      * does the function testthat::source_file()
+      * use brio::read_lines() instead of readLines()?
+      *
+      * this is because brio::read_lines() uses normalizePath() but
+      * readLines() does not
+      *
+      * this means brio::read_lines("clipboard") reads from a file
+      * named "clipboard" in the working directory, but
+      * readLines("clipboard") reads from the clipboard
+      *
+      * this was changed in package:testthat_3.1.2
+      */
      /* as.numeric_version(getNamespaceVersion("testthat")) >= "3.1.2" */
      expr_testthat_source_file_uses_brio_read_lines = NULL,
      /* .toplevel.nframe() */
@@ -1093,7 +1106,7 @@ SEXP do_onUnload do_formals
     maybe_release(expr_sys_parents);
     maybe_release(expr_missing_file);
     maybe_release(expr_missing_input);
-    maybe_release(expr_missing_input);
+    maybe_release(expr_missing_ofile);
     maybe_release(expr_info_dollar_source_path);
     maybe_release(expr_knitr_output_dir);
     maybe_release(expr_testthat_source_file_uses_brio_read_lines);
@@ -1105,4 +1118,104 @@ SEXP do_onUnload do_formals
 
 
     return R_NilValue;
+}
+
+
+
+
+
+int _isMethodsDispatchOn(void)
+{
+    return Rf_asLogical(Rf_eval(expr__isMethodsDispatchOn, R_EmptyEnv));
+}
+
+
+int _toplevel_nframe(void)
+{
+    return Rf_asInteger(Rf_eval(expr__toplevel_nframe, R_EmptyEnv));
+}
+
+
+SEXP commandArgs(void)
+{
+    return Rf_eval(expr_commandArgs, R_EmptyEnv);
+}
+
+
+SEXP getwd(void)
+{
+    return Rf_eval(expr_getwd, R_EmptyEnv);
+}
+
+
+SEXP info_dollar_source_path(SEXP rho)
+{
+    return Rf_eval(expr_info_dollar_source_path, rho);
+}
+
+
+void invisible(void)
+{
+    Rf_eval(expr_invisible, R_EmptyEnv);
+}
+
+
+SEXP knitr_output_dir(void)
+{
+    return Rf_eval(expr_knitr_output_dir, R_EmptyEnv);
+}
+
+
+int missing_file(SEXP rho)
+{
+    return Rf_asLogical(Rf_eval(expr_missing_file, rho));
+}
+
+
+int missing_input(SEXP rho)
+{
+    return Rf_asLogical(Rf_eval(expr_missing_input, rho));
+}
+
+
+int missing_ofile(SEXP rho)
+{
+    return Rf_asLogical(Rf_eval(expr_missing_ofile, rho));
+}
+
+
+SEXP parent_frame(SEXP rho)
+{
+    return Rf_eval(expr_parent_frame, rho);
+}
+
+
+// SEXP sys_call(int which, SEXP rho)
+// {
+//     INTEGER(CADR(expr_sys_call_which))[0] = which;
+//     return Rf_eval(expr_sys_call_which, rho);
+// }
+
+
+int sys_nframe(SEXP rho)
+{
+    return Rf_asInteger(Rf_eval(expr_sys_nframe, rho));
+}
+
+
+SEXP sys_parents(SEXP rho)
+{
+    return Rf_eval(expr_sys_parents, rho);
+}
+
+
+int testthat_source_file_uses_brio_read_lines(void)
+{
+    return Rf_asLogical(Rf_eval(expr_testthat_source_file_uses_brio_read_lines, R_EmptyEnv));
+}
+
+
+SEXP UseMethod_lengths(SEXP rho)
+{
+    return Rf_eval(expr_UseMethod_lengths, rho);
 }

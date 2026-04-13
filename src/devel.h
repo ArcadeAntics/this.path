@@ -52,10 +52,10 @@ Copyright (C) 2024-2026   Iris Simmons
     #define HAVE_SET_R_VISIBLE
     extern void (*ptr_set_R_Visible)(Rboolean);
     #include <Rinternals.h> /* need definition of Rf_eval, R_NilValue, R_EmptyEnv */
-    #include "ns-hooks.h"   /* need definition of expr_invisible */
+    #include "ns-hooks.h"   /* need definition of invisible() */
     #define set_R_Visible(v) {                                 \
         (v) ? ((ptr_set_R_Visible) ? (ptr_set_R_Visible(TRUE), TRUE) : (Rf_eval(R_NilValue, R_EmptyEnv), TRUE)) :\
-              ((ptr_set_R_Visible) ? (ptr_set_R_Visible(FALSE), FALSE) : (Rf_eval(expr_invisible, R_EmptyEnv), FALSE));\
+              ((ptr_set_R_Visible) ? (ptr_set_R_Visible(FALSE), FALSE) : (invisible(), FALSE));\
     }
 #endif
 

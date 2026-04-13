@@ -43,14 +43,14 @@ typedef enum {
 
 SEXP _callstack(int k, CALLSTACK_ACTION op, SEXP rho)
 {
-    SEXP Rparents = Rf_eval(expr_sys_parents, rho);
+    SEXP Rparents = sys_parents(rho);
     Rf_protect(Rparents);
     int framedepth = LENGTH(Rparents);
     int *parents = INTEGER(Rparents);
     // make k negative; this speeds up call stack inspection
     if (k > 0) k -= framedepth;
     // this would normally be 0, but not in Jupyter
-    int toplevel_framedepth = Rf_asInteger(Rf_eval(expr__toplevel_nframe, R_EmptyEnv));
+    int toplevel_framedepth = _toplevel_nframe();
     if (k <= toplevel_framedepth - framedepth) k = 0;
     // -1 because R is index 1 and C is index 0
     int indx = framedepth + k - 1;

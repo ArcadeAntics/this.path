@@ -125,7 +125,7 @@ Rboolean anyNA(SEXP x, Rboolean recursive, SEXP rho)
             R_ProtectWithIndex(expr = Rf_cons(x, Rf_cons((recursive == TRUE) ? R_TrueValue : R_FalseValue, R_NilValue)), &indx);
         }
         R_Reprotect(expr = Rf_lcons(getFromMyNS(_anyNA_dispatchSymbol), expr), indx);
-        SEXP env = Rf_eval(expr_parent_frame, rho);
+        SEXP env = parent_frame(rho);
         Rf_protect(env);
         SEXP res = Rf_protect(Rf_eval(expr, env));
         Rboolean value = (Rf_asLogical(res) == TRUE);
@@ -150,7 +150,7 @@ Rboolean anyNA_default(SEXP x, Rboolean recursive, SEXP rho)
         R_Reprotect(expr = Rf_lcons(getFromBase(is_naSymbol), expr), indx);
         R_Reprotect(expr = Rf_cons(expr, R_NilValue), indx);
         R_Reprotect(expr = Rf_lcons(getFromBase(anySymbol), expr), indx);
-        SEXP env = Rf_eval(expr_parent_frame, rho);
+        SEXP env = parent_frame(rho);
         Rf_protect(env);
         SEXP res = Rf_protect(Rf_eval(expr, env));
         Rboolean value = (Rf_asLogical(res) == TRUE);
@@ -467,7 +467,7 @@ SEXP do_lengths do_formals
         Rf_error(_("invalid '%s' value"), "use.names");
 
 
-    if (OBJECT(x)) return Rf_eval(expr_UseMethod_lengths, rho);
+    if (OBJECT(x)) return UseMethod_lengths(rho);
     else return lengths_default(args, rho);
 }
 
@@ -716,7 +716,7 @@ SEXP do_dotslength do_formals
     do_start_no_call_op("...length", 0);
 
 
-    SEXP env = Rf_eval(expr_parent_frame, rho);
+    SEXP env = parent_frame(rho);
     SEXP vl = my_findVal(env, R_DotsSymbol);
     if (vl == my_UnboundValue)
         Rf_error(_("incorrect context: the current call has no '...' to look in"));
@@ -805,7 +805,7 @@ SEXP do_dotselt do_formals
     do_start_no_op("...elt", 1);
 
 
-    SEXP env = Rf_eval(expr_parent_frame, rho);
+    SEXP env = parent_frame(rho);
     SEXP si = CAR(args);
     if (!Rf_isNumeric(si) || XLENGTH(si) != 1)
         Rf_errorcall(call, _("indexing '...' with an invalid index"));

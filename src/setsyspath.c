@@ -8,9 +8,9 @@ Copyright (C) 2022-2026   Iris Simmons
 
 
 static R_INLINE
-Rboolean asFlag(SEXP x, const char *name)
+int asFlag(SEXP x, const char *name)
 {
-    Rboolean val = Rf_asLogical(x);
+    int val = Rf_asLogical(x);
     if (val == NA_LOGICAL)
         Rf_error(_("invalid '%s' value"), name);
     return val;
@@ -40,7 +40,7 @@ SEXP do_wrap_source do_formals
 
     /* determine context number for .getframenumber() */
     int context_number;
-    int nframe = Rf_asInteger(Rf_eval(expr_sys_nframe, rho));
+    int nframe = sys_nframe(rho);
     // Rprintf("sys.nframe() = %d\n", nframe);
 
 
@@ -494,7 +494,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
     SEXP ofile, frame, documentcontext;
 
 
-    frame = Rf_eval(expr_parent_frame, rho);
+    frame = parent_frame(rho);
     Rf_protect(frame); nprotect++;
 
 
@@ -642,11 +642,10 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         Rf_error("%s cannot be called more than once within an environment", name);
 
 
-    /* why would this be NA??? idk but might as well test for it anyway */
-    Rboolean missing_file = asFlag(Rf_eval(expr_missing_file, rho), "missing(file)");
+    int miss_file = missing_file(rho);
 
 
-    ofile = missing_file ? NULL : my_getVarInFrame(rho, fileSymbol, FALSE);
+    ofile = miss_file ? NULL : my_getVarInFrame(rho, fileSymbol, FALSE);
     Rf_protect(ofile); nprotect++;
 
 
@@ -658,7 +657,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 
 
     SEXP source = NULL;
-    if (!missing_file) {
+    if (!miss_file) {
     switch (TYPEOF(Function)) {
     case NILSXP:
         source = Rf_mkChar("call to function set.sys.path from package @R_PACKAGE_NAME@");
@@ -802,7 +801,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
     }
 
 
-    if (missing_file) {
+    if (miss_file) {
         documentcontext = R_EmptyEnv;
         INCREMENT_NAMED_defineVar(documentcontextSymbol, documentcontext, frame);
         R_LockBinding(documentcontextSymbol, frame);
@@ -815,8 +814,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
 
 
     SEXP ofilearg;
-    Rboolean missing_ofile = asFlag(Rf_eval(expr_missing_ofile, rho), "missing(ofile)");
-    if (missing_ofile)
+    if (missing_ofile(rho))
         ofilearg = NULL;
     else {
         ofilearg = my_getVarInFrame(rho, ofileSymbol, FALSE);
@@ -836,7 +834,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         /* assign_returnvalue     */ TRUE,
         /* assign_to              */ assign_to,
         /* maybe_chdir            */ (delayed ? TRUE : FALSE),
-        /* getowd                 */ (delayed ? Rf_eval(expr_getwd, R_EmptyEnv) : NULL),
+        /* getowd                 */ (delayed ? getwd() : NULL),
         /* hasowd                 */ (delayed ? (owd) != R_NilValue : FALSE),
         /* ofilearg               */ ofilearg,
         character_only, conv2utf8, allow_blank_string,

@@ -323,7 +323,7 @@ SEXP do_shINFO do_formals
     int ARGC; SEXP ARGV;
 
 
-    ARGV = Rf_eval(expr_commandArgs, R_BaseEnv);
+    ARGV = commandArgs();
     Rf_protect(ARGV);
     ARGC = LENGTH(ARGV);
 
