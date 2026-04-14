@@ -23,8 +23,7 @@ extern SEXP mynamespace,
             ThisPathUnrecognizedMannerErrorClass         ,
             last_condition,
             _custom_gui_path_character_environment,
-            _custom_gui_path_function_environment ,
-            makePROMISE_environment;
+            _custom_gui_path_function_environment ;
 
 
 extern int _isMethodsDispatchOn(void);
