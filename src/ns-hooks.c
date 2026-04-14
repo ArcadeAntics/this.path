@@ -139,9 +139,11 @@ Rboolean (*ptr_get_latin1locale)(void);
 SEXP (*ptr_PRCODE)(SEXP x);
 SEXP (*ptr_PRENV)(SEXP x);
 SEXP (*ptr_R_PromiseExpr)(SEXP x);
+int (*ptr_PRSEEN)(SEXP x);
 SEXP (*ptr_PRVALUE)(SEXP x);
 void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
 void (*ptr_SET_PRENV)(SEXP x, SEXP v);
+void (*ptr_SET_PRSEEN)(SEXP x, int v);
 void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
 #endif
 
@@ -212,6 +214,15 @@ SEXP ptr_R_PromiseExpr_default(SEXP x)
 {
     return R_BytecodeExpr(CDR(x));
 }
+int ptr_PRSEEN_default(SEXP x)
+{
+#if R_version_less_than(4,6,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
+    return PRSEEN(x);
+#else
+    Rf_error("ptr_PRSEEN is unavailable");
+    return 0;
+#endif
+}
 SEXP ptr_PRVALUE_default(SEXP x)
 {
     return CAR(x);
@@ -225,6 +236,14 @@ void ptr_SET_PRENV_default(SEXP x, SEXP v)
 {
     SET_TAG(x, v);
     return;
+}
+void ptr_SET_PRSEEN_default(SEXP x, int v)
+{
+#if R_version_less_than(4,6,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
+    SET_PRSEEN(x, v);
+#else
+    Rf_error("ptr_SET_PRSEEN is unavailable");
+#endif
 }
 void ptr_SET_PRVALUE_default(SEXP x, SEXP v)
 {
@@ -258,12 +277,16 @@ SEXP do_get_ptrs do_formals
         R_GetCCallable("this_path_reg_ptrs", "PRENV");
     ptr_R_PromiseExpr = (SEXP(*)(SEXP))
         R_GetCCallable("this_path_reg_ptrs", "R_PromiseExpr");
+    ptr_PRSEEN = (int(*)(SEXP))
+        R_GetCCallable("this_path_reg_ptrs", "PRSEEN");
     ptr_PRVALUE = (SEXP(*)(SEXP))
         R_GetCCallable("this_path_reg_ptrs", "PRVALUE");
     ptr_SET_PRCODE = (void(*)(SEXP,SEXP))
         R_GetCCallable("this_path_reg_ptrs", "SET_PRCODE");
     ptr_SET_PRENV = (void(*)(SEXP,SEXP))
         R_GetCCallable("this_path_reg_ptrs", "SET_PRENV");
+    ptr_SET_PRSEEN = (void(*)(SEXP,int))
+        R_GetCCallable("this_path_reg_ptrs", "SET_PRSEEN");
     ptr_SET_PRVALUE = (void(*)(SEXP,SEXP))
         R_GetCCallable("this_path_reg_ptrs", "SET_PRVALUE");
 #endif
@@ -347,9 +370,11 @@ SEXP do_onLoad do_formals
     ptr_PRCODE = ptr_PRCODE_default;
     ptr_PRENV = ptr_PRENV_default;
     ptr_R_PromiseExpr = ptr_R_PromiseExpr_default;
+    ptr_PRSEEN = ptr_PRSEEN_default;
     ptr_PRVALUE = ptr_PRVALUE_default;
     ptr_SET_PRCODE = ptr_SET_PRCODE_default;
     ptr_SET_PRENV = ptr_SET_PRENV_default;
+    ptr_SET_PRSEEN = ptr_SET_PRSEEN_default;
     ptr_SET_PRVALUE = ptr_SET_PRVALUE_default;
 #endif
 
@@ -798,6 +823,7 @@ SEXP do_onLoad do_formals
 
 
 #if defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+    extern SEXP (INTERNAL)(SEXP x);
     eval_op = INTERNAL(R_EvalSymbol);
 #else
     {

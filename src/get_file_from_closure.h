@@ -65,15 +65,15 @@ SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
             return my_PRVALUE(file);
     }
     if (original) {
-#if defined(R_THIS_PATH_HAS_PRSEEN)
+#if R_version_less_than(4,6,0)
 #define get_and_return(var, sym)                               \
         get_and_check(var, sym);                               \
         if (my_PRVALUE(var) == my_UnboundValue) {              \
             /* unlike a normal promise, we DO NOT want to */   \
             /* throw a warning if var is re-evaluated     */   \
-            if (PRSEEN(var.value)) {                           \
-                if (PRSEEN(var.value) == 1);                   \
-                else SET_PRSEEN(var.value, 0);                 \
+            if (ptr_PRSEEN(var.value)) {                       \
+                if (ptr_PRSEEN(var.value) == 1);               \
+                else ptr_SET_PRSEEN(var.value, 0);             \
             }                                                  \
             return force(&var);                                \
         }                                                      \

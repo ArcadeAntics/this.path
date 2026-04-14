@@ -11,9 +11,6 @@ Copyright (C) 2022-2026   Iris Simmons
 #define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
-extern SEXP (INTERNAL)(SEXP x);
-extern int  (DDVAL)(SEXP x);
-extern int  (PRSEEN)(SEXP x);
 extern Rboolean Rf_isValidStringF(SEXP);
 #include "devel.h"
 
@@ -32,12 +29,6 @@ extern Rboolean Rf_isValidStringF(SEXP);
 
 
 extern Rboolean Rf_pmatch(SEXP, SEXP, Rboolean);
-
-
-#if R_version_less_than(4,6,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
-#define R_THIS_PATH_HAS_PRSEEN
-extern void SET_PRSEEN(SEXP x, int v);
-#endif
 
 
 extern SEXP Rf_topenv(SEXP target, SEXP envir);

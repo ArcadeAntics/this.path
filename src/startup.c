@@ -42,8 +42,8 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
         if (already_set_init_file) value = R_FalseValue;
         else value = Rf_ScalarLogical(NO_ATTRIB(code) &&
                                       my_PRENV(promise) == R_GlobalEnv
-#if defined(R_THIS_PATH_HAS_PRSEEN)
-                                      && PRSEEN(promise.value) == 0
+#if R_version_less_than(4,6,0)
+                                      && ptr_PRSEEN(promise.value) == 0
 #endif
                                       );
         Rf_unprotect(nprotect);

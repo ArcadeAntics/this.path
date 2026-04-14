@@ -436,8 +436,8 @@ main <- function ()
     }
 
 
-    if (!building) {
-        if (!devel) {
+    # if (!building) {
+        if (building || !devel) {
             make_this_path_reg_ptrs_lib <- function() {
                 run_shlib <- function(arch) {
                     chname <- "this_path_reg_ptrs"
@@ -494,7 +494,7 @@ main <- function ()
             }
             make_this_path_reg_ptrs_lib()
         }
-    }
+    # }
 
 
     if (!building) {

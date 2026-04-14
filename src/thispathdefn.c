@@ -515,26 +515,14 @@ SEXP R_DelayedBindingEnvironment(SEXP sym, SEXP env)
 
 SEXP makePROMISE(SEXP expr, SEXP env)
 {
-#if defined(R_THIS_PATH_HAS_PRSEEN)
     ENSURE_NAMEDMAX(expr);
     SEXP s = Rf_allocSExp(PROMSXP);
     ptr_SET_PRCODE(s, expr);
     ptr_SET_PRENV(s, env);
     ptr_SET_PRVALUE(s, my_UnboundValue);
-    SET_PRSEEN(s, 0);
+    ptr_SET_PRSEEN(s, 0);
     CLEAR_ATTRIB(s);
     return s;
-#else
-    Rf_eval(expr_makePROMISE, R_EmptyEnv);
-    SEXP s = Rf_findVarInFrame(makePROMISE_environment, xSymbol);
-    Rf_protect(s);
-    /* undefine the promise so that it can be garbage collected when needed */
-    Rf_defineVar(xSymbol, R_NilValue, makePROMISE_environment);
-    ptr_SET_PRCODE(s, expr);
-    ptr_SET_PRENV(s, env);
-    Rf_unprotect(1);
-    return s;
-#endif
 }
 
 

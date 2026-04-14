@@ -185,18 +185,11 @@ SEXP do_forcePromise_no_warn do_formals
 
     if (ptr_PRVALUE(value) == my_UnboundValue) {
         Rf_protect(value);
-#if defined(R_THIS_PATH_HAS_PRSEEN)
-        if (PRSEEN(value)) {
-            if (PRSEEN(value) == 1);
-            else SET_PRSEEN(value, 0);
+        switch (ptr_PRSEEN(value)) {
+        case 0: case 1: break;
+        default: ptr_SET_PRSEEN(value, 0);
         }
         Rf_eval(value, env);
-#else
-        SEXP x = Rf_eval(ptr_PRCODE(value), ptr_PRENV(value));
-        ptr_SET_PRVALUE(value, x);
-        ENSURE_NAMEDMAX(x);
-        ptr_SET_PRENV(value, R_NilValue);
-#endif
         Rf_unprotect(1);
     }
     return ptr_PRVALUE(value);

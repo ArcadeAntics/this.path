@@ -66,20 +66,30 @@ Copyright (C) 2024-2026   Iris Simmons
     extern SEXP (*ptr_PRCODE)(SEXP x);
     extern SEXP (*ptr_PRENV)(SEXP x);
     extern SEXP (*ptr_R_PromiseExpr)(SEXP x);
+    extern int (*ptr_PRSEEN)(SEXP x);
     extern SEXP (*ptr_PRVALUE)(SEXP x);
     extern void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
     extern void (*ptr_SET_PRENV)(SEXP x, SEXP v);
+    extern void (*ptr_SET_PRSEEN)(SEXP x, int v);
     extern void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
 #elif defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0)
+    extern SEXP PRCODE(SEXP x);
+    extern SEXP PRENV(SEXP x);
+    extern SEXP R_PromiseExpr(SEXP);
+    extern int PRSEEN(SEXP x);
+    extern SEXP PRVALUE(SEXP x);
     #define ptr_PRCODE PRCODE
     #define ptr_PRENV PRENV
     #define ptr_R_PromiseExpr R_PromiseExpr
+    #define ptr_PRSEEN PRSEEN
     #define ptr_PRVALUE PRVALUE
     extern void SET_PRCODE (SEXP x, SEXP v);
     extern void SET_PRENV  (SEXP x, SEXP v);
+    extern void SET_PRSEEN (SEXP x, int  v);
     extern void SET_PRVALUE(SEXP x, SEXP v);
     #define ptr_SET_PRCODE SET_PRCODE
     #define ptr_SET_PRENV SET_PRENV
+    #define ptr_SET_PRSEEN SET_PRSEEN
     #define ptr_SET_PRVALUE SET_PRVALUE
 #else
     #define NEED_PROMISE_FUNCTION_POINTERS
@@ -88,9 +98,11 @@ Copyright (C) 2024-2026   Iris Simmons
     extern SEXP (*ptr_PRCODE)(SEXP x);
     extern SEXP (*ptr_PRENV)(SEXP x);
     extern SEXP (*ptr_R_PromiseExpr)(SEXP x);
+    extern int (*ptr_PRSEEN)(SEXP x);
     extern SEXP (*ptr_PRVALUE)(SEXP x);
     extern void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
     extern void (*ptr_SET_PRENV)(SEXP x, SEXP v);
+    extern void (*ptr_SET_PRSEEN)(SEXP x, int v);
     extern void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
 #endif
 
