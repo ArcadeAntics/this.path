@@ -89,6 +89,10 @@ extern0 SEXP0
 
     wrap_sourceSymbol                      INI_as(Rf_install("wrap.source")),
 
+    _GUI_PositronSymbol                    INI_as(Rf_install(".GUI_Positron")),
+    EncSymbol                              INI_as(Rf_install("Enc")),
+    timestampSymbol                        INI_as(Rf_install("timestamp")),
+
     _GUI_RStudioSymbol                     INI_as(Rf_install(".GUI_RStudio")),
     debugSourceSymbol                      INI_as(Rf_install("debugSource")),
     _rs_sourceWithProgressSymbol           INI_as(Rf_install(".rs.sourceWithProgress")),

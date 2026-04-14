@@ -914,6 +914,9 @@ void overwrite_ofile(SEXP ofilearg, SEXP documentcontext)
 }
 
 
+int _gui_positron = -1;
+
+
 int _gui_rstudio = -1;
 int _maybe_unembedded_shell = -1;
 Rboolean _in_site_file = TRUE;

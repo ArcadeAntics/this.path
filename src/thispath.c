@@ -2596,7 +2596,45 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
         srcfile = sys_srcfile(x ? INTEGER(x)[0] : 0, rho);
         if (TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
-        else { Rf_protect(srcfile); nprotect++; }
+        else { Rf_protect(srcfile); nprotect++;
+            SEXP tmp, tmp2;
+            /*
+             * if we're in Positron
+             * and 'srcfile' is a "srcfilealias"
+             * and 'srcfile$original' is a "srcfilecopy"
+             * and 'srcfile$original$filename' is a blank string
+             * and 'srcfile$original$Enc' is unbound
+             * and 'srcfile$original$isFile' is unbound
+             * and 'srcfile$original$timestamp' is unbound
+             * and 'srcfile$original$wd' is unbound
+             * and the first line of 'srcfile$original$lines' starts with "#line "
+             *
+             * then ignore 'srcfile'
+             */
+            if (
+                gui_positron &&
+                Rf_inherits(srcfile, "srcfilealias") &&
+                TYPEOF(tmp = my_findValInFrame(srcfile, originalSymbol)) == ENVSXP &&
+                Rf_inherits(tmp, "srcfilecopy")
+            ) {
+                Rf_protect(tmp);
+                if (TYPEOF(tmp2 = my_findValInFrame(tmp, filenameSymbol)) == STRSXP &&
+                    Rf_xlength(tmp2) == 1 &&
+                    Rf_xlength(STRING_ELT(tmp2, 0)) == 0 &&
+                    my_findValInFrame(tmp, EncSymbol) == my_UnboundValue &&
+                    my_findValInFrame(tmp, isFileSymbol) == my_UnboundValue &&
+                    my_findValInFrame(tmp, timestampSymbol) == my_UnboundValue &&
+                    my_findValInFrame(tmp, wdSymbol) == my_UnboundValue &&
+                    TYPEOF(tmp = my_getVarInFrame(tmp, linesSymbol, FALSE)) == STRSXP &&
+                    Rf_xlength(tmp) > 0 &&
+                    !strncmp(R_CHAR(STRING_ELT(tmp, 0)), "#line ", 6)
+                ) {
+                    /* then the source reference is not valid, disregard it */
+                    srcfile = NULL;
+                }
+                Rf_unprotect(1);
+            }
+        }
     }
     else switch (TYPEOF(x)) {
     case SYMSXP:
@@ -2665,7 +2703,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                 Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(filenameSymbol)));
             SEXP srcfile_original = NULL;
             if (Rf_inherits(srcfile, "srcfilealias")) {
-                SEXP tmp = my_getVarInFrame(srcfile, originalSymbol, TRUE);
+                SEXP tmp = my_findValInFrame(srcfile, originalSymbol);
                 // declare this as a new SEXP so as to not overwrite it in the previous context
                 SEXP srcfile = tmp;
                 if (TYPEOF(srcfile) != ENVSXP)

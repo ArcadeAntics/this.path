@@ -135,11 +135,13 @@ extern void assign_url(SEXP ofile, SEXP file, SEXP documentcontext);
 extern void overwrite_ofile(SEXP ofilearg, SEXP documentcontext);
 
 
+extern int _gui_positron;
 extern int _gui_rstudio;
 extern int _maybe_unembedded_shell;
 extern Rboolean _in_site_file;
 extern Rboolean _in_init_file;
 extern SEXP get_debugSource(void);
+#define gui_positron           ((_gui_positron           != -1) ? (_gui_positron          ) : (_gui_positron           = Rf_asLogical(getFromMyNS(_GUI_PositronSymbol          ))))
 #define gui_rstudio            ((_gui_rstudio            != -1) ? (_gui_rstudio           ) : (_gui_rstudio            = Rf_asLogical(getFromMyNS(_GUI_RStudioSymbol           ))))
 #define maybe_unembedded_shell ((_maybe_unembedded_shell != -1) ? (_maybe_unembedded_shell) : (_maybe_unembedded_shell = Rf_asLogical(getFromMyNS(_maybe_unembedded_shellSymbol))))
 #define in_site_file           ((!_in_site_file               ) ? (_in_site_file          ) : (_in_site_file           = Rf_asLogical(getFromMyNS(_in_site_fileSymbol          ))))
