@@ -436,65 +436,63 @@ main <- function ()
     }
 
 
-    # if (!building) {
-        if (building || !devel) {
-            make_this_path_reg_ptrs_lib <- function() {
-                run_shlib <- function(arch) {
-                    chname <- "this_path_reg_ptrs"
-                    chname1 <- paste0(chname, .Platform$dynlib.ext)
-                    DLLpath <- DLLpath_top <- "./dlls"
-                    if (nzchar(arch))
-                        DLLpath <- paste0(DLLpath, arch)
-                    dir.create(DLLpath, showWarnings = FALSE, recursive = TRUE)
-                    file <- paste0(DLLpath, "/", chname1)
-                    if (.Platform$OS.type == "windows") {
-                        args <- paste0(R.home(), "/bin", arch, "/Rcmd.exe")
-                    } else {
-                        args <- paste0(R.home(), "/bin/R")
-                        if (nzchar(arch))
-                            args <- c(args, paste0("--arch=", substr(arch, 2, 1000)))
-                        args <- c(args, "CMD")
-                    }
-                    args <- c(args, "SHLIB", paste0("--output=", file),
-                        "--clean", "--preclean", paste0("./tools/", chname, ".c"))
-                    command <- paste(shQuote(args), collapse = " ")
-                    # cat("$ ", command, "\n", sep = "")
-                    system(command, ignore.stdout = TRUE, ignore.stderr = TRUE)
-                    if (!length(dir(DLLpath))) {
-                        unlink(DLLpath, recursive = TRUE, force = TRUE)
-                        if (DLLpath_top != DLLpath && !length(dir(DLLpath_top)))
-                            unlink(DLLpath_top, recursive = TRUE, force = TRUE)
-                    }
-                }
+    if (building || !devel) {
+        make_this_path_reg_ptrs_lib <- function() {
+            run_shlib <- function(arch) {
+                chname <- "this_path_reg_ptrs"
+                chname1 <- paste0(chname, .Platform$dynlib.ext)
+                DLLpath <- DLLpath_top <- "./dlls"
+                if (nzchar(arch))
+                    DLLpath <- paste0(DLLpath, arch)
+                dir.create(DLLpath, showWarnings = FALSE, recursive = TRUE)
+                file <- paste0(DLLpath, "/", chname1)
                 if (.Platform$OS.type == "windows") {
-                    f <- dir(paste0(R.home(), "/bin"))
-                    archs <- f[f %in% c("i386", "x64")]
-                    for (arch in archs) {
+                    args <- paste0(R.home(), "/bin", arch, "/Rcmd.exe")
+                } else {
+                    args <- paste0(R.home(), "/bin/R")
+                    if (nzchar(arch))
+                        args <- c(args, paste0("--arch=", substr(arch, 2, 1000)))
+                    args <- c(args, "CMD")
+                }
+                args <- c(args, "SHLIB", paste0("--output=", file),
+                    "--clean", "--preclean", paste0("./tools/", chname, ".c"))
+                command <- paste(shQuote(args), collapse = " ")
+                # cat("$ ", command, "\n", sep = "")
+                system(command, ignore.stdout = TRUE, ignore.stderr = TRUE)
+                if (!length(dir(DLLpath))) {
+                    unlink(DLLpath, recursive = TRUE, force = TRUE)
+                    if (DLLpath_top != DLLpath && !length(dir(DLLpath_top)))
+                        unlink(DLLpath_top, recursive = TRUE, force = TRUE)
+                }
+            }
+            if (.Platform$OS.type == "windows") {
+                f <- dir(paste0(R.home(), "/bin"))
+                archs <- f[f %in% c("i386", "x64")]
+                for (arch in archs) {
+                    ra <- paste0("/", arch)
+                    run_shlib(ra)
+                }
+            } else {
+                # wd2 <- setwd(paste0(R.home(), "/bin/exec"))
+                # archs <- Sys.glob("*")
+                # setwd(wd2)
+                archs <- dir(paste0(R.home(), "/bin/exec"))
+                for (arch in archs) {
+                    if (arch == "R") {
+                        run_shlib("")
+                    } else {
                         ra <- paste0("/", arch)
                         run_shlib(ra)
                     }
-                } else {
-                    # wd2 <- setwd(paste0(R.home(), "/bin/exec"))
-                    # archs <- Sys.glob("*")
-                    # setwd(wd2)
-                    archs <- dir(paste0(R.home(), "/bin/exec"))
-                    for (arch in archs) {
-                        if (arch == "R") {
-                            run_shlib("")
-                        } else {
-                            ra <- paste0("/", arch)
-                            run_shlib(ra)
-                        }
-                    }
-                }
-                if (file.exists("./dlls")) {
-                    file.copy("./dlls", Sys.getenv("R_PACKAGE_DIR"), recursive = TRUE)
-                    unlink("./dlls", recursive = TRUE, force = TRUE)
                 }
             }
-            make_this_path_reg_ptrs_lib()
+            if (file.exists("./dlls")) {
+                file.copy("./dlls", Sys.getenv("R_PACKAGE_DIR"), recursive = TRUE)
+                unlink("./dlls", recursive = TRUE, force = TRUE)
+            }
         }
-    # }
+        make_this_path_reg_ptrs_lib()
+    }
 
 
     if (!building) {

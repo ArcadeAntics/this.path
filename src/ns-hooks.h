@@ -45,8 +45,7 @@ extern SEXP UseMethod_lengths(SEXP rho);
 extern SEXP expr_sys_call                                 ,
             expr_sys_call_which                           ,
             expr_sys_function_which                       ,
-            eval_op                                       ,
-            expr_makePROMISE                              ;
+            eval_op                                       ;
 
 
 #endif /* R_THISPATH_NSHOOKS_H */

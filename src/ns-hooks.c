@@ -22,8 +22,7 @@ SEXP mynamespace = NULL,
      ThisPathUnrecognizedMannerErrorClass          = NULL,
      last_condition = NULL,
      _custom_gui_path_character_environment = NULL,
-     _custom_gui_path_function_environment  = NULL,
-     makePROMISE_environment = NULL;
+     _custom_gui_path_function_environment  = NULL;
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
@@ -79,8 +78,6 @@ SEXP expr_commandArgs                               = NULL,
      expr__isMethodsDispatchOn                      = NULL,
      /* UseMethod("lengths") */
      expr_UseMethod_lengths                         = NULL,
-     /* delayedAssign("x", NULL, R_EmptyEnv, makePROMISE_environment) */
-     expr_makePROMISE                               = NULL,
      /* getwd() */
      expr_getwd                                     = NULL;
 
@@ -541,13 +538,6 @@ SEXP do_onLoad do_formals
     R_PreserveObject(last_condition);
 
 
-    makePROMISE_environment =
-        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
-    R_PreserveObject(makePROMISE_environment);
-    Rf_defineVar(xSymbol, R_NilValue, makePROMISE_environment);
-    R_LockEnvironment(makePROMISE_environment, FALSE);
-
-
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
     R_BlankScalarString = Rf_ScalarString(R_BlankString);
     R_PreserveObject(R_BlankScalarString);
@@ -962,17 +952,6 @@ SEXP do_onLoad do_formals
 #endif
 
 
-    expr_makePROMISE = Rf_allocLang(5);
-    R_PreserveObject(expr_makePROMISE);
-    SETCAR(expr_makePROMISE, getFromBase(Rf_install("delayedAssign")));
-    SETCADR(expr_makePROMISE, /* x */ Rf_mkString("x"));
-    // SETCADDR(expr_makePROMISE, /* value */ R_NilValue);
-    SETCADDDR(expr_makePROMISE, /* eval.env */ R_EmptyEnv);
-    SETCAD4R(expr_makePROMISE, /* assign.env */ makePROMISE_environment);
-    if (!Rf_isFunction(CAR(expr_makePROMISE)))
-        Rf_error(_("object '%s' of mode '%s' was not found"), "delayedAssign", "function");
-
-
     expr_getwd = Rf_lcons(getFromBase(Rf_install("getwd")), R_NilValue);
     R_PreserveObject(expr_getwd);
     if (!Rf_isFunction(CAR(expr_getwd)))
@@ -1114,7 +1093,6 @@ SEXP do_onUnload do_formals
     maybe_release(last_condition);
     maybe_release(_custom_gui_path_character_environment);
     maybe_release(_custom_gui_path_function_environment);
-    maybe_release(makePROMISE_environment);
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
@@ -1139,7 +1117,6 @@ SEXP do_onUnload do_formals
     maybe_release(expr__toplevel_nframe);
     maybe_release(expr__isMethodsDispatchOn);
     maybe_release(expr_UseMethod_lengths);
-    maybe_release(expr_makePROMISE);
     maybe_release(expr_getwd);
 
 
