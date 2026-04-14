@@ -142,6 +142,7 @@ void (*ptr_SET_PRCODE)(SEXP x, SEXP v);
 void (*ptr_SET_PRENV)(SEXP x, SEXP v);
 void (*ptr_SET_PRSEEN)(SEXP x, int v);
 void (*ptr_SET_PRVALUE)(SEXP x, SEXP v);
+SEXP (*ptr_Rf_allocSExp)(SEXPTYPE);
 #endif
 
 
@@ -213,12 +214,8 @@ SEXP ptr_R_PromiseExpr_default(SEXP x)
 }
 int ptr_PRSEEN_default(SEXP x)
 {
-#if R_version_less_than(4,6,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
-    return PRSEEN(x);
-#else
     Rf_error("ptr_PRSEEN is unavailable");
     return 0;
-#endif
 }
 SEXP ptr_PRVALUE_default(SEXP x)
 {
@@ -236,16 +233,16 @@ void ptr_SET_PRENV_default(SEXP x, SEXP v)
 }
 void ptr_SET_PRSEEN_default(SEXP x, int v)
 {
-#if R_version_less_than(4,6,0) && (defined(R_THIS_PATH_DEVEL) || R_version_less_than(4,5,0))
-    SET_PRSEEN(x, v);
-#else
     Rf_error("ptr_SET_PRSEEN is unavailable");
-#endif
 }
 void ptr_SET_PRVALUE_default(SEXP x, SEXP v)
 {
     SETCAR(x, v);
     return;
+}
+SEXP ptr_Rf_allocSExp_default(SEXPTYPE t)
+{
+    Rf_error("ptr_Rf_allocSExp is unavailable");
 }
 #endif
 
@@ -286,6 +283,8 @@ SEXP do_get_ptrs do_formals
         R_GetCCallable("this_path_reg_ptrs", "SET_PRSEEN");
     ptr_SET_PRVALUE = (void(*)(SEXP,SEXP))
         R_GetCCallable("this_path_reg_ptrs", "SET_PRVALUE");
+    ptr_Rf_allocSExp = (SEXP(*)(SEXPTYPE))
+        R_GetCCallable("this_path_reg_ptrs", "Rf_allocSExp");
 #endif
     return R_NilValue;
 }
@@ -373,6 +372,7 @@ SEXP do_onLoad do_formals
     ptr_SET_PRENV = ptr_SET_PRENV_default;
     ptr_SET_PRSEEN = ptr_SET_PRSEEN_default;
     ptr_SET_PRVALUE = ptr_SET_PRVALUE_default;
+    ptr_Rf_allocSExp = ptr_Rf_allocSExp_default;
 #endif
 
 

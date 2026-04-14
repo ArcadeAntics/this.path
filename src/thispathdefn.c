@@ -516,7 +516,7 @@ SEXP R_DelayedBindingEnvironment(SEXP sym, SEXP env)
 SEXP makePROMISE(SEXP expr, SEXP env)
 {
     ENSURE_NAMEDMAX(expr);
-    SEXP s = Rf_allocSExp(PROMSXP);
+    SEXP s = ptr_Rf_allocSExp(PROMSXP);
     ptr_SET_PRCODE(s, expr);
     ptr_SET_PRENV(s, env);
     ptr_SET_PRVALUE(s, my_UnboundValue);

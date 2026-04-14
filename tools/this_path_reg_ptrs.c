@@ -92,6 +92,7 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
     extern void SET_PRENV(SEXP x, SEXP v);
     extern void SET_PRSEEN(SEXP x, int v);
     extern void SET_PRVALUE(SEXP x, SEXP v);
+    extern SEXP Rf_allocSExp(SEXPTYPE);
     R_RegisterCCallable("this_path_reg_ptrs", "PRCODE", (DL_FUNC) PRCODE);
     R_RegisterCCallable("this_path_reg_ptrs", "PRENV", (DL_FUNC) PRENV);
     R_RegisterCCallable("this_path_reg_ptrs", "R_PromiseExpr", (DL_FUNC) R_PromiseExpr);
@@ -101,5 +102,6 @@ void R_init_this_path_reg_ptrs(DllInfo *dll)
     R_RegisterCCallable("this_path_reg_ptrs", "SET_PRENV", (DL_FUNC) SET_PRENV);
     R_RegisterCCallable("this_path_reg_ptrs", "SET_PRSEEN", (DL_FUNC) SET_PRSEEN);
     R_RegisterCCallable("this_path_reg_ptrs", "SET_PRVALUE", (DL_FUNC) SET_PRVALUE);
+    R_RegisterCCallable("this_path_reg_ptrs", "Rf_allocSExp", (DL_FUNC) Rf_allocSExp);
 #endif
 }
