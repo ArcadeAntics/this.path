@@ -68,6 +68,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"dirname2"        , (DL_FUNC) &do_dirname2        , -1},
 
 
+/* encode_string.c */
+
+
+{"encode_string", (DL_FUNC) &do_encode_string, 5},
+
+
 /* error.c */
 
 

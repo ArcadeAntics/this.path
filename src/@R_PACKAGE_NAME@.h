@@ -116,6 +116,12 @@ extern SEXP do_unix_dirname2    do_formals;
 extern SEXP do_dirname2         do_formals;
 
 
+/* encode_string.c */
+
+
+extern SEXP do_encode_string do_formals;
+
+
 /* error.c */
 
 
