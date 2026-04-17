@@ -21,12 +21,12 @@ int my_strlen(SEXP s, unsigned char quote)
     int w = 0;
     for (int j = 0, n = strlen(cs); j < n; j++) {
         unsigned char c = cs[j];
+        if (c == quote)
+            w += 2;
         /* bytes \a \b \t \n \v \f \r */
-        if (0x07 <= c && c <= 0x0d)
+        else if (0x07 <= c && c <= 0x0d)
             w += 2;
         else if (c == '\\')
-            w += 2;
-        else if (c == quote)
             w += 2;
         /* bytes ' ' through ~ */
         else if (0x20 <= c && c < 0x7f)
@@ -36,13 +36,6 @@ int my_strlen(SEXP s, unsigned char quote)
     }
     if (quote) w += 2;
     return w;
-}
-
-
-static R_INLINE
-unsigned char as_xdigit(unsigned char c)
-{
-    return c < 10 ? c + '0' : c - 10 + 'a';
 }
 
 
@@ -150,8 +143,12 @@ SEXP do_encode_string do_formals
                 if (quote) *ptr++ = quote;
                 for (int j = 0, ncs = strlen(cs); j < ncs; j++) {
                     unsigned char c = cs[j];
+                    if (c == quote) {
+                        *ptr++ = '\\';
+                        *ptr++ = quote;
+                    }
                     /* bytes \a \b \t \n \v \f \r */
-                    if (0x07 <= c && c <= 0x0d) {
+                    else if (0x07 <= c && c <= 0x0d) {
                         *ptr++ = '\\';
                         switch (c) {
                         case 0x07: *ptr++ = 'a'; break;
@@ -167,25 +164,12 @@ SEXP do_encode_string do_formals
                         *ptr++ = '\\';
                         *ptr++ = '\\';
                     }
-                    else if (c == quote) {
-                        *ptr++ = '\\';
-                        *ptr++ = quote;
-                    }
                     /* bytes ' ' through ~ */
                     else if (0x20 <= c && c < 0x7f) {
                         *ptr++ = c;
                     }
-                    else if (c < 0x20 || c == 0x7f) {
-                        *ptr++ = '\\';
-                        *ptr++ = c       /(1<<6) + 48;
-                        *ptr++ = c%(1<<6)/(1<<3) + 48;
-                        *ptr++ = c%(1<<3)/(1<<0) + 48;
-                    }
                     else {
-                        *ptr++ = '\\';
-                        *ptr++ = 'x';
-                        *ptr++ = as_xdigit(c       /(1<<4));
-                        *ptr++ = as_xdigit(c%(1<<4)/(1<<0));
+                        ptr += snprintf(ptr, 5, c <= 0x7f ? "\\%03o" : "\\x%02x", c);
                     }
                 }
                 if (quote) *ptr++ = quote;
