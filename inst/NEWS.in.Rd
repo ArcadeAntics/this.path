@@ -6,6 +6,14 @@
 
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
+\section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item{\code{this.path()} once again works in \sQuote{\Positron} after
+        update 2026.04.0-269}
+    }
+  }
+}
 \section{CHANGES IN VERSION 2.8.0 (2026-04-09)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
