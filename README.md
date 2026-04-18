@@ -1,9 +1,3 @@
-```
-this.path : Get Executing Script's Path
-Copyright (C) 2021-2026   Iris Simmons
-```
-
-
 # this.path
 
   * [Description](#description)
@@ -333,8 +327,10 @@ your own using:
 
 `package:rprojroot` recommends using
 `<criterion>$find_file(path = whereami::thisfile())` for this purpose,
-but as mentioned in section **Alternative 4**, `whereami::thisfile()`
-is seriously lacking compared to `this.path::this.path()`.
+but as mentioned in section
+[**Alternative 4**](#alternative-4-other-packages-that-determine-current-r-script),
+`whereami::thisfile()` is seriously lacking compared to
+`this.path::this.path()`.
 
 These can not determine the executing script, nor the executing
 script's directory. They provide none of the same functionality of
@@ -351,10 +347,10 @@ related functions:
 *   `box::use()` imports an **R** script as a module.
 
 These both lack the same functionality as the packages listed in
-**Alternative 4**. `box::file()` should not be used in favour of
-`this.path::here()`. However, `box::use()` is still extremely useful,
-it just needs to be combined with `package:this.path` to get the best
-results:
+[**Alternative 4**](#alternative-4-other-packages-that-determine-current-r-script).
+`box::file()` should not be used in favour of `this.path::here()`.
+However, `box::use()` is still extremely useful, it just needs to be
+combined with `package:this.path` to get the best results:
 
 ```R
 this.path::with_script_path(
