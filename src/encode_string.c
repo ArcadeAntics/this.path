@@ -21,12 +21,10 @@ int my_strlen(SEXP s, unsigned char quote)
     int w = 0;
     for (int j = 0, n = strlen(cs); j < n; j++) {
         unsigned char c = cs[j];
-        if (c == quote)
-            w += 2;
-        else if (c == '\\')
+        if (c == quote || c == '\\')
             w += 2;
         /* bytes ' ' through ~ */
-        else if (0x20 <= c && c < 0x7f)
+        else if (0x20 <= c && c <= 0x7e)
             w += 1;
         /* bytes \a \b \t \n \v \f \r */
         else if (0x07 <= c && c <= 0x0d)
@@ -143,16 +141,12 @@ SEXP do_encode_string do_formals
                 if (quote) *ptr++ = quote;
                 for (int j = 0, ncs = strlen(cs); j < ncs; j++) {
                     unsigned char c = cs[j];
-                    if (c == quote) {
+                    if (c == quote || c == '\\') {
                         *ptr++ = '\\';
-                        *ptr++ = quote;
-                    }
-                    else if (c == '\\') {
-                        *ptr++ = '\\';
-                        *ptr++ = '\\';
+                        *ptr++ = c;
                     }
                     /* bytes ' ' through ~ */
-                    else if (0x20 <= c && c < 0x7f) {
+                    else if (0x20 <= c && c <= 0x7e) {
                         *ptr++ = c;
                     }
                     /* bytes \a \b \t \n \v \f \r */
