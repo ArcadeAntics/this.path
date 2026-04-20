@@ -23,14 +23,14 @@ int my_strlen(SEXP s, unsigned char quote)
         unsigned char c = cs[j];
         if (c == quote)
             w += 2;
-        /* bytes \a \b \t \n \v \f \r */
-        else if (0x07 <= c && c <= 0x0d)
-            w += 2;
         else if (c == '\\')
             w += 2;
         /* bytes ' ' through ~ */
         else if (0x20 <= c && c < 0x7f)
             w += 1;
+        /* bytes \a \b \t \n \v \f \r */
+        else if (0x07 <= c && c <= 0x0d)
+            w += 2;
         else
             w += 4;
     }
@@ -147,19 +147,6 @@ SEXP do_encode_string do_formals
                         *ptr++ = '\\';
                         *ptr++ = quote;
                     }
-                    /* bytes \a \b \t \n \v \f \r */
-                    else if (0x07 <= c && c <= 0x0d) {
-                        *ptr++ = '\\';
-                        switch (c) {
-                        case 0x07: *ptr++ = 'a'; break;
-                        case 0x08: *ptr++ = 'b'; break;
-                        case 0x09: *ptr++ = 't'; break;
-                        case 0x0a: *ptr++ = 'n'; break;
-                        case 0x0b: *ptr++ = 'v'; break;
-                        case 0x0c: *ptr++ = 'f'; break;
-                        case 0x0d: *ptr++ = 'r'; break;
-                        }
-                    }
                     else if (c == '\\') {
                         *ptr++ = '\\';
                         *ptr++ = '\\';
@@ -167,6 +154,11 @@ SEXP do_encode_string do_formals
                     /* bytes ' ' through ~ */
                     else if (0x20 <= c && c < 0x7f) {
                         *ptr++ = c;
+                    }
+                    /* bytes \a \b \t \n \v \f \r */
+                    else if (0x07 <= c && c <= 0x0d) {
+                        *ptr++ = '\\';
+                        *ptr++ = "abtnvfr"[c - 0x07];
                     }
                     else {
                         ptr += snprintf(ptr, 5, c <= 0x7f ? "\\%03o" : "\\x%02x", c);
