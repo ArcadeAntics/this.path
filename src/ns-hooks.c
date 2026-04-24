@@ -996,12 +996,12 @@ SEXP do_onLoad do_formals
 
     _custom_gui_path_env = R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 10);
     R_PreserveObject(_custom_gui_path_env);
-    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(guinameSymbol                  , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(ofileSymbol                    , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(fileSymbol                     , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(_get_contentsSymbol            , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(_toplevel_nframeSymbol         , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_custom_gui_path_funSymbol, R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(guinameSymbol             , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(ofileSymbol               , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(fileSymbol                , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_get_contentsSymbol       , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_toplevel_nframeSymbol    , R_NilValue, _custom_gui_path_env);
     R_LockEnvironment(_custom_gui_path_env, FALSE);
 
 

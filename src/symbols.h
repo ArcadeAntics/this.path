@@ -170,7 +170,7 @@ extern0 SEXP0
     originalSymbol                         INI_as(Rf_install("original")),
     for_msgSymbol                          INI_as(Rf_install("for.msg")),
     contentsSymbol                         INI_as(Rf_install("contents")),
-    _custom_gui_path_functionSymbol        INI_as(Rf_install(".custom_gui_path.function")),
+    _custom_gui_path_funSymbol             INI_as(Rf_install(".custom_gui_path_fun")),
     guinameSymbol                          INI_as(Rf_install("guiname")),
     _jupyter_pathSymbol                    INI_as(Rf_install(".jupyter_path")),
     _site_fileSymbol                       INI_as(Rf_install(".site_file")),

@@ -485,12 +485,12 @@ void reset_gui_path(void)
     gui_path = GUIPATH_DEFAULT;
 
 
-    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(guinameSymbol                  , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(ofileSymbol                    , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(fileSymbol                     , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(_get_contentsSymbol            , R_NilValue, _custom_gui_path_env);
-    Rf_defineVar(_toplevel_nframeSymbol         , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_custom_gui_path_funSymbol, R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(guinameSymbol             , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(ofileSymbol               , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(fileSymbol                , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_get_contentsSymbol       , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_toplevel_nframeSymbol    , R_NilValue, _custom_gui_path_env);
 }
 
 
@@ -520,8 +520,8 @@ SEXP do_set_gui_path do_formals
     case GUIPATH_FUNCTION:
         value = Rf_allocVector(VECSXP, 2);
         Rf_protect(value); nprotect++;
-        SET_VECTOR_ELT(value, 0, getFromCGPE(_custom_gui_path_functionSymbol));
-        SET_VECTOR_ELT(value, 1, getFromCGPE(_toplevel_nframeSymbol         ));
+        SET_VECTOR_ELT(value, 0, getFromCGPE(_custom_gui_path_funSymbol));
+        SET_VECTOR_ELT(value, 1, getFromCGPE(_toplevel_nframeSymbol    ));
         break;
     case GUIPATH_CHARACTER:
     {
@@ -637,8 +637,8 @@ SEXP do_set_gui_path do_formals
         reset_gui_path();
 
 
-        Rf_defineVar(_custom_gui_path_functionSymbol, fun   , _custom_gui_path_env);
-        Rf_defineVar(_toplevel_nframeSymbol         , nframe, _custom_gui_path_env);
+        Rf_defineVar(_custom_gui_path_funSymbol, fun   , _custom_gui_path_env);
+        Rf_defineVar(_toplevel_nframeSymbol    , nframe, _custom_gui_path_env);
     }
         gui_path = GUIPATH_FUNCTION;
         break;
@@ -2227,7 +2227,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
     case GUIPATH_FUNCTION:
     {
         SEXP expr = Rf_lcons(
-            _custom_gui_path_functionSymbol,
+            _custom_gui_path_funSymbol,
             Rf_cons(
                 Rf_ScalarLogical(verbose),
                 Rf_cons(
