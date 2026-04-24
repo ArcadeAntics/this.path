@@ -409,6 +409,7 @@ if (getRversion() < "3.0.0") {
     ## sys.R           ----
 
 
+    fix_External2(.toplevel.nframe)
     fix_External2(sys.srcref)
     fix_External2(sys.whiches)
 

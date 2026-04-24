@@ -625,7 +625,7 @@ SEXP do_set_gui_path do_formals
         }
         else if (IS_SCALAR(nframe, REALSXP)) {
             double x = REAL_ELT(nframe, 0);
-            if (R_IsNA(x) || x < 0 || x > INT_MAX)
+            if (R_IsNA(x) || x < 0 || x > INT_MAX || x != trunc(x))
                 Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
             nframe = Rf_ScalarInteger(x);
             Rf_protect(nframe); nprotect++;
@@ -722,7 +722,7 @@ SEXP do_set_gui_path do_formals
         }
         else if (IS_SCALAR(nframe, REALSXP)) {
             double x = REAL_ELT(nframe, 0);
-            if (R_IsNA(x) || x < 0 || x > INT_MAX)
+            if (R_IsNA(x) || x < 0 || x > INT_MAX || x != trunc(x))
                 Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
             nframe = Rf_ScalarInteger(x);
             Rf_protect(nframe); nprotect++;
@@ -756,6 +756,46 @@ SEXP do_set_gui_path do_formals
     set_R_Visible(FALSE);
     Rf_unprotect(nprotect);
     return value;
+}
+
+
+SEXP do_custom_gui_toplevel_nframe do_formals
+{
+    do_start_no_op("custom_gui_toplevel_nframe", 0);
+
+
+    if (gui_path == GUIPATH_DEFAULT) return R_NilValue;
+
+
+    SEXP nframe = getFromCGPE(_toplevel_nframeSymbol);
+    if (nframe == R_NilValue) return Rf_ScalarInteger(0);
+    if (IS_SCALAR(nframe, INTSXP)) {
+        int x = INTEGER_ELT(nframe, 0);
+        if (x == NA_INTEGER || x < 0);
+        else return nframe;
+    }
+    if (TYPEOF(nframe) != CLOSXP)
+        Rf_error("invalid '%s' value", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+    SEXP expr = Rf_lcons(_toplevel_nframeSymbol, R_NilValue);
+    Rf_protect(expr);
+    nframe = Rf_eval(expr, _custom_gui_path_env);
+    Rf_unprotect(1);
+    Rf_protect(nframe);
+    set_R_Visible(TRUE);
+    if (IS_SCALAR(nframe, INTSXP)) {
+        int x = INTEGER_ELT(nframe, 0);
+        if (x == NA_INTEGER || x < 0)
+            Rf_error("invalid '%s' return value; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+    }
+    else if (IS_SCALAR(nframe, REALSXP)) {
+        double x = REAL_ELT(nframe, 0);
+        if (R_IsNA(x) || x < 0 || x > INT_MAX || x != trunc(x))
+            Rf_error("invalid '%s' return value; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+        nframe = Rf_ScalarInteger(x);
+    }
+    else Rf_error("invalid '%s' return value; expected an integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+    Rf_unprotect(1);
+    return nframe;
 }
 
 

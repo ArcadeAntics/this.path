@@ -1,12 +1,14 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2024   Iris Simmons
+## Copyright (C) 2024-2026   Iris Simmons
 ##
 
 
 .toplevel.nframe <- function ()
 {
-    if (.GUI_jupyter) {
+    if (!is.null(v <- .External2(.C_custom_gui_toplevel_nframe)))
+        v
+    else if (.GUI_jupyter) {
         if (.is_jupyter_loaded())
             sys.frame(1L)$kernel$executor$nframe + 1L
         else 0L

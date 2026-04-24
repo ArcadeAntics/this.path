@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2022-2024   Iris Simmons
+Copyright (C) 2022-2026   Iris Simmons
  */
 
 
@@ -291,6 +291,7 @@ extern SEXP do_Rgui_path          do_formals;
 extern SEXP do_jupyter_path       do_formals;
 extern SEXP do_set_jupyter_path   do_formals;
 extern SEXP do_set_gui_path       do_formals;
+extern SEXP do_custom_gui_toplevel_nframe do_formals;
 extern SEXP do_sys_path           do_formals;
 extern SEXP do_getframenumber     do_formals;
 extern SEXP do_env_path           do_formals;

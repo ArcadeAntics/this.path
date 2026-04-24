@@ -243,6 +243,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"jupyter_path"      , (DL_FUNC) &do_jupyter_path      ,  4},
 {"set_jupyter_path"  , (DL_FUNC) &do_set_jupyter_path  , -1}, // R_Visible off
 {"set_gui_path"      , (DL_FUNC) &do_set_gui_path      ,  0}, // R_Visible off
+{"custom_gui_toplevel_nframe", (DL_FUNC) &do_custom_gui_toplevel_nframe, 0},
 {"sys_path"          , (DL_FUNC) &do_sys_path          , -1},
 {"getframenumber"    , (DL_FUNC) &do_getframenumber    ,  0},
 {"env_path"          , (DL_FUNC) &do_env_path          , -1},
