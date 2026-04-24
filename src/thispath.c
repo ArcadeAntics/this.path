@@ -605,7 +605,7 @@ SEXP do_set_gui_path do_formals
         if (n > 1)
             switch (t) {
             case DOTSXP:
-                nframe = CADDR(dots);
+                nframe = CADR(dots);
                 /* if the argument is missing */
                 if (nframe == R_MissingArg)
                     nframe = R_NilValue;
@@ -614,7 +614,7 @@ SEXP do_set_gui_path do_formals
                     Rf_protect(nframe); nprotect++;
                 }
                 break;
-            case LISTSXP: nframe = CADDR(dots); break;
+            case LISTSXP: nframe = CADR(dots); break;
             case VECSXP: nframe = VECTOR_ELT(dots, 1); break;
             }
         if (nframe == R_NilValue);
