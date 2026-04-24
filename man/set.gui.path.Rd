@@ -33,26 +33,46 @@ thisPathNotFoundError(..., call. = TRUE, domain = NULL,
   If no arguments are passed to \code{set.gui.path()}, the default behaviour
   will be restored.
 
-  If one argument is passed to \code{set.gui.path()}, it must be a function
-  that returns the path of the active document in your GUI. It must accept the
-  following arguments: \code{(verbose, original, for.msg, contents)} (default
-  values are unnecessary). This makes sense for a GUI which can edit and run \R
-  code from several different documents such as RGui, \RStudio, \Positron,
-  \VSCode + \REditorSupport, and \Emacs + \ESS.
+  If the first argument passed to \code{set.gui.path()} is:
 
-  If two or three arguments are passed to \code{set.gui.path()}, they must be
-  the name of the GUI, the path of the active document, and optionally a
-  function to get the contents of the document. If provided, the function must
-  accept at least one argument which will be the normalized path of the
-  document. This makes sense for a GUI which can edit and run \R code from only
-  one document such as \Jupyter and shell.
+  \describe{
+    \item{a function}{
+
+      then said function must return the path of the active document in your
+      GUI. It must accept the following arguments:
+      \code{(verbose, original, for.msg, contents)} (default values are
+      unnecessary). This makes sense for a GUI which can edit and run \R code
+      from several different documents such as RGui, \RStudio, \Positron,
+      \VSCode + \REditorSupport, and \Emacs + \ESS.
+
+      The optional second argument \code{toplevel_nframe} should be the result
+      of executing \code{sys.nframe()} in the toplevel context of the GUI.}
+
+    \item{a character string}{
+
+      then it must be the name of the GUI.
+
+      The second argument must be the path of the active document.
+
+      The optional third argument \code{get_contents} should be a function that
+      gets the contents of the document. The function must accept at least one
+      argument which will be the normalized path of the document. This makes
+      sense for a GUI which can edit and run \R code from only one document
+      such as \Jupyter and shell.
+
+      The optional fourth argument \code{toplevel_nframe} should be the result
+      of executing \code{sys.nframe()} in the toplevel context of the GUI.
+    }
+  }
 
   It is best to call this function as a user hook.
-  \preformatted{setHook(packageEvent("@R_PACKAGE_NAME@"),
-function(pkgname, pkgpath)
-{
-    @R_PACKAGE_NAME@::set.gui.path(<...>)
-}, action = "prepend")}
+  \preformatted{setHook(
+    packageEvent("@R_PACKAGE_NAME@"),
+    function(pkgname, pkgpath) {
+        @R_PACKAGE_NAME@::set.gui.path(<...>)
+    },
+    action = "prepend"
+)}
 
   An example for a GUI which can run code from multiple documents:
   \preformatted{evalq(envir = new.env(parent = .BaseNamespaceEnv), {
@@ -99,10 +119,13 @@ function(pkgname, pkgpath)
     }
     ## recommended to prevent tampering
     lockEnvironment(environment(), bindings = TRUE)
-    setHook(packageEvent("@R_PACKAGE_NAME@"),
-    function(pkgname, pkgpath) {
-        @R_PACKAGE_NAME@::set.gui.path(.custom_gui_path)
-    }, action = "prepend")
+    setHook(
+        packageEvent("@R_PACKAGE_NAME@"),
+        function(pkgname, pkgpath) {
+            @R_PACKAGE_NAME@::set.gui.path(.custom_gui_path)
+        },
+        action = "prepend"
+    )
 })}
 
   An example for a GUI which can run code from only one document:
@@ -115,14 +138,22 @@ function(pkgname, pkgpath)
     }
     ## recommended to prevent tampering
     lockEnvironment(environment(), bindings = TRUE)
-    setHook(packageEvent("@R_PACKAGE_NAME@"), function(pkgname, pkgpath) {
-        @R_PACKAGE_NAME@::set.gui.path(.guiname, .path, .custom_get_contents)
-    }, action = "prepend")
+    setHook(
+        packageEvent("@R_PACKAGE_NAME@"),
+        function(pkgname, pkgpath) {
+            @R_PACKAGE_NAME@::set.gui.path(.guiname, .path, .custom_get_contents)
+        },
+        action = "prepend"
+    )
     # ## if your GUI does not have/need a .custom_get_contents
     # ## function, then this works just as well:
-    # setHook(packageEvent("@R_PACKAGE_NAME@"), function(pkgname, pkgpath) {
-    #     @R_PACKAGE_NAME@::set.gui.path(.guiname, .path)
-    # }, action = "prepend")
+    # setHook(
+    #     packageEvent("@R_PACKAGE_NAME@"),
+    #     function(pkgname, pkgpath) {
+    #         @R_PACKAGE_NAME@::set.gui.path(.guiname, .path)
+    #     },
+    #     action = "prepend"
+    # )
 })}
 }
 \value{

@@ -933,7 +933,7 @@ SEXP do_onLoad do_formals
     }
 
 
-    expr__toplevel_nframe = Rf_lcons(getFromMyNS(Rf_install(".toplevel.nframe")), R_NilValue);
+    expr__toplevel_nframe = Rf_lcons(getFromMyNS(_toplevel_nframeSymbol), R_NilValue);
     R_PreserveObject(expr__toplevel_nframe);
     if (!Rf_isFunction(CAR(expr__toplevel_nframe)))
         Rf_error(_("object '%s' of mode '%s' was not found"), ".toplevel.nframe", "function");
@@ -996,29 +996,13 @@ SEXP do_onLoad do_formals
 
 
     _custom_gui_path_character_environment =
-        R_NewEnv(/* enclos */ mynamespace, /* hash */ TRUE, /* size */ 10);
+        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 10);
     R_PreserveObject(_custom_gui_path_character_environment);
-    Rf_defineVar(guinameSymbol, R_MissingArg, _custom_gui_path_character_environment);
-    {
-        SEXP na = Rf_ScalarString(NA_STRING);
-        Rf_protect(na);
-        ENSURE_NAMEDMAX(na);
-        R_MakeForcedBinding(ofileSymbol, na, na, _custom_gui_path_character_environment);
-        R_LockBinding(ofileSymbol, _custom_gui_path_character_environment);
-        Rf_unprotect(1);
-    }
-    {
-        SEXP expr = Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue));
-        Rf_protect(expr);
-        R_MakeDelayedBinding(
-            fileSymbol,
-            expr, _custom_gui_path_character_environment,
-            _custom_gui_path_character_environment
-        );
-        R_LockBinding(fileSymbol, _custom_gui_path_character_environment);
-        Rf_unprotect(1);
-    }
-    Rf_defineVar(_get_contentsSymbol, R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(guinameSymbol         , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(ofileSymbol           , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(fileSymbol            , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(_get_contentsSymbol   , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(_toplevel_nframeSymbol, R_NilValue, _custom_gui_path_character_environment);
     R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
 
 
@@ -1026,6 +1010,7 @@ SEXP do_onLoad do_formals
         R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
     R_PreserveObject(_custom_gui_path_function_environment);
     Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
+    Rf_defineVar(_toplevel_nframeSymbol, R_NilValue, _custom_gui_path_function_environment);
     R_LockEnvironment(_custom_gui_path_function_environment, FALSE);
 
 

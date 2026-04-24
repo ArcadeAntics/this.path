@@ -480,6 +480,23 @@ typedef enum {
 GUIPATH_ACTION gui_path = GUIPATH_DEFAULT;
 
 
+void reset_gui_path(void)
+{
+    gui_path = GUIPATH_DEFAULT;
+
+
+    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
+    Rf_defineVar(_toplevel_nframeSymbol         , R_NilValue, _custom_gui_path_function_environment);
+
+
+    Rf_defineVar(guinameSymbol         , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(ofileSymbol           , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(fileSymbol            , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(_get_contentsSymbol   , R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(_toplevel_nframeSymbol, R_NilValue, _custom_gui_path_character_environment);
+}
+
+
 SEXP do_set_gui_path do_formals
 {
     do_start_no_op("set_gui_path", 0);
@@ -501,24 +518,22 @@ SEXP do_set_gui_path do_formals
         Rf_protect(value); nprotect++;
         break;
     case GUIPATH_FUNCTION:
-        value = Rf_allocVector(VECSXP, 1);
+        value = Rf_allocVector(VECSXP, 2);
         Rf_protect(value); nprotect++;
         SET_VECTOR_ELT(value, 0, my_getVarInFrame(
             _custom_gui_path_function_environment,
             _custom_gui_path_functionSymbol,
             TRUE
         ));
+        SET_VECTOR_ELT(value, 1, my_getVarInFrame(
+            _custom_gui_path_function_environment,
+            _toplevel_nframeSymbol,
+            TRUE
+        ));
         break;
     case GUIPATH_CHARACTER:
     {
-        /* need _getContents first before deciding how large to allocate value */
-        SEXP _getContents = my_getVarInFrame(
-            _custom_gui_path_character_environment,
-            _get_contentsSymbol,
-            TRUE
-        );
-        Rf_protect(_getContents); nprotect++;
-        value = Rf_allocVector(VECSXP, (_getContents != R_NilValue) ? 3 : 2);
+        value = Rf_allocVector(VECSXP, 4);
         Rf_protect(value); nprotect++;
         SET_VECTOR_ELT(value, 0, Rf_ScalarString(my_getVarInFrame(
             _custom_gui_path_character_environment,
@@ -530,8 +545,16 @@ SEXP do_set_gui_path do_formals
             ofileSymbol,
             TRUE
         ));
-        if (Rf_xlength(value) > 2)
-            SET_VECTOR_ELT(value, 2, _getContents);
+        SET_VECTOR_ELT(value, 2, my_getVarInFrame(
+            _custom_gui_path_character_environment,
+            _get_contentsSymbol,
+            TRUE
+        ));
+        SET_VECTOR_ELT(value, 3, my_getVarInFrame(
+            _custom_gui_path_character_environment,
+            _toplevel_nframeSymbol,
+            TRUE
+        ));
     }
         break;
     default:
@@ -552,8 +575,8 @@ SEXP do_set_gui_path do_formals
 
     SEXP dd1 = CAR(dots);
     if (dd1 == R_MissingArg)
-        // Rf_errorcall(call, _("argument is missing, with no default"));
-        MissingArgError_c("", call, rho, "evalError");
+        // Rf_errorcall(call, _("argument \"%s\" is missing, with no default"), "..1");
+        MissingArgError_c("..1", call, rho, "evalError");
     dd1 = Rf_eval(dd1, R_EmptyEnv);
 
 
@@ -566,21 +589,35 @@ SEXP do_set_gui_path do_formals
     }
 
 
-    switch (n) {
-    case 0:
+    if (n <= 0) {
         gui_path = GUIPATH_DEFAULT;
-        break;
-    case 1:
+        set_R_Visible(FALSE);
+        Rf_unprotect(nprotect);
+        return value;
+    }
+
+
+    SEXP arg1 = R_NilValue;  /* for -Wall */
+    switch (t) {
+    case DOTSXP: arg1 = dd1; break;
+    case LISTSXP: arg1 = CAR(dots); break;
+    case VECSXP: arg1 = VECTOR_ELT(dots, 0); break;
+    }
+
+
+    switch (TYPEOF(arg1)) {
+    case CLOSXP:
     {
-        SEXP fun = R_NilValue;  /* for -Wall */
-        switch (t) {
-        case DOTSXP: fun = dd1; break;
-        case LISTSXP: fun = CAR(dots); break;
-        case VECSXP: fun = VECTOR_ELT(dots, 0); break;
-        }
+        if (n > 2)
+            Rf_error("%d arguments passed to %s which requires %s",
+                n, "set.gui.path()", "at most 2");
+
+
+        SEXP env = _custom_gui_path_function_environment;
+
+
+        SEXP fun = arg1;
         ENSURE_NAMEDMAX(fun);
-        if (TYPEOF(fun) != CLOSXP)
-            Rf_error("expected a function; got a %s", Rf_type2char(TYPEOF(fun)));
 
 
         SEXP args = FORMALS(fun);
@@ -591,28 +628,72 @@ SEXP do_set_gui_path do_formals
         else Rf_error("invalid '%s' argument; must accept the following arguments:\n  (verbose, original, for.msg, contents)", "fun");
 
 
-        Rf_defineVar(_custom_gui_path_functionSymbol, fun, _custom_gui_path_function_environment);
+        SEXP nframe = R_NilValue;
+        if (n > 1)
+            switch (t) {
+            case DOTSXP:
+                nframe = CADDR(dots);
+                /* if the argument is missing */
+                if (nframe == R_MissingArg)
+                    nframe = R_NilValue;
+                else {
+                    nframe = Rf_eval(nframe, R_EmptyEnv);
+                    Rf_protect(nframe); nprotect++;
+                }
+                break;
+            case LISTSXP: nframe = CADDR(dots); break;
+            case VECSXP: nframe = VECTOR_ELT(dots, 1); break;
+            }
+        if (nframe == R_NilValue);
+        else if (IS_SCALAR(nframe, INTSXP)) {
+            int x = INTEGER_ELT(nframe, 0);
+            if (x == NA_INTEGER || x < 0)
+                Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+        }
+        else if (IS_SCALAR(nframe, REALSXP)) {
+            double x = REAL_ELT(nframe, 0);
+            if (R_IsNA(x) || x < 0 || x > INT_MAX)
+                Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+            nframe = Rf_ScalarInteger(x);
+            Rf_protect(nframe); nprotect++;
+        }
+        else if (TYPEOF(nframe) == CLOSXP);
+        else Rf_error("invalid '%s' argument; expected an integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+
+
+        reset_gui_path();
+
+
+        Rf_defineVar(_custom_gui_path_functionSymbol, fun   , env);
+        Rf_defineVar(_toplevel_nframeSymbol         , nframe, env);
     }
         gui_path = GUIPATH_FUNCTION;
         break;
-    case 2:
-    case 3:
+    case STRSXP:
     {
-        SEXP guiname = R_NilValue;  /* for -Wall */
-        switch (t) {
-        case DOTSXP: guiname = dd1; break;
-        case LISTSXP: guiname = CAR(dots); break;
-        case VECSXP: guiname = VECTOR_ELT(dots, 0); break;
-        }
+        if (n < 2)
+            Rf_error("%d arguments passed to %s which requires %s",
+                n, "set.gui.path()", "at least 2");
+        if (n > 4)
+            Rf_error("%d arguments passed to %s which requires %s",
+                n, "set.gui.path()", "at most 4");
+
+
+        SEXP env = _custom_gui_path_character_environment;
+
+
+        SEXP guiname = arg1;
         if (!IS_SCALAR(guiname, STRSXP) || STRING_ELT(guiname, 0) == NA_STRING)
             Rf_error(_("invalid first argument"));
+
+
         SEXP path = R_NilValue;  /* for -Wall */
         switch (t) {
         case DOTSXP:
             path = CADR(dots);
             if (path == R_MissingArg)
-                // Rf_errorcall(call, _("argument is missing, with no default"));
-                MissingArgError_c("", call, rho, "evalError");
+                // Rf_errorcall(call, _("argument \"%s\" is missing, with no default"), "..2");
+                MissingArgError_c("..2", call, rho, "evalError");
             path = Rf_eval(path, R_EmptyEnv);
             Rf_protect(path); nprotect++;
             break;
@@ -623,25 +704,23 @@ SEXP do_set_gui_path do_formals
             Rf_error("invalid '%s' argument; expected a character string", "path");
         if (!is_abs_path(R_CHAR(STRING_ELT(path, 0))))
             Rf_error("invalid '%s' argument; expected an absolute path", "path");
-        SEXP _getContents = R_NilValue;  /* for -Wall */
-        switch (t) {
-        case DOTSXP:
-            _getContents = CDDR(dots);
-            /* if there are only two arguments */
-            if (_getContents == R_NilValue);
-            /* if the third argument is missing */
-            else if (CAR(_getContents) == R_MissingArg)
-                _getContents = R_NilValue;
-            else {
-                _getContents = Rf_eval(CAR(_getContents), R_EmptyEnv);
-                Rf_protect(_getContents); nprotect++;
+
+
+        SEXP _getContents = R_NilValue;
+        if (n > 2)
+            switch (t) {
+            case DOTSXP:
+                _getContents = CADDR(dots);
+                if (_getContents == R_MissingArg)
+                    _getContents = R_NilValue;
+                else {
+                    _getContents = Rf_eval(_getContents, R_EmptyEnv);
+                    Rf_protect(_getContents); nprotect++;
+                }
+                break;
+            case LISTSXP: _getContents = CADDR(dots); break;
+            case VECSXP: _getContents = VECTOR_ELT(dots, 2); break;
             }
-            break;
-        case LISTSXP: _getContents = CADDR(dots); break;
-        case VECSXP:
-            _getContents = ((n > 2) ? VECTOR_ELT(dots, 2) : R_NilValue);
-            break;
-        }
         if (_getContents == R_NilValue);
         else if (TYPEOF(_getContents) == CLOSXP) {
             if (FORMALS(_getContents) == R_NilValue)
@@ -650,44 +729,71 @@ SEXP do_set_gui_path do_formals
         else Rf_error("invalid '%s' argument; expected a function", "getContents");
 
 
-        binding_info_t ofile; my_findVarInFrame(_custom_gui_path_character_environment, ofileSymbol, &ofile);
-        Rf_protect(ofile.value); nprotect++;
-        if (!is_promise(ofile))
-            Rf_error(_("invalid '%s' binding"), "ofile");
+        SEXP nframe = R_NilValue;
+        if (n > 3)
+            switch (t) {
+            case DOTSXP:
+                nframe = CADDDR(dots);
+                if (nframe == R_MissingArg)
+                    nframe = R_NilValue;
+                else {
+                    nframe = Rf_eval(nframe, R_EmptyEnv);
+                    Rf_protect(nframe); nprotect++;
+                }
+                break;
+            case LISTSXP: nframe = CADDDR(dots); break;
+            case VECSXP: nframe = VECTOR_ELT(dots, 3); break;
+            }
+        if (nframe == R_NilValue);
+        else if (IS_SCALAR(nframe, INTSXP)) {
+            int x = INTEGER_ELT(nframe, 0);
+            if (x == NA_INTEGER || x < 0)
+                Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+        }
+        else if (IS_SCALAR(nframe, REALSXP)) {
+            double x = REAL_ELT(nframe, 0);
+            if (R_IsNA(x) || x < 0 || x > INT_MAX)
+                Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
+            nframe = Rf_ScalarInteger(x);
+            Rf_protect(nframe); nprotect++;
+        }
+        else if (TYPEOF(nframe) == CLOSXP);
+        else Rf_error("invalid '%s' argument; expected an integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
 
 
-        binding_info_t file; my_findVarInFrame(_custom_gui_path_character_environment, fileSymbol, &file);
-        Rf_protect(file.value); nprotect++;
-        if (!is_promise(file))
-            Rf_error(_("invalid '%s' binding"), "file");
+        reset_gui_path();
 
 
-        Rf_defineVar(guinameSymbol, STRING_ELT(guiname, 0), _custom_gui_path_character_environment);
+        Rf_defineVar(guinameSymbol, STRING_ELT(guiname, 0), env);
 
 
         {
-            Rboolean locked = R_BindingIsLocked(ofile.sym, ofile.env);
-            if (locked) R_unLockBinding(ofile.sym, ofile.env);
-            R_MakeForcedBinding(ofile.sym, path, path, ofile.env);
-            if (locked) R_LockBinding(ofile.sym, ofile.env);
+            SEXP sym = ofileSymbol;
+            Rboolean locked = R_BindingIsLocked(sym, env);
+            if (locked) R_unLockBinding(sym, env);
+            R_MakeForcedBinding(sym, path, path, env);
+            if (locked) R_LockBinding(sym, env);
         }
 
 
         {
-            Rboolean locked = R_BindingIsLocked(file.sym, file.env);
-            if (locked) R_unLockBinding(file.sym, file.env);
-            R_MakeDelayedBinding(file.sym, my_PREXPR(file), file.env, file.env);
-            if (locked) R_LockBinding(file.sym, file.env);
+            SEXP sym = fileSymbol;
+            Rboolean locked = R_BindingIsLocked(sym, env);
+            if (locked) R_unLockBinding(sym, env);
+            SEXP expr = Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue));
+            R_MakeDelayedBinding(sym, expr, env, env);
+            if (locked) R_LockBinding(sym, env);
         }
 
 
-        Rf_defineVar(_get_contentsSymbol, _getContents, _custom_gui_path_character_environment);
+        Rf_defineVar(_get_contentsSymbol   , _getContents, env);
+        Rf_defineVar(_toplevel_nframeSymbol, nframe      , env);
     }
         gui_path = GUIPATH_CHARACTER;
         break;
     default:
-        Rf_error("%d arguments passed to %s which requires %s",
-            n, "set.gui.path()", "0, 1, 2, or 3");
+        Rf_error("invalid first argument; expected a function or a character string");
+        return R_NilValue;
     }
 
 
@@ -2196,6 +2302,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             else if (is_abs_path(R_CHAR(STRING_ELT(value, 0))));
             else Rf_errorcall(expr, "invalid return value; must be an absolute path");
         }
+        set_R_Visible(TRUE);
         Rf_unprotect(2);
         return value;
     }
@@ -2231,9 +2338,11 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             else {
                 value = Rf_eval(expr, mynamespace);
             }
+            set_R_Visible(TRUE);
             Rf_unprotect(1);
             return value;
         }
+        set_R_Visible(TRUE);
         return get_file_from_closure(original, for_msg, env);
     }
     default:

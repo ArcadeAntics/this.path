@@ -93,6 +93,8 @@ extern0 SEXP0
     EncSymbol                              INI_as(Rf_install("Enc")),
     timestampSymbol                        INI_as(Rf_install("timestamp")),
 
+    _toplevel_nframeSymbol                 INI_as(Rf_install(".toplevel.nframe")),
+
     _GUI_RStudioSymbol                     INI_as(Rf_install(".GUI_RStudio")),
     debugSourceSymbol                      INI_as(Rf_install("debugSource")),
     _rs_sourceWithProgressSymbol           INI_as(Rf_install(".rs.sourceWithProgress")),
