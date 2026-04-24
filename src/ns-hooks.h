@@ -22,8 +22,7 @@ extern SEXP mynamespace,
             ThisPathUnrecognizedConnectionClassErrorClass,
             ThisPathUnrecognizedMannerErrorClass         ,
             last_condition,
-            _custom_gui_path_character_environment,
-            _custom_gui_path_function_environment ;
+            _custom_gui_path_env;
 
 
 extern int _isMethodsDispatchOn(void);

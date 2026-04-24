@@ -485,16 +485,16 @@ void reset_gui_path(void)
     gui_path = GUIPATH_DEFAULT;
 
 
-    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
-    Rf_defineVar(_toplevel_nframeSymbol         , R_NilValue, _custom_gui_path_function_environment);
-
-
-    Rf_defineVar(guinameSymbol         , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(ofileSymbol           , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(fileSymbol            , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(_get_contentsSymbol   , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(_toplevel_nframeSymbol, R_NilValue, _custom_gui_path_character_environment);
+    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(guinameSymbol                  , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(ofileSymbol                    , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(fileSymbol                     , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_get_contentsSymbol            , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_toplevel_nframeSymbol         , R_NilValue, _custom_gui_path_env);
 }
+
+
+#define getFromCGPE(sym) (my_getVarInFrame(_custom_gui_path_env, (sym), FALSE))
 
 
 SEXP do_set_gui_path do_formals
@@ -520,41 +520,17 @@ SEXP do_set_gui_path do_formals
     case GUIPATH_FUNCTION:
         value = Rf_allocVector(VECSXP, 2);
         Rf_protect(value); nprotect++;
-        SET_VECTOR_ELT(value, 0, my_getVarInFrame(
-            _custom_gui_path_function_environment,
-            _custom_gui_path_functionSymbol,
-            TRUE
-        ));
-        SET_VECTOR_ELT(value, 1, my_getVarInFrame(
-            _custom_gui_path_function_environment,
-            _toplevel_nframeSymbol,
-            TRUE
-        ));
+        SET_VECTOR_ELT(value, 0, getFromCGPE(_custom_gui_path_functionSymbol));
+        SET_VECTOR_ELT(value, 1, getFromCGPE(_toplevel_nframeSymbol         ));
         break;
     case GUIPATH_CHARACTER:
     {
         value = Rf_allocVector(VECSXP, 4);
         Rf_protect(value); nprotect++;
-        SET_VECTOR_ELT(value, 0, Rf_ScalarString(my_getVarInFrame(
-            _custom_gui_path_character_environment,
-            guinameSymbol,
-            TRUE
-        )));
-        SET_VECTOR_ELT(value, 1, my_getVarInFrame(
-            _custom_gui_path_character_environment,
-            ofileSymbol,
-            TRUE
-        ));
-        SET_VECTOR_ELT(value, 2, my_getVarInFrame(
-            _custom_gui_path_character_environment,
-            _get_contentsSymbol,
-            TRUE
-        ));
-        SET_VECTOR_ELT(value, 3, my_getVarInFrame(
-            _custom_gui_path_character_environment,
-            _toplevel_nframeSymbol,
-            TRUE
-        ));
+        SET_VECTOR_ELT(value, 0, Rf_ScalarString(getFromCGPE(guinameSymbol         )));
+        SET_VECTOR_ELT(value, 1,                 getFromCGPE(ofileSymbol           ) );
+        SET_VECTOR_ELT(value, 2,                 getFromCGPE(_get_contentsSymbol   ) );
+        SET_VECTOR_ELT(value, 3,                 getFromCGPE(_toplevel_nframeSymbol) );
     }
         break;
     default:
@@ -613,9 +589,6 @@ SEXP do_set_gui_path do_formals
                 n, "set.gui.path()", "at most 2");
 
 
-        SEXP env = _custom_gui_path_function_environment;
-
-
         SEXP fun = arg1;
         ENSURE_NAMEDMAX(fun);
 
@@ -664,8 +637,8 @@ SEXP do_set_gui_path do_formals
         reset_gui_path();
 
 
-        Rf_defineVar(_custom_gui_path_functionSymbol, fun   , env);
-        Rf_defineVar(_toplevel_nframeSymbol         , nframe, env);
+        Rf_defineVar(_custom_gui_path_functionSymbol, fun   , _custom_gui_path_env);
+        Rf_defineVar(_toplevel_nframeSymbol         , nframe, _custom_gui_path_env);
     }
         gui_path = GUIPATH_FUNCTION;
         break;
@@ -677,9 +650,6 @@ SEXP do_set_gui_path do_formals
         if (n > 4)
             Rf_error("%d arguments passed to %s which requires %s",
                 n, "set.gui.path()", "at most 4");
-
-
-        SEXP env = _custom_gui_path_character_environment;
 
 
         SEXP guiname = arg1;
@@ -764,30 +734,16 @@ SEXP do_set_gui_path do_formals
         reset_gui_path();
 
 
-        Rf_defineVar(guinameSymbol, STRING_ELT(guiname, 0), env);
-
-
-        {
-            SEXP sym = ofileSymbol;
-            Rboolean locked = R_BindingIsLocked(sym, env);
-            if (locked) R_unLockBinding(sym, env);
-            R_MakeForcedBinding(sym, path, path, env);
-            if (locked) R_LockBinding(sym, env);
-        }
-
-
-        {
-            SEXP sym = fileSymbol;
-            Rboolean locked = R_BindingIsLocked(sym, env);
-            if (locked) R_unLockBinding(sym, env);
-            SEXP expr = Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue));
-            R_MakeDelayedBinding(sym, expr, env, env);
-            if (locked) R_LockBinding(sym, env);
-        }
-
-
-        Rf_defineVar(_get_contentsSymbol   , _getContents, env);
-        Rf_defineVar(_toplevel_nframeSymbol, nframe      , env);
+        Rf_defineVar(guinameSymbol, STRING_ELT(guiname, 0), _custom_gui_path_env);
+        R_MakeForcedBinding(ofileSymbol, path, path, _custom_gui_path_env);
+        R_MakeDelayedBinding(
+            fileSymbol,
+            Rf_lcons(_normalizePath_not_dirSymbol, Rf_cons(ofileSymbol, R_NilValue)),
+            _custom_gui_path_env,
+            _custom_gui_path_env
+        );
+        Rf_defineVar(_get_contentsSymbol, _getContents, _custom_gui_path_env);
+        Rf_defineVar(_toplevel_nframeSymbol, nframe, _custom_gui_path_env);
     }
         gui_path = GUIPATH_CHARACTER;
         break;
@@ -2287,7 +2243,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             )
         );
         Rf_protect(expr);
-        SEXP value = Rf_eval(expr, _custom_gui_path_function_environment);
+        SEXP value = Rf_eval(expr, _custom_gui_path_env);
         Rf_protect(value);
         if (contents) {
             if (for_msg && IS_SCALAR(value, STRSXP) && STRING_ELT(value, 0) == NA_STRING)
@@ -2308,11 +2264,8 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
     }
     case GUIPATH_CHARACTER:
     {
-        SEXP env = _custom_gui_path_character_environment;
-
-
         if (verbose) {
-            SEXP guiname = my_findValInFrame(env, guinameSymbol);
+            SEXP guiname = getFromCGPE(guinameSymbol);
             if (TYPEOF(guiname) != CHARSXP)
                 Rf_error(_("object '%s' of mode '%s' was not found"),
                     R_CHAR(PRINTNAME(guinameSymbol)), "char");
@@ -2322,16 +2275,16 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
 
         if (contents) {
             for_msg = FALSE;
-            SEXP file = get_file_from_closure(original, for_msg, env);
+            SEXP file = get_file_from_closure(original, for_msg, _custom_gui_path_env);
             SEXP expr = Rf_lcons(_get_contentsSymbol, Rf_cons(file, R_NilValue));
             Rf_protect(expr);
             SEXP value;
-            SEXP _getContents = my_getVarInFrame(env, _get_contentsSymbol, /* unbound_ok */ TRUE);
+            SEXP _getContents = getFromCGPE(_get_contentsSymbol);
             if (_getContents != R_NilValue) {
                 if (TYPEOF(_getContents) != CLOSXP)
                     Rf_error(_("object '%s' of mode '%s' was not found"),
                         R_CHAR(PRINTNAME(_get_contentsSymbol)), "function");
-                value = Rf_eval(expr, env);
+                value = Rf_eval(expr, _custom_gui_path_env);
                 if (TYPEOF(value) == STRSXP)
                     value = fixNewlines(value);
             }
@@ -2343,7 +2296,7 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
             return value;
         }
         set_R_Visible(TRUE);
-        return get_file_from_closure(original, for_msg, env);
+        return get_file_from_closure(original, for_msg, _custom_gui_path_env);
     }
     default:
         Rf_errorcall(R_NilValue, "internal error; invalid 'gui_path' value");

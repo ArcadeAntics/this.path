@@ -21,8 +21,7 @@ SEXP mynamespace = NULL,
      ThisPathUnrecognizedConnectionClassErrorClass = NULL,
      ThisPathUnrecognizedMannerErrorClass          = NULL,
      last_condition = NULL,
-     _custom_gui_path_character_environment = NULL,
-     _custom_gui_path_function_environment  = NULL;
+     _custom_gui_path_env = NULL;
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
@@ -995,23 +994,15 @@ SEXP do_onLoad do_formals
     }
 
 
-    _custom_gui_path_character_environment =
-        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 10);
-    R_PreserveObject(_custom_gui_path_character_environment);
-    Rf_defineVar(guinameSymbol         , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(ofileSymbol           , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(fileSymbol            , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(_get_contentsSymbol   , R_NilValue, _custom_gui_path_character_environment);
-    Rf_defineVar(_toplevel_nframeSymbol, R_NilValue, _custom_gui_path_character_environment);
-    R_LockEnvironment(_custom_gui_path_character_environment, FALSE);
-
-
-    _custom_gui_path_function_environment =
-        R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 2);
-    R_PreserveObject(_custom_gui_path_function_environment);
-    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_function_environment);
-    Rf_defineVar(_toplevel_nframeSymbol, R_NilValue, _custom_gui_path_function_environment);
-    R_LockEnvironment(_custom_gui_path_function_environment, FALSE);
+    _custom_gui_path_env = R_NewEnv(/* enclos */ R_EmptyEnv, /* hash */ TRUE, /* size */ 10);
+    R_PreserveObject(_custom_gui_path_env);
+    Rf_defineVar(_custom_gui_path_functionSymbol, R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(guinameSymbol                  , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(ofileSymbol                    , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(fileSymbol                     , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_get_contentsSymbol            , R_NilValue, _custom_gui_path_env);
+    Rf_defineVar(_toplevel_nframeSymbol         , R_NilValue, _custom_gui_path_env);
+    R_LockEnvironment(_custom_gui_path_env, FALSE);
 
 
 #if R_version_less_than(3,4,0)
@@ -1076,8 +1067,7 @@ SEXP do_onUnload do_formals
     maybe_release(ThisPathUnrecognizedConnectionClassErrorClass);
     maybe_release(ThisPathUnrecognizedMannerErrorClass);
     maybe_release(last_condition);
-    maybe_release(_custom_gui_path_character_environment);
-    maybe_release(_custom_gui_path_function_environment);
+    maybe_release(_custom_gui_path_env);
 
 
 #if defined(R_THIS_PATH_NEED_BLANKSCALARSTRING)
