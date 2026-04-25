@@ -320,6 +320,27 @@ delayedAssign(".GUI_emacs", {
 })
 
 
+delayedAssign(".GUI_QGIS", {
+    !interactive() &&
+
+    Sys.getenv("QGIS_PREFIX_PATH") != "" &&
+
+    .maybe_unembedded_shell &&
+
+    isTRUE(.shINFO[["has_input"]]) &&
+
+    length(commandArgs(TRUE)) == 1L &&
+    dir.exists(commandArgs(TRUE)) &&
+    grepl(
+        if (.OS_windows)
+            "[/\\\\]python[/\\\\]plugins[/\\\\]r_console$"
+        else
+            "/python/plugins/r_console$",
+        commandArgs(TRUE), perl = TRUE, useBytes = TRUE
+    )
+})
+
+
 delayedAssign(".GUI_rkward", { commandArgs()[[1L]] == "rkward" })
 
 
@@ -353,13 +374,13 @@ delayedAssign(".in_callr", {
 })
 
 
-delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_rkward && !.GUI_powerbi && !.in_callr                            })
-delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_rkward && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
-delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_rkward && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_AQUA", { .OS_unix    && .Platform$GUI == "AQUA" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_QGIS && !.GUI_rkward && !.GUI_powerbi && !.in_callr                            })
+delayedAssign(".GUI_Rgui", { .OS_windows && .Platform$GUI == "Rgui" && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_QGIS && !.GUI_rkward && !.GUI_powerbi && !.in_callr && .External2(.C_RConsole) })
+delayedAssign(".GUI_Tk"  , { .OS_unix    && .Platform$GUI == "Tk"   && !.GUI_RStudio && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_QGIS && !.GUI_rkward && !.GUI_powerbi && !.in_callr                            })
 
 
-delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
-delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_powerbi && !.in_callr })
+delayedAssign(".OS_unix_in_shell"   , { .OS_unix_maybe_unembedded_shell    && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_QGIS && !.GUI_powerbi && !.in_callr })
+delayedAssign(".OS_windows_in_shell", { .OS_windows_maybe_unembedded_shell && !.GUI_Positron && !.GUI_vscode && !.GUI_jupyter && !.GUI_emacs && !.GUI_QGIS && !.GUI_powerbi && !.in_callr })
 delayedAssign(".in_shell", { .OS_unix_in_shell || .OS_windows_in_shell })
 
 
@@ -370,6 +391,7 @@ delayedAssign(".unrecognized_manner", {
     !.GUI_vscode &&
     !.GUI_jupyter &&
     !.GUI_emacs &&
+    !.GUI_QGIS &&
     !.GUI_rkward &&
     !.GUI_powerbi &&
     !.in_callr &&
@@ -387,6 +409,7 @@ delayedAssign(".GUI", {
     else if (.GUI_vscode) "vscode"
     else if (.GUI_jupyter) "jupyter"
     else if (.GUI_emacs) "emacs"
+    else if (.GUI_QGIS) "QGIS"
     else if (.GUI_rkward) "rkward"
     else if (.GUI_powerbi) "powerbi"
     # else if (.GUI_Rgui) "Rgui"

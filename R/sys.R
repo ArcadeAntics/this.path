@@ -13,6 +13,11 @@
             sys.frame(1L)$kernel$executor$nframe + 1L
         else 0L
     }
+    else if (.GUI_QGIS) {
+        if (.is_QGIS_loaded())
+            20L  ## for fuck's sake
+        else 0L
+    }
     else 0L
 }
 

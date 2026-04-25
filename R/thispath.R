@@ -714,6 +714,26 @@ set.jupyter.path <- function (...)
 })
 
 
+.is_QGIS_loaded <- function ()
+# .GUI_QGIS && identical(sys.call(1L), quote(.worker_env$run()))
+.GUI_QGIS && identical(sys.call(1L), as.call(list(call("$", as.symbol(".worker_env"), as.symbol("run")))))
+
+
+.QGIS_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
+{
+    if (!.is_QGIS_loaded()) {
+        if (for.msg)
+            return(NA_character_)
+        else stop(.ThisPathNotExistsError("QGIS has not finished loading"))
+    }
+
+
+    if (for.msg)
+        NA_character_
+    else stop(.ThisPathNotFoundError("R is running from QGIS for which 'this.path' is currently unimplemented\n consider using RStudio, Positron, VSCode, or Emacs until such a time when this is implemented"))
+}
+
+
 .rkward_path <- function (verbose = FALSE, original = FALSE, for.msg = FALSE, contents = FALSE)
 {
     if (for.msg)
@@ -824,6 +844,9 @@ delayedAssign(".untitled", {
     }
     else if (.GUI_emacs) {
         .emacs_path(verbose, original, for.msg, contents)
+    }
+    else if (.GUI_QGIS) {
+        .QGIS_path(verbose, original, for.msg, contents)
     }
     else if (.GUI_rkward) {
         .rkward_path(verbose, original, for.msg, contents)

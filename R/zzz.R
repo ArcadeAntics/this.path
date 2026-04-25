@@ -55,6 +55,7 @@ tmp(
     .GUI_vscode,
     .GUI_jupyter,
     .GUI_emacs,
+    .GUI_QGIS,
     .GUI_rkward,
     .GUI_powerbi,
     .in_callr,
