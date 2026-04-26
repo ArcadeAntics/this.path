@@ -160,8 +160,35 @@ SEXP do_forcePromise_no_warn do_formals
 
     do_start_no_op("forcePromise_no_warn", -1);
 #if R_version_at_least(4,6,0)
-    Rf_error("forcePromise_no_warn does not work on R >= 4.6.0");
-    return R_NilValue;
+    handles_nargs(ENCLOS(rho), ".C_forcePromise_no_warn");
+
+
+    SEXP value;
+    int i;
+    if ((i = ddVal(sym))) {
+        value = ddfind(i, env);
+        if (value == my_UnboundValue)
+            Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+        if (TYPEOF(value) != PROMSXP)
+            Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+        if (ptr_PRVALUE(value) == my_UnboundValue) {
+            Rf_protect(value);
+            Rf_eval(value, R_EmptyEnv);
+            Rf_unprotect(1);
+        }
+        return ptr_PRVALUE(value);
+    }
+    binding_info_t tmp; (inherits ? my_findVar(sym, env, &tmp) :
+                                    my_findVarInFrame(env, sym, &tmp));
+    if (tmp.value == my_UnboundValue)
+        Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
+
+
+    if (my_TYPEOF(tmp) != PROMSXP)
+        Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
+
+
+    return force(&tmp);
 #else
     handles_nargs(ENCLOS(rho), ".C_forcePromise_no_warn");
 
