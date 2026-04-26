@@ -14,7 +14,7 @@ Copyright (C) 2023-2026   Iris Simmons
 #include "rversiondefines.h"  /* need definition of R_version_less_than */
 
 
-#if R_version_at_least(4,6,0) && !defined(R_THIS_PATH_DEVEL)
+#if R_version_at_least(4,6,0)
 #define Rf_lazy_duplicate(s) (s)
 #else
 extern SEXP Rf_lazy_duplicate(SEXP s);
@@ -24,7 +24,7 @@ extern SEXP Rf_shallow_duplicate(SEXP s);
 extern SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted);
 extern SEXP Rf_topenv(SEXP target, SEXP envir);
 
-#if R_version_less_than(3,6,0) || (!defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0))
+#if R_version_at_least(4,6,0) || R_version_less_than(3,6,0) || (!defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0))
 #define R_shallow_duplicate_attr(x) Rf_shallow_duplicate(x)
 #else
 extern SEXP R_shallow_duplicate_attr(SEXP x);
@@ -46,7 +46,7 @@ extern int IS_ASCII(SEXP x);
 
 extern Rboolean R_existsVarInFrame(SEXP rho, SEXP symbol);
 
-#if R_version_less_than(3,5,0) || (!defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0))
+#if R_version_at_least(4,6,0) || R_version_less_than(3,5,0) || (!defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0))
 #define ddfind my_ddfind
 #endif
 extern SEXP ddfind(int i, SEXP rho);
@@ -234,6 +234,9 @@ extern Rboolean Rf_isValidStringF(SEXP);
 #if !defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0)
 #define OBJECT Rf_isObject
 #define IS_S4_OBJECT Rf_isS4
+#else
+extern int OBJECT(SEXP x);
+extern int IS_S4_OBJECT(SEXP x);
 #endif
 
 
@@ -241,11 +244,22 @@ extern Rboolean Rf_isValidStringF(SEXP);
 #define BODY R_ClosureBody
 #define FORMALS R_ClosureFormals
 #define CLOENV R_ClosureEnv
+#else
+extern SEXP BODY(SEXP x);
+extern SEXP FORMALS(SEXP x);
+extern SEXP CLOENV(SEXP x);
 #endif
 
 
 #if !defined(R_THIS_PATH_DEVEL) && R_version_at_least(4,5,0)
 #define ENCLOS R_ParentEnv
+#else
+extern SEXP ENCLOS(SEXP x);
+#endif
+
+
+#if R_version_at_least(4,6,0)
+extern SEXP HASHTAB(SEXP x);
 #endif
 
 
