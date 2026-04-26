@@ -337,7 +337,8 @@ delayedAssign(".GUI_QGIS", {
         else
             "/python/plugins/r_console$",
         commandArgs(TRUE), perl = TRUE, useBytes = TRUE
-    )
+    ) &&
+    file.exists(path.join(commandArgs(TRUE), "main.R"))
 })
 
 
