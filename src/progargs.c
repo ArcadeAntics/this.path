@@ -73,7 +73,8 @@ SEXP do_asArgs do_formals
 
 
     SEXP x = Rf_allocVector(VECSXP, dots_length);
-    Rf_protect(x); nprotect++;
+    SEXP expr = Rf_lcons(_asArgsSymbol, Rf_cons(x, R_NilValue));
+    Rf_protect(expr); nprotect++;
     int i;
     SEXP d, xi;
 
@@ -95,8 +96,6 @@ SEXP do_asArgs do_formals
     }
 
 
-    SEXP expr = Rf_lcons(_asArgsSymbol, Rf_cons(x, R_NilValue));
-    Rf_protect(expr); nprotect++;
     SEXP value = Rf_eval(expr, mynamespace);
     Rf_unprotect(nprotect);
     return value;
