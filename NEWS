@@ -1,6 +1,10 @@
 @R_PACKAGE_NAME@ News
 
-CHANGES IN this.path @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
+CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
+
+  NEW FEATURES:
+
+    * asArgs() and withArgs() now ignore a missing last argument.
 
   BUG FIXES:
 

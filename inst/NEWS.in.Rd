@@ -7,6 +7,12 @@
 \name{NEWS}
 \title{\pkg{@R_PACKAGE_NAME@} News}
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item{\code{asArgs()} and \code{withArgs()} now ignore a missing last
+        argument.}
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item{\code{this.path()} once again works in \sQuote{\Positron} after
