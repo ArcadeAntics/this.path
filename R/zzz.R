@@ -343,6 +343,7 @@ if (getRversion() < "3.0.0") {
     ## progargs.R      ----
 
 
+    fix_External2(asArgs)
     fix_External2(progArgs)
     fix_External2(withArgs)
 

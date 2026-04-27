@@ -83,6 +83,13 @@ SEXP do_asArgs do_formals
 
         /* evaluate each argument of 'dots' */
         xi = CAR(d);
+        if (xi == R_MissingArg) {
+            /* if the last argument is missing, allow it */
+            if (i == dots_length - 1) continue;
+            char buf[15];
+            snprintf(buf, 15, "..%d", n + i + 1);
+            MissingArgError_c(buf, R_CurrentExpression, rho, "evalError");
+        }
         xi = Rf_eval(xi, rho);
         SET_VECTOR_ELT(x, i, xi);
     }

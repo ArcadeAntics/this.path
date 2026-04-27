@@ -1,6 +1,6 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2024   Iris Simmons
+## Copyright (C) 2024-2026   Iris Simmons
 ##
 
 
@@ -39,7 +39,7 @@
 
 
 asArgs <- function (...)
-.asArgs(list(...))
+.External2(.C_asArgs)
 
 
 progArgs <- function (ifnotfound = character())
