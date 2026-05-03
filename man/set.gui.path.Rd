@@ -50,15 +50,13 @@ thisPathNotFoundError(..., call. = TRUE, domain = NULL,
 
     \item{a character string}{
 
-      then it must be the name of the GUI.
-
-      The second argument must be the path of the active document.
+      then it must be the name of the GUI. The second argument must be the path
+      of the active document. This makes sense for a GUI which can edit and run
+      \R code from only one document such as \Jupyter and shell.
 
       The optional third argument \code{get_contents} should be a function that
       gets the contents of the document. The function must accept at least one
-      argument which will be the normalized path of the document. This makes
-      sense for a GUI which can edit and run \R code from only one document
-      such as \Jupyter and shell.
+      argument which will be the normalized path of the document.
 
       The optional fourth argument \code{toplevel_nframe} should be the result
       of executing \code{sys.nframe()} in the toplevel context of the GUI.
