@@ -782,7 +782,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     int dots_length = length_DOTS(dots);
 
 
-    if (dots_length == 0) {
+    if (dots_length <= 0) {
         Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);
     }
@@ -805,10 +805,15 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
         /* evaluate each argument of 'dots' */
         xi = CAR(d);
-        if (xi == R_MissingArg)
-            // Rf_errorcall(call, _("argument is missing, with no default"));
-            MissingArgError_c("", call, rho, "evalError");
-        xi = Rf_eval(xi, rho);
+        if (xi == R_MissingArg) {
+            /* if the last argument is missing, allow it */
+            if (i == dots_length - 1) { x_length--; continue; }
+            char buf[15];
+            snprintf(buf, 15, "..%d", i + 1);
+            MissingArgError_c(buf, R_CurrentExpression, rho, "evalError");
+        }
+        else if (TYPEOF(xi) == PROMSXP)
+            xi = Rf_eval(xi, rho);
         if (commonLength) {
 
 
@@ -854,7 +859,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     }
 
 
-    if (commonLength == 0) {
+    if (x_length <= 0 || commonLength <= 0) {
         Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);
     }

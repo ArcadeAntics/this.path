@@ -91,7 +91,8 @@ SEXP do_asArgs do_formals
             snprintf(buf, 15, "..%d", n + i + 1);
             MissingArgError_c(buf, R_CurrentExpression, rho, "evalError");
         }
-        xi = Rf_eval(xi, rho);
+        else if (TYPEOF(xi) == PROMSXP)
+            xi = Rf_eval(xi, rho);
         SET_VECTOR_ELT(x, i, xi);
     }
 
