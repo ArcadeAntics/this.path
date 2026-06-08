@@ -227,6 +227,12 @@ if (getRversion() < "3.0.0") {
     fix_External2(check.proj)
 
 
+    ## encode_string.R ----
+
+
+    fix_External2(encode_string)
+
+
     ## enhances.R      ----
 
 
