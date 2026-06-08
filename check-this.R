@@ -10,7 +10,8 @@
     essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(  ## this.path
         build_opts = list(
-            ## R CMD build --user=iris .
+            ## R CMD build --md5 --sha256 --user=iris .
+            ## R CMD build --md5 --sha256 --sign --user=iris .
             user = "iris"
         ),
 
