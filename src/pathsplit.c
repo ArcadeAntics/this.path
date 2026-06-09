@@ -346,7 +346,17 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
         Rf_protect(x); nprotect++;
         SEXP d = dots;
         for (int i = 0; i < n; i++, d = CDR(d)) {
-            SET_VECTOR_ELT(x, i, Rf_eval(CAR(d), rho));
+            SEXP xi = CAR(d);
+            if (xi == R_MissingArg) {
+                /* if the last argument is missing, allow it */
+                if (i == dots_length - 1) { n--; continue; }
+                char buf[15];
+                snprintf(buf, 15, "..%d", i + 1);
+                MissingArgError_c(buf, R_CurrentExpression, rho, "evalError");
+            }
+            else if (TYPEOF(xi) == PROMSXP)
+                xi = Rf_eval(xi, rho);
+            SET_VECTOR_ELT(x, i, xi);
             if (TYPEOF(VECTOR_ELT(x, i)) != STRSXP)
                 UNIMPLEMENTED_TYPE("path.unsplit", VECTOR_ELT(x, i));
         }
