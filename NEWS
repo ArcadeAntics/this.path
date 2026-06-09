@@ -4,8 +4,8 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
 
   NEW FEATURES:
 
-    * path.join(), withArgs(), and asArgs() now ignore a missing last
-      argument.
+    * path.join(), path.unsplit(), withArgs(), and asArgs() now ignore
+      a missing last argument.
 
   BUG FIXES:
 

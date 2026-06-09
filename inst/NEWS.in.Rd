@@ -9,8 +9,8 @@
 \section{CHANGES IN VERSION @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@)}{
   \subsection{NEW FEATURES}{
     \itemize{
-      \item{\code{path.join()}, \code{withArgs()}, and \code{asArgs()} now
-        ignore a missing last argument.}
+      \item{\code{path.join()}, \code{path.unsplit()}, \code{withArgs()}, and
+        \code{asArgs()} now ignore a missing last argument.}
     }
   }
   \subsection{BUG FIXES}{
