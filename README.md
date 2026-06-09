@@ -221,6 +221,15 @@ These are lacking in functionality compared to `package:this.path`:
     *   [`shiny::runApp()`](https://CRAN.R-project.org/package=shiny)
 
     *   [`package:targets`](https://CRAN.R-project.org/package=targets)
+        specifically:
+
+        * `targets::tar_callr_inner_try()`
+
+        * `targets::tar_load_globals()`
+
+        * `targets::tar_source()`
+
+        * `targets::tar_workspace()`
 
     *   [`testthat::source_file()`](https://CRAN.R-project.org/package=testthat)
 
