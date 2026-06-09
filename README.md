@@ -163,6 +163,9 @@ script's directory. It provides none of the functionality of
 There are a few other packages and functions that provide the ability
 to retrieve the path of the current **R** script:
 
+*   [`package:AgePopDenom`](https://CRAN.R-project.org/package=AgePopDenom)
+    specifically `AgePopDenom::get_current_script_path()`
+
 *   [`package:envDocument`](https://CRAN.R-project.org/package=envDocument)
     specifically `envDocument::getScriptPath()`
 
