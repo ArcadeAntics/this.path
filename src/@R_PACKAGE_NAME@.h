@@ -170,6 +170,12 @@ extern SEXP do_fixbackslash        do_formals;
 extern SEXP do_file_URL_path       do_formals;
 
 
+/* get_file_from_closure.c */
+
+
+extern SEXP do_get_file_from_closure do_formals;
+
+
 /* ns-hooks.c */
 
 

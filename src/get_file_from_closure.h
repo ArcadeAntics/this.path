@@ -8,7 +8,7 @@ Copyright (C) 2023-2026   Iris Simmons
 
 
 static R_INLINE
-SEXP get_file_from_closure(Rboolean original, Rboolean for_msg, SEXP where)
+SEXP get_file_from_closure(int original, int for_msg, SEXP where)
 {
     /*
     This function chooses whether to return 'ofile' or 'file'. It examines the

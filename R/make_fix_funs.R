@@ -10,7 +10,7 @@ path.functions <- .removeSource_from_inner_functions(
     srcfile = if (n) sys.parent(n) else 0L)
 {
     if (delayed) {
-        ofile <- file
+        file; delayedAssign("ofile", file); ofile
         set.sys.path(ofile, path.only = TRUE, allow.url = TRUE,
             allow.file.uri = TRUE, delayed = TRUE, assign_to = "file")
         ## remove the variable(s) created by set.sys.path()
@@ -25,17 +25,7 @@ path.functions <- .removeSource_from_inner_functions(
                     readLines(file)
                 else stop(gettextf("'%s' must be FALSE when '%s' is TRUE", "original", "contents"))
             }
-            else {
-                if (.istrue(original)) {
-                    ofile
-                }
-                else if (.External2(.C_promise_is_unevaluated, "file")) {
-                    if (.isfalse(original))
-                        .External2(.C_forcePromise_no_warn, "file")
-                    else ofile
-                }
-                else file
-            }
+            else .External2(.C_get_file_from_closure, original)
         }
     }
     else {

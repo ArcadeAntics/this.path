@@ -122,6 +122,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"file_URL_path"      , (DL_FUNC) &do_file_URL_path      , 1},
 
 
+/* get_file_from_closure.c */
+
+
+{"get_file_from_closure", (DL_FUNC) &do_get_file_from_closure, 1},
+
+
 /* ns-hooks.c */
 
 
