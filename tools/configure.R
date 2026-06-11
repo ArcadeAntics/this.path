@@ -285,6 +285,10 @@ main <- function ()
             old <- files[i]
             new <- new[i]
             files[i] <- new
+            while (any(i <- basename(old) == basename(new))) {
+                old[i] <- dirname(old[i])
+                new[i] <- dirname(new[i])
+            }
             if (any(i <- !file.rename(old, new)))
                 stop(sprintf(ngettext(sum(i), "unable to rename file %s",
                                               "unable to rename files %s"),
