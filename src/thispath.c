@@ -14,8 +14,7 @@ Copyright (C) 2022-2026   Iris Simmons
 
 
 static R_INLINE
-void check_arguments4(Rboolean verbose , Rboolean original, Rboolean for_msg ,
-                      Rboolean contents)
+void check_arguments4(int verbose, int original, int for_msg, int contents)
 {
     if (verbose == NA_LOGICAL)
         Rf_error(_("invalid '%s' value"), "verbose");
@@ -36,8 +35,7 @@ void check_arguments4(Rboolean verbose , Rboolean original, Rboolean for_msg ,
 
 
 static R_INLINE
-void check_arguments5(Rboolean verbose , Rboolean original, Rboolean for_msg ,
-                      Rboolean contents, Rboolean local   )
+void check_arguments5(int verbose, int original, int for_msg, int contents, int local)
 {
     check_arguments4(verbose, original, for_msg, contents);
 
@@ -49,10 +47,8 @@ void check_arguments5(Rboolean verbose , Rboolean original, Rboolean for_msg ,
 
 /* function is currently unused
 static R_INLINE
-void check_arguments7(Rboolean verbose         , Rboolean original        ,
-                      Rboolean for_msg         , Rboolean contents        ,
-                      Rboolean local           , int N                    ,
-                      Rboolean get_frame_number)
+void check_arguments7(int verbose, int original, int for_msg, int contents,
+                      int local, int N, int get_frame_number)
 {
     check_arguments5(verbose, original, for_msg, contents, local);
 
@@ -619,12 +615,12 @@ SEXP do_set_gui_path do_formals
             }
         if (nframe == R_NilValue);
         else if (IS_SCALAR(nframe, INTSXP)) {
-            int x = INTEGER_ELT(nframe, 0);
+            int x = INTEGER(nframe)[0];
             if (x == NA_INTEGER || x < 0)
                 Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
         }
         else if (IS_SCALAR(nframe, REALSXP)) {
-            double x = REAL_ELT(nframe, 0);
+            double x = REAL(nframe)[0];
             if (R_IsNA(x) || x < 0 || x > INT_MAX || x != trunc(x))
                 Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
             nframe = Rf_ScalarInteger(x);
@@ -716,12 +712,12 @@ SEXP do_set_gui_path do_formals
             }
         if (nframe == R_NilValue);
         else if (IS_SCALAR(nframe, INTSXP)) {
-            int x = INTEGER_ELT(nframe, 0);
+            int x = INTEGER(nframe)[0];
             if (x == NA_INTEGER || x < 0)
                 Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
         }
         else if (IS_SCALAR(nframe, REALSXP)) {
-            double x = REAL_ELT(nframe, 0);
+            double x = REAL(nframe)[0];
             if (R_IsNA(x) || x < 0 || x > INT_MAX || x != trunc(x))
                 Rf_error("invalid '%s' argument; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
             nframe = Rf_ScalarInteger(x);
@@ -761,7 +757,7 @@ SEXP do_set_gui_path do_formals
 
 SEXP do_custom_gui_toplevel_nframe do_formals
 {
-    do_start_no_op("custom_gui_toplevel_nframe", 0);
+    do_start_no_call_op_rho("custom_gui_toplevel_nframe", 0);
 
 
     if (gui_path == GUIPATH_DEFAULT) return R_NilValue;
@@ -770,7 +766,7 @@ SEXP do_custom_gui_toplevel_nframe do_formals
     SEXP nframe = getFromCGPE(_toplevel_nframeSymbol);
     if (nframe == R_NilValue) return Rf_ScalarInteger(0);
     if (IS_SCALAR(nframe, INTSXP)) {
-        int x = INTEGER_ELT(nframe, 0);
+        int x = INTEGER(nframe)[0];
         if (x == NA_INTEGER || x < 0);
         else return nframe;
     }
@@ -783,12 +779,12 @@ SEXP do_custom_gui_toplevel_nframe do_formals
     Rf_protect(nframe);
     set_R_Visible(TRUE);
     if (IS_SCALAR(nframe, INTSXP)) {
-        int x = INTEGER_ELT(nframe, 0);
+        int x = INTEGER(nframe)[0];
         if (x == NA_INTEGER || x < 0)
             Rf_error("invalid '%s' return value; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
     }
     else if (IS_SCALAR(nframe, REALSXP)) {
-        double x = REAL_ELT(nframe, 0);
+        double x = REAL(nframe)[0];
         if (R_IsNA(x) || x < 0 || x > INT_MAX || x != trunc(x))
             Rf_error("invalid '%s' return value; expected a non-negative integer", EncodeChar(PRINTNAME(_toplevel_nframeSymbol)));
         nframe = Rf_ScalarInteger(x);

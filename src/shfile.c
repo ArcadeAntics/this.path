@@ -53,7 +53,7 @@ static void env_command_line(int *pac, const char **argv)
 {
     int ac = *pac, newac = 1; /* Remember argv[0] is process name */
     const char **av = argv;
-    Rboolean hadE = FALSE;
+    int hadE = FALSE;
 
     /* We don't want to parse -e expressions */
     while (--ac) {
@@ -79,14 +79,14 @@ static void env_command_line(int *pac, const char **argv)
 // https://github.com/wch/r-source/blob/trunk/src/main/CommandLineArgs.c#L94
 void
 common_command_line(int *pac, const char **argv,
-    char *enc, Rboolean *has_enc,
-    Rboolean *no_site_file,
-    Rboolean *no_init_file,
-    Rboolean *no_echo)
+    char *enc, int *has_enc,
+    int *no_site_file,
+    int *no_init_file,
+    int *no_echo)
 {
     int ac = *pac, newac = 1;	/* argv[0] is process name */
     const char *p, **av = argv;
-    Rboolean processing = TRUE;
+    int processing = TRUE;
 
 
     while (--ac) {
@@ -329,15 +329,15 @@ SEXP do_shINFO do_formals
 
 
     char enc[31] = "";
-    Rboolean has_enc = FALSE;
-    Rboolean no_site_file = FALSE;
-    Rboolean no_init_file = FALSE;
-    Rboolean no_echo = FALSE;
+    int has_enc = FALSE;
+    int no_site_file = FALSE;
+    int no_init_file = FALSE;
+    int no_echo = FALSE;
     const char *FILE = NULL;
     char cmdlines[10000];
     cmdlines[0] = '\0';
-    Rboolean has_input = FALSE;
-    Rboolean ess, no_readline;
+    int has_input = FALSE;
+    int ess, no_readline;
 #if defined(_WIN32)
     ess = FALSE, no_readline = NA_LOGICAL;
 #else
@@ -394,7 +394,7 @@ SEXP do_shINFO do_formals
 
 
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1067
-    Rboolean processing = TRUE;
+    int processing = TRUE;
 
 
 // https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1185
