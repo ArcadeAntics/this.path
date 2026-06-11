@@ -199,7 +199,7 @@ binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
     case R_BindingTypeActive : x->value = R_getVar(sym, env, FALSE); break;
     case R_BindingTypeMissing: x->value = R_MissingArg             ; break;
     case R_BindingTypeDelayed:
-    case R_BindingTypeForced : x->value = NULL                     ; break;
+    case R_BindingTypeForced : x->value = R_NilValue               ; break;
     default: Rf_error("invalid binding type");
     }
     return x;
@@ -233,15 +233,13 @@ binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x)
 
 SEXP my_findValInFrame(SEXP env, SEXP sym)
 {
-    binding_info_t x; my_findVarInFrame(env, sym, &x);
-    return is_promise(x) ? R_NilValue : x.value;
+    binding_info_t x; return my_findVarInFrame(env, sym, &x)->value;
 }
 
 
 SEXP my_findVal(SEXP env, SEXP sym)
 {
-    binding_info_t x; my_findVar(env, sym, &x);
-    return is_promise(x) ? R_NilValue : x.value;
+    binding_info_t x; return my_findVar(env, sym, &x)->value;
 }
 
 

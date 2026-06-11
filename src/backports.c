@@ -283,7 +283,6 @@ SEXP do_anyNA_default do_formals
 
 int IS_SCALAR(SEXP x, int type)
 {
-    if (!x) return 0;
     switch (type) {
     case LGLSXP:
     case INTSXP:
