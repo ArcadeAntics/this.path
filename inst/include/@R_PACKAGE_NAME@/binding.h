@@ -4,8 +4,8 @@ Copyright (C) 2026   Iris Simmons
  */
 
 
-#ifndef R_THIS_PATH_BINDING_INFO_H
-#define R_THIS_PATH_BINDING_INFO_H
+#ifndef R_THIS_PATH_BINDING_H
+#define R_THIS_PATH_BINDING_H
 
 
 #define R_NO_REMAP

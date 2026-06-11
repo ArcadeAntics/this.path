@@ -79,7 +79,7 @@ extern void R_MakeDelayedBinding(SEXP sym, SEXP expr, SEXP eval_env, SEXP assign
 extern void R_MakeForcedBinding(SEXP sym, SEXP expr, SEXP value, SEXP assign_env);
 
 
-#include "../inst/include/@R_PACKAGE_NAME@/binding_info.h"
+#include "../inst/include/@R_PACKAGE_NAME@/binding.h"
 typedef @R_PACKAGE_LIB@_binding_t binding_info_t;
 int is_delayed(binding_info_t x);
 int is_forced (binding_info_t x);
