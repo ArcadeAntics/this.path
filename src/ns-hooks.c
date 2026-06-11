@@ -252,38 +252,25 @@ SEXP do_get_ptrs do_formals
 {
     do_start_no_call_op_rho("get_ptrs", 0);
 #if defined(R_CONNECTIONS_VERSION_1)
-    ptr_R_GetConnection = (Rconnection(*)(SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "R_GetConnection");
+    ptr_R_GetConnection = (Rconnection(*)(SEXP)) R_GetCCallable("this_path_reg_ptrs", "R_GetConnection");
 #endif
 #if defined(HAVE_SET_R_VISIBLE)
-    ptr_set_R_Visible = (void(*)(Rboolean))
-        R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
+    ptr_set_R_Visible = (void(*)(Rboolean)) R_GetCCallable("this_path_reg_ptrs", "set_R_Visible");
 #endif
 #if defined(HAVE_GET_UTF8LOCALE)
-    ptr_get_utf8locale = (Rboolean(*)(void))
-        R_GetCCallable("this_path_reg_ptrs", "get_utf8locale");
+    ptr_get_utf8locale = (Rboolean(*)(void)) R_GetCCallable("this_path_reg_ptrs", "get_utf8locale");
 #endif
 #if defined(NEED_R_4_5_0_FUNCTIONS)
-    ptr_PRCODE = (SEXP(*)(SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "PRCODE");
-    ptr_PRENV = (SEXP(*)(SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "PRENV");
-    ptr_R_PromiseExpr = (SEXP(*)(SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "R_PromiseExpr");
-    ptr_PRSEEN = (int(*)(SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "PRSEEN");
-    ptr_PRVALUE = (SEXP(*)(SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "PRVALUE");
-    ptr_SET_PRCODE = (void(*)(SEXP,SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "SET_PRCODE");
-    ptr_SET_PRENV = (void(*)(SEXP,SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "SET_PRENV");
-    ptr_SET_PRSEEN = (void(*)(SEXP,int))
-        R_GetCCallable("this_path_reg_ptrs", "SET_PRSEEN");
-    ptr_SET_PRVALUE = (void(*)(SEXP,SEXP))
-        R_GetCCallable("this_path_reg_ptrs", "SET_PRVALUE");
-    ptr_Rf_allocSExp = (SEXP(*)(SEXPTYPE))
-        R_GetCCallable("this_path_reg_ptrs", "Rf_allocSExp");
+    ptr_PRCODE        = (SEXP(*)(SEXP))      R_GetCCallable("this_path_reg_ptrs", "PRCODE"       );
+    ptr_PRENV         = (SEXP(*)(SEXP))      R_GetCCallable("this_path_reg_ptrs", "PRENV"        );
+    ptr_R_PromiseExpr = (SEXP(*)(SEXP))      R_GetCCallable("this_path_reg_ptrs", "R_PromiseExpr");
+    ptr_PRSEEN        = (int(*)(SEXP))       R_GetCCallable("this_path_reg_ptrs", "PRSEEN"       );
+    ptr_PRVALUE       = (SEXP(*)(SEXP))      R_GetCCallable("this_path_reg_ptrs", "PRVALUE"      );
+    ptr_SET_PRCODE    = (void(*)(SEXP,SEXP)) R_GetCCallable("this_path_reg_ptrs", "SET_PRCODE"   );
+    ptr_SET_PRENV     = (void(*)(SEXP,SEXP)) R_GetCCallable("this_path_reg_ptrs", "SET_PRENV"    );
+    ptr_SET_PRSEEN    = (void(*)(SEXP,int))  R_GetCCallable("this_path_reg_ptrs", "SET_PRSEEN"   );
+    ptr_SET_PRVALUE   = (void(*)(SEXP,SEXP)) R_GetCCallable("this_path_reg_ptrs", "SET_PRVALUE"  );
+    ptr_Rf_allocSExp  = (SEXP(*)(SEXPTYPE))  R_GetCCallable("this_path_reg_ptrs", "Rf_allocSExp" );
 #endif
     return R_NilValue;
 }
