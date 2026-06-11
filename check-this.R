@@ -11,7 +11,6 @@
     essentials:::.check_this(  ## this.path
         build_opts = list(
             ## R CMD build --md5 --sha256 --user=iris .
-            ## R CMD build --md5 --sha256 --sign --user=iris .
             user = "iris"
         ),
 
@@ -116,7 +115,7 @@ local({  ## for submitting to CRAN https://cran.r-project.org/submit.html
 
     essentials:::.update_DESCRIPTION_Date()
     essentials:::.check_this(
-        build_opts = list(user = "iris"),
+        build_opts = list(md5 = TRUE, "--sign", user = "iris"),
         INSTALL = FALSE,
         check = FALSE,
         chdir = TRUE
