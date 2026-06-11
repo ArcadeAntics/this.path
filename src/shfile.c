@@ -48,12 +48,12 @@ SEXP do_shFILE do_formals
 #if defined(_WIN32)
 
 
-// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L964
+// https://github.com/wch/r-source/blob/trunk/src/gnuwin32/system.c#L1003
 static void env_command_line(int *pac, const char **argv)
 {
     int ac = *pac, newac = 1; /* Remember argv[0] is process name */
     const char **av = argv;
-    int hadE = FALSE;
+    Rboolean hadE = FALSE;
 
     /* We don't want to parse -e expressions */
     while (--ac) {
@@ -86,7 +86,7 @@ common_command_line(int *pac, const char **argv,
 {
     int ac = *pac, newac = 1;	/* argv[0] is process name */
     const char *p, **av = argv;
-    int processing = TRUE;
+    Rboolean processing = TRUE;
 
 
     while (--ac) {
@@ -254,6 +254,26 @@ SEXP do_shINFO do_formals
     ENC
 
         character string; command line argument 'ENC' or NA_character_
+
+    no_site_file
+
+        logical; was there no site-wide startup profile file?
+
+    no_init_file
+
+        logical; was there no user profile?
+
+    no_readline
+
+        logical; was argument --no-readline provided? Always NA on Windows.
+
+    no_echo
+
+        logical; was argument --no-echo provided?
+
+    ess
+
+        logical; was argument --ess provided? Always NA under Unix-alikes.
 
     FILE
 
