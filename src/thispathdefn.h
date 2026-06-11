@@ -40,6 +40,9 @@ extern void R_LockBinding(SEXP sym, SEXP env);
 /* my functions and defines */
 
 
+extern void set_R_Visible_fun(Rboolean x);
+
+
 extern R_xlen_t asXLength(SEXP x);
 
 
@@ -65,6 +68,7 @@ int length_DOTS(SEXP x);
 
 
 extern SEXP my_UnboundValue;
+extern SEXP get_UnboundValue(void);
 extern void init_UnboundValue(void);
 
 
@@ -75,14 +79,8 @@ extern void R_MakeDelayedBinding(SEXP sym, SEXP expr, SEXP eval_env, SEXP assign
 extern void R_MakeForcedBinding(SEXP sym, SEXP expr, SEXP value, SEXP assign_env);
 
 
-typedef struct {
-    SEXP env;
-    SEXP sym;
-    SEXP value;
-#if R_version_at_least(4,6,0)
-    R_BindingType_t type;
-#endif
-} binding_info_t;
+#include "../inst/include/@R_PACKAGE_NAME@/binding_info.h"
+typedef @R_PACKAGE_LIB@_binding_t binding_info_t;
 int is_delayed(binding_info_t x);
 int is_forced (binding_info_t x);
 int is_promise(binding_info_t x);

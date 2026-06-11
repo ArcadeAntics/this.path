@@ -7,6 +7,9 @@ Copyright (C) 2022-2026   Iris Simmons
 #include "thispathdefn.h"
 
 
+void set_R_Visible_fun(Rboolean x) { set_R_Visible(x); }
+
+
 #if R_version_at_least(3,0,0)
 R_xlen_t asXLength(SEXP x)
 {
@@ -130,6 +133,9 @@ Rboolean isUnbound(SEXP x)
 
 
 SEXP my_UnboundValue = NULL;
+
+
+SEXP get_UnboundValue(void) { return my_UnboundValue; }
 
 
 #if R_version_at_least(4,6,0)
