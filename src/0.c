@@ -5,8 +5,8 @@ Copyright (C) 2022-2026   Iris Simmons
 
 
 #define R_NO_REMAP
-#include <R_ext/Rdynload.h>    /* need definition of 'R_ExternalMethodDef' */
-#include <R_ext/Visibility.h>  /* need definition of 'attribute_visible' */
+#include <R_ext/Rdynload.h>    /* need R_ExternalMethodDef */
+#include <R_ext/Visibility.h>  /* need attribute_visible */
 #include "devel.h"
 #include "@R_PACKAGE_NAME@.h"  /* need declarations of C functions */
 
@@ -278,6 +278,14 @@ static const R_ExternalMethodDef externalRoutines[] = {
 };
 
 
+#include "thispathdefn.h"
+
+
+SEXP _ptr_PREXPR (SEXP x) { return ptr_R_PromiseExpr(x); }
+SEXP _ptr_PRENV  (SEXP x) { return ptr_PRENV        (x); }
+SEXP _ptr_PRVALUE(SEXP x) { return ptr_PRVALUE      (x); }
+
+
 attribute_visible
 void R_init_@R_PACKAGE_LIB@(DllInfo *dll)
 {
@@ -288,8 +296,38 @@ void R_init_@R_PACKAGE_LIB@(DllInfo *dll)
 #endif
 
 
-    extern void R_MakeDelayedBinding(SEXP sym, SEXP expr, SEXP eval_env, SEXP assign_env);
-    extern void R_MakeForcedBinding (SEXP sym, SEXP expr, SEXP value   , SEXP assign_env);
-    R_RegisterCCallable("this.path", "R_MakeDelayedBinding", (DL_FUNC) R_MakeDelayedBinding);
-    R_RegisterCCallable("this.path", "R_MakeForcedBinding" , (DL_FUNC) R_MakeForcedBinding );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "ptr_PREXPR" , (DL_FUNC) _ptr_PREXPR );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "ptr_PRENV"  , (DL_FUNC) _ptr_PRENV  );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "ptr_PRVALUE", (DL_FUNC) _ptr_PRVALUE);
+
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "get_UnboundValue" , (DL_FUNC) get_UnboundValue );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "is_delayed"       , (DL_FUNC) is_delayed       );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "is_forced"        , (DL_FUNC) is_forced        );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "is_promise"       , (DL_FUNC) is_promise       );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_TYPEOF"        , (DL_FUNC) my_TYPEOF        );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_findVarInFrame", (DL_FUNC) my_findVarInFrame);
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_findVar"       , (DL_FUNC) my_findVar       );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_findValInFrame", (DL_FUNC) my_findValInFrame);
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_findVal"       , (DL_FUNC) my_findVal       );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_getVarInFrame" , (DL_FUNC) my_getVarInFrame );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_getVar"        , (DL_FUNC) my_getVar        );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "force"            , (DL_FUNC) force            );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "forceInFrame"     , (DL_FUNC) forceInFrame     );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_PREXPR"        , (DL_FUNC) my_PREXPR        );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_PRENV"         , (DL_FUNC) my_PRENV         );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_PRVALUE"       , (DL_FUNC) my_PRVALUE       );
+
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_getRegisteredNamespace_c"  , (DL_FUNC) my_getRegisteredNamespace_c  );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_getRegisteredNamespace_sym", (DL_FUNC) my_getRegisteredNamespace_sym);
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_getRegisteredNamespace"    , (DL_FUNC) my_getRegisteredNamespace    );
+
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "length_DOTS"         , (DL_FUNC) length_DOTS         );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "my_PrintValueEnv"    , (DL_FUNC) my_PrintValueEnv    );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "parent_frame"        , (DL_FUNC) parent_frame        );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "R_MakeDelayedBinding", (DL_FUNC) R_MakeDelayedBinding);
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "R_MakeForcedBinding" , (DL_FUNC) R_MakeForcedBinding );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "R_NewEnv"            , (DL_FUNC) R_NewEnv            );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "set_R_Visible"       , (DL_FUNC) set_R_Visible_fun   );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "UNIMPLEMENTED_TYPE"  , (DL_FUNC) UNIMPLEMENTED_TYPE  );
+    R_RegisterCCallable("@R_PACKAGE_NAME@", "UNIMPLEMENTED_TYPEt" , (DL_FUNC) UNIMPLEMENTED_TYPEt );
 }
