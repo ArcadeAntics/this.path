@@ -161,6 +161,8 @@ extern SEXP do_extgets         do_formals;
 /* files.c */
 
 
+extern SEXP do_is_clipboard_windows do_formals;
+extern SEXP do_is_clipboard_unix    do_formals;
 extern SEXP do_is_clipboard        do_formals;
 extern SEXP do_windows_is_abs_path do_formals;
 extern SEXP do_unix_is_abs_path    do_formals;

@@ -1,6 +1,6 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2024-2025   Iris Simmons
+Copyright (C) 2024-2026   Iris Simmons
  */
 
 
@@ -346,23 +346,37 @@ int is_abs_path_unix(const char *s)
 
 
 
-#if defined(_WIN32)
-int is_clipboard(const char *url)
+int is_clipboard_windows(const char *url)
 {
     return strcmp (url, "clipboard"     ) == 0 ||
            strncmp(url, "clipboard-", 10) == 0;
 }
-const char *must_not_be_clipboard_message = "must not be \"clipboard\" nor start with \"clipboard-\"";
-#else
-int is_clipboard(const char *url)
+
+
+int is_clipboard_unix(const char *url)
 {
     return strcmp(url, "clipboard"    ) == 0 ||
            strcmp(url, "X11_primary"  ) == 0 ||
            strcmp(url, "X11_secondary") == 0 ||
            strcmp(url, "X11_clipboard") == 0;
 }
-const char *must_not_be_clipboard_message = "must not be \"clipboard\", \"X11_primary\", \"X11_secondary\", nor \"X11_clipboard\"";
+
+
+int is_clipboard(const char *url)
+{
+#if defined(_WIN32)
+    return is_clipboard_windows(url);
+#else
+    return is_clipboard_unix(url);
 #endif
+}
+const char *must_not_be_clipboard_message =
+#if defined(_WIN32)
+    "must not be \"clipboard\" nor start with \"clipboard-\""
+#else
+    "must not be \"clipboard\", \"X11_primary\", \"X11_secondary\", nor \"X11_clipboard\""
+#endif
+    ;
 
 
 int is_file_uri(const char *url)
@@ -389,22 +403,50 @@ int is_url(const char *url)
 
 
 
-SEXP do_is_clipboard do_formals
+static R_INLINE
+SEXP _do_is_clipboard(int windows, SEXP args)
 {
-    do_start_no_call_op_rho("is_clipboard", 1);
-
-
     SEXP file = CAR(args);
     if (TYPEOF(file) != STRSXP)
         Rf_error(_("a character vector argument expected"));
-    int n = LENGTH(file);
+    R_xlen_t n = Rf_xlength(file);
     SEXP value = Rf_allocVector(LGLSXP, n);
     Rf_protect(value);
-    int *ivalue = INTEGER(value);
-    for (int i = 0; i < n; i++)
-        ivalue[i] = is_clipboard(R_CHAR(STRING_ELT(file, i)));
+    int *lvalue = LOGICAL(value);
+    if (windows) {
+        for (R_xlen_t i = 0; i < n; i++)
+            lvalue[i] = is_clipboard_windows(R_CHAR(STRING_ELT(file, i)));
+    } else {
+        for (R_xlen_t i = 0; i < n; i++)
+            lvalue[i] = is_clipboard_unix(R_CHAR(STRING_ELT(file, i)));
+    }
     Rf_unprotect(1);
     return value;
+}
+
+
+SEXP do_is_clipboard_windows do_formals
+{
+    do_start_no_call_op_rho("is_clipboard_windows", 1);
+    return _do_is_clipboard(TRUE, args);
+}
+
+
+SEXP do_is_clipboard_unix do_formals
+{
+    do_start_no_call_op_rho("is_clipboard_unix", 1);
+    return _do_is_clipboard(FALSE, args);
+}
+
+
+SEXP do_is_clipboard do_formals
+{
+    do_start_no_call_op_rho("is_clipboard", 1);
+#if defined(_WIN32)
+    return _do_is_clipboard(TRUE, args);
+#else
+    return _do_is_clipboard(FALSE, args);
+#endif
 }
 
 
@@ -412,23 +454,21 @@ SEXP do_is_clipboard do_formals
 
 
 static R_INLINE
-SEXP isabspath(int windows, SEXP args)
+SEXP _do_is_abs_path(int windows, SEXP args)
 {
     SEXP path = CAR(args);
-    int n;
     if (TYPEOF(path) != STRSXP)
         Rf_error(_("a character vector argument expected"));
-    SEXP value = Rf_allocVector(LGLSXP, n = LENGTH(path));
+    R_xlen_t n = Rf_xlength(path);
+    SEXP value = Rf_allocVector(LGLSXP, n);
     Rf_protect(value);
     int *lvalue = LOGICAL(value);
     if (windows) {
-        for (int i = 0; i < n; i++) {
+        for (R_xlen_t i = 0; i < n; i++)
             lvalue[i] = is_abs_path_windows(R_CHAR(STRING_ELT(path, i)));
-        }
     } else {
-        for (int i = 0; i < n; i++) {
+        for (R_xlen_t i = 0; i < n; i++)
             lvalue[i] = is_abs_path_unix(R_CHAR(STRING_ELT(path, i)));
-        }
     }
     Rf_unprotect(1);
     return value;
@@ -438,14 +478,14 @@ SEXP isabspath(int windows, SEXP args)
 SEXP do_windows_is_abs_path do_formals
 {
     do_start_no_call_op_rho("windows_is_abs_path", 1);
-    return isabspath(TRUE, args);
+    return _do_is_abs_path(TRUE, args);
 }
 
 
 SEXP do_unix_is_abs_path do_formals
 {
     do_start_no_call_op_rho("unix_is_abs_path", 1);
-    return isabspath(FALSE, args);
+    return _do_is_abs_path(FALSE, args);
 }
 
 
@@ -453,9 +493,9 @@ SEXP do_is_abs_path do_formals
 {
     do_start_no_call_op_rho("is_abs_path", 1);
 #if defined(_WIN32)
-    return isabspath(TRUE, args);
+    return _do_is_abs_path(TRUE, args);
 #else
-    return isabspath(FALSE, args);
+    return _do_is_abs_path(FALSE, args);
 #endif
 }
 
@@ -470,10 +510,10 @@ SEXP do_fixslash do_formals
         Rf_error(_("a character vector argument expected"));
 
 
-    R_xlen_t n = XLENGTH(file);
+    R_xlen_t n = Rf_xlength(file);
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value);
-    for (int i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         SEXP cs = STRING_ELT(file, i);
 #if defined(_WIN32)
         const char *s = R_CHAR(cs);
@@ -505,10 +545,10 @@ SEXP do_fixbackslash do_formals
         Rf_error(_("a character vector argument expected"));
 
 
-    R_xlen_t n = XLENGTH(file);
+    R_xlen_t n = Rf_xlength(file);
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value);
-    for (int i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         SEXP cs = STRING_ELT(file, i);
 #if defined(_WIN32)
         const char *s = R_CHAR(cs);
@@ -538,10 +578,10 @@ SEXP do_file_URL_path do_formals
         Rf_error(_("a character vector argument expected"));
 
 
-    R_xlen_t n = XLENGTH(path);
+    R_xlen_t n = Rf_xlength(path);
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value);
-    for (int i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         SEXP cs = STRING_ELT(path, i);
         const char *s = R_CHAR(cs);
         if (strncmp(s, "file://", 7) == 0) {

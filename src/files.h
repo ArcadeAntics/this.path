@@ -1,11 +1,11 @@
 /*
 this.path : Get Executing Script's Path
-Copyright (C) 2024-2025   Iris Simmons
+Copyright (C) 2024-2026   Iris Simmons
  */
 
 
-#ifndef R_THISPATH_FILES_H
-#define R_THISPATH_FILES_H
+#ifndef R_THIS_PATH_FILES_H
+#define R_THIS_PATH_FILES_H
 
 
 extern int drive_width_windows(const char *s);
