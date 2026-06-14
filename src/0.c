@@ -115,13 +115,13 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 {"is_clipboard_windows", (DL_FUNC) &do_is_clipboard_windows, 1},
 {"is_clipboard_unix"   , (DL_FUNC) &do_is_clipboard_unix   , 1},
-{"is_clipboard"       , (DL_FUNC) &do_is_clipboard       , 1},
-{"windows_is_abs_path", (DL_FUNC) &do_windows_is_abs_path, 1},
-{"unix_is_abs_path"   , (DL_FUNC) &do_unix_is_abs_path   , 1},
-{"is_abs_path"        , (DL_FUNC) &do_is_abs_path        , 1},
-{"fixslash"           , (DL_FUNC) &do_fixslash           , 1},
-{"fixbackslash"       , (DL_FUNC) &do_fixbackslash       , 1},
-{"file_URL_path"      , (DL_FUNC) &do_file_URL_path      , 1},
+{"is_clipboard"        , (DL_FUNC) &do_is_clipboard        , 1},
+{"windows_is_abs_path" , (DL_FUNC) &do_windows_is_abs_path , 1},
+{"unix_is_abs_path"    , (DL_FUNC) &do_unix_is_abs_path    , 1},
+{"is_abs_path"         , (DL_FUNC) &do_is_abs_path         , 1},
+{"fixslash"            , (DL_FUNC) &do_fixslash            , 1},
+{"fixbackslash"        , (DL_FUNC) &do_fixbackslash        , 1},
+{"file_URL_path"       , (DL_FUNC) &do_file_URL_path       , 1},
 
 
 /* get_file_from_closure.c */
