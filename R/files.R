@@ -1,6 +1,6 @@
 ##
 ## this.path : Get Executing Script's Path
-## Copyright (C) 2023-2025   Iris Simmons
+## Copyright (C) 2023-2026   Iris Simmons
 ##
 
 
@@ -130,6 +130,14 @@ path.unsplit <- function (...)
 
 .is_abs_path <- function (path)
 .External2(.C_is_abs_path, path)
+
+
+.is_clipboard_windows <- function (file)
+.External2(.C_is_clipboard_windows, file)
+
+
+.is_clipboard_unix <- function (file)
+.External2(.C_is_clipboard_unix, file)
 
 
 .is_clipboard <- function (file)

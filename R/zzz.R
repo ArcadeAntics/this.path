@@ -293,6 +293,8 @@ if (getRversion() < "3.0.0") {
     fix_External2(.unix_path_unsplit)
     fix_External2(path.unsplit)
     fix_External2(.is_abs_path)
+    fix_External2(.is_clipboard_windows)
+    fix_External2(.is_clipboard_unix)
     fix_External2(.is_clipboard)
     fix_External2(.fixslash)
     fix_External2(.fixbackslash)
