@@ -2030,8 +2030,7 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
                         /* we expect this promise to already be forced */
                         if (my_PRVALUE(tmp) == my_UnboundValue) continue;
                     }
-                    SEXP tmp2 = force(&tmp);
-                    if (Rf_asLogical(tmp2) != TRUE) continue;
+                    if (Rf_asLogical(force(&tmp)) != TRUE) continue;
                 }
                 get_ofile_if_delayed_continue(frame, scriptSymbol);
                 set_documentcontext2(
@@ -2600,6 +2599,137 @@ SEXP do_env_path do_formals
 }
 
 
+static R_INLINE
+Rboolean is_alnum(unsigned char c)
+{
+    return ('0' <= c && c <= '9') ||
+           ('A' <= c && c <= 'Z') ||
+           ('a' <= c && c <= 'z');
+}
+
+
+static R_INLINE
+Rboolean is_xdigit(unsigned char c)
+{
+    return ('0' <= c && c <= '9') ||
+           ('A' <= c && c <= 'F') ||
+           ('a' <= c && c <= 'f');
+}
+
+
+static R_INLINE
+int xdigit_value(unsigned char c)
+{
+    if ('0' <= c && c <= '9') return c - '0';
+    if ('A' <= c && c <= 'F') return c - 'A' + 10;
+    if ('a' <= c && c <= 'f') return c - 'a' + 10;
+    return -1;
+}
+
+
+static R_INLINE
+void src_path_fix_Positron_file_uri(SEXP srcfile)
+{
+#define unprotect_return { Rf_unprotect(nprotect); return; }
+    int nprotect = 0;
+    /*
+     * if we're in Positron
+     * and 'srcfile' is a "srcfilealias"
+     * and 'srcfile$filename' is a file URI
+     * and 'srcfile$original' is a "srcfilecopy"
+     * and 'srcfile$original$filename' is a blank string
+     * and 'srcfile$original$Enc' is unbound
+     * and 'srcfile$original$isFile' is unbound
+     * and 'srcfile$original$timestamp' is unbound
+     * and 'srcfile$original$wd' is unbound
+     * and the first line of 'srcfile$original$lines' starts with "#line "
+     *
+     * then correct 'srcfile'
+     */
+    if (!gui_positron) unprotect_return;
+
+
+    if (!Rf_inherits(srcfile, "srcfilealias")) unprotect_return;
+
+
+    SEXP ofile = my_findValInFrame(srcfile, filenameSymbol);
+    Rf_protect(ofile); nprotect++;
+    if (!IS_SCALAR(ofile, STRSXP)) unprotect_return;
+    SEXP cs = STRING_ELT(ofile, 0);
+    const char *s;
+    if (!(cs != NA_STRING && is_file_uri(s = R_CHAR(cs)))) unprotect_return;
+
+
+    SEXP original = my_findValInFrame(srcfile, originalSymbol);
+    Rf_protect(original); nprotect++;
+    if (!(TYPEOF(original) == ENVSXP)) unprotect_return;
+    if (!Rf_inherits(original, "srcfilecopy")) unprotect_return;
+
+
+    SEXP filename = my_findValInFrame(original, filenameSymbol);
+    if (!(
+        IS_SCALAR(filename, STRSXP) &&
+        Rf_xlength(STRING_ELT(filename, 0)) == 0
+    )) unprotect_return;
+
+
+    if (!(
+        my_findValInFrame(original, EncSymbol) == my_UnboundValue &&
+        my_findValInFrame(original, isFileSymbol) == my_UnboundValue &&
+        my_findValInFrame(original, timestampSymbol) == my_UnboundValue &&
+        my_findValInFrame(original, wdSymbol) == my_UnboundValue
+    )) unprotect_return;
+
+
+    SEXP lines = my_getVarInFrame(original, linesSymbol, FALSE);
+    if (!(
+        TYPEOF(lines) == STRSXP &&
+        Rf_xlength(lines) > 0 &&
+        !strncmp(R_CHAR(STRING_ELT(lines, 0)), "#line ", 6)
+    )) unprotect_return;
+
+
+    int n = (int) strlen(s);
+    Rboolean has_percent = FALSE;
+    /* check that each character is a valid URLencode()-ed character */
+    for (int i = 0; i < n; i++) {
+        unsigned char c = s[i];
+        if (is_alnum(c));
+        else switch (c) {
+        case '!' : case '#' : case '$' :
+        case '&' : case '\'': case '(' : case ')' : case '*' : case '+' :
+        case ',' : case '-' : case '.' : case '/' :
+        case ':' : case ';' : case '=' : case '?' : case '@' :
+        case '[' : case ']' : case '_' :
+        case '~' :
+            break;
+        case '%':
+            if (!is_xdigit(s[++i])) unprotect_return;
+            if (!is_xdigit(s[++i])) unprotect_return;
+            has_percent = TRUE;
+            break;
+        default:
+            unprotect_return;
+        }
+    }
+    if (!has_percent) unprotect_return;
+
+
+    char _buf[n + 1];
+    char *p = _buf;
+    for (int i = 0; i < n; i++) {
+        if (s[i] != '%') { *p++ = s[i]; continue; }
+        *p++ = xdigit_value(s[i + 1]) * 16 + xdigit_value(s[i + 2]); i += 2;
+    }
+    *p = '\0';
+    INCREMENT_NAMED_defineVar(filenameSymbol, Rf_mkString(_buf), srcfile);
+
+
+    unprotect_return;
+#undef unprotect_return
+}
+
+
 SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
                Rboolean contents, SEXP srcfile, Rboolean *gave_contents,
                Rboolean unbound_ok, Rboolean get_lineno, Rboolean get_context,
@@ -2695,43 +2825,7 @@ SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
         srcfile = sys_srcfile(x ? INTEGER(x)[0] : 0, rho);
         if (TYPEOF(srcfile) != ENVSXP) srcfile = NULL;
         else { Rf_protect(srcfile); nprotect++;
-            SEXP tmp, tmp2;
-            /*
-             * if we're in Positron
-             * and 'srcfile' is a "srcfilealias"
-             * and 'srcfile$original' is a "srcfilecopy"
-             * and 'srcfile$original$filename' is a blank string
-             * and 'srcfile$original$Enc' is unbound
-             * and 'srcfile$original$isFile' is unbound
-             * and 'srcfile$original$timestamp' is unbound
-             * and 'srcfile$original$wd' is unbound
-             * and the first line of 'srcfile$original$lines' starts with "#line "
-             *
-             * then ignore 'srcfile'
-             */
-            if (
-                gui_positron &&
-                Rf_inherits(srcfile, "srcfilealias") &&
-                TYPEOF(tmp = my_findValInFrame(srcfile, originalSymbol)) == ENVSXP &&
-                Rf_inherits(tmp, "srcfilecopy")
-            ) {
-                Rf_protect(tmp);
-                if (TYPEOF(tmp2 = my_findValInFrame(tmp, filenameSymbol)) == STRSXP &&
-                    Rf_xlength(tmp2) == 1 &&
-                    Rf_xlength(STRING_ELT(tmp2, 0)) == 0 &&
-                    my_findValInFrame(tmp, EncSymbol) == my_UnboundValue &&
-                    my_findValInFrame(tmp, isFileSymbol) == my_UnboundValue &&
-                    my_findValInFrame(tmp, timestampSymbol) == my_UnboundValue &&
-                    my_findValInFrame(tmp, wdSymbol) == my_UnboundValue &&
-                    TYPEOF(tmp = my_getVarInFrame(tmp, linesSymbol, FALSE)) == STRSXP &&
-                    Rf_xlength(tmp) > 0 &&
-                    !strncmp(R_CHAR(STRING_ELT(tmp, 0)), "#line ", 6)
-                ) {
-                    /* then the source reference is not valid, disregard it */
-                    srcfile = NULL;
-                }
-                Rf_unprotect(1);
-            }
+            src_path_fix_Positron_file_uri(srcfile);
         }
     }
     else switch (TYPEOF(x)) {
