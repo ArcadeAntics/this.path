@@ -112,10 +112,10 @@ static void HWND_lines(HWND handle, const char *title)
 }
 
 
-static Rboolean EnumVerbose;
-static Rboolean EnumOriginal;
-static Rboolean EnumForMsg;
-static Rboolean EnumContents;
+static int      EnumVerbose;
+static int      EnumOriginal;
+static int      EnumForMsg;
+static int      EnumContents;
 static SEXP     EnumUntitled;
 static SEXP     EnumREditor;
 static Rboolean EnumActive;
@@ -233,8 +233,8 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
 }
 
 
-SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
+SEXP Rgui_path(int verbose, int original, int for_msg, int contents,
+               SEXP untitled, SEXP r_editor, SEXP rho)
 {
     if (!RConsole)
         Rf_error("attempt to use 'Rgui_path' while not in RGui");
@@ -305,8 +305,8 @@ SEXP do_RConsole do_formals
 #include "backports.h"
 
 
-SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho)
+SEXP Rgui_path(int verbose, int original, int for_msg, int contents,
+               SEXP untitled, SEXP r_editor, SEXP rho)
 {
     Rf_error("Rgui_path() is implemented only on Windows");
     return R_NilValue;

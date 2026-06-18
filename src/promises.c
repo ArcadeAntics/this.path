@@ -56,7 +56,7 @@ SEXP R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 
 #define handles_nargs(one_arg_env, name)                       \
     SEXP sym, env;                                             \
-    Rboolean inherits;                                         \
+    int inherits;                                              \
     switch (Rf_length(args)) {                                 \
     case 1:                                                    \
         get_sym;                                               \

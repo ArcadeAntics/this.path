@@ -312,7 +312,7 @@ SEXP do_Rgui_path do_formals
     do_start_no_op("Rgui_path", 6);
 
 
-    Rboolean verbose, original, for_msg, contents;
+    int verbose, original, for_msg, contents;
     SEXP untitled, r_editor;
 
 
@@ -335,8 +335,8 @@ SEXP do_Rgui_path do_formals
         Rf_errorcall(call, "%s, must be %s", "invalid third argument", "'character' / / NULL");
 
 
-    extern SEXP Rgui_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-                          Rboolean contents, SEXP untitled, SEXP r_editor, SEXP rho);
+    extern SEXP Rgui_path(int verbose, int original, int for_msg, int contents,
+                          SEXP untitled, SEXP r_editor, SEXP rho);
 
 
     return Rgui_path(verbose, original, for_msg, contents, untitled, r_editor, rho);
@@ -351,7 +351,7 @@ SEXP do_jupyter_path do_formals
     do_start_no_call_op_rho("jupyter_path", 4);
 
 
-    Rboolean verbose, original, for_msg, contents;
+    int verbose, original, for_msg, contents;
     verbose  = Rf_asLogical(CAR(args)); args = CDR(args);
     original = Rf_asLogical(CAR(args)); args = CDR(args);
     for_msg  = Rf_asLogical(CAR(args)); args = CDR(args);
@@ -394,7 +394,7 @@ SEXP do_set_jupyter_path do_formals
 
 
     SEXP path;
-    Rboolean skipCheck = FALSE;
+    int skipCheck = FALSE;
     switch (Rf_length(args)) {
     case 1:
         path = CAR(args);
@@ -843,8 +843,7 @@ SEXP error_no_associated_path(SEXP rho)
 
 
 static R_INLINE
-SEXP make_path_call(SEXP sym, Rboolean verbose , Rboolean original,
-                              Rboolean for_msg , Rboolean contents)
+SEXP make_path_call(SEXP sym, int verbose, int original, int for_msg, int contents)
 {
     SEXP expr = R_NilValue;
     if (contents) {
@@ -878,11 +877,8 @@ SEXP make_path_call(SEXP sym, Rboolean verbose , Rboolean original,
 }
 
 
-SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
-               Rboolean for_msg         , Rboolean contents        ,
-               Rboolean local           , Rboolean *gave_contents  ,
-               int N                    , Rboolean get_frame_number,
-               SEXP rho                 )
+SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
+               Rboolean *gave_contents, int N, int get_frame_number, SEXP rho)
 {
     *gave_contents = FALSE;
 
@@ -2221,10 +2217,8 @@ SEXP _sys_path(Rboolean verbose         , Rboolean original        ,
 }
 
 
-SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
-               Rboolean for_msg         , Rboolean contents        ,
-               Rboolean local           , int N                    ,
-               Rboolean get_frame_number, SEXP rho                 )
+SEXP sys_path8(int verbose, int original, int for_msg, int contents, int local,
+               int N, int get_frame_number, SEXP rho)
 {
     Rboolean gave_contents;
     SEXP value = _sys_path(verbose         , original        , for_msg         ,
@@ -2343,8 +2337,8 @@ SEXP sys_path8(Rboolean verbose         , Rboolean original        ,
 
 
 static R_INLINE
-SEXP sys_path6(Rboolean verbose , Rboolean original, Rboolean for_msg ,
-               Rboolean contents, Rboolean local   , SEXP rho         )
+SEXP sys_path6(int verbose, int original, int for_msg, int contents, int local,
+               SEXP rho)
 {
     return sys_path8(verbose, original, for_msg, contents, local,
                      /* N */ NA_INTEGER, /* get_frame_number */ FALSE,  rho);
@@ -2356,11 +2350,11 @@ SEXP do_sys_path do_formals
     do_start_no_op("sys_path", -1);
 
 
-    Rboolean verbose  = FALSE,
-             original = FALSE,
-             for_msg  = FALSE,
-             contents = FALSE,
-             local    = FALSE;
+    int verbose  = FALSE,
+        original = FALSE,
+        for_msg  = FALSE,
+        contents = FALSE,
+        local    = FALSE;
 
 
     switch (Rf_length(args)) {
@@ -2401,12 +2395,12 @@ SEXP do_getframenumber do_formals
 }
 
 
-SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP target, SEXP envir,
-               Rboolean *gave_contents, Rboolean unbound_ok, SEXP rho)
+SEXP _env_path(int verbose, int original, int for_msg, int contents,
+               SEXP target, SEXP envir, Rboolean *gave_contents,
+               Rboolean unbound_ok, SEXP rho)
 {
     *gave_contents = FALSE;
-    Rboolean get_frame_number = FALSE;
+    int get_frame_number = FALSE;
 
 
     int nprotect = 0;
@@ -2520,9 +2514,8 @@ SEXP _env_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
 }
 
 
-SEXP env_path8(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP target, SEXP envir, Rboolean unbound_ok,
-               SEXP rho)
+SEXP env_path8(int verbose, int original, int for_msg, int contents,
+               SEXP target, SEXP envir, Rboolean unbound_ok, SEXP rho)
 {
     Rboolean gave_contents;
     SEXP value = _env_path(verbose       , original      , for_msg       ,
@@ -2547,8 +2540,8 @@ SEXP env_path8(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
 static R_INLINE
-SEXP env_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP target, SEXP envir, SEXP rho)
+SEXP env_path7(int verbose, int original, int for_msg, int contents,
+               SEXP target, SEXP envir, SEXP rho)
 {
     return env_path8(verbose, original, for_msg, contents, target, envir,
                      /* unbound_ok */ FALSE, rho);
@@ -2560,10 +2553,10 @@ SEXP do_env_path do_formals
     do_start_no_op("env_path", -1);
 
 
-    Rboolean verbose  = FALSE,
-             original = FALSE,
-             for_msg  = FALSE,
-             contents = FALSE;
+    int verbose  = FALSE,
+        original = FALSE,
+        for_msg  = FALSE,
+        contents = FALSE;
     SEXP envir  = NULL,
          target = NULL;
 
@@ -2730,13 +2723,12 @@ void src_path_fix_Positron_file_uri(SEXP srcfile)
 }
 
 
-SEXP _src_path(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP srcfile, Rboolean *gave_contents,
-               Rboolean unbound_ok, Rboolean get_lineno, Rboolean get_context,
-               SEXP rho)
+SEXP _src_path(int verbose, int original, int for_msg, int contents,
+               SEXP srcfile, Rboolean *gave_contents, Rboolean unbound_ok,
+               Rboolean get_lineno, Rboolean get_context, SEXP rho)
 {
     *gave_contents = FALSE;
-    Rboolean get_frame_number = FALSE;
+    int get_frame_number = FALSE;
 
 
     int nprotect = 0;
@@ -2998,8 +2990,8 @@ SEXP src_context(SEXP srcfile, SEXP rho)
 }
 
 
-SEXP src_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP srcfile, Rboolean unbound_ok, SEXP rho)
+SEXP src_path7(int verbose, int original, int for_msg, int contents,
+               SEXP srcfile, Rboolean unbound_ok, SEXP rho)
 {
     Rboolean gave_contents, get_lineno = FALSE, get_context = FALSE;
     SEXP value = _src_path(verbose       , original      , for_msg       ,
@@ -3025,8 +3017,8 @@ SEXP src_path7(Rboolean verbose, Rboolean original, Rboolean for_msg,
 
 
 static R_INLINE
-SEXP src_path6(Rboolean verbose, Rboolean original, Rboolean for_msg,
-               Rboolean contents, SEXP srcfile, SEXP rho)
+SEXP src_path6(int verbose, int original, int for_msg, int contents,
+               SEXP srcfile, SEXP rho)
 {
     return src_path7(verbose, original, for_msg, contents, srcfile,
                      /* unbound_ok */ FALSE, rho);
@@ -3038,10 +3030,10 @@ SEXP do_src_path do_formals
     do_start_no_op("src_path", -1);
 
 
-    Rboolean verbose  = FALSE,
-             original = FALSE,
-             for_msg  = FALSE,
-             contents = FALSE;
+    int verbose  = FALSE,
+        original = FALSE,
+        for_msg  = FALSE,
+        contents = FALSE;
     SEXP srcfile = NULL;
 
 
@@ -3107,11 +3099,11 @@ SEXP do_this_path do_formals
     do_start_no_op("this_path", -1);
 
 
-    Rboolean verbose  = FALSE,
-             original = FALSE,
-             for_msg  = FALSE,
-             contents = FALSE,
-             local    = FALSE;
+    int verbose  = FALSE,
+        original = FALSE,
+        for_msg  = FALSE,
+        contents = FALSE,
+        local    = FALSE;
     SEXP envir   = NULL,
          target  = NULL,
          srcfile = NULL;

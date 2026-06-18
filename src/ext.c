@@ -36,7 +36,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         Rf_error(_("a character vector argument expected"));
 
 
-    Rboolean compression = Rf_asLogical(CAR(args)); args = CDR(args);
+    int compression = Rf_asLogical(CAR(args)); args = CDR(args);
     if (compression == NA_LOGICAL)
         Rf_error(_("invalid '%s' value"), "compression");
 

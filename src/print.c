@@ -154,7 +154,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     SEXP x = CAR(args); args = CDR(args);
     if (TYPEOF(x) != ENVSXP)
         Rf_error(_("invalid '%s' value"), "x");
-    Rboolean quote = Rf_asLogical(CAR(args)); args = CDR(args);
+    int quote = Rf_asLogical(CAR(args)); args = CDR(args);
     if (quote == NA_LOGICAL)
         Rf_error(_("invalid '%s' value"), "quote");
 
@@ -258,7 +258,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else if (associated_with_file.value == R_NilValue)
             print_null;
         else if (IS_SCALAR(associated_with_file.value, LGLSXP)) {
-            Rboolean tmp = LOGICAL(associated_with_file.value)[0];
+            int tmp = LOGICAL(associated_with_file.value)[0];
             Rprintf("%s: %s\n", R_CHAR(PRINTNAME(sym)),
                 (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
         }
@@ -372,7 +372,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         if (setsyspathwashere.value == R_NilValue)
             print_null;
         else if (IS_SCALAR(setsyspathwashere.value, LGLSXP)) {
-            Rboolean tmp = LOGICAL(setsyspathwashere.value)[0];
+            int tmp = LOGICAL(setsyspathwashere.value)[0];
             Rprintf("%s: %s\n", R_CHAR(PRINTNAME(sym)),
                 (tmp == NA_LOGICAL) ? "NA" : (tmp ? "TRUE" : "FALSE"));
         }
