@@ -25,7 +25,7 @@ SEXP do_wrap_source do_formals
     int nprotect = 0;
 
 
-    binding_info_t promise; my_findVarInFrame(rho, exprSymbol, &promise);
+    binding_t promise; my_findVarInFrame(rho, exprSymbol, &promise);
     if (promise.value == my_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));
     if (promise.value == R_MissingArg)
@@ -203,7 +203,7 @@ SEXP do_wrap_source do_formals
 
 
     SEXP s, b, dot;
-    binding_info_t dots;
+    binding_t dots;
     int already_checked_dots;
 
 

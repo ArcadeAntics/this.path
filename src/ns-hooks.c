@@ -995,7 +995,7 @@ SEXP do_onLoad do_formals
 #if R_version_less_than(3,4,0)
     {
         SEXP sym = Rf_install("print.connection");
-        binding_info_t val; my_findVarInFrame(mynamespace, sym, &val);
+        binding_t val; my_findVarInFrame(mynamespace, sym, &val);
         if (val.value != my_UnboundValue) {
             R_unLockBinding(sym, R_BaseEnv);
             Rf_defineVar(sym, force(&val), R_BaseEnv);

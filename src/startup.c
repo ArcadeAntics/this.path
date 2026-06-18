@@ -16,7 +16,7 @@ SEXP startup_file(Rboolean check_is_valid_init_file_expr, SEXP rho)
     int nprotect = 0;
 
 
-    binding_info_t promise; my_findVarInFrame(rho, exprSymbol, &promise);
+    binding_t promise; my_findVarInFrame(rho, exprSymbol, &promise);
     Rf_protect(promise.value); nprotect++;
     if (promise.value == my_UnboundValue)
         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(exprSymbol)));

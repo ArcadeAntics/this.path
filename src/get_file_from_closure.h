@@ -50,7 +50,7 @@ SEXP get_file_from_closure(int original, int for_msg, SEXP where)
 
 
 #define get_and_check(var, sym)                                \
-        binding_info_t var; my_findVarInFrame(env, (sym), &var);\
+        binding_t var; my_findVarInFrame(env, (sym), &var);    \
         if (var.value == my_UnboundValue)                      \
             Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME((sym))));\
         if (my_TYPEOF(var) != PROMSXP)                         \

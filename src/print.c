@@ -218,7 +218,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
 #define print_encoded_str(str) _print_encoded_str("%s: %s\n", (str))
 
 
-    binding_info_t errcnd; my_findVarInFrame(x, sym = errcndSymbol, &errcnd);
+    binding_t errcnd; my_findVarInFrame(x, sym = errcndSymbol, &errcnd);
     Rf_protect(errcnd.value);
     if (!errcnd.value)
         print_invalid_C_NULL;
@@ -235,7 +235,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         else print_invalid_type(errcnd);
 
 
-        binding_info_t for_msg; my_findVarInFrame(x, sym = for_msgSymbol, &for_msg);
+        binding_t for_msg; my_findVarInFrame(x, sym = for_msgSymbol, &for_msg);
         Rf_protect(for_msg.value);
         if (!for_msg.value)
             print_invalid_C_NULL;
@@ -250,7 +250,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         Rf_unprotect(1);
 
 
-        binding_info_t associated_with_file; my_findVarInFrame(x, sym = associated_with_fileSymbol, &associated_with_file);
+        binding_t associated_with_file; my_findVarInFrame(x, sym = associated_with_fileSymbol, &associated_with_file);
         Rf_protect(associated_with_file.value);
         if (!associated_with_file.value)
             print_invalid_C_NULL;
@@ -266,7 +266,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         Rf_unprotect(1);
     }
     else {
-        binding_info_t ofile; my_findVarInFrame(x, sym = ofileSymbol, &ofile);
+        binding_t ofile; my_findVarInFrame(x, sym = ofileSymbol, &ofile);
         Rf_protect(ofile.value);
         if (!ofile.value)
             print_invalid_C_NULL;
@@ -281,7 +281,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         Rf_unprotect(1);
 
 
-        binding_info_t wd; my_findVarInFrame(x, sym = wdSymbol, &wd);
+        binding_t wd; my_findVarInFrame(x, sym = wdSymbol, &wd);
         Rf_protect(wd.value);
         if (!wd.value)
             print_invalid_C_NULL;
@@ -295,7 +295,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         Rf_unprotect(1);
 
 
-        binding_info_t file; my_findVarInFrame(x, sym = fileSymbol, &file);
+        binding_t file; my_findVarInFrame(x, sym = fileSymbol, &file);
         Rf_protect(file.value);
         if (!file.value)
             print_invalid_C_NULL;
@@ -321,7 +321,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         Rf_unprotect(1);
 
 
-        binding_info_t lines; my_findVarInFrame(x, sym = linesSymbol, &lines);
+        binding_t lines; my_findVarInFrame(x, sym = linesSymbol, &lines);
         Rf_protect(lines.value);
         if (!lines.value)
             print_invalid_C_NULL;
@@ -350,7 +350,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     Rf_unprotect(1);  /* errcnd */
 
 
-    binding_info_t source; my_findVarInFrame(x, sym = sourceSymbol, &source);
+    binding_t source; my_findVarInFrame(x, sym = sourceSymbol, &source);
     Rf_protect(source.value);
     if (!source.value)
         print_invalid_C_NULL;
@@ -364,7 +364,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     Rf_unprotect(1);
 
 
-    binding_info_t setsyspathwashere; my_findVarInFrame(x, sym = setsyspathwashereSymbol, &setsyspathwashere);
+    binding_t setsyspathwashere; my_findVarInFrame(x, sym = setsyspathwashereSymbol, &setsyspathwashere);
     Rf_protect(setsyspathwashere.value);
     if (!setsyspathwashere.value)
         print_invalid_C_NULL;
@@ -380,7 +380,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     }
 
 
-    binding_info_t n; my_findVarInFrame(x, sym = nSymbol, &n);
+    binding_t n; my_findVarInFrame(x, sym = nSymbol, &n);
     Rf_protect(n.value);
     if (!n.value)
         print_invalid_C_NULL;

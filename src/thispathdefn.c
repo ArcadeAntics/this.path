@@ -182,13 +182,13 @@ void init_UnboundValue(void)
 }
 
 
-int is_delayed(binding_info_t x) { return x.type == R_BindingTypeDelayed; }
-int is_forced (binding_info_t x) { return x.type == R_BindingTypeForced ; }
-int is_promise(binding_info_t x) { return is_delayed(x) || is_forced(x); }
-int my_TYPEOF (binding_info_t x) { return is_promise(x) ? PROMSXP : TYPEOF(x.value); }
+int is_delayed(binding_t x) { return x.type == R_BindingTypeDelayed; }
+int is_forced (binding_t x) { return x.type == R_BindingTypeForced ; }
+int is_promise(binding_t x) { return is_delayed(x) || is_forced(x); }
+int my_TYPEOF (binding_t x) { return is_promise(x) ? PROMSXP : TYPEOF(x.value); }
 
 
-binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
+binding_t *my_findVarInFrame(SEXP env, SEXP sym, binding_t *x)
 {
     x->env = env;
     x->sym = sym;
@@ -206,7 +206,7 @@ binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
 }
 
 
-binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x)
+binding_t *my_findVar(SEXP env, SEXP sym, binding_t *x)
 {
     x->env = env;
     x->sym = sym;
@@ -233,17 +233,17 @@ binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x)
 
 SEXP my_findValInFrame(SEXP env, SEXP sym)
 {
-    binding_info_t x; return my_findVarInFrame(env, sym, &x)->value;
+    binding_t x; return my_findVarInFrame(env, sym, &x)->value;
 }
 
 
 SEXP my_findVal(SEXP env, SEXP sym)
 {
-    binding_info_t x; return my_findVar(env, sym, &x)->value;
+    binding_t x; return my_findVar(env, sym, &x)->value;
 }
 
 
-SEXP force(binding_info_t *x)
+SEXP force(binding_t *x)
 {
     if (is_promise(*x)) {
         SEXP value = R_getVar(x->sym, x->env, FALSE);
@@ -286,7 +286,7 @@ void forceInFrame(SEXP env, SEXP sym)
 }
 
 
-SEXP my_PREXPR(binding_info_t x)
+SEXP my_PREXPR(binding_t x)
 {
     if (is_promise(x)) {
         if (is_delayed(x))
@@ -300,7 +300,7 @@ SEXP my_PREXPR(binding_info_t x)
 }
 
 
-SEXP my_PRENV(binding_info_t x)
+SEXP my_PRENV(binding_t x)
 {
     if (is_promise(x)) {
         if (is_delayed(x))
@@ -314,7 +314,7 @@ SEXP my_PRENV(binding_info_t x)
 }
 
 
-SEXP my_PRVALUE(binding_info_t x)
+SEXP my_PRVALUE(binding_t x)
 {
     if (is_promise(x)) {
         if (is_delayed(x))
@@ -356,13 +356,13 @@ void init_UnboundValue(void)
 }
 
 
-int is_delayed(binding_info_t x) { return ptr_PRVALUE(x.value) == my_UnboundValue; }
-int is_forced (binding_info_t x) { return ptr_PRVALUE(x.value) != my_UnboundValue; }
-int is_promise(binding_info_t x) { return TYPEOF(x.value) == PROMSXP; }
-int my_TYPEOF (binding_info_t x) { return TYPEOF(x.value); }
+int is_delayed(binding_t x) { return ptr_PRVALUE(x.value) == my_UnboundValue; }
+int is_forced (binding_t x) { return ptr_PRVALUE(x.value) != my_UnboundValue; }
+int is_promise(binding_t x) { return TYPEOF(x.value) == PROMSXP; }
+int my_TYPEOF (binding_t x) { return TYPEOF(x.value); }
 
 
-binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
+binding_t *my_findVarInFrame(SEXP env, SEXP sym, binding_t *x)
 {
     x->env = env;
     x->sym = sym;
@@ -371,7 +371,7 @@ binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x)
 }
 
 
-binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x)
+binding_t *my_findVar(SEXP env, SEXP sym, binding_t *x)
 {
     x->env = env;
     x->sym = sym;
@@ -392,7 +392,7 @@ SEXP my_findVal(SEXP env, SEXP sym)
 }
 
 
-SEXP force(binding_info_t *x)
+SEXP force(binding_t *x)
 {
     if (is_promise(*x)) {
         if (is_delayed(*x)) {
@@ -418,7 +418,7 @@ void forceInFrame(SEXP env, SEXP sym)
 }
 
 
-SEXP my_PREXPR(binding_info_t x)
+SEXP my_PREXPR(binding_t x)
 {
     if (is_promise(x))
         return ptr_R_PromiseExpr(x.value);
@@ -429,7 +429,7 @@ SEXP my_PREXPR(binding_info_t x)
 }
 
 
-SEXP my_PRENV(binding_info_t x)
+SEXP my_PRENV(binding_t x)
 {
     if (is_promise(x))
         return ptr_PRENV(x.value);
@@ -440,7 +440,7 @@ SEXP my_PRENV(binding_info_t x)
 }
 
 
-SEXP my_PRVALUE(binding_info_t x)
+SEXP my_PRVALUE(binding_t x)
 {
     if (is_promise(x))
         return ptr_PRVALUE(x.value);
@@ -561,7 +561,7 @@ SEXP getInFrame(SEXP sym, SEXP env, int unbound_ok)
 
 SEXP my_getVarInFrame(SEXP env, SEXP sym, int unbound_ok)
 {
-    binding_info_t x;
+    binding_t x;
     my_findVarInFrame(env, sym, &x);
     if (!unbound_ok && x.value == my_UnboundValue)
         Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
@@ -571,7 +571,7 @@ SEXP my_getVarInFrame(SEXP env, SEXP sym, int unbound_ok)
 
 SEXP my_getVar(SEXP env, SEXP sym, int unbound_ok)
 {
-    binding_info_t x;
+    binding_t x;
     my_findVar(env, sym, &x);
     if (!unbound_ok && x.value == my_UnboundValue)
         Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
@@ -1033,7 +1033,7 @@ SEXP duplicateEnv(SEXP env)
         else
 #endif
         {
-            binding_info_t x; my_findVarInFrame(env, sym, &x);
+            binding_t x; my_findVarInFrame(env, sym, &x);
             if (x.value == my_UnboundValue)
                 Rf_error(_("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
             if (my_TYPEOF(x) == PROMSXP) {

@@ -104,8 +104,8 @@ SEXP do_is_unevaluated_promise do_formals
         return Rf_ScalarLogical(TYPEOF(value) == PROMSXP &&
                                 ptr_PRVALUE(value) == my_UnboundValue);
     }
-    binding_info_t value; (inherits ? my_findVar(env, sym, &value) :
-                                      my_findVarInFrame(env, sym, &value));
+    binding_t value; (inherits ? my_findVar(env, sym, &value) :
+                                 my_findVarInFrame(env, sym, &value));
     if (value.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
@@ -135,8 +135,8 @@ SEXP do_promise_is_unevaluated do_formals
             Rf_errorcall(call, "'%s' is not a promise", EncodeChar(PRINTNAME(sym)));
         return Rf_ScalarLogical(ptr_PRVALUE(value) == my_UnboundValue);
     }
-    binding_info_t value; (inherits ? my_findVar(env, sym, &value) :
-                                      my_findVarInFrame(env, sym, &value));
+    binding_t value; (inherits ? my_findVar(env, sym, &value) :
+                                 my_findVarInFrame(env, sym, &value));
     if (value.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
@@ -178,8 +178,8 @@ SEXP do_forcePromise_no_warn do_formals
         }
         return ptr_PRVALUE(value);
     }
-    binding_info_t tmp; (inherits ? my_findVar(sym, env, &tmp) :
-                                    my_findVarInFrame(env, sym, &tmp));
+    binding_t tmp; (inherits ? my_findVar(sym, env, &tmp) :
+                               my_findVarInFrame(env, sym, &tmp));
     if (tmp.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(sym)));
 
@@ -198,8 +198,8 @@ SEXP do_forcePromise_no_warn do_formals
     if ((i = ddVal(sym)))
         value = ddfind(i, env);
     else {
-        binding_info_t tmp; (inherits ? my_findVar(sym, env, &tmp) :
-                                        my_findVarInFrame(env, sym, &tmp));
+        binding_t tmp; (inherits ? my_findVar(sym, env, &tmp) :
+                                   my_findVarInFrame(env, sym, &tmp));
         value = tmp.value;
     }
     if (value == my_UnboundValue)

@@ -80,20 +80,20 @@ extern void R_MakeForcedBinding(SEXP sym, SEXP expr, SEXP value, SEXP assign_env
 
 
 #include "../inst/include/@R_PACKAGE_NAME@/binding.h"
-typedef @R_PACKAGE_LIB@_binding_t binding_info_t;
-int is_delayed(binding_info_t x);
-int is_forced (binding_info_t x);
-int is_promise(binding_info_t x);
-int my_TYPEOF (binding_info_t x);
-binding_info_t *my_findVarInFrame(SEXP env, SEXP sym, binding_info_t *x);
-binding_info_t *my_findVar(SEXP env, SEXP sym, binding_info_t *x);
+typedef @R_PACKAGE_LIB@_binding_t binding_t;
+int is_delayed(binding_t x);
+int is_forced (binding_t x);
+int is_promise(binding_t x);
+int my_TYPEOF (binding_t x);
+binding_t *my_findVarInFrame(SEXP env, SEXP sym, binding_t *x);
+binding_t *my_findVar(SEXP env, SEXP sym, binding_t *x);
 SEXP my_findValInFrame(SEXP env, SEXP sym);
 SEXP my_findVal(SEXP env, SEXP sym);
-SEXP force(binding_info_t *x);
+SEXP force(binding_t *x);
 void forceInFrame(SEXP env, SEXP sym);
-SEXP my_PREXPR(binding_info_t x);
-SEXP my_PRENV(binding_info_t x);
-SEXP my_PRVALUE(binding_info_t x);
+SEXP my_PREXPR(binding_t x);
+SEXP my_PRENV(binding_t x);
+SEXP my_PRVALUE(binding_t x);
 SEXP my_getRegisteredNamespace_c(const char *x);
 SEXP my_getRegisteredNamespace_sym(SEXP sym);
 SEXP my_getRegisteredNamespace(const char *x, SEXP sym);

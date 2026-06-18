@@ -428,7 +428,7 @@ SEXP do_set_jupyter_path do_formals
     env = CLOENV(env);
 
 
-    binding_info_t x; my_findVarInFrame(env, ofileSymbol, &x);
+    binding_t x; my_findVarInFrame(env, ofileSymbol, &x);
     Rf_protect(x.value);
     if (x.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(x.sym)));
@@ -436,7 +436,7 @@ SEXP do_set_jupyter_path do_formals
         Rf_errorcall(call, "invalid '%s' binding", EncodeChar(PRINTNAME(x.sym)));
 
 
-    binding_info_t y; my_findVarInFrame(env, fileSymbol, &y);
+    binding_t y; my_findVarInFrame(env, fileSymbol, &y);
     Rf_protect(y.value);
     if (y.value == my_UnboundValue)
         Rf_errorcall(call, _("object '%s' not found"), EncodeChar(PRINTNAME(y.sym)));
@@ -815,7 +815,7 @@ void document_context_assign_lines(SEXP documentcontext, SEXP srcfile)
             )
            )
         {
-            binding_info_t tmp; my_findVarInFrame(srcfile, fixedNewlinesSymbol, &tmp);
+            binding_t tmp; my_findVarInFrame(srcfile, fixedNewlinesSymbol, &tmp);
             if (tmp.value == my_UnboundValue || tmp.value == R_NilValue) {
                 SEXP expr = Rf_lcons(_fixNewlinesSymbol, Rf_cons(srcfile, R_NilValue));
                 Rf_protect(expr);
@@ -1338,7 +1338,7 @@ SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
                 returnthis = my_getVarInFrame(documentcontext, ofileSymbol, FALSE);\
             }                                                  \
             else {                                             \
-                binding_info_t tmp; my_findVarInFrame(documentcontext, fileSymbol, &tmp);\
+                binding_t tmp; my_findVarInFrame(documentcontext, fileSymbol, &tmp);\
                 if (tmp.value == my_UnboundValue)              \
                     Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(fileSymbol)));\
                 if (my_TYPEOF(tmp) != PROMSXP)                 \
@@ -1413,7 +1413,7 @@ SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
             else {
 #define get_ofile_if_delayed_continue(environment, symbol)     \
                 {                                              \
-                    binding_info_t tmp; my_findVarInFrame((environment), (symbol), &tmp);\
+                    binding_t tmp; my_findVarInFrame((environment), (symbol), &tmp);\
                     ofile = tmp.value;                         \
                     if (ofile == my_UnboundValue)              \
                         Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(tmp.sym)));\
@@ -2021,7 +2021,7 @@ SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
             }
             else {
                 {
-                    binding_info_t tmp; my_findVarInFrame(frame, sourceSymbol, &tmp);
+                    binding_t tmp; my_findVarInFrame(frame, sourceSymbol, &tmp);
                     if (my_TYPEOF(tmp) == PROMSXP) {
                         /* we expect this promise to already be forced */
                         if (my_PRVALUE(tmp) == my_UnboundValue) continue;
