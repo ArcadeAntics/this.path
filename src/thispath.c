@@ -2593,34 +2593,6 @@ SEXP do_env_path do_formals
 
 
 static R_INLINE
-Rboolean is_alnum(unsigned char c)
-{
-    return ('0' <= c && c <= '9') ||
-           ('A' <= c && c <= 'Z') ||
-           ('a' <= c && c <= 'z');
-}
-
-
-static R_INLINE
-Rboolean is_xdigit(unsigned char c)
-{
-    return ('0' <= c && c <= '9') ||
-           ('A' <= c && c <= 'F') ||
-           ('a' <= c && c <= 'f');
-}
-
-
-static R_INLINE
-int xdigit_value(unsigned char c)
-{
-    if ('0' <= c && c <= '9') return c - '0';
-    if ('A' <= c && c <= 'F') return c - 'A' + 10;
-    if ('a' <= c && c <= 'f') return c - 'a' + 10;
-    return -1;
-}
-
-
-static R_INLINE
 void src_path_fix_Positron_file_uri(SEXP srcfile)
 {
 #define unprotect_return { Rf_unprotect(nprotect); return; }
@@ -2649,13 +2621,13 @@ void src_path_fix_Positron_file_uri(SEXP srcfile)
     Rf_protect(ofile); nprotect++;
     if (!IS_SCALAR(ofile, STRSXP)) unprotect_return;
     SEXP cs = STRING_ELT(ofile, 0);
-    const char *s;
-    if (!(cs != NA_STRING && is_file_uri(s = R_CHAR(cs)))) unprotect_return;
+    if (cs == NA_STRING) unprotect_return;
+    if (!is_file_uri(R_CHAR(cs))) unprotect_return;
 
 
     SEXP original = my_findValInFrame(srcfile, originalSymbol);
     Rf_protect(original); nprotect++;
-    if (!(TYPEOF(original) == ENVSXP)) unprotect_return;
+    if (TYPEOF(original) != ENVSXP) unprotect_return;
     if (!Rf_inherits(original, "srcfilecopy")) unprotect_return;
 
 
@@ -2682,40 +2654,32 @@ void src_path_fix_Positron_file_uri(SEXP srcfile)
     )) unprotect_return;
 
 
-    int n = (int) strlen(s);
-    Rboolean has_percent = FALSE;
-    /* check that each character is a valid URLencode()-ed character */
-    for (int i = 0; i < n; i++) {
-        unsigned char c = s[i];
-        if (is_alnum(c));
-        else switch (c) {
-        case '!' : case '#' : case '$' :
-        case '&' : case '\'': case '(' : case ')' : case '*' : case '+' :
-        case ',' : case '-' : case '.' : case '/' :
-        case ':' : case ';' : case '=' : case '?' : case '@' :
-        case '[' : case ']' : case '_' :
-        case '~' :
-            break;
-        case '%':
-            if (!is_xdigit(s[++i])) unprotect_return;
-            if (!is_xdigit(s[++i])) unprotect_return;
-            has_percent = TRUE;
-            break;
-        default:
-            unprotect_return;
-        }
-    }
-    if (!has_percent) unprotect_return;
+    extern void _URL_decode(const char *s, char *p, cetype_t *ienc);
 
 
-    char _buf[n + 1];
-    char *p = _buf;
-    for (int i = 0; i < n; i++) {
-        if (s[i] != '%') { *p++ = s[i]; continue; }
-        *p++ = xdigit_value(s[i + 1]) * 16 + xdigit_value(s[i + 2]); i += 2;
+    const char *s;
+    cetype_t ienc = CE_NATIVE;
+    if (IS_BYTES(cs) || IS_UTF8(cs)) {
+        s = R_CHAR(cs);
+        ienc = Rf_getCharCE(cs);
     }
-    *p = '\0';
-    INCREMENT_NAMED_defineVar(filenameSymbol, Rf_mkString(_buf), srcfile);
+    else
+        s = Rf_translateChar(cs);
+
+
+    char buf[LENGTH(cs) + 1];
+    _URL_decode(s, buf, &ienc);
+
+
+    int nh = 7;
+#if defined(_WIN32)
+    if (strlen(buf) > 9 && buf[7] == '/' && buf[9] == ':') nh = 8;
+#endif
+    INCREMENT_NAMED_defineVar(
+        filenameSymbol,
+        Rf_ScalarString(Rf_mkCharCE(buf + nh, ienc)),
+        srcfile
+    );
 
 
     unprotect_return;

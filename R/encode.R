@@ -17,3 +17,11 @@ encode_string <- function (x, width = 0L, quote = "", na.encode = TRUE,
     ) - 1L
     .External2(.C_encode_string, x, width, quote, justify, na.encode)
 }
+
+
+URL_encode <- function (URL, reserved = FALSE, repeated = FALSE)
+.External2(.C_URL_encode, URL, reserved, repeated)
+
+
+URL_decode <- function (URL)
+.External2(.C_URL_decode, URL)

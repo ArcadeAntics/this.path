@@ -72,6 +72,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
 
 
 {"encode_string", (DL_FUNC) &do_encode_string, 5},
+{"URL_encode"   , (DL_FUNC) &do_URL_encode   , 3},
+{"URL_decode"   , (DL_FUNC) &do_URL_decode   , 1},
 
 
 /* error.c */

@@ -120,6 +120,8 @@ extern SEXP do_dirname2         do_formals;
 
 
 extern SEXP do_encode_string do_formals;
+extern SEXP do_URL_encode    do_formals;
+extern SEXP do_URL_decode    do_formals;
 
 
 /* error.c */

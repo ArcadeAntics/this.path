@@ -223,7 +223,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     if (!errcnd.value)
         print_invalid_C_NULL;
     else if (errcnd.value != my_UnboundValue) {
-        if (errcnd.value == R_NilValue)
+        if (errcnd.value == R_NilValue && !is_promise(errcnd))
             print_invalid_null;
         else if (my_TYPEOF(errcnd) == VECSXP &&
                  LENGTH(errcnd.value) >= 2 &&
@@ -241,7 +241,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_invalid_C_NULL;
         else if (for_msg.value == my_UnboundValue)
             print_invalid_unbound;
-        else if (for_msg.value == R_NilValue)
+        else if (for_msg.value == R_NilValue && !is_promise(for_msg))
             print_invalid_null;
         else if (IS_SCALAR(for_msg.value, STRSXP))
             print_encoded_str(for_msg.value);
@@ -255,7 +255,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         if (!associated_with_file.value)
             print_invalid_C_NULL;
         else if (associated_with_file.value == my_UnboundValue);
-        else if (associated_with_file.value == R_NilValue)
+        else if (associated_with_file.value == R_NilValue && !is_promise(associated_with_file))
             print_null;
         else if (IS_SCALAR(associated_with_file.value, LGLSXP)) {
             int tmp = LOGICAL(associated_with_file.value)[0];
@@ -272,7 +272,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_invalid_C_NULL;
         else if (ofile.value == my_UnboundValue)
             print_invalid_unbound;
-        else if (ofile.value == R_NilValue)
+        else if (ofile.value == R_NilValue && !is_promise(ofile))
             print_invalid_null;
         else if (IS_SCALAR(ofile.value, STRSXP))
             print_encoded_str(ofile.value);
@@ -286,7 +286,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         if (!wd.value)
             print_invalid_C_NULL;
         else if (wd.value == my_UnboundValue);
-        else if (wd.value == R_NilValue)
+        else if (wd.value == R_NilValue && !is_promise(wd))
             print_null;
         else if (IS_SCALAR(wd.value, STRSXP))
             print_encoded_str(wd.value);
@@ -301,7 +301,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
             print_invalid_C_NULL;
         else if (file.value == my_UnboundValue)
             print_invalid_unbound;
-        else if (file.value == R_NilValue)
+        else if (file.value == R_NilValue && !is_promise(file))
             print_invalid_null;
         else if (my_TYPEOF(file) == PROMSXP) {
             SEXP val = my_PRVALUE(file);
@@ -326,7 +326,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         if (!lines.value)
             print_invalid_C_NULL;
         else if (lines.value == my_UnboundValue);
-        else if (lines.value == R_NilValue)
+        else if (lines.value == R_NilValue && !is_promise(lines))
             print_invalid_null;
         else if (my_TYPEOF(lines) == PROMSXP) {
             SEXP val = my_PRVALUE(lines);
@@ -356,7 +356,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         print_invalid_C_NULL;
     else if (source.value == my_UnboundValue)
         print_invalid_unbound;
-    else if (source.value == R_NilValue)
+    else if (source.value == R_NilValue && !is_promise(source))
         print_invalid_null;
     else if (my_TYPEOF(source) == CHARSXP)
         _print_encoded_str("%s: <CHARSXP: %s>\n", Rf_ScalarString(source.value));
@@ -369,7 +369,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
     if (!setsyspathwashere.value)
         print_invalid_C_NULL;
     else if (setsyspathwashere.value != my_UnboundValue) {
-        if (setsyspathwashere.value == R_NilValue)
+        if (setsyspathwashere.value == R_NilValue && !is_promise(setsyspathwashere))
             print_null;
         else if (IS_SCALAR(setsyspathwashere.value, LGLSXP)) {
             int tmp = LOGICAL(setsyspathwashere.value)[0];
@@ -388,7 +388,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         if (setsyspathwashere.value != my_UnboundValue)
             print_invalid_unbound;
     }
-    else if (n.value == R_NilValue)
+    else if (n.value == R_NilValue && !is_promise(n))
         print_invalid_null;
     else if (IS_SCALAR(n.value, INTSXP))
         Rprintf("%s: %d\n", R_CHAR(PRINTNAME(sym)), INTEGER(n.value)[0]);

@@ -231,6 +231,8 @@ if (getRversion() < "3.0.0") {
 
 
     fix_External2(encode_string)
+    fix_External2(URL_encode)
+    fix_External2(URL_decode)
 
 
     ## enhances.R      ----
