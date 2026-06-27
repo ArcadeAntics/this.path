@@ -19,26 +19,25 @@ SEXP basename2(int windows, SEXP args)
     SEXP path = CAR(args);
     if (TYPEOF(path) != STRSXP)
         Rf_error(_("a character vector argument expected"));
-    SEXP cs;
 
 
-    const char *str;
-    char *buf, *last_char, *slash;
+    const char *s;
+    char *p, *last_char, *slash;
     R_xlen_t n; int nchar, drivewidth;
 
 
     SEXP value = Rf_allocVector(STRSXP, n = Rf_xlength(path));
     Rf_protect(value); nprotect++;
     for (R_xlen_t i = 0; i < n; i++) {
-        cs = STRING_ELT(path, i);
+        SEXP cs = STRING_ELT(path, i);
         if (cs == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
             continue;
         }
 
 
-        str = R_CHAR(cs);
-        nchar = strlen(str);
+        s = R_CHAR(cs);
+        nchar = strlen(s);
         if (nchar == 0) {
             /* don't bother assigning an empty string, should already be empty
             SET_STRING_ELT(value, i, R_BlankString); */
@@ -46,35 +45,35 @@ SEXP basename2(int windows, SEXP args)
         }
 
 
-        drivewidth = _drive_width_no_tilde(windows, str);
+        drivewidth = _drive_width_no_tilde(windows, s);
         nchar -= drivewidth;  /* number of characters in the pathspec */
         if (nchar == 0) {
             /* don't bother assigning an empty string, should already be empty
             SET_STRING_ELT(value, i, R_BlankString); */
             continue;
         }
-        str += drivewidth;
+        s += drivewidth;
 
 
         /* allocate a buffer to hold the basename
          * add 1 for the trailing '\0'
          */
         char _buf[nchar + 1];
-        buf = _buf;
-        strcpy(buf, str);
+        p = _buf;
+        strcpy(p, s);
 
 
-        /* point to the last character of 'buf' */
-        last_char = buf + (nchar - 1);
+        /* point to the last character of 'p' */
+        last_char = p + (nchar - 1);
 
 
         /* remove trailing path separators */
         if (windows) {
-            while (last_char >= buf && (*last_char == '/' || *last_char == '\\')) {
+            while (last_char >= p && (*last_char == '/' || *last_char == '\\')) {
                 *(last_char--) = '\0';
             }
         } else {
-            while (last_char >= buf && *last_char == '/') {
+            while (last_char >= p && *last_char == '/') {
                 *(last_char--) = '\0';
             }
         }
@@ -83,7 +82,7 @@ SEXP basename2(int windows, SEXP args)
         /* if the pathspec was comprised solely of path separators
          * then the basename is non-existent, return empty string
          */
-        if (last_char < buf) {
+        if (last_char < p) {
             /* don't bother assigning an empty string, should already be empty
             SET_STRING_ELT(value, i, R_BlankString); */
             continue;
@@ -92,31 +91,31 @@ SEXP basename2(int windows, SEXP args)
 
         if (windows) {
             /* find the last slash and backslash */
-                  slash     = strrchr(buf, '/');
-            char *backslash = strrchr(buf, '\\');
+                  slash  = strrchr(p, '/');
+            char *bslash = strrchr(p, '\\');
 
 
             if (slash) {  /* slash was found */
-                if (backslash) {  /* backslash was also found */
-                    if (slash < backslash)  /* slash found before backslash */
-                        buf = backslash + 1;
-                    else buf = slash + 1;  /* backslash found before slash */
+                if (bslash) {  /* backslash was also found */
+                    if (slash < bslash)  /* slash found before backslash */
+                        p = bslash + 1;
+                    else p = slash + 1;  /* backslash found before slash */
                 }
-                else buf = slash + 1;  /* backslash was not found */
+                else p = slash + 1;  /* backslash was not found */
             }
             else {  /* slash was not found */
-                if (backslash)  /* backslash was found */
-                    buf = backslash + 1;
-                else { /* pathspec contains no path separators so do nothing */ }
+                if (bslash)  /* backslash was found */
+                    p = bslash + 1;
+                else; /* pathspec contains no path separators so do nothing */
             }
         } else {
             /* find the last slash */
-            slash = strrchr(buf, '/');
-            if (slash) buf = slash + 1;
+            slash = strrchr(p, '/');
+            if (slash) p = slash + 1;
         }
 
 
-        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
+        SET_STRING_ELT(value, i, Rf_mkCharCE(p, Rf_getCharCE(cs)));
     }
 
 
@@ -197,8 +196,8 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
     SEXP cs;
 
 
-    const char *str;
-    char *buf, *last_char, *slash, *pathspec;
+    const char *s;
+    char *p, *last_char, *slash, *pathspec;
     R_xlen_t n; int nchar, drivewidth, skip;
 
 
@@ -212,40 +211,40 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         }
 
 
-        str = R_CHAR(cs);
-        nchar = strlen(str);
+        s = R_CHAR(cs);
+        nchar = strlen(s);
         if (nchar == 0) {
             continue;
         }
 
 
-        drivewidth = _drive_width_no_tilde(windows, str);
+        drivewidth = _drive_width_no_tilde(windows, s);
         if (drivewidth == nchar) {  /* pathspec is 0 bytes long */
             if (windows && drivewidth == 2) {
-                char _buf[4];
-                _buf[0] = str[0];
-                _buf[1] = str[1];
-                _buf[2] = '.';
-                _buf[3] = '\0';
-                SET_STRING_ELT(value, i, Rf_mkCharCE(_buf, Rf_getCharCE(cs)));
+                char buf[4];
+                buf[0] = s[0];
+                buf[1] = s[1];
+                buf[2] = '.';
+                buf[3] = '\0';
+                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
             }
             else {
-                SET_STRING_ELT(value, i, Rf_mkCharCE(str, Rf_getCharCE(cs)));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(s, Rf_getCharCE(cs)));
             }
             continue;
         }
 
 
-        char _buf[nchar + 1];  /* allocate a buffer to hold the dirname */
-        buf = _buf;
-        strcpy(buf, str);
+        char buf[nchar + 1];  /* allocate a buffer to hold the dirname */
+        p = buf;
+        strcpy(p, s);
 
 
-        pathspec = buf + drivewidth;  /* point to the start of the pathspec */
+        pathspec = p + drivewidth;  /* point to the start of the pathspec */
 
 
-        /* point to the last character of buf */
-        last_char = buf + (nchar - 1);
+        /* point to the last character of p */
+        last_char = p + (nchar - 1);
 
 
         skip = 0;
@@ -280,7 +279,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
             /* if the pathspec was comprised solely of path separators */
             /* then the dirname is just the whole path                 */
             if (last_char < pathspec) {
-                SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
+                SET_STRING_ELT(value, i, Rf_mkCharCE(p, Rf_getCharCE(cs)));
                 skip = 1;
                 break;
             }
@@ -289,20 +288,20 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
             /* find the last path separator */
             if (windows) {
                       slash     = strrchr(pathspec, '/');
-                char *backslash = strrchr(pathspec, '\\');
+                char *bslash = strrchr(pathspec, '\\');
 
 
                 if (slash) {  /* slash was found */
-                    if (backslash) {  /* backslash was also found */
-                        if (slash < backslash)  /* slash found before backslash */
-                            last_char = backslash;
+                    if (bslash) {  /* backslash was also found */
+                        if (slash < bslash)  /* slash found before backslash */
+                            last_char = bslash;
                         else last_char = slash;  /* backslash found before slash */
                     }
                     else last_char = slash;  /* backslash was not found */
                 }
                 else {  /* slash was not found */
-                    if (backslash)  /* backslash was found */
-                        last_char = backslash;
+                    if (bslash)  /* backslash was found */
+                        last_char = bslash;
                     else {
 
 
@@ -312,7 +311,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
                         if (drivewidth) {
                             *pathspec = '.';
                             *(pathspec + 1) = '\0';
-                            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
+                            SET_STRING_ELT(value, i, Rf_mkCharCE(p, Rf_getCharCE(cs)));
                         }
                         else {
                             SET_STRING_ELT(value, i, Rf_mkChar("."));
@@ -340,7 +339,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
             *(last_char + 1) = '\0';
 
 
-            /* last_char should already point to the last character of buf */
+            /* last_char should already point to the last character of p */
         }
         if (skip) continue;
 
@@ -366,7 +365,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
         }
 
 
-        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
+        SET_STRING_ELT(value, i, Rf_mkCharCE(p, Rf_getCharCE(cs)));
     }
 
 
