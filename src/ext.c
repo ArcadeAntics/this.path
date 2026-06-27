@@ -42,7 +42,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
 
 
     SEXP newext = NULL;
-    int length_newext = -1;
+    R_xlen_t length_newext = -1;
     if (op == EXTOP_EXTGETS) {
         if (!Rf_isString(CAR(args))) {
             if (OBJECT(CAR(args))) {
@@ -66,7 +66,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
         }
 
 
-        length_newext = Rf_length(CAR(args));
+        length_newext = Rf_xlength(CAR(args));
         if (!length_newext) {
             SETCAR(args, R_BlankScalarString);
             length_newext = 1;
@@ -78,14 +78,15 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
     const char *ptr;
     char *buf, *pathspec, *last_char, *slash,
          *basename, *dot, *compression_dot, *tmp;
-    int n, i, nchar, drivewidth, nchar_basename, found_non_dot;
+    int nchar, drivewidth, nchar_basename, found_non_dot;
 
 
     SEXP value;
-    n = LENGTH(path);
+    R_xlen_t n = XLENGTH(path);
     switch (op) {
     case EXTOP_SPLITEXT:
-        value = Rf_allocMatrix(STRSXP, 2, n);
+        if (n > INT_MAX) Rf_error(_("invalid 'ncol' value (too large or NA)"));
+        value = Rf_allocMatrix(STRSXP, 2, (int) n);
         Rf_protect(value); nprotect++;
         SEXP dimnames = Rf_allocVector(VECSXP, 2);
         Rf_setAttrib(value, R_DimNamesSymbol, dimnames);
@@ -107,7 +108,7 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
     char _buf_ext[PATH_MAX + 1];
 
 
-    for (i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         SEXP cs;
         cs = STRING_ELT(path, i);
         if (cs == NA_STRING) {

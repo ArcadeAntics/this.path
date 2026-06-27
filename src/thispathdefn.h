@@ -283,7 +283,7 @@ do {                                                           \
             }                                                  \
         }                                                      \
         else url = R_CHAR(file);                               \
-        if (!ignore_blank_string && !(LENGTH(file) > 0)) {     \
+        if (!ignore_blank_string && !(XLENGTH(file) > 0)) {    \
             if (allow_blank_string) {                          \
                 documentcontext = R_EmptyEnv;                  \
                 if (assign_returnvalue) {                      \

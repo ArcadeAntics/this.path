@@ -18,14 +18,14 @@ SEXP path_split(int windows, int length1, SEXP args)
         Rf_error(_("a character vector argument expected"));
 
 
-    int n = LENGTH(path);
+    R_xlen_t n = XLENGTH(path);
     if (length1 && n != 1)
         Rf_error(_("'%s' must be a character string"), "path");
 
 
     SEXP value = Rf_allocVector(VECSXP, n);
     Rf_protect(value);
-    for (int i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         SEXP cs = STRING_ELT(path, i);
         if (cs == NA_STRING) {
             SET_VECTOR_ELT(value, i, Rf_ScalarString(NA_STRING));
@@ -232,7 +232,11 @@ SEXP path_split(int windows, int length1, SEXP args)
     }
 
 
-    if (length1) value = VECTOR_ELT(value, 0);
+    if (length1) {
+        SEXP tmp = value;
+        value = VECTOR_ELT(value, 0);
+        SET_VECTOR_ELT(tmp, 0, R_NilValue);  /* decrease reference count */
+    }
     Rf_unprotect(1);
     return value;
 }
@@ -308,24 +312,31 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
 
     SEXP x;
-    int n;
+    R_xlen_t n;
     if (dots_length == 1) {
-        x = Rf_eval(CAR(dots), rho);
+        SEXP x = CAR(dots);
+        if (x == R_MissingArg) {
+            char buf[15];
+            snprintf(buf, 15, "..%d", 1);
+            MissingArgError_c(buf, R_CurrentExpression, rho, "evalError");
+        }
+        else if (TYPEOF(x) == PROMSXP)
+            x = Rf_eval(x, rho);
         if (Rf_isPairList(x)) {
             Rf_protect(x); nprotect++;
-            n = Rf_length(x);
+            n = Rf_xlength(x);
             /* verify that each element is a character vector */
             SEXP xptr = x;
-            for (int i = 0; i < n; i++, xptr = CDR(xptr)) {
+            for (R_xlen_t i = 0; i < n; i++, xptr = CDR(xptr)) {
                 if (TYPEOF(CAR(xptr)) != STRSXP)
                     Rf_error("invalid first argument, elements must be character vectors");
             }
         }
         else if (Rf_isVectorList(x)) {
             Rf_protect(x); nprotect++;
-            n = LENGTH(x);
+            n = Rf_xlength(x);
             /* verify that each element is a character vector */
-            for (int i = 0; i < n; i++) {
+            for (R_xlen_t i = 0; i < n; i++) {
                 if (TYPEOF(VECTOR_ELT(x, i)) != STRSXP)
                     Rf_error("invalid first argument, elements must be character vectors");
             }
@@ -345,13 +356,13 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
         x = Rf_allocVector(VECSXP, n);
         Rf_protect(x); nprotect++;
         SEXP d = dots;
-        for (int i = 0; i < n; i++, d = CDR(d)) {
+        for (R_xlen_t i = 0; i < n; i++, d = CDR(d)) {
             SEXP xi = CAR(d);
             if (xi == R_MissingArg) {
                 /* if the last argument is missing, allow it */
                 if (i == dots_length - 1) { n--; continue; }
                 char buf[15];
-                snprintf(buf, 15, "..%d", i + 1);
+                snprintf(buf, 15, "..%d", (int) i + 1);
                 MissingArgError_c(buf, R_CurrentExpression, rho, "evalError");
             }
             else if (TYPEOF(xi) == PROMSXP)
@@ -371,7 +382,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     Rboolean allLatin1, anyLatin1, use_UTF8, use_Bytes;
 
 
-    for (int i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         SEXP path;
         if (ispairlist) {
             path = CAR(x);

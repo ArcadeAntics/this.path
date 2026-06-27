@@ -24,12 +24,12 @@ SEXP basename2(int windows, SEXP args)
 
     const char *str;
     char *buf, *last_char, *slash;
-    int n, i, nchar, drivewidth;
+    R_xlen_t n; int nchar, drivewidth;
 
 
-    SEXP value = Rf_allocVector(STRSXP, n = LENGTH(path));
+    SEXP value = Rf_allocVector(STRSXP, n = Rf_xlength(path));
     Rf_protect(value); nprotect++;
-    for (i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         cs = STRING_ELT(path, i);
         if (cs == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
@@ -199,12 +199,12 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
     const char *str;
     char *buf, *last_char, *slash, *pathspec;
-    int n, i, nchar, drivewidth, skip;
+    R_xlen_t n; int nchar, drivewidth, skip;
 
 
-    SEXP value = Rf_allocVector(STRSXP, n = LENGTH(path));
+    SEXP value = Rf_allocVector(STRSXP, n = Rf_xlength(path));
     Rf_protect(value); nprotect++;
-    for (i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         cs = STRING_ELT(path, i);
         if (cs == NA_STRING) {
             SET_STRING_ELT(value, i, NA_STRING);
@@ -221,7 +221,7 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 
         drivewidth = _drive_width_no_tilde(windows, str);
         if (drivewidth == nchar) {  /* pathspec is 0 bytes long */
-            if ((windows) && drivewidth == 2) {
+            if (windows && drivewidth == 2) {
                 char _buf[4];
                 _buf[0] = str[0];
                 _buf[1] = str[1];

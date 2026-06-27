@@ -549,7 +549,7 @@ SEXP set_path(SET_PATH_ACTION spa, SEXP args, SEXP rho)
         const char *ostr = R_CHAR(osource);
         const char *str = "call to function 'set.sys.path.function'";
         SEXP source;
-        if (!LENGTH(osource))
+        if (!XLENGTH(osource))
             source = Rf_mkChar(str);
         else {
             const char *fmt = "%s, copied from %s";

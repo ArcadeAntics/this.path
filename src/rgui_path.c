@@ -119,8 +119,8 @@ static int      EnumContents;
 static SEXP     EnumUntitled;
 static SEXP     EnumREditor;
 static Rboolean EnumActive;
-static int      EnumNUntitled;
-static int      EnumNREditor;
+static R_xlen_t EnumNUntitled;
+static R_xlen_t EnumNREditor;
 
 
 static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
@@ -151,7 +151,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
     /* if the title and untitled strings are equal (byte-wise, do
      * not care if encodings match), then the script does not exist
      */
-    for (int i = 0; i < EnumNUntitled; i++) {
+    for (R_xlen_t i = 0; i < EnumNUntitled; i++) {
         SEXP untitled0 = STRING_ELT(EnumUntitled, i);
         if (untitled0 == NA_STRING || untitled0 == R_BlankString) continue;
         if (!strcmp(title, R_CHAR(untitled0))) {
@@ -184,7 +184,7 @@ static BOOL CALLBACK EnumRGuiPathProc(HWND handle, LPARAM param)
     /* if the title ends with R Editor strings (again, bit-wise),
      * then it is an R script, remove the suffix and return
      */
-    for (int i = 0; i < EnumNREditor; i++) {
+    for (R_xlen_t i = 0; i < EnumNREditor; i++) {
         SEXP r_editor0 = STRING_ELT(EnumREditor, i);
         if (r_editor0 == NA_STRING || r_editor0 == R_BlankString) continue;
         const char *suffix = R_CHAR(r_editor0);
@@ -252,8 +252,8 @@ SEXP Rgui_path(int verbose, int original, int for_msg, int contents,
     EnumREditor = r_editor;
     EnumActive = TRUE;
     /* works better for older versions of R */
-    EnumNUntitled = ((EnumUntitled == R_NilValue) ? 0 : LENGTH(EnumUntitled));
-    EnumNREditor = ((EnumREditor == R_NilValue) ? 0 : LENGTH(EnumREditor));
+    EnumNUntitled = ((EnumUntitled == R_NilValue) ? 0 : XLENGTH(EnumUntitled));
+    EnumNREditor = ((EnumREditor == R_NilValue) ? 0 : XLENGTH(EnumREditor));
 
 
     if (ismdi() && EnumProcessId)

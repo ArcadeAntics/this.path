@@ -343,7 +343,7 @@ SEXP do_dir_exists do_formals
     SEXP fn = CAR(args);
     if (!Rf_isString(fn))
         Rf_error(_("invalid filename argument"));
-    int n = LENGTH(fn);
+    R_xlen_t n = XLENGTH(fn);
 
 
     SEXP expr = Rf_lcons(file_infoSymbol, Rf_cons(fn, R_NilValue));
@@ -355,17 +355,17 @@ SEXP do_dir_exists do_formals
 
     if (TYPEOF(value) != VECSXP)
         Rf_error(_("invalid '%s' value"), "file.info(paths)");
-    if (LENGTH(value) < 6)
+    if (XLENGTH(value) < 6)
         Rf_error(_("invalid '%s' value"), "file.info(paths)");
     value = VECTOR_ELT(value, 1);
     if (TYPEOF(value) != LGLSXP)
         Rf_error(_("invalid '%s' value"), "file.info(paths)$isdir");
-    if (LENGTH(value) != n)
+    if (XLENGTH(value) != n)
         Rf_error(_("invalid '%s' value"), "file.info(paths)$isdir");
 
 
     int *lvalue = LOGICAL(value);
-    for (int i = 0; i < n; i++) {
+    for (R_xlen_t i = 0; i < n; i++) {
         if (lvalue[i] == NA_LOGICAL) {
             lvalue[i] = FALSE;
         }
@@ -484,7 +484,7 @@ SEXP checkNSname(SEXP call, SEXP name)
     case SYMSXP:
         break;
     case STRSXP:
-        if (LENGTH(name) >= 1) {
+        if (XLENGTH(name) >= 1) {
             name = Rf_installTrChar(STRING_ELT(name, 0));
             break;
         }
@@ -943,7 +943,7 @@ SEXP R_mkClosure(SEXP formals, SEXP body, SEXP rho)
 
 Rboolean Rf_isValidStringF(SEXP x)
 {
-    return (TYPEOF(x) == STRSXP && LENGTH(x) > 0 && TYPEOF(STRING_ELT(x, 0)) != NILSXP) && R_CHAR(STRING_ELT(x, 0))[0];
+    return (TYPEOF(x) == STRSXP && XLENGTH(x) > 0 && TYPEOF(STRING_ELT(x, 0)) != NILSXP) && R_CHAR(STRING_ELT(x, 0))[0];
 }
 
 

@@ -174,14 +174,14 @@ SEXP do_print_ThisPathDocumentContext do_formals
 
 
     SEXP klass = Rf_getAttrib(x, R_ClassSymbol);
-    int nklass = ((klass == R_NilValue) ? 0 : LENGTH(klass));
+    R_xlen_t nklass = ((klass == R_NilValue) ? 0 : XLENGTH(klass));
     if (nklass) {
         SETCADR(expr, klass);
         SETCADDR(expr, Rf_mkString("\""));
         SEXP tmp = Rf_eval(expr, R_BaseEnv);
         Rf_protect(tmp);
         Rprintf("<object of class ");
-        for (int i = 0; i < nklass; i++)
+        for (R_xlen_t i = 0; i < nklass; i++)
             if (i) Rprintf(", %s", R_CHAR(STRING_ELT(tmp, i)));
             else   Rprintf("%s"  , R_CHAR(STRING_ELT(tmp, i)));
         Rprintf(" at %p>\n", (void *) x);
@@ -226,7 +226,7 @@ SEXP do_print_ThisPathDocumentContext do_formals
         if (errcnd.value == R_NilValue && !is_promise(errcnd))
             print_invalid_null;
         else if (my_TYPEOF(errcnd) == VECSXP &&
-                 LENGTH(errcnd.value) >= 2 &&
+                 XLENGTH(errcnd.value) >= 2 &&
                  Rf_inherits(errcnd.value, "condition"))
         {
             Rprintf("%s: ", R_CHAR(PRINTNAME(sym)));

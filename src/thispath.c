@@ -1312,7 +1312,7 @@ SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
                 }                                              \
                 else {                                         \
                     if (TYPEOF(errcnd) != VECSXP ||            \
-                        LENGTH(errcnd) < 2)                    \
+                        XLENGTH(errcnd) < 2)                   \
                     {                                          \
                         Rf_error(_("invalid '%s' value"), R_CHAR(PRINTNAME(errcndSymbol)));\
                     }                                          \
@@ -1392,7 +1392,7 @@ SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
                     Rf_error(_("'%s' must be a character string"), R_CHAR(PRINTNAME(fileSymbol)));\
                 file = STRING_ELT(ofile, 0);                   \
                 const char *url = R_CHAR(file);                \
-                if (!(LENGTH(file) > 0))                       \
+                if (!(XLENGTH(file) > 0))                      \
                     Rf_errorcall(sys_call(which, rho), "invalid '%s', must not be \"\""     , R_CHAR(PRINTNAME(fileSymbol)));\
                 else if (is_clipboard(url))                    \
                     Rf_errorcall(sys_call(which, rho), "invalid '%s', %s"                   , R_CHAR(PRINTNAME(fileSymbol)), must_not_be_clipboard_message);\
@@ -2667,7 +2667,7 @@ void src_path_fix_Positron_file_uri(SEXP srcfile)
         s = Rf_translateChar(cs);
 
 
-    char buf[LENGTH(cs) + 1];
+    char buf[XLENGTH(cs) + 1];
     _URL_decode(s, buf, &ienc);
 
 
@@ -2738,7 +2738,7 @@ SEXP _src_path(int verbose, int original, int for_msg, int contents,
             srcref = Rf_protect(Rf_getAttrib(x, srcrefSymbol)); nprotect++;
             if (TYPEOF(srcref) == INTSXP)
                 return_first_line_from_srcref;
-            if (TYPEOF(srcref) == VECSXP && LENGTH(srcref) &&
+            if (TYPEOF(srcref) == VECSXP && XLENGTH(srcref) &&
                 TYPEOF(srcref = VECTOR_ELT(srcref, 0)) == INTSXP)
             {
                 return_first_line_from_srcref;
@@ -2751,14 +2751,14 @@ SEXP _src_path(int verbose, int original, int for_msg, int contents,
                 return_first_line_from_srcref;
             }
             srcref = Rf_protect(Rf_getAttrib(x, srcrefSymbol)); nprotect++;
-            if (TYPEOF(srcref) == VECSXP && LENGTH(srcref) &&
+            if (TYPEOF(srcref) == VECSXP && XLENGTH(srcref) &&
                 TYPEOF(srcref = VECTOR_ELT(srcref, 0)) == INTSXP)
             {
                 return_first_line_from_srcref;
             }
             break;
         case INTSXP:
-            if (LENGTH(x) == 8) {
+            if (XLENGTH(x) == 8) {
                 srcref = x;
                 return_first_line_from_srcref;
             }
@@ -2807,7 +2807,7 @@ SEXP _src_path(int verbose, int original, int for_msg, int contents,
         else {
             srcfile = NULL;
             srcref = Rf_protect(Rf_getAttrib(x, srcrefSymbol)); nprotect++;
-            if (TYPEOF(srcref) == VECSXP && LENGTH(srcref) &&
+            if (TYPEOF(srcref) == VECSXP && XLENGTH(srcref) &&
                 TYPEOF(srcref = VECTOR_ELT(srcref, 0)) == INTSXP)
             {
                 get_srcfile_from_srcref;
@@ -2815,7 +2815,7 @@ SEXP _src_path(int verbose, int original, int for_msg, int contents,
         }
         break;
     case INTSXP:
-        if (LENGTH(x) == 8) {
+        if (XLENGTH(x) == 8) {
             srcref = x;
             get_srcfile_from_srcref;
         }

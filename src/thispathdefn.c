@@ -993,7 +993,7 @@ SEXP duplicateEnv(SEXP env)
     Rf_protect(value);
     SEXP names = R_lsInternal3(env, TRUE, FALSE);
     Rf_protect(names);
-    for (int i = LENGTH(names) - 1; i >= 0; i--) {
+    for (R_xlen_t i = XLENGTH(names) - 1; i >= 0; i--) {
         SEXP sym = Rf_installTrChar(STRING_ELT(names, i));
 #if R_version_at_least(4,6,0)
         switch (R_GetBindingType(sym, env)) {
