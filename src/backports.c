@@ -559,7 +559,7 @@ SEXP do_strrep do_formals
             char *buf = _buf;
             const char *cbuf = _buf;
             for (int j = 0; j < times0; j++) {
-                strcpy(buf, str);
+                memcpy(buf, str, nchar);
                 buf += nchar;
             }
             buf[0] = '\0';
