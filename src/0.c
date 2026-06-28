@@ -227,6 +227,17 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"shINFO"   , (DL_FUNC) &do_shINFO   , 0},
 
 
+/* splitroot.c */
+
+
+{"splitroot_windows" , (DL_FUNC) &do_splitroot_windows , 1},
+{"splitroot_unix"    , (DL_FUNC) &do_splitroot_unix    , 1},
+{"splitroot"         , (DL_FUNC) &do_splitroot         , 1},
+{"splitdrive_windows", (DL_FUNC) &do_splitdrive_windows, 1},
+{"splitdrive_unix"   , (DL_FUNC) &do_splitdrive_unix   , 1},
+{"splitdrive"        , (DL_FUNC) &do_splitdrive        , 1},
+
+
 /* startup.c */
 
 

@@ -275,6 +275,17 @@ extern SEXP do_shFILE    do_formals;
 extern SEXP do_shINFO    do_formals;
 
 
+/* splitroot.c */
+
+
+extern SEXP do_splitroot_windows  do_formals;
+extern SEXP do_splitroot_unix     do_formals;
+extern SEXP do_splitroot          do_formals;
+extern SEXP do_splitdrive_windows do_formals;
+extern SEXP do_splitdrive_unix    do_formals;
+extern SEXP do_splitdrive         do_formals;
+
+
 /* startup.c */
 
 

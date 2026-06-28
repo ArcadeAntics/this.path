@@ -132,6 +132,30 @@ path.unsplit <- function (...)
 .External2(.C_is_abs_path, path)
 
 
+.splitroot_windows <- function (path, expand = TRUE)
+.External2(.C_splitroot_windows, if (expand) path.expand(path) else path)
+
+
+.splitroot_unix <- function (path, expand = TRUE)
+.External2(.C_splitroot_windows, if (expand) path.expand(path) else path)
+
+
+splitroot <- function (path, expand = TRUE)
+.External2(.C_splitroot, if (expand) path.expand(path) else path)
+
+
+.splitdrive_windows <- function (path, expand = TRUE)
+.External2(.C_splitdrive_windows, if (expand) path.expand(path) else path)
+
+
+.splitdrive_unix <- function (path, expand = TRUE)
+.External2(.C_splitdrive_windows, if (expand) path.expand(path) else path)
+
+
+splitdrive <- function (path, expand = TRUE)
+.External2(.C_splitdrive, if (expand) path.expand(path) else path)
+
+
 .is_clipboard_windows <- function (file)
 .External2(.C_is_clipboard_windows, file)
 
