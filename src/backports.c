@@ -546,8 +546,8 @@ SEXP do_strrep do_formals
         } else {
             if (times0 < 0)
                 Rf_error(_("invalid '%s' value"), "times");
-            const char *str = R_CHAR(x0);
-            int nchar = (int) strlen(str);
+            const char *s = R_CHAR(x0);
+            int nchar = (int) strlen(s);
 
 
             double nchar_out = ((double) nchar) * times0;
@@ -555,15 +555,14 @@ SEXP do_strrep do_formals
                 Rf_error("R character strings are limited to 2^31-1 bytes");
 
 
-            char _buf[nchar * times0 + 1];
-            char *buf = _buf;
-            const char *cbuf = _buf;
+            char buf[nchar * times0 + 1];
+            char *p = buf;
             for (int j = 0; j < times0; j++) {
-                strcpy(buf, str);
-                buf += nchar;
+                memcpy(p, s, nchar);
+                p += nchar;
             }
-            buf[0] = '\0';
-            SET_STRING_ELT(value, i, Rf_mkCharCE(cbuf, Rf_getCharCE(x0)));
+            *p = '\0';
+            SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(x0)));
         }
         if (++x_indx     == x_length    ) x_indx     = 0;
         if (++times_indx == times_length) times_indx = 0;
