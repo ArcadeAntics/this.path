@@ -377,16 +377,16 @@ SEXP _do_is_abs_path(int windows, SEXP args)
 }
 
 
-SEXP do_windows_is_abs_path do_formals
+SEXP do_is_abs_path_windows do_formals
 {
-    do_start_no_call_op_rho("windows_is_abs_path", 1);
+    do_start_no_call_op_rho("is_abs_path_windows", 1);
     return _do_is_abs_path(TRUE, args);
 }
 
 
-SEXP do_unix_is_abs_path do_formals
+SEXP do_is_abs_path_unix do_formals
 {
-    do_start_no_call_op_rho("unix_is_abs_path", 1);
+    do_start_no_call_op_rho("is_abs_path_unix", 1);
     return _do_is_abs_path(FALSE, args);
 }
 
@@ -419,15 +419,12 @@ SEXP do_fixslash do_formals
         SEXP cs = STRING_ELT(file, i);
 #if defined(_WIN32)
         const char *s = R_CHAR(cs);
-        int nchar = (int) strlen(s);
-        char buf[nchar + 1];
-        char *p = buf;
-        memcpy(p, s, nchar);
-        p[nchar] = '\0';
-        for (; *p; p++) if (*p == '\\') *p = '/';
+        char buf[strlen(s) + 1];
+        strcpy(buf, s);
+        for (char *p = buf; *p; p++) if (*p == '\\') *p = '/';
         /* preserve network shares */
         if (buf[0] == '/' && buf[1] == '/') buf[0] = buf[1] = '\\';
-        SET_STRING_ELT(value, i, Rf_mkCharLenCE(buf, nchar, Rf_getCharCE(cs)));
+        SET_STRING_ELT(value, i, Rf_mkCharCE(buf, Rf_getCharCE(cs)));
 #else
         SET_STRING_ELT(value, i, cs);
 #endif

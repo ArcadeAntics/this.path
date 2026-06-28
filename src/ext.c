@@ -539,16 +539,16 @@ SEXP ext(SEXP call, EXTOP op, int windows, SEXP args, SEXP rho)
 }
 
 
-SEXP do_windows_splitext do_formals
+SEXP do_splitext_windows do_formals
 {
-    do_start_no_op("windows_splitext", 2);
+    do_start_no_op("splitext_windows", 2);
     return ext(call, EXTOP_SPLITEXT, TRUE, args, rho);
 }
 
 
-SEXP do_unix_splitext do_formals
+SEXP do_splitext_unix do_formals
 {
-    do_start_no_op("unix_splitext", 2);
+    do_start_no_op("splitext_unix", 2);
     return ext(call, EXTOP_SPLITEXT, FALSE, args, rho);
 }
 
@@ -564,16 +564,16 @@ SEXP do_splitext do_formals
 }
 
 
-SEXP do_windows_removeext do_formals
+SEXP do_removeext_windows do_formals
 {
-    do_start_no_op("windows_removeext", 2);
+    do_start_no_op("removeext_windows", 2);
     return ext(call, EXTOP_REMOVEEXT, TRUE, args, rho);
 }
 
 
-SEXP do_unix_removeext do_formals
+SEXP do_removeext_unix do_formals
 {
-    do_start_no_op("unix_removeext", 2);
+    do_start_no_op("removeext_unix", 2);
     return ext(call, EXTOP_REMOVEEXT, FALSE, args, rho);
 }
 
@@ -589,16 +589,16 @@ SEXP do_removeext do_formals
 }
 
 
-SEXP do_windows_ext do_formals
+SEXP do_ext_windows do_formals
 {
-    do_start_no_op("windows_ext", 2);
+    do_start_no_op("ext_windows", 2);
     return ext(call, EXTOP_EXT, TRUE, args, rho);
 }
 
 
-SEXP do_unix_ext do_formals
+SEXP do_ext_unix do_formals
 {
-    do_start_no_op("unix_ext", 2);
+    do_start_no_op("ext_unix", 2);
     return ext(call, EXTOP_EXT, FALSE, args, rho);
 }
 
@@ -614,16 +614,16 @@ SEXP do_ext do_formals
 }
 
 
-SEXP do_windows_extgets do_formals
+SEXP do_extgets_windows do_formals
 {
-    do_start_no_op("windows_ext<-", 3);
+    do_start_no_op("ext_windows<-", 3);
     return ext(call, EXTOP_EXTGETS, TRUE, args, rho);
 }
 
 
-SEXP do_unix_extgets do_formals
+SEXP do_extgets_unix do_formals
 {
-    do_start_no_op("unix_ext<-", 3);
+    do_start_no_op("ext_unix<-", 3);
     return ext(call, EXTOP_EXTGETS, FALSE, args, rho);
 }
 

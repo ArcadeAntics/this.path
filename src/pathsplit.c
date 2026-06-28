@@ -242,16 +242,16 @@ SEXP path_split(int windows, int length1, SEXP args)
 }
 
 
-SEXP do_windows_path_split do_formals
+SEXP do_path_split_windows do_formals
 {
-    do_start_no_call_op_rho("windows_path_split", 1);
+    do_start_no_call_op_rho("path_split_windows", 1);
     return path_split(TRUE, FALSE, args);
 }
 
 
-SEXP do_unix_path_split do_formals
+SEXP do_path_split_unix do_formals
 {
-    do_start_no_call_op_rho("unix_path_split", 1);
+    do_start_no_call_op_rho("path_split_unix", 1);
     return path_split(FALSE, FALSE, args);
 }
 
@@ -267,16 +267,16 @@ SEXP do_path_split do_formals
 }
 
 
-SEXP do_windows_path_split_1 do_formals
+SEXP do_path_split_1_windows do_formals
 {
-    do_start_no_call_op_rho("windows_path_split_1", 1);
+    do_start_no_call_op_rho("path_split_1_windows", 1);
     return path_split(TRUE, TRUE, args);
 }
 
 
-SEXP do_unix_path_split_1 do_formals
+SEXP do_path_split_1_unix do_formals
 {
-    do_start_no_call_op_rho("unix_path_split_1", 1);
+    do_start_no_call_op_rho("path_split_1_unix", 1);
     return path_split(FALSE, TRUE, args);
 }
 
@@ -523,16 +523,16 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 }
 
 
-SEXP do_windows_path_unsplit do_formals
+SEXP do_path_unsplit_windows do_formals
 {
-    do_start_no_call_op("windows_path_unsplit", 0);
+    do_start_no_call_op("path_unsplit_windows", 0);
     return path_unsplit(TRUE, args, rho);
 }
 
 
-SEXP do_unix_path_unsplit do_formals
+SEXP do_path_unsplit_unix do_formals
 {
-    do_start_no_call_op("unix_path_unsplit", 0);
+    do_start_no_call_op("path_unsplit_unix", 0);
     return path_unsplit(FALSE, args, rho);
 }
 

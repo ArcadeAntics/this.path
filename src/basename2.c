@@ -11,7 +11,7 @@ Copyright (C) 2022-2025   Iris Simmons
 
 
 static R_INLINE
-SEXP basename2(int windows, SEXP args)
+SEXP _do_basename2(int windows, SEXP args)
 {
     int nprotect = 0;
 
@@ -124,17 +124,17 @@ SEXP basename2(int windows, SEXP args)
 }
 
 
-SEXP do_windows_basename2 do_formals
+SEXP do_basename2_windows do_formals
 {
-    do_start_no_call_op_rho("windows_basename2", 1);
-    return basename2(TRUE, args);
+    do_start_no_call_op_rho("basename2_windows", 1);
+    return _do_basename2(TRUE, args);
 }
 
 
-SEXP do_unix_basename2 do_formals
+SEXP do_basename2_unix do_formals
 {
-    do_start_no_call_op_rho("unix_basename2", 1);
-    return basename2(FALSE, args);
+    do_start_no_call_op_rho("basename2_unix", 1);
+    return _do_basename2(FALSE, args);
 }
 
 
@@ -142,19 +142,19 @@ SEXP do_basename2 do_formals
 {
     do_start_no_call_op_rho("basename2", 1);
 #if defined(_WIN32)
-    return basename2(TRUE, args);
+    return _do_basename2(TRUE, args);
 #else
-    return basename2(FALSE, args);
+    return _do_basename2(FALSE, args);
 #endif
 }
 
 
 /* it's not documented in the R function dirname2() or in man/dirname2.Rd
-   but dirname2() actually accepts 1 or 2 arguments
+   but _do_dirname2() actually accepts 1 or 2 arguments
 
    the first argument is always the 'path' argument
    the second argument (optional) is the number of additional times to
-   calculate dirname2(). for example:
+   calculate dirname(). for example:
 
    .External2(.C_dirname2, path, 2)
 
@@ -167,7 +167,7 @@ SEXP do_basename2 do_formals
 
 
 static R_INLINE
-SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
+SEXP _do_dirname2(SEXP call, int windows, const char *name, SEXP args)
 {
     int nprotect = 0;
 
@@ -374,17 +374,17 @@ SEXP dirname2(SEXP call, int windows, const char *name, SEXP args)
 }
 
 
-SEXP do_windows_dirname2 do_formals
+SEXP do_dirname2_windows do_formals
 {
-    do_start_no_op_rho("windows_dirname2", -1);
-    return dirname2(call, TRUE, ".C_windows_dirname2", args);
+    do_start_no_op_rho("dirname2_windows", -1);
+    return _do_dirname2(call, TRUE, ".C_dirname2_windows", args);
 }
 
 
-SEXP do_unix_dirname2 do_formals
+SEXP do_dirname2_unix do_formals
 {
-    do_start_no_op_rho("unix_dirname2", -1);
-    return dirname2(call, FALSE, ".C_unix_dirname2", args);
+    do_start_no_op_rho("dirname2_unix", -1);
+    return _do_dirname2(call, FALSE, ".C_dirname2_unix", args);
 }
 
 
@@ -392,8 +392,8 @@ SEXP do_dirname2 do_formals
 {
     do_start_no_op_rho("dirname2", -1);
 #if defined(_WIN32)
-    return dirname2(call, TRUE, ".C_dirname2", args);
+    return _do_dirname2(call, TRUE, ".C_dirname2", args);
 #else
-    return dirname2(call, FALSE, ".C_dirname2", args);
+    return _do_dirname2(call, FALSE, ".C_dirname2", args);
 #endif
 }

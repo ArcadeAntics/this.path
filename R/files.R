@@ -4,72 +4,72 @@
 ##
 
 
-.windows_basename2 <- function (path)
-.External2(.C_windows_basename2, path)
+.basename2_windows <- function (path)
+.External2(.C_basename2_windows, path)
 
 
-.unix_basename2 <- function (path)
-.External2(.C_unix_basename2, path)
+.basename2_unix <- function (path)
+.External2(.C_basename2_unix, path)
 
 
 basename2 <- function (path, expand = TRUE)
 .External2(.C_basename2, if (expand) path.expand(path) else path)
 
 
-.windows_dirname2 <- function (path)
-.External2(.C_windows_dirname2, path)
+.dirname2_windows <- function (path)
+.External2(.C_dirname2_windows, path)
 
 
-.unix_dirname2 <- function (path)
-.External2(.C_unix_dirname2, path)
+.dirname2_unix <- function (path)
+.External2(.C_dirname2_unix, path)
 
 
 dirname2 <- function (path, expand = TRUE)
 .External2(.C_dirname2, if (expand) path.expand(path) else path)
 
 
-.windows_splitext <- function (path, compression = FALSE)
-.External2(.C_windows_splitext, path, compression)
+.splitext_windows <- function (path, compression = FALSE)
+.External2(.C_splitext_windows, path, compression)
 
 
-.unix_splitext <- function (path, compression = FALSE)
-.External2(.C_unix_splitext, path, compression)
+.splitext_unix <- function (path, compression = FALSE)
+.External2(.C_splitext_unix, path, compression)
 
 
 splitext <- function (path, compression = FALSE, expand = TRUE)
 .External2(.C_splitext, if (expand) path.expand(path) else path, compression)
 
 
-.windows_removeext <- function (path, compression = FALSE)
-.External2(.C_windows_removeext, path, compression)
+.removeext_windows <- function (path, compression = FALSE)
+.External2(.C_removeext_windows, path, compression)
 
 
-.unix_removeext <- function (path, compression = FALSE)
-.External2(.C_unix_removeext, path, compression)
+.removeext_unix <- function (path, compression = FALSE)
+.External2(.C_removeext_unix, path, compression)
 
 
 removeext <- function (path, compression = FALSE, expand = TRUE)
 .External2(.C_removeext, if (expand) path.expand(path) else path, compression)
 
 
-.windows_ext <- function (path, compression = FALSE)
-.External2(.C_windows_ext, path, compression)
+.ext_windows <- function (path, compression = FALSE)
+.External2(.C_ext_windows, path, compression)
 
 
-.unix_ext <- function (path, compression = FALSE)
-.External2(.C_unix_ext, path, compression)
+.ext_unix <- function (path, compression = FALSE)
+.External2(.C_ext_unix, path, compression)
 
 
 ext <- function (path, compression = FALSE, expand = TRUE)
 .External2(.C_ext, if (expand) path.expand(path) else path, compression)
 
 
-`.windows_ext<-` <- function (path, compression = FALSE, value)
-.External2(`.C_windows_ext<-`, path, compression, value)
+`.ext_windows<-` <- function (path, compression = FALSE, value)
+.External2(`.C_ext_windows<-`, path, compression, value)
 
 
-`.unix_ext<-` <- function (path, compression = FALSE, value)
-.External2(`.C_unix_ext<-`, path, compression, value)
+`.ext_unix<-` <- function (path, compression = FALSE, value)
+.External2(`.C_ext_unix<-`, path, compression, value)
 
 
 `ext<-` <- function (path, compression = FALSE, expand = TRUE, value)
@@ -80,48 +80,48 @@ ext <- function (path, compression = FALSE, expand = TRUE)
 }
 
 
-.windows_path_join <- function (...)
-.External2(.C_windows_path_join)
+.path_join_windows <- function (...)
+.External2(.C_path_join_windows)
 
 
-.unix_path_join <- function (...)
-.External2(.C_unix_path_join)
+.path_join_unix <- function (...)
+.External2(.C_path_join_unix)
 
 
 path.join <- function (...)
 .External2(.C_path_join)
 
 
-.windows_path_split <- function (path)
-.External2(.C_windows_path_split, path)
+.path_split_windows <- function (path)
+.External2(.C_path_split_windows, path)
 
 
-.unix_path_split <- function (path)
-.External2(.C_unix_path_split, path)
+.path_split_unix <- function (path)
+.External2(.C_path_split_unix, path)
 
 
 path.split <- function (path)
 .External2(.C_path_split, path)
 
 
-.windows_path_split_1 <- function (path)
-.External2(.C_windows_path_split_1, path)
+.path_split_1_windows <- function (path)
+.External2(.C_path_split_1_windows, path)
 
 
-.unix_path_split_1 <- function (path)
-.External2(.C_unix_path_split_1, path)
+.path_split_1_unix <- function (path)
+.External2(.C_path_split_1_unix, path)
 
 
 path.split.1 <- function (path)
 .External2(.C_path_split_1, path)
 
 
-.windows_path_unsplit <- function (...)
-.External2(.C_windows_path_unsplit)
+.path_unsplit_windows <- function (...)
+.External2(.C_path_unsplit_windows)
 
 
-.unix_path_unsplit <- function (...)
-.External2(.C_unix_path_unsplit)
+.path_unsplit_unix <- function (...)
+.External2(.C_path_unsplit_unix)
 
 
 path.unsplit <- function (...)

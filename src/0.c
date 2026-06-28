@@ -59,12 +59,12 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* basename2.c */
 
 
-{"windows_basename2", (DL_FUNC) &do_windows_basename2, 1},
-{"unix_basename2"   , (DL_FUNC) &do_unix_basename2   , 1},
+{"basename2_windows", (DL_FUNC) &do_basename2_windows, 1},
+{"basename2_unix"   , (DL_FUNC) &do_basename2_unix   , 1},
 {"basename2"        , (DL_FUNC) &do_basename2        , 1},
 
-{"windows_dirname2", (DL_FUNC) &do_windows_dirname2, -1},
-{"unix_dirname2"   , (DL_FUNC) &do_unix_dirname2   , -1},
+{"dirname2_windows", (DL_FUNC) &do_dirname2_windows, -1},
+{"dirname2_unix"   , (DL_FUNC) &do_dirname2_unix   , -1},
 {"dirname2"        , (DL_FUNC) &do_dirname2        , -1},
 
 
@@ -95,20 +95,20 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* ext.c */
 
 
-{"windows_splitext", (DL_FUNC) &do_windows_splitext, 2},
-{"unix_splitext"   , (DL_FUNC) &do_unix_splitext   , 2},
+{"splitext_windows", (DL_FUNC) &do_splitext_windows, 2},
+{"splitext_unix"   , (DL_FUNC) &do_splitext_unix   , 2},
 {"splitext"        , (DL_FUNC) &do_splitext        , 2},
 
-{"windows_removeext", (DL_FUNC) &do_windows_removeext, 2},
-{"unix_removeext"   , (DL_FUNC) &do_unix_removeext   , 2},
+{"removeext_windows", (DL_FUNC) &do_removeext_windows, 2},
+{"removeext_unix"   , (DL_FUNC) &do_removeext_unix   , 2},
 {"removeext"        , (DL_FUNC) &do_removeext        , 2},
 
-{"windows_ext", (DL_FUNC) &do_windows_ext, 2},
-{"unix_ext"   , (DL_FUNC) &do_unix_ext   , 2},
+{"ext_windows", (DL_FUNC) &do_ext_windows, 2},
+{"ext_unix"   , (DL_FUNC) &do_ext_unix   , 2},
 {"ext"        , (DL_FUNC) &do_ext        , 2},
 
-{"windows_ext<-", (DL_FUNC) &do_windows_extgets, 3},
-{"unix_ext<-"   , (DL_FUNC) &do_unix_extgets   , 3},
+{"ext_windows<-", (DL_FUNC) &do_extgets_windows, 3},
+{"ext_unix<-"   , (DL_FUNC) &do_extgets_unix   , 3},
 {"ext<-"        , (DL_FUNC) &do_extgets        , 3},
 
 
@@ -118,8 +118,8 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"is_clipboard_windows", (DL_FUNC) &do_is_clipboard_windows, 1},
 {"is_clipboard_unix"   , (DL_FUNC) &do_is_clipboard_unix   , 1},
 {"is_clipboard"        , (DL_FUNC) &do_is_clipboard        , 1},
-{"windows_is_abs_path" , (DL_FUNC) &do_windows_is_abs_path , 1},
-{"unix_is_abs_path"    , (DL_FUNC) &do_unix_is_abs_path    , 1},
+{"is_abs_path_windows" , (DL_FUNC) &do_is_abs_path_windows , 1},
+{"is_abs_path_unix"    , (DL_FUNC) &do_is_abs_path_unix    , 1},
 {"is_abs_path"         , (DL_FUNC) &do_is_abs_path         , 1},
 {"fixslash"            , (DL_FUNC) &do_fixslash            , 1},
 {"fixbackslash"        , (DL_FUNC) &do_fixbackslash        , 1},
@@ -151,24 +151,24 @@ static const R_ExternalMethodDef externalRoutines[] = {
 /* pathjoin.c */
 
 
-{"windows_path_join", (DL_FUNC) &do_windows_path_join, 0},
-{"unix_path_join"   , (DL_FUNC) &do_unix_path_join   , 0},
+{"path_join_windows", (DL_FUNC) &do_path_join_windows, 0},
+{"path_join_unix"   , (DL_FUNC) &do_path_join_unix   , 0},
 {"path_join"        , (DL_FUNC) &do_path_join        , 0},
 
 
 /* pathsplit.c */
 
 
-{"windows_path_split", (DL_FUNC) &do_windows_path_split, 1},
-{"unix_path_split"   , (DL_FUNC) &do_unix_path_split   , 1},
+{"path_split_windows", (DL_FUNC) &do_path_split_windows, 1},
+{"path_split_unix"   , (DL_FUNC) &do_path_split_unix   , 1},
 {"path_split"        , (DL_FUNC) &do_path_split        , 1},
 
-{"windows_path_split_1", (DL_FUNC) &do_windows_path_split_1, 1},
-{"unix_path_split_1"   , (DL_FUNC) &do_unix_path_split_1   , 1},
+{"path_split_1_windows", (DL_FUNC) &do_path_split_1_windows, 1},
+{"path_split_1_unix"   , (DL_FUNC) &do_path_split_1_unix   , 1},
 {"path_split_1"        , (DL_FUNC) &do_path_split_1        , 1},
 
-{"windows_path_unsplit", (DL_FUNC) &do_windows_path_unsplit, 0},
-{"unix_path_unsplit"   , (DL_FUNC) &do_unix_path_unsplit   , 0},
+{"path_unsplit_windows", (DL_FUNC) &do_path_unsplit_windows, 0},
+{"path_unsplit_unix"   , (DL_FUNC) &do_path_unsplit_unix   , 0},
 {"path_unsplit"        , (DL_FUNC) &do_path_unsplit        , 0},
 
 

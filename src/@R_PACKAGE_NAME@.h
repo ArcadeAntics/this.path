@@ -107,12 +107,12 @@ extern SEXP do_dotselt do_formals;
 /* basename2.c */
 
 
-extern SEXP do_windows_basename2 do_formals;
-extern SEXP do_unix_basename2    do_formals;
+extern SEXP do_basename2_windows do_formals;
+extern SEXP do_basename2_unix    do_formals;
 extern SEXP do_basename2         do_formals;
 
-extern SEXP do_windows_dirname2 do_formals;
-extern SEXP do_unix_dirname2    do_formals;
+extern SEXP do_dirname2_windows do_formals;
+extern SEXP do_dirname2_unix    do_formals;
 extern SEXP do_dirname2         do_formals;
 
 
@@ -143,20 +143,20 @@ extern SEXP do_tryCatch3      do_formals;
 /* ext.c */
 
 
-extern SEXP do_windows_splitext do_formals;
-extern SEXP do_unix_splitext    do_formals;
+extern SEXP do_splitext_windows do_formals;
+extern SEXP do_splitext_unix    do_formals;
 extern SEXP do_splitext         do_formals;
 
-extern SEXP do_windows_removeext do_formals;
-extern SEXP do_unix_removeext    do_formals;
+extern SEXP do_removeext_windows do_formals;
+extern SEXP do_removeext_unix    do_formals;
 extern SEXP do_removeext         do_formals;
 
-extern SEXP do_windows_ext do_formals;
-extern SEXP do_unix_ext    do_formals;
+extern SEXP do_ext_windows do_formals;
+extern SEXP do_ext_unix    do_formals;
 extern SEXP do_ext         do_formals;
 
-extern SEXP do_windows_extgets do_formals;
-extern SEXP do_unix_extgets    do_formals;
+extern SEXP do_extgets_windows do_formals;
+extern SEXP do_extgets_unix    do_formals;
 extern SEXP do_extgets         do_formals;
 
 
@@ -166,8 +166,8 @@ extern SEXP do_extgets         do_formals;
 extern SEXP do_is_clipboard_windows do_formals;
 extern SEXP do_is_clipboard_unix    do_formals;
 extern SEXP do_is_clipboard         do_formals;
-extern SEXP do_windows_is_abs_path  do_formals;
-extern SEXP do_unix_is_abs_path     do_formals;
+extern SEXP do_is_abs_path_windows  do_formals;
+extern SEXP do_is_abs_path_unix     do_formals;
 extern SEXP do_is_abs_path          do_formals;
 extern SEXP do_fixslash             do_formals;
 extern SEXP do_fixbackslash         do_formals;
@@ -199,24 +199,24 @@ extern SEXP do_onUnload       do_formals;
 /* pathjoin.c */
 
 
-extern SEXP do_windows_path_join do_formals;
-extern SEXP do_unix_path_join    do_formals;
+extern SEXP do_path_join_windows do_formals;
+extern SEXP do_path_join_unix    do_formals;
 extern SEXP do_path_join        do_formals;
 
 
 /* pathsplit.c */
 
 
-extern SEXP do_windows_path_split do_formals;
-extern SEXP do_unix_path_split    do_formals;
+extern SEXP do_path_split_windows do_formals;
+extern SEXP do_path_split_unix    do_formals;
 extern SEXP do_path_split         do_formals;
 
-extern SEXP do_windows_path_split_1 do_formals;
-extern SEXP do_unix_path_split_1    do_formals;
+extern SEXP do_path_split_1_windows do_formals;
+extern SEXP do_path_split_1_unix    do_formals;
 extern SEXP do_path_split_1         do_formals;
 
-extern SEXP do_windows_path_unsplit do_formals;
-extern SEXP do_unix_path_unsplit    do_formals;
+extern SEXP do_path_unsplit_windows do_formals;
+extern SEXP do_path_unsplit_unix    do_formals;
 extern SEXP do_path_unsplit         do_formals;
 
 

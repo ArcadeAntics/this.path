@@ -13,8 +13,8 @@ check <- function (path, dirname, basename)
 }
 
 
-dirname2  <- @R_PACKAGE_NAME@:::.windows_dirname2
-basename2 <- @R_PACKAGE_NAME@:::.windows_basename2
+dirname2  <- @R_PACKAGE_NAME@:::.dirname2_windows
+basename2 <- @R_PACKAGE_NAME@:::.basename2_windows
 
 
 check("", "", "")
@@ -64,8 +64,8 @@ check(
 )
 
 
-dirname2  <- @R_PACKAGE_NAME@:::.unix_dirname2
-basename2 <- @R_PACKAGE_NAME@:::.unix_basename2
+dirname2  <- @R_PACKAGE_NAME@:::.dirname2_unix
+basename2 <- @R_PACKAGE_NAME@:::.basename2_unix
 
 
 check("", "", "")

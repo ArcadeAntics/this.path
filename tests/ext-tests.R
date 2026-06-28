@@ -14,9 +14,9 @@ check <- function (path, root, ext, compression = FALSE)
 }
 
 
-splitext  <- @R_PACKAGE_NAME@:::.windows_splitext
-removeext <- @R_PACKAGE_NAME@:::.windows_removeext
-ext       <- @R_PACKAGE_NAME@:::.windows_ext
+splitext  <- @R_PACKAGE_NAME@:::.splitext_windows
+removeext <- @R_PACKAGE_NAME@:::.removeext_windows
+ext       <- @R_PACKAGE_NAME@:::.ext_windows
 
 
 check(character(), character(), character())
@@ -67,9 +67,9 @@ check(letters, letters, character(26))
 
 
 
-splitext  <- @R_PACKAGE_NAME@:::.unix_splitext
-removeext <- @R_PACKAGE_NAME@:::.unix_removeext
-ext       <- @R_PACKAGE_NAME@:::.unix_ext
+splitext  <- @R_PACKAGE_NAME@:::.splitext_unix
+removeext <- @R_PACKAGE_NAME@:::.removeext_unix
+ext       <- @R_PACKAGE_NAME@:::.ext_unix
 
 
 check(character(), character(), character())
@@ -110,8 +110,8 @@ check(letters, letters, character(26))
 ## windows replacement tests ----
 
 
-ext     <- @R_PACKAGE_NAME@:::.windows_ext
-`ext<-` <- @R_PACKAGE_NAME@:::`.windows_ext<-`
+ext     <- @R_PACKAGE_NAME@:::.ext_windows
+`ext<-` <- @R_PACKAGE_NAME@:::`.ext_windows<-`
 
 
 x   <- c(NA, "", ""    , "C:"  , "//host/share", "C:/" , "/path/to/fi", "/path/to/.", "/path/to/..", "/"   )
@@ -142,8 +142,8 @@ stopifnot(identical(x, "a.5"))
 ## unix replacement tests ----
 
 
-ext     <- @R_PACKAGE_NAME@:::.unix_ext
-`ext<-` <- @R_PACKAGE_NAME@:::`.unix_ext<-`
+ext     <- @R_PACKAGE_NAME@:::.ext_unix
+`ext<-` <- @R_PACKAGE_NAME@:::`.ext_unix<-`
 
 
 x <- "C:.jpg"
