@@ -314,7 +314,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
     SEXP x;
     R_xlen_t n;
     if (dots_length == 1) {
-        SEXP x = CAR(dots);
+        x = CAR(dots);
         if (x == R_MissingArg) {
             char buf[15];
             snprintf(buf, 15, "..%d", 1);
