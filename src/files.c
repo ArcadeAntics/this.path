@@ -70,34 +70,23 @@ normalizePath("/path/to/file")
      */
 
 
-    int nchar = (int) strlen(s);
-
-
-    if (nchar <= 0) return 0;
+    if (*s == '\0') return 0;
 
 
     /* s starts with d: or similar */
-    if (nchar > 1 && *s <= 0x7f && *(s + 1) == ':') return 2;
+    if (*s <= 0x7f && *(s + 1) == ':') return 2;
 
 
     if (consider_tilde &&
         *s == '~' &&             /* s starts with ~ */
         (
-            nchar == 1       ||  /* s is exactly ~   */
+            *(s + 1) == '\0' ||  /* s is exactly ~   */
             *(s + 1) == '/'  ||  /* s starts with ~/ */
             *(s + 1) == '\\'     /* s starts with ~\ */
         ))
     {
         return 1;
     }
-
-
-    /* 5 characters is the minimum required for a network share
-     * the two slashes at the start, at least one for the host name,
-     * a slash between the host name and share name,
-     * and at least one for the share name
-     */
-    if (nchar < 5) return 0;
 
 
     const char *p = s;
@@ -113,60 +102,55 @@ normalizePath("/path/to/file")
     if (*p == '/' || *p == '\\') return 0;
 
 
-    /* look for path separators */
-    const char *slash     = strchr(p, '/'),
-               *backslash = strchr(p, '\\');
-    if (slash) {  /* slash was found */
-        if (backslash) {  /* backslash was also found */
-            if (slash < backslash)  /* slash found before backslash */
-                p = slash;
-            else p = backslash;  /* backslash found before slash */
-        }
-        else p = slash;  /* backslash was not found */
-    }
-    else {  /* slash was not found */
-        if (backslash)  /* backslash was found */
-            p = backslash;
-        else return 0;
-    }
-    p++;
+    int is_host_question_mark = 0;
+    int is_share_UNC = 0;
+    const char *tmp;
 
 
-    /* look for a non-slash and non-backslash character
-     * this is the start of the share name of the network path
-     */
-    int found_share_name = 0;
+    tmp = p;
+    /* look for a path separator */
+    for (; *p; p++) if (*p == '/' || *p == '\\') break;
+    if (*p); else return 0; /* did not find a path separator */
+    if (p - tmp == 1 && *tmp == '?') is_host_question_mark = 1;
 
 
-    /* the condition *p can be also written as *p != '\0',
-     * which is to say that p does NOT point to the end of the string
-     * using *p is simply shorter
-     */
-    for (; *p; p++) {
-        if (*p != '/' && *p != '\\') {
-            found_share_name = 1;
-            break;
-        }
-    }
-    if (!found_share_name) return 0;
+    /* look for non-(path separator) (the share name of the network path) */
+    for (; *p; p++) if (*p != '/' && *p != '\\') break;
+    if (*p); else return 0;
 
 
-    /* again, look for a slash or backslash */
-    slash     = strchr(p, '/');
-    backslash = strchr(p, '\\');
-    if (slash) {  /* slash was found */
-        if (backslash) {  /* backslash was also found */
-            if (slash < backslash)  /* slash found before backslash */
-                return slash - s;
-            else return backslash - s;  /* backslash found before slash */
-        }
-        else return slash - s;  /* backslash was not found */
-    }
-    else {  /* slash was not found */
-        if (backslash)  /* backslash was found */
-            return backslash - s;
-        else return nchar;
-    }
+    tmp = p;
+    /* look for a path separator */
+    for (; *p; p++) if (*p == '/' || *p == '\\') break;
+    if (
+        is_host_question_mark &&
+        p - tmp == 3 &&
+        (*tmp       == 'U' || *tmp       == 'u') &&
+        (*(tmp + 1) == 'N' || *(tmp + 1) == 'n') &&
+        (*(tmp + 2) == 'C' || *(tmp + 2) == 'c')
+    ) is_share_UNC = 1;
+    /* if the path is not of the form "//?/UNC", return */
+    if (!is_share_UNC) return p - s;
+
+
+    /* look for non-(path separator) (the host name of the network path) */
+    for (; *p; p++) if (*p != '/' && *p != '\\') break;
+    if (*p); else return 0;
+
+
+    /* look for a path separator */
+    for (; *p; p++) if (*p == '/' || *p == '\\') break;
+    if (*p); else return 0; /* did not find a path separator */
+
+
+    /* look for non-(path separator) (the share name of the network path) */
+    for (; *p; p++) if (*p != '/' && *p != '\\') break;
+    if (*p); else return 0;
+
+
+    /* look for a path separator */
+    for (; *p; p++) if (*p == '/' || *p == '\\') break;
+    return p - s;
 }
 
 
@@ -189,17 +173,6 @@ int drive_width_unix(const char *s)
      * network share */
 
 
-    int nchar = (int) strlen(s);
-
-
-    /* 5 characters is the minimum required for a network share
-     * the two slashes at the start, at least one for the host name,
-     * a slash between the host name and share name,
-     * and at least one for the share name
-     */
-    if (nchar < 5) return 0;
-
-
     const char *p = s;
     if (*p != '/') return 0;  /* first character must be / */
     p++;
@@ -219,105 +192,34 @@ int drive_width_unix(const char *s)
     p++;
 
 
-    /* look for a non-slash character
-     * this is the start of the share name of the network share
-     */
-    int found_share_name = 0;
+    /* look for non-(path separator) (the share name of the network path) */
+    for (; *p; p++) if (*p != '/') break;
+    if (*p); else return 0;
 
 
-    for (; *p; p++) {
-        if (*p != '/') {
-            found_share_name = 1;
-            break;
-        }
-    }
-    if (!found_share_name) return 0;
-
-
-    /* again, look for a slash */
     p = strchr(p, '/');
-    if (p)  /* slash was found */
-        return p - s;
-    else return nchar;
+    if (p) return p - s; else return strlen(s);
 }
 
 
 int is_abs_path_windows(const char *s)
 {
-    int nchar = (int) strlen(s);
-    if (nchar <= 0) return 0;
+    int drivewidth = _drive_width_windows(s, /* consider_tilde */ 1);
 
 
-    /* s starts with d:/ or similar */
-    if (nchar > 2 && *s <= 0x7f && *(s + 1) == ':' &&
-        (*(s + 2) == '/' || *(s + 2) == '\\'))
-    {
-        return 1;
-    }
+    if (drivewidth <= 0) return 0;
 
 
-    if (*s == '~' &&             /* s starts with ~ */
-        (
-            nchar == 1       ||  /* s is exactly ~   */
-            *(s + 1) == '/'  ||  /* s starts with ~/ */
-            *(s + 1) == '\\'     /* s starts with ~\ */
-        ))
-    {
-        return 1;
-    }
-
-
-    /* 5 characters is the minimum required for a network share
-     * the two slashes at the start, at least one for the host name,
-     * a slash between the host name and share name,
-     * and at least one for the share name
-     */
-    if (nchar < 5) return 0;
-
-
-    const char *p = s;
-    if (*p != '/' && *p != '\\') return 0;  /* first character must be / or \ */
-    p++;
-    if (*p != '/' && *p != '\\') return 0;  /* second character must be / or \ */
-    p++;
-
-
-    /* third character must NOT be slash nor backslash
-     * this is the start of the host name of the network share
-     */
-    if (*p == '/' || *p == '\\') return 0;
-
-
-    /* look for path separators */
-    const char *slash     = strchr(p, '/'),
-               *backslash = strchr(p, '\\');
-    if (slash) {  /* slash was found */
-        if (backslash) {  /* backslash was also found */
-            if (slash < backslash)  /* slash found before backslash */
-                p = slash;
-            else p = backslash;  /* backslash found before slash */
-        }
-        else p = slash;  /* backslash was not found */
-    }
-    else {  /* slash was not found */
-        if (backslash)  /* backslash was found */
-            p = backslash;
+    /* s starts with d: or similar */
+    if (drivewidth == 2) {
+        /* s starts with d:/ or similar */
+        if (*(s + 2) == '/' || *(s + 2) == '\\')
+            return 1;
         else return 0;
     }
-    p++;
 
 
-    /* the condition *p can be also written as *p != '\0',
-     * which is to say that p does NOT point to the end of the string
-     * using *p is simply shorter
-     */
-    for (; *p; p++) {
-        if (*p != '/' && *p != '\\') {
-            /* this means we found a share name, so the path is absolute */
-            return 1;
-        }
-    }
-    return 0;
+    return 1;
 }
 
 
