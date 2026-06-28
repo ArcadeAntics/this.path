@@ -858,11 +858,8 @@ SEXP R_NewEnv(SEXP enclos, int hash, int size)
 
 int IS_ASCII(SEXP x)
 {
-    for (const char *s = R_CHAR(x); *s; s++) {
-        if (*s > 0x7f) {
-            return FALSE;
-        }
-    }
+    const char *s = R_CHAR(x);
+    while (*s) if (*s++ > 0x7f) return FALSE;
     return TRUE;
 }
 
