@@ -37,30 +37,28 @@ SEXP path_split(int windows, int length1, SEXP args)
         }
         const char *str = R_CHAR(cs);
         cetype_t enc = Rf_getCharCE(cs);
-        int nchar = (int) strlen(str);
         int nchar_scheme = is_url(str);
         if (nchar_scheme) {
             const char *p = strchr(str + nchar_scheme, '/');
             if (p == NULL) {
-                SET_VECTOR_ELT(value, i, Rf_ScalarString(Rf_mkCharLenCE(str, nchar, enc)));
+                SET_VECTOR_ELT(value, i, Rf_ScalarString(cs));
             } else {
                 int nchar_prefix = p - str;
-                const char *end = str + nchar;
                 int nstrings = 1;
-                while (p && p < end) {
+                do {
                     while (*p == '/') p++;
-                    if (p >= end) break;
+                    if (*p == '\0') break;
                     nstrings++;
                     p = strchr(p, '/');
-                }
+                } while (p);
                 SEXP value0 = Rf_allocVector(STRSXP, nstrings);
                 SET_VECTOR_ELT(value, i, value0);
                 /* the prefix should INCLUDE the slash immediately afterward */
                 SET_STRING_ELT(value0, 0, Rf_mkCharLenCE(str, nchar_prefix + 1, enc));
-                p = str + nchar_prefix;
+                p = str + nchar_prefix + 1;
                 for (int j = 1; j < nstrings; j++) {
                     while (*p == '/') p++;
-                    if (p >= end) break;
+                    if (*p == '\0') break;
                     const char *slash = strchr(p, '/');
                     if (slash == NULL) {
                         SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
@@ -74,30 +72,15 @@ SEXP path_split(int windows, int length1, SEXP args)
         else {
             int drivewidth = _drive_width(windows, str);
             const char *p = str + drivewidth;
-            const char *end = str + nchar;
             int nstrings = 0;
             if (windows) {
-                while (p && p < end) {
-                    while (*p == '/' || *p == '\\') p++;
-                    if (p >= end) break;
-                    nstrings++;
-                    const char *slash = strchr(p, '/');
-                    const char *bslash = strchr(p, '\\');
-                    if (slash) {
-                        if (bslash) {
-                            p = (slash < bslash) ? slash : bslash;
-                        } else {
-                            p = slash;
-                        }
-                    } else {
-                        if (bslash) {
-                            p = bslash;
-                        } else {
-                            p = NULL;
-                        }
-                    }
-                }
                 if (drivewidth || *str == '/' || *str == '\\') nstrings++;
+                while (*p) {
+                    while (*p == '/' || *p == '\\') p++;
+                    if (*p == '\0') break;
+                    nstrings++;
+                    while (*p && *p != '/' && *p != '\\') p++;
+                }
                 SEXP value0 = Rf_allocVector(STRSXP, nstrings);
                 SET_VECTOR_ELT(value, i, value0);
                 int j = 0;
@@ -105,7 +88,7 @@ SEXP path_split(int windows, int length1, SEXP args)
                     p = str + drivewidth;
                     if (*p == '/' || *p == '\\') {
                         char buf[3];
-                        strncpy(buf, str, 2);
+                        memcpy(buf, str, 2);
                         buf[2] = '/';
                         SET_STRING_ELT(value0, j++, Rf_mkCharLenCE(buf, 3, enc));
                     } else {
@@ -118,35 +101,19 @@ SEXP path_split(int windows, int length1, SEXP args)
                 else if (drivewidth) {
                     char _buf[drivewidth + 2];
                     char *buf = _buf;
-                    *(buf++) = '/';
-                    *(buf++) = '/';
+                    *buf++ = '\\';
+                    *buf++ = '\\';
                     p = str + 2;
-                    const char *slash = strchr(p, '/');
-                    const char *bslash = strchr(p, '\\');
-                    if (slash) {
-                        if (bslash) {
-                            if (slash >= bslash) slash = bslash;
+                    const char *end = str + drivewidth;
+                    while (p < end) {
+                        if (*p == '/' || *p == '\\') {
+                            *buf++ = '/'; p++;
+                            while (p < end && (*p == '/' || *p == '\\')) p++;
                         }
-                    } else {
-                        if (bslash) {
-                            slash = bslash;
-                        } else {
-                            Rf_error("something went wrong");
-                        }
+                        else *buf++ = *p++;
                     }
-                    int nchar = slash - p;
-                    strncpy(buf, p, nchar);
-                    buf += nchar;
-                    *(buf++) = '/';
-                    p = slash + 1;
-                    while (*p == '/' || *p == '\\') p++;
-                    nchar = str + drivewidth - p;
-                    strncpy(buf, p, nchar);
-                    buf += nchar;
-                    p += nchar;
-                    if (*p == '/' || *p == '\\') {
-                        *(buf++) = '/';
-                    }
+                    if (*end == '/' || *end == '\\')
+                        *buf++ = '/';
                     *buf = '\0';
                     SET_STRING_ELT(value0, j++, Rf_mkCharCE(_buf, enc));
                 }
@@ -156,58 +123,44 @@ SEXP path_split(int windows, int length1, SEXP args)
                 p = str + drivewidth;
                 for (; j < nstrings; j++) {
                     while (*p == '/' || *p == '\\') p++;
-                    if (p >= end) break;
-                    const char *slash = strchr(p, '/');
-                    const char *bslash = strchr(p, '\\');
-                    if (slash) {
-                        if (bslash) {
-                            if (slash >= bslash) slash = bslash;
-                        }
-                    } else {
-                        if (bslash) {
-                            slash = bslash;
-                        } else {
-                            SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
-                            break;
-                        }
+                    if (*p == '\0') break;
+                    const char *slash = p;
+                    while (*slash && *slash != '/' && *slash != '\\') slash++;
+                    if (*slash == '\0') {
+                        SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
+                        break;
                     }
                     SET_STRING_ELT(value0, j, Rf_mkCharLenCE(p, slash - p, enc));
                     p = slash;
                 }
             }
             else {
-                while (p && p < end) {
+                if (drivewidth || *str == '/') nstrings++;
+                while (p) {
                     while (*p == '/') p++;
-                    if (p >= end) break;
+                    if (*p == '\0') break;
                     nstrings++;
                     p = strchr(p, '/');
                 }
-                if (drivewidth || *str == '/') nstrings++;
                 SEXP value0 = Rf_allocVector(STRSXP, nstrings);
                 SET_VECTOR_ELT(value, i, value0);
                 int j = 0;
                 if (drivewidth) {
                     char _buf[drivewidth + 2];
                     char *buf = _buf;
-                    *(buf++) = '/';
-                    *(buf++) = '/';
+                    *buf++ = '/';
+                    *buf++ = '/';
                     p = str + 2;
-                    const char *slash = strchr(p, '/');
-                    if (slash);
-                    else Rf_error("something went wrong");
-                    int nchar = slash - p;
-                    strncpy(buf, p, nchar);
-                    buf += nchar;
-                    *(buf++) = '/';
-                    p = slash + 1;
-                    while (*p == '/') p++;
-                    nchar = str + drivewidth - p;
-                    strncpy(buf, p, nchar);
-                    buf += nchar;
-                    p += nchar;
-                    if (*p == '/') {
-                        *(buf++) = '/';
+                    const char *end = str + drivewidth;
+                    while (p < end) {
+                        if (*p == '/') {
+                            *buf++ = *p++;
+                            while (p < end && *p == '/') p++;
+                        }
+                        else *buf++ = *p++;
                     }
+                    if (*end == '/')
+                        *buf++ = '/';
                     *buf = '\0';
                     SET_STRING_ELT(value0, j++, Rf_mkCharCE(_buf, enc));
                 }
@@ -217,10 +170,9 @@ SEXP path_split(int windows, int length1, SEXP args)
                 p = str + drivewidth;
                 for (; j < nstrings; j++) {
                     while (*p == '/') p++;
-                    if (p >= end) break;
+                    if (*p == '\0') break;
                     const char *slash = strchr(p, '/');
-                    if (slash);
-                    else {
+                    if (!slash) {
                         SET_STRING_ELT(value0, j, Rf_mkCharCE(p, enc));
                         break;
                     }
@@ -470,8 +422,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
             else {
                 memcpy(buf, str, nchar);
                 buf += nchar;
-                *buf = '/';
-                buf++;
+                *buf++ = '/';
             }
         } else {
             if (*(str + nchar - 1) == '/') {
@@ -481,8 +432,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
             else {
                 memcpy(buf, str, nchar);
                 buf += nchar;
-                *buf = '/';
-                buf++;
+                *buf++ = '/';
             }
         }
 
@@ -502,10 +452,7 @@ SEXP path_unsplit(int windows, SEXP args, SEXP rho)
 
             memcpy(buf, str, nchar);
             buf += nchar;
-            if (j < nstrings - 1) {
-                *buf = '/';
-                buf++;
-            }
+            if (j < nstrings - 1) *buf++ = '/';
         }
 
 
