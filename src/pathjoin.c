@@ -783,6 +783,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
 
     if (dots_length <= 0) {
+        set_R_Visible(TRUE);
         Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);
     }
@@ -860,6 +861,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
 
 
     if (x_length <= 0 || commonLength <= 0) {
+        set_R_Visible(TRUE);
         Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);
     }
@@ -876,6 +878,7 @@ SEXP path_join(SEXP call, int windows, const char *name, SEXP args, SEXP rho)
     }
 
 
+    set_R_Visible(TRUE);
     Rf_unprotect(nprotect);
     return value;
 }

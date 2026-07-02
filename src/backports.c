@@ -858,7 +858,7 @@ SEXP R_NewEnv(SEXP enclos, int hash, int size)
 int IS_ASCII(SEXP x)
 {
     const char *s = R_CHAR(x);
-    while (*s) if (*s++ > 0x7f) return FALSE;
+    while (*s) if ((unsigned char) *s++ > 0x7f) return FALSE;
     return TRUE;
 }
 

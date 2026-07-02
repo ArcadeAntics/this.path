@@ -74,7 +74,7 @@ normalizePath("/path/to/file")
 
 
     /* s starts with d: or similar */
-    if (*s <= 0x7f && *(s + 1) == ':') return 2;
+    if (*s != '/' && *s != '\\' && *(s + 1) == ':') return 2;
 
 
     if (consider_tilde &&

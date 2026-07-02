@@ -70,7 +70,7 @@ SEXP _do_path_split(int windows, int length1, SEXP args)
             }
         }
         else {
-            int drivewidth = _drive_width(windows, s);
+            int drivewidth = _drive_width_no_tilde(windows, s);
             const char *p = s + drivewidth;
             int nstrings = 0;
             if (windows) {
@@ -94,9 +94,6 @@ SEXP _do_path_split(int windows, int length1, SEXP args)
                     } else {
                         SET_STRING_ELT(value0, j++, Rf_mkCharLenCE(s, 2, enc));
                     }
-                }
-                else if (drivewidth == 1) {
-                    SET_STRING_ELT(value0, j++, Rf_mkChar("~"));
                 }
                 else if (drivewidth) {
                     char buf[drivewidth + 2];
@@ -258,6 +255,7 @@ SEXP _do_path_unsplit(int windows, SEXP args, SEXP rho)
 
     int dots_length = length_DOTS(dots);
     if (dots_length <= 0) {
+        set_R_Visible(TRUE);
         Rf_unprotect(nprotect);
         return Rf_allocVector(STRSXP, 0);
     }
@@ -403,7 +401,7 @@ SEXP _do_path_unsplit(int windows, SEXP args, SEXP rho)
                     /* if the last character is a slash, copy as is */
                     if (*(s + nchar - 1) == '/' || *(s + nchar - 1) == '\\');
                     /* if the string is a "d:" or similar, copy as is */
-                    else if (nchar == 2 && *s <= 0x7f && *(s + 1) == ':');
+                    else if (nchar == 2 && drive_width_no_tilde_windows(s) == 2);
                     /* otherwise, add trailing slash */
                     else *p++ = '/';
                 }
@@ -425,6 +423,7 @@ SEXP _do_path_unsplit(int windows, SEXP args, SEXP rho)
     }
 
 
+    set_R_Visible(TRUE);
     Rf_unprotect(nprotect);
     return value;
 }
