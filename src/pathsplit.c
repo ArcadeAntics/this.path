@@ -380,6 +380,7 @@ SEXP _do_path_unsplit(int windows, SEXP args, SEXP rho)
 
         for (R_xlen_t j = 0; j < nstrings; j++) {
             SEXP cs = STRING_ELT(path, j);
+            if (cs == R_BlankString) continue;
             const char *s;
             if (use_Bytes)
                 s = R_CHAR(cs);

@@ -115,7 +115,7 @@ export(thisPathNotExistsError, thisPathNotFoundError , tryCatch2             ,
 
 export(basename2   , dirname2    , splitext    , removeext   ,
        ext         , "ext<-"     , path.join   , path.split  ,
-       path.split.1, path.unsplit)
+       path.split.1, path.unsplit, splitroot   , splitdrive  )
 
 
 ## ismain.R        ----
