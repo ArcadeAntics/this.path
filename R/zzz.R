@@ -52,6 +52,7 @@ tmp(
     .OS_unix_maybe_unembedded_shell, .OS_windows_maybe_unembedded_shell, .maybe_unembedded_shell,
     .shINFO,
     .console_radian,
+    .console_arf,
     .GUI_vscode,
     .GUI_jupyter,
     .GUI_emacs,

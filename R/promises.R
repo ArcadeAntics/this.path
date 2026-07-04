@@ -270,6 +270,7 @@ delayedAssign(".shINFO", { .External2(.C_shINFO) })
 
 
 delayedAssign(".console_radian", { commandArgs()[[1L]] == "radian" })
+delayedAssign(".console_arf"   , { commandArgs()[[1L]] == "arf"    })
 
 
 delayedAssign(".GUI_vscode", {
@@ -277,7 +278,8 @@ delayedAssign(".GUI_vscode", {
     isTRUE(Sys.getenv("TERM_PROGRAM") == "vscode") &&
     (
         isFALSE(.shINFO[["has_input"]]) ||
-        .console_radian
+        .console_radian ||
+        .console_arf
     )
 })
 
