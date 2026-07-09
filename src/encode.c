@@ -358,6 +358,7 @@ void _URL_decode(const char *s, char *p, cetype_t *ienc)
             (v2 = xdigit_value(*(s + 2))) >= 0
         ) {
             *p = v1 * 16 + v2;
+            if (!*p) Rf_error("embedded nul in string");
             if (*ienc != CE_NATIVE && *ienc != CE_BYTES && (unsigned char) *p > 0x7f) {
                 *ienc = CE_NATIVE;
             }
