@@ -97,6 +97,12 @@ export(check.path, check.dir , check.proj)
 ## defunct.R       ----
 
 
+## encode.R        ----
+
+
+export(URL_encode, URL_decode)
+
+
 ## enhances.R      ----
 
 
