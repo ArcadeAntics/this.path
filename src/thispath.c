@@ -1002,8 +1002,11 @@ SEXP _sys_path(int verbose, int original, int for_msg, int contents, int local,
                 Rf_length(name) > 0 &&
                 !strcmp(Rf_translateChar(STRING_ELT(name, 0)), "tools:rstudio"))
             {
-                rstudio_background_job_tools_loaded = TRUE;
                 _rs_sourceWithProgress = my_getVarInFrame(t, _rs_sourceWithProgressSymbol, TRUE);
+                if (!ISUNBOUND(_rs_sourceWithProgress)) {
+                    rstudio_background_job_tools_loaded = TRUE;
+                    break;
+                }
             }
         }
     }
