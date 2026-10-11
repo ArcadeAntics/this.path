@@ -17,6 +17,9 @@
     \itemize{
       \item{\code{this.path()} once again works in \sQuote{\Positron} after
         update 2026.04.0-269}
+
+      \item{\code{this.path()} once again works in background jobs in
+        \sQuote{\RStudio} after update 2026.09.0-174}
     }
   }
 }

@@ -12,6 +12,9 @@ CHANGES IN @R_PACKAGE_NAME@ @R_PACKAGE_VERSION@ (@R_PACKAGE_DATE@):
     * this.path() once again works in 'Positron' after update
       2026.04.0-269
 
+    * this.path() once again works in background jobs in 'RStudio'
+      after update 2026.09.0-174
+
 CHANGES IN this.path 2.8.0 (2026-04-09):
 
   SIGNIFICANT USER-VISIBLE CHANGES:
