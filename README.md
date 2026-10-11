@@ -187,7 +187,7 @@ These are lacking in functionality compared to `package:this.path`:
 
     *   'Rgui'
 
-    *   '[RStudio](https://posit.co/products/open-source/rstudio/)'
+    *   '[RStudio](https://posit.co/products/open-source/rstudio)'
         (including
         [background jobs](https://docs.posit.co/ide/user/ide/guide/tools/jobs.html))
 

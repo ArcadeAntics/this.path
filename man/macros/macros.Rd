@@ -1,6 +1,6 @@
 %%
 %% this.path : Get Executing Script's Path
-%% Copyright (C) 2022-2024   Iris Simmons
+%% Copyright (C) 2022-2026   Iris Simmons
 %%
 
 
@@ -30,7 +30,7 @@
 \newcommand{\Python}{\href{https://www.python.org/}{Python}}
 \newcommand{\radian}{\href{https://github.com/randy3k/radian}{radian}}
 \newcommand{\REditorSupport}{\href{https://code.visualstudio.com/docs/languages/r}{REditorSupport}}
-\newcommand{\RStudio}{\href{https://posit.co/products/open-source/rstudio/}{RStudio}}
+\newcommand{\RStudio}{\href{https://posit.co/products/open-source/rstudio}{RStudio}}
 \newcommand{\VSCode}{\href{https://code.visualstudio.com/}{VSCode}}
 
 
