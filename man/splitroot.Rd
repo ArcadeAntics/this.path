@@ -11,7 +11,7 @@
 \description{
   \code{splitroot()} splits a path into drive, root, and path.
 
-  \code{removeext()} splits a path into drive and path.
+  \code{splitdrive()} splits a path into drive and path.
 }
 \usage{
 splitroot(path, expand = TRUE)
