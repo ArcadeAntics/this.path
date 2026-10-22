@@ -184,27 +184,12 @@ splitdrive <- function (path, expand = TRUE)
 .External2(.C_fixbackslash, s)
 
 
-.as_file_URL <- function (path)
-{
-    if (!length(path))
-        character(0)
-    else if (.OS_windows) {
-        ## on Windows we have file:///C:/path/to/file or similar
-        enc <- Encoding(path)
-        path <- gsub("\\", "/", path, fixed = TRUE, useBytes = TRUE)
-        Encoding(path) <- enc
-        i <- grepl("^.:", path, useBytes = TRUE)
-        if (all(i))
-            paste0("file:///", path)
-        else if (any(i)) {
-            path[ i] <- paste0("file:///", path[ i])
-            path[!i] <- paste0("file://" , path[!i])
-            path
-        }
-        else paste0("file://", path)
-    }
-    else paste0("file://", path)
-}
+.mk_file_URL <- function (path, repeated = TRUE)
+.External2(.C_mk_file_URL, path, repeated)
+
+
+.as_file_URL <- function (path, repeated = FALSE)
+.External2(.C_mk_file_URL, path, repeated)
 
 
 .file_URL_path <- function (path)

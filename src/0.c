@@ -124,6 +124,7 @@ static const R_ExternalMethodDef externalRoutines[] = {
 {"fixslash"            , (DL_FUNC) &do_fixslash            , 1},
 {"fixbackslash"        , (DL_FUNC) &do_fixbackslash        , 1},
 {"file_URL_path"       , (DL_FUNC) &do_file_URL_path       , 1},
+{"mk_file_URL"         , (DL_FUNC) &do_mk_file_URL         , 2},
 
 
 /* get_file_from_closure.c */

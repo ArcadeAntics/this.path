@@ -8,6 +8,7 @@ Copyright (C) 2024-2026   Iris Simmons
 #define R_THIS_PATH_FILES_H
 
 
+extern int is_drive_width_2(const char *s);
 extern int drive_width_windows(const char *s);
 extern int drive_width_no_tilde_windows(const char *s);
 extern int drive_width_unix   (const char *s);

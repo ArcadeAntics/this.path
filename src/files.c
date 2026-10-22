@@ -10,6 +10,15 @@ Copyright (C) 2024-2026   Iris Simmons
 
 
 
+int is_drive_width_2(const char *s)
+{
+    /* s starts with d: or similar */
+    if (*s != '\0' && *s != '/' && *s != '\\' && *(s + 1) == ':')
+        return 1;
+    else return 0;
+}
+
+
 int _drive_width_windows(const char *s, int consider_tilde)
 {
     /* there are three types of absolute paths on windows
@@ -493,6 +502,65 @@ SEXP do_file_URL_path do_formals
         else
             SET_STRING_ELT(value, i, cs);
     }
+    Rf_unprotect(1);
+    return value;
+}
+
+
+
+
+
+SEXP mk_file_URL(SEXP cs, int repeated)
+{
+    if (cs == NA_STRING) return cs;
+    if (cs == R_BlankString) return cs;
+
+
+    const char *s = R_CHAR(cs);
+    if (!repeated && is_file_uri(s)) return cs;
+    cetype_t ienc = Rf_getCharCE(cs);
+#if defined(_WIN32)
+    /* on Windows we have file:///C:/path/to/file or similar */
+    const char *start = (is_drive_width_2(s) ? "file:///" : "file://");
+#else
+    const char *start = "file://";
+#endif
+
+
+    char buf[strlen(start) + strlen(s) + 1];
+    char *p = buf;
+    strcpy(p, start);
+    p += strlen(start);
+    strcpy(p, s);
+#if defined(_WIN32)
+    for (; *p; p++) if (*p == '\\') *p = '/';
+#endif
+
+
+    return Rf_mkCharCE(buf, ienc);
+}
+
+
+SEXP do_mk_file_URL do_formals
+{
+    do_start_no_call_op_rho("mk_file_URL", 2);
+
+
+    SEXP path = CAR(args);
+    if (TYPEOF(path) != STRSXP)
+        Rf_error(_("a character vector argument expected"));
+
+
+    int repeated = Rf_asLogical(CADR(args));
+    if (repeated == NA_LOGICAL)
+        Rf_error(_("invalid '%s' value"), "repeated");
+
+
+    R_xlen_t n = Rf_xlength(path);
+    SEXP value = Rf_allocVector(STRSXP, n);
+    Rf_protect(value);
+    for (R_xlen_t i = 0; i < n; i++)
+        SET_STRING_ELT(value, i, mk_file_URL(STRING_ELT(path, i), repeated));
     Rf_unprotect(1);
     return value;
 }
