@@ -510,7 +510,7 @@ SEXP do_file_URL_path do_formals
 
 
 
-SEXP mk_file_URL(SEXP cs, int repeated)
+SEXP as_file_URL(SEXP cs, int repeated)
 {
     if (cs == NA_STRING) return cs;
     if (cs == R_BlankString) return cs;
@@ -541,9 +541,9 @@ SEXP mk_file_URL(SEXP cs, int repeated)
 }
 
 
-SEXP do_mk_file_URL do_formals
+SEXP do_as_file_URL do_formals
 {
-    do_start_no_call_op_rho("mk_file_URL", 2);
+    do_start_no_call_op_rho("as_file_URL", 2);
 
 
     SEXP path = CAR(args);
@@ -560,7 +560,7 @@ SEXP do_mk_file_URL do_formals
     SEXP value = Rf_allocVector(STRSXP, n);
     Rf_protect(value);
     for (R_xlen_t i = 0; i < n; i++)
-        SET_STRING_ELT(value, i, mk_file_URL(STRING_ELT(path, i), repeated));
+        SET_STRING_ELT(value, i, as_file_URL(STRING_ELT(path, i), repeated));
     Rf_unprotect(1);
     return value;
 }

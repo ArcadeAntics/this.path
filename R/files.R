@@ -184,12 +184,12 @@ splitdrive <- function (path, expand = TRUE)
 .External2(.C_fixbackslash, s)
 
 
-.mk_file_URL <- function (path, repeated = TRUE)
-.External2(.C_mk_file_URL, path, repeated)
+as_file_URL <- function (path, repeated = FALSE)
+.External2(.C_as_file_URL, path, repeated)
 
 
-.as_file_URL <- function (path, repeated = FALSE)
-.External2(.C_mk_file_URL, path, repeated)
+mk_file_URL <- function (path, repeated = TRUE)
+.External2(.C_as_file_URL, path, repeated)
 
 
 .file_URL_path <- function (path)

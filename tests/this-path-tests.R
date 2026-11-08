@@ -66,9 +66,9 @@ local({
 
     ## for 'source' and 'debugSource' specifically,
     ## try sourcing a 'file://' URL
-    basename_R_URL <- @R_PACKAGE_NAME@:::.as_file_URL(basename_R)
-    rel_path_R_URL <- @R_PACKAGE_NAME@:::.as_file_URL(rel_path_R)
-    abs_path_R_URL <- @R_PACKAGE_NAME@:::.as_file_URL(abs_path_R)
+    basename_R_URL <- @R_PACKAGE_NAME@::as_file_URL(basename_R)
+    rel_path_R_URL <- @R_PACKAGE_NAME@::as_file_URL(rel_path_R)
+    abs_path_R_URL <- @R_PACKAGE_NAME@::as_file_URL(abs_path_R)
 
 
     fun <- function(expr, envir = parent.frame(),
